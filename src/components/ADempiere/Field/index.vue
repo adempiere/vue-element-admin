@@ -195,16 +195,32 @@ export default {
   },
   methods: {
     isDisplayed() {
+      if (this.isAdvancedQuery) {
+        return this.field.isShowedFromUser
+      }
       return fieldIsDisplayed(this.field) && (this.isMandatory() || this.field.isShowedFromUser || this.inTable)
     },
     isReadOnly() {
       if (this.isAdvancedQuery) {
         return false
       }
+      if (!this.field.isActive) {
+        return true
+      }
 
       const isUpdateableAllFields = this.field.isReadOnly || this.field.isReadOnlyFromLogic
 
       if (this.panelType === 'window') {
+        if (this.field.isAlwaysUpdateable) {
+          return false
+        } else {
+          if (this.$store.getters.getContextProcessing(this.parentUuid)) {
+            return true
+          }
+          if (this.$store.getters.getContextProcessed(this.parentUuid)) {
+            return true
+          }
+        }
         // edit mode is diferent to create new
         const editMode = (!this.inTable && this.field.optionCRUD !== 'create-new') || (this.inTable && !this.isEmptyValue(this.field.recordUuid))
         return (!this.field.isUpdateable && editMode) || (isUpdateableAllFields || this.field.isReadOnlyFromForm)

@@ -162,6 +162,7 @@ export function convertField(fieldGRPC, moreAttributes = {}, typeRange = false) 
     isKey: fieldGRPC.getIskey(),
     isSelectionColumn: fieldGRPC.getIsselectioncolumn(),
     isUpdateable: fieldGRPC.getIsupdateable(),
+    isAlwaysUpdateable: fieldGRPC.getIsalwaysupdateable(),
     //
     isDisplayed: fieldGRPC.getIsdisplayed(),
     isMandatory: fieldGRPC.getIsmandatory(),

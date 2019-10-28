@@ -47,7 +47,7 @@
                 type="text"
                 :icon="(getterNewRecords <= 0) ? 'el-icon-circle-plus' : 'el-icon-remove'"
                 style="float: right;padding-top: 8px;font-size: larger;padding-left: 6px; color: gray;"
-                :disabled="isDisabledAddNewIcon"
+                :disabled="isDisabledAddNew"
                 @click="(getterNewRecords <= 0) ? addNewRow() : callOffNewRecord()"
               />
               <icon-element v-if="isFixed && !isMobile" icon="el-icon-news">
@@ -494,18 +494,6 @@ export default {
         return true
       }
       if (this.getterNewRecords) {
-        return true
-      }
-      return false
-    },
-    isDisabledAddNewIcon() {
-      if (this.isParent) {
-        return true
-      }
-      if (this.$route.query.action === 'create-new') {
-        return true
-      }
-      if (!this.getterPanel.isInsertRecord) {
         return true
       }
       return false
