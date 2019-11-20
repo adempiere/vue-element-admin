@@ -120,6 +120,7 @@ export default {
     contextMenuRefresh: 'Actualizar',
     contextMennuExport: 'Exportar Smart Browser',
     contextMennuWindowReport: 'Informe de Ventana',
+    contextMenuPrintFormatSetup: 'Print Format Setup',
     RunProcess: 'Ejecutar',
     ChangeParameters: 'Cambiar Parametros',
     RunProcessAs: 'Ejecutar como',
