@@ -25,10 +25,26 @@
         </div>
       </el-col>
     </el-row>
-
     <el-row :gutter="8">
-      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <recent-items />
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style=";margin-bottom:30px;">
+        <el-collapse v-model="activeRecentItems" accordion>
+          <el-collapse-item name="1">
+            <template slot="title">
+              <i class="el-icon-time" style="margin-right: 4px;margin-left: 10px;" /> {{ $t('profile.recentItems') }}
+            </template>
+            <recent-items />
+          </el-collapse-item>
+        </el-collapse>
+      </el-col>
+      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="margin-bottom:30px;">
+        <el-collapse v-model="activeFavorites" accordion>
+          <el-collapse-item name="1">
+            <template slot="title">
+              <i class="el-icon-star-on" style="margin-right: 4px;margin-left: 10px;" /> {{ $t('profile.favorites') }}
+            </template>
+            <favorites />
+          </el-collapse-item>
+        </el-collapse>
       </el-col>
       <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
         <todo-list />
@@ -51,6 +67,7 @@ import BarChart from './components/BarChart'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 import RecentItems from '@/components/ADempiere/RecentItems'
+import Favorites from '@/components/ADempiere/Favorites'
 
 const lineChartData = {
   newVisitis: {
@@ -83,10 +100,13 @@ export default {
     // TransactionTable,
     TodoList,
     BoxCard,
-    RecentItems
+    RecentItems,
+    Favorites
   },
   data() {
     return {
+      activeRecentItems: '1',
+      activeFavorites: '1',
       lineChartData: lineChartData.newVisitis
     }
   },
@@ -97,7 +117,34 @@ export default {
   }
 }
 </script>
-
+<style>
+.el-collapse-item__header {
+    font-size: 18px;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: 1.4em;
+    border: 0;
+    color: inherit;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    line-height: 1.4em;
+    border: 0;
+    align-items: center;
+    height: 48px;
+    line-height: 1.4em;
+    background-color: #fff;
+    color: #303133;
+    cursor: pointer;
+    border-bottom: 1px solid #e6ebf5;
+    font-size: 15px;
+    -webkit-transition: border-bottom-color .3s;
+    transition: border-bottom-color .3s;
+    outline: none;
+  }
+</style>
 <style lang="scss" scoped>
 .dashboard-editor-container {
   padding: 32px;
