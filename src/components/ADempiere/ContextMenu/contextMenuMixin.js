@@ -233,8 +233,7 @@ export const contextMixin = {
         this.isReferencesLoaded = false
       }
     },
-    TypeFormat(key) {
-      console.log(key)
+    typeFormat(key) {
       if (this.panelType === 'window' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
         this.exporWindow(key)
       } else if (this.panelType === 'browser' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
@@ -242,7 +241,6 @@ export const contextMixin = {
       }
     },
     exporBrowser(key) {
-      console.log(key)
         import('@/vendor/Export2Excel').then(excel => {
           const tHeader = this.getterFieldListHeader
           const filterVal = this.getterFieldListValue

@@ -1,6 +1,6 @@
 <template>
   <div class="container-submenu container-context-menu">
-    <el-menu :default-active="activeMenu" :router="false" class="el-menu-demo" mode="horizontal" menu-trigger="hover" unique-opened @select="TypeFormat">
+    <el-menu :default-active="activeMenu" :router="false" class="el-menu-demo" mode="horizontal" menu-trigger="hover" unique-opened @select="typeFormat">
       <template>
         <el-submenu v-if="relations !== undefined && relations.length" class="el-menu-item" index="1">
           <template slot="title">

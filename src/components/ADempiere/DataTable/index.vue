@@ -22,7 +22,7 @@
           </el-collapse>
           <div>
             <div v-if="!isMobile">
-              <el-menu :default-active="menuTable" :class="classTableMenu + ' menu-table-container'" mode="horizontal" @select="TypeFormat">
+              <el-menu :default-active="menuTable" :class="classTableMenu + ' menu-table-container'" mode="horizontal" @select="typeFormat">
                 <el-submenu index="2">
                   <template slot="title">
                     <i class="el-icon-more" />
@@ -549,7 +549,7 @@ export default {
     }
   },
   methods: {
-    TypeFormat(key, keyPath) {
+    typeFormat(key, keyPath) {
       this.exporRecordTable(key)
     },
     exporRecordTable(key) {
