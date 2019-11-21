@@ -476,6 +476,10 @@ export default {
                   name: this.$route.name,
                   query: {
                     ...this.$route.query
+                  },
+                  params: {
+                    tableName: this.metadata.tableName,
+                    recordId: this.dataRecords[`${this.metadata.tableName}_ID`]
                   }
                 })
                 this.$store.dispatch('notifyPanelChange', {
@@ -489,12 +493,13 @@ export default {
                 })
               } else {
                 this.$router.push({
-                  name: this.$route.name,
                   query: {
                     action: this.dataRecords.UUID,
                     ...this.$route.query
                   }
                 })
+                this.$route.params['tableName'] = this.metadata.tableName
+                this.$route.params['recordId'] = this.dataRecords[`${this.metadata.tableName}_ID`]
                 this.$store.dispatch('notifyPanelChange', {
                   parentUuid: this.parentUuid,
                   containerUuid: this.containerUuid,

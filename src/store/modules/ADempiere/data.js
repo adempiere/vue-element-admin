@@ -5,7 +5,10 @@ import {
   getRecentItems,
   getDefaultValueFromServer,
   convertValueFromGRPC,
-  getContextInfoValueFromServer
+  getContextInfoValueFromServer,
+  getPrivateAccessFromServer,
+  lockPrivateAccessFromServer,
+  unlockPrivateAccessFromServer
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -16,7 +19,8 @@ const data = {
     recordDetail: [],
     recentItems: [],
     inGetting: [],
-    contextInfoField: []
+    contextInfoField: [],
+    recordPrivateAccess: {}
   },
   mutations: {
     addInGetting(state, payload) {
@@ -89,6 +93,9 @@ const data = {
     },
     setContextInfoField(state, payload) {
       state.contextInfoField.push(payload)
+    },
+    setPrivateAccess(state, payload) {
+      state.recordPrivateAccess = payload
     }
   },
   actions: {
@@ -762,6 +769,45 @@ const data = {
         .catch(error => {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
         })
+    },
+    getPrivateAccessFromServer({ commit }, parameters) {
+      const { tableName, recordId, userUuid } = parameters
+      getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(privateAccess => {
+          if (privateAccess.getRecordid()) {
+            const recordPrivateAccess = {
+              tableName: privateAccess.getTablename(),
+              recordId: privateAccess.getRecordid(),
+              userUuid: privateAccess.getUseruuid()
+            }
+            commit('setPrivateAccess', recordPrivateAccess)
+          }
+        })
+        .catch(error => {
+          console.error(error)
+        })
+    },
+    lockRecord({ commit, rootGetters }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(response => {
+          console.log(response)
+        })
+        .catch(error => {
+          console.error(error)
+        })
+    },
+    unlockRecord({ commit, rootGetters }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(response => {
+          console.log(response)
+        })
+        .catch(error => {
+          console.error(error)
+        })
     }
   },
   getters: {
@@ -887,6 +933,14 @@ const data = {
         info.contextInfoUuid === contextInfoUuid &&
         info.sqlStatement === sqlStatement
       )
+    },
+    getRecordPrivateAccess: (state) => (tableName, recordId) => {
+      if (!isEmptyValue(tableName) && !isEmptyValue(recordId)) {
+        if (state.recordPrivateAccess.tableName === tableName && state.recordPrivateAccess.recordId === recordId) {
+          return state.recordPrivateAccess
+        }
+        return undefined
+      }
     }
   }
 }

@@ -254,6 +254,8 @@ export default {
     deleteRecordSuccessful: 'Record deleted successfully',
     deleteRecordError: 'Error deleting record',
     selectionRequired: 'You must select a record',
-    undo: 'Undo'
+    undo: 'Undo',
+    lockRecord: 'Lock Record',
+    unlockRecord: 'Unlock Record'
   }
 }

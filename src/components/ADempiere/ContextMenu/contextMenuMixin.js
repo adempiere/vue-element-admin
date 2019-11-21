@@ -130,6 +130,11 @@ export const contextMixin = {
         this.getReferences()
       }
     },
+    'this.$route.params'(newValue, oldValue) {
+      if (!this.isEmptyValue(newValue)) {
+        this.generateContextMenu()
+      }
+    },
     isInsertRecord(newValue, oldValue) {
       if (this.panelType === 'window' && newValue !== oldValue) {
         this.generateContextMenu()
@@ -205,7 +210,13 @@ export const contextMixin = {
         })
     },
     generateContextMenu() {
+      var recordLocked = false
       this.metadataMenu = this.getterContextMenu
+      if (this.$route.params && this.$store.getters.getRecordPrivateAccess(this.$route.params.tableName, this.$route.params.recordId)) {
+        recordLocked = true
+      } else {
+        recordLocked = false
+      }
       this.actions = this.metadataMenu.actions
 
       if (this.actions && this.actions.length) {
@@ -234,6 +245,20 @@ export const contextMixin = {
             }
             if (itemAction.action === 'undoModifyData') {
               itemAction.disabled = Boolean(!this.getterDataLog && !this.getterWindowOldRoute)
+            }
+            if (recordLocked && itemAction.action === 'unlockRecord') {
+              itemAction.hidden = false
+              itemAction.tableName = this.$route.params.tableName
+              itemAction.recordId = this.$route.params.recordId
+            } else if (!recordLocked && itemAction.action === 'unlockRecord') {
+              itemAction.hidden = true
+            }
+            if (!recordLocked && itemAction.action === 'lockRecord') {
+              itemAction.hidden = false
+              itemAction.tableName = this.$route.params.tableName
+              itemAction.recordId = this.$route.params.recordId
+            } else if (recordLocked && itemAction.action === 'lockRecord') {
+              itemAction.hidden = true
             }
           }
         })
@@ -332,7 +357,9 @@ export const contextMixin = {
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid,
             panelType: this.panelType,
-            isNewRecord: action.action === 'resetPanelToNew'
+            isNewRecord: action.action === 'resetPanelToNew',
+            tableName: action.tableName,
+            recordId: action.recordId
           })
         }
       } else if (action.type === 'reference') {

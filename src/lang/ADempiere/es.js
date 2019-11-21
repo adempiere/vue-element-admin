@@ -229,6 +229,8 @@ export default {
     deleteRecordSuccessful: 'Registro eliminado exitosamente',
     deleteRecordError: 'Error al eliminar el regitro',
     selectionRequired: 'Debe seleccionar un registro',
-    undo: 'Deshacer'
+    undo: 'Deshacer',
+    lockRecord: 'Bloquear Registro',
+    unlockRecord: 'Desbloquear Registro'
   }
 }
