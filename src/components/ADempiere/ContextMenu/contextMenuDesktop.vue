@@ -1,6 +1,6 @@
 <template>
   <div class="container-submenu container-context-menu">
-    <el-menu :default-active="activeMenu" :router="false" class="el-menu-demo" mode="horizontal" menu-trigger="hover" unique-opened>
+    <el-menu :default-active="activeMenu" :router="false" class="el-menu-demo" mode="horizontal" menu-trigger="hover" unique-opened @select="TypeFormat">
       <template>
         <el-submenu v-if="relations !== undefined && relations.length" class="el-menu-item" index="1">
           <template slot="title">
@@ -35,12 +35,32 @@
               {{ $t('components.contextMenuDownload') }}
             </a>
           </el-menu-item>
-          <el-menu-item v-if="getDataSelection.length > 0 && panelType === 'browser'" index="6" @click="exporBrowser">
-            {{ $t('components.contextMennuExport') }}
-          </el-menu-item>
-          <el-menu-item v-if="panelType === 'window'" index="7" @click="exporBrowser">
-            {{ $t('components.contextMennuWindowReport') }}
-          </el-menu-item>
+          <el-submenu
+            v-if="getDataSelection.length > 0 && panelType === 'browser'"
+            index="xlsx"
+            @click.native="exporBrowser('xlsx')"
+          >
+            <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
+            <el-menu-item index="xlsx">xlsx</el-menu-item>
+            <el-menu-item index="csv">csv</el-menu-item>
+            <el-menu-item index="txt">txt</el-menu-item>
+            <el-menu-item index="xls">xls</el-menu-item>
+            <el-menu-item index="xml">xml</el-menu-item>
+            <el-menu-item index="html">html</el-menu-item>
+          </el-submenu>
+          <el-submenu
+            v-if="panelType === 'window'"
+            index="xlsx"
+            @click.native="exporWindow('xlsx')"
+          >
+            <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
+            <el-menu-item index="xlsx">xlsx</el-menu-item>
+            <el-menu-item index="csv">csv</el-menu-item>
+            <el-menu-item index="txt">txt</el-menu-item>
+            <el-menu-item index="xls">xls</el-menu-item>
+            <el-menu-item index="xml">xml</el-menu-item>
+            <el-menu-item index="html">html</el-menu-item>
+          </el-submenu>
           <el-menu-item v-if="panelType !== 'process'" index="8" @click="refreshData">
             {{ $t('components.contextMenuRefresh') }}
           </el-menu-item>

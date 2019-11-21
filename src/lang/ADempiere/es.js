@@ -119,7 +119,7 @@ export default {
     contextMenuShareLink: 'Compartir Link',
     contextMenuRefresh: 'Actualizar',
     contextMennuExport: 'Exportar Smart Browser',
-    contextMennuWindowReport: 'Informe de Ventana',
+    contextMennuWindowReport: 'Exportar de Registro',
     RunProcess: 'Ejecutar',
     ChangeParameters: 'Cambiar Parametros',
     RunProcessAs: 'Ejecutar como',
@@ -176,7 +176,8 @@ export default {
       deleteSelection: 'Eliminar Registros Seleccionados',
       advancedQuery: 'Consulta Avanzada',
       showOnlyMandatoryColumns: 'Mostrar Solo Columnas Obligatorias',
-      showAllAvailableColumns: 'Mostrar Todas Columnas Disponibles'
+      showAllAvailableColumns: 'Mostrar Todas Columnas Disponibles',
+      exportRecordTable: 'Exportar los Registros Seleccionado'
     },
     recentItems: {
       search: 'Filtrar por nombre, descripción o fecha',

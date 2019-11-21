@@ -131,6 +131,17 @@ export const contextMixin = {
         }
       })
     },
+    getterDataRecordsAll() {
+      return this.$store.getters.getDataRecordAndSelection(this.containerUuid).record
+    },
+    getDataRecord() {
+      var record = this.getterDataRecordsAll.filter(fieldItem => {
+        if (this.recordUuid === fieldItem.UUID) {
+          return fieldItem
+        }
+      })
+      return record
+    },
     getterDataLog() {
       if (this.panelType === 'window') {
         return this.$store.getters.getDataLog(this.containerUuid, this.recordUuid)
@@ -222,7 +233,16 @@ export const contextMixin = {
         this.isReferencesLoaded = false
       }
     },
-    exporBrowser() {
+    TypeFormat(key) {
+      console.log(key)
+      if (this.panelType === 'window' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
+        this.exporWindow(key)
+      } else if (this.panelType === 'browser' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
+        this.exporBrowser(key)
+      }
+    },
+    exporBrowser(key) {
+      console.log(key)
         import('@/vendor/Export2Excel').then(excel => {
           const tHeader = this.getterFieldListHeader
           const filterVal = this.getterFieldListValue
@@ -231,9 +251,24 @@ export const contextMixin = {
           excel.export_json_to_excel({
             header: tHeader,
             data,
-            filename: ''
+            filename: '',
+            bookType: key
           })
         })
+    },
+    exporWindow(key) {
+      import('@/vendor/Export2Excel').then(excel => {
+        const tHeader = this.getterFieldListHeader
+        const filterVal = this.getterFieldListValue
+        const list = this.getDataRecord
+        const data = this.formatJson(filterVal, list)
+        excel.export_json_to_excel({
+          header: tHeader,
+          data,
+          filename: '',
+          bookType: key
+        })
+      })
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => v[j]))

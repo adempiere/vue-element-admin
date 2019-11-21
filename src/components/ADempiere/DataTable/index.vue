@@ -22,7 +22,7 @@
           </el-collapse>
           <div>
             <div v-if="!isMobile">
-              <el-menu :default-active="menuTable" :class="classTableMenu + ' menu-table-container'" mode="horizontal">
+              <el-menu :default-active="menuTable" :class="classTableMenu + ' menu-table-container'" mode="horizontal" @select="TypeFormat">
                 <el-submenu index="2">
                   <template slot="title">
                     <i class="el-icon-more" />
@@ -43,6 +43,20 @@
                   >
                     {{ $t('table.dataTable.deleteSelection') }}
                   </el-menu-item>
+                  <el-submenu
+                    v-if="isPanelWindow"
+                    :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
+                    index="xlsx"
+                    @click.native="exporRecordTable('xlsx')"
+                  >
+                    <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
+                    <el-menu-item index="xlsx">xlsx</el-menu-item>
+                    <el-menu-item index="csv">csv</el-menu-item>
+                    <el-menu-item index="txt">txt</el-menu-item>
+                    <el-menu-item index="xls">xls</el-menu-item>
+                    <el-menu-item index="xml">xml</el-menu-item>
+                    <el-menu-item index="html">html</el-menu-item>
+                  </el-submenu>
                   <el-menu-item index="optional" @click="optionalPanel()">
                     {{ $t('components.filterableItems') }}
                   </el-menu-item>
@@ -342,6 +356,35 @@ export default {
     }
   },
   computed: {
+    getterFieldList() {
+      return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
+    },
+    getterFieldListHeader() {
+      var header = this.getterFieldList.filter(fieldItem => {
+        const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
+        if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
+          return fieldItem.name
+        }
+      })
+      return header.map(fieldItem => {
+        return fieldItem.name
+      })
+    },
+    getterFieldListValue() {
+      var value = this.getterFieldList.filter(fieldItem => {
+        const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
+        if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
+          return fieldItem
+        }
+      })
+      return value.map(fieldItem => {
+        if (fieldItem.componentPath === 'FieldSelect') {
+          return 'DisplayColumn_' + fieldItem.columnName
+        } else {
+          return fieldItem.columnName
+        }
+      })
+    },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
     },
@@ -506,6 +549,26 @@ export default {
     }
   },
   methods: {
+    TypeFormat(key, keyPath) {
+      this.exporRecordTable(key)
+    },
+    exporRecordTable(key) {
+        import('@/vendor/Export2Excel').then(excel => {
+          const tHeader = this.getterFieldListHeader
+          const filterVal = this.getterFieldListValue
+          const list = this.getDataSelection
+          const data = this.formatJson(filterVal, list)
+          excel.export_json_to_excel({
+            header: tHeader,
+            data,
+            filename: '',
+            bookType: key
+          })
+        })
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => v[j]))
+    },
     sortFields,
     handleChange(val) {
       val = !val

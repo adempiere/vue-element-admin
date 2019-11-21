@@ -123,7 +123,7 @@ export default {
     contextMenuShareLink: 'Share Link',
     contextMenuRefresh: 'Refresh',
     contextMennuExport: 'Export Smart Browser',
-    contextMennuWindowReport: 'Window Report ',
+    contextMennuWindowReport: 'Export Records ',
     dateStartPlaceholder: 'Start date',
     dateEndPlaceholder: 'End date',
     timePlaceholder: 'Select time',
@@ -176,7 +176,8 @@ export default {
       deleteSelection: 'Delete Selected Records',
       advancedQuery: 'Advanced Query',
       showOnlyMandatoryColumns: 'Show Only Mandatory Columns',
-      showAllAvailableColumns: 'Show All Available Columns'
+      showAllAvailableColumns: 'Show All Available Columns',
+      exportRecordTable: 'Export Selected Records'
     },
     recentItems: {
       search: 'Filter by name, description or date',
