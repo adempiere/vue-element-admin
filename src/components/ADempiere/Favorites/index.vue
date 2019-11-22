@@ -36,6 +36,15 @@ export default {
     this.subscribeChanges()
   },
   methods: {
+    getRecentItems() {
+      this.$store.dispatch('getFavoritesFromServer')
+        .then(response => {
+          this.favorites = response
+          this.isLoaded = false
+        }).catch(error => {
+          console.log(error)
+        })
+    },
     checkOpened(uuid) {
       return this.cachedViews.includes(uuid)
     },

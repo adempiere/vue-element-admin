@@ -5,7 +5,8 @@ import {
   getRecentItems,
   getDefaultValueFromServer,
   convertValueFromGRPC,
-  getContextInfoValueFromServer
+  getContextInfoValueFromServer,
+  getFavoritesFromServer
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -609,6 +610,17 @@ const data = {
           })
           .catch(error => {
             reject(error)
+          })
+      })
+    },
+    getFavoritesFromServer({ commit }, userUuid) {
+      return new Promise((resolve, reject) => {
+        getFavoritesFromServer('0550f6c8-f1ea-11e9-8cc3-0242ac140007')
+          .then(response => {
+            console.log(response)
+          })
+          .catch(error => {
+            console.error(error)
           })
       })
     },
