@@ -8,7 +8,7 @@ export const supportedTypes = [
   { type: 'xml' },
   { type: 'html' }
 ]
-export function export_json({
+export function exportFileFromJson({
   header,
   data,
   exportType

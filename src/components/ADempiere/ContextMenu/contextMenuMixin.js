@@ -1,7 +1,7 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
-import { supportedTypes, export_json } from '@/utils/ADempiere/formatExport'
+import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/formatExport'
 
 export const contextMixin = {
   components: {
@@ -248,7 +248,7 @@ export const contextMixin = {
       const filterVal = this.getterFieldListValue
       const list = this.getDataSelection
       const data = this.formatJson(filterVal, list)
-      export_json({
+      exportFileFromJson({
         header: tHeader,
         data,
         filename: '',
@@ -260,7 +260,7 @@ export const contextMixin = {
       const filterVal = this.getterFieldListValue
       const list = this.getDataRecord
       const data = this.formatJson(filterVal, list)
-      export_json({
+      exportFileFromJson({
         header: tHeader,
         data,
         filename: '',

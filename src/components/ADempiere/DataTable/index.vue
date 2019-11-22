@@ -292,7 +292,7 @@ import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere'
 import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
-import { supportedTypes, export_json } from '@/utils/ADempiere/formatExport'
+import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/formatExport'
 
 export default {
   name: 'DataTable',
@@ -561,7 +561,7 @@ export default {
       const filterVal = this.getterFieldListValue
       const list = this.getDataSelection
       const data = this.formatJson(filterVal, list)
-      export_json({
+      exportFileFromJson({
         header: Header,
         data,
         filename: '',
