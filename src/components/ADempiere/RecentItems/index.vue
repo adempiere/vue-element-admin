@@ -1,14 +1,5 @@
 <template>
-  <el-card class="box-card">
-    <div slot="header" class="clearfix">
-      <span> {{ $t('profile.recentItems') }} </span>
-      <el-input
-        v-model="search"
-        size="mini"
-        :placeholder="$t('table.dataTable.search')"
-        class="search_recent"
-      />
-    </div>
+  <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
     <div class="recent-items">
       <el-table
         :data="search.length ? filterResult(search) : recentItems"
@@ -19,7 +10,15 @@
             <svg-icon :icon-class="row.icon" class="icon-window" />
           </template>
         </el-table-column>
-        <el-table-column :label="$t('profile.recentItems')">
+        <el-table-column>
+          <template slot="header" slot-scope="scope" class="clearfix">
+            <el-input
+              v-model="search"
+              size="mini"
+              :metadata="scope"
+              :placeholder="$t('table.dataTable.search')"
+            />
+          </template>
           <template slot-scope="{row}">
             <span>{{ row.displayName }}</span>
             <el-tag class="action-tag">{{ $t(`views.${row.action}`) }}</el-tag>

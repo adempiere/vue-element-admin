@@ -16,6 +16,7 @@ const data = {
     recordSelection: [], // record data and selection
     recordDetail: [],
     recentItems: [],
+    favorites: [],
     inGetting: [],
     contextInfoField: []
   },
@@ -60,6 +61,9 @@ const data = {
     },
     setRecentItems(state, payload) {
       state.recentItems = payload
+    },
+    setFavorites(state, payload) {
+      state.favorites = payload
     },
     setPageNumber(state, payload) {
       payload.data.pageNumber = payload.pageNumber
@@ -613,14 +617,26 @@ const data = {
           })
       })
     },
-    getFavoritesFromServer({ commit }, userUuid) {
+    getFavoritesFromServer({ commit, rootGetters }) {
+      const userUuid = rootGetters['user/getUserUuid']
       return new Promise((resolve, reject) => {
-        getFavoritesFromServer('0550f6c8-f1ea-11e9-8cc3-0242ac140007')
+        getFavoritesFromServer(userUuid)
           .then(response => {
-            console.log(response)
+            const favorites = response.getFavoritesList().map(favorite => {
+              return {
+                uuid: favorite.getMenuuuid(),
+                name: favorite.getMenuname(),
+                description: favorite.getMenudescription(),
+                referenceUuid: favorite.getReferenceuuid(),
+                action: convertAction(favorite.getAction()).name,
+                icon: convertAction(favorite.getAction()).icon
+              }
+            })
+            commit('setFavorites', favorites)
+            resolve(favorites)
           })
           .catch(error => {
-            console.error(error)
+            reject(error)
           })
       })
     },
@@ -888,6 +904,9 @@ const data = {
     },
     getRecentItems: (state) => {
       return state.recentItems
+    },
+    getFavoritesList: (state) => {
+      return state.favorites
     },
     getLanguageList: (state) => (roleUuid) => {
       return state.recordSelection.find(
