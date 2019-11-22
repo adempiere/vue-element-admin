@@ -191,6 +191,15 @@
           </div>
         </el-header>
         <el-main style="padding: 0px !important; overflow: hidden;">
+          <context-menu
+            v-show="getShowContextMenuTable && isParent"
+            :style="{left:left+'px',top:top+'px'}"
+            class="contextmenu"
+            :container-uuid="containerUuid"
+            :parent-uuid="parentUuid"
+            :panel-type="panelType"
+            :is-option="isOption"
+          />
           <el-table
             ref="multipleTable"
             v-loading="$route.query.action !== 'create-new' && isLoaded"
@@ -209,6 +218,8 @@
             @row-dblclick="handleRowDblClick"
             @select="handleSelection"
             @select-all="handleSelectionAll"
+            @row-contextmenu="rowMenu"
+            @contextmenu.prevent.native="block"
           >
             <el-table-column
               v-if="isTableSelection"
@@ -286,6 +297,7 @@ import FieldDefinition from '@/components/ADempiere/Field'
 import Sortable from 'sortablejs'
 import FilterColumns from '@/components/ADempiere/DataTable/filterColumns'
 import FixedColumns from '@/components/ADempiere/DataTable/fixedColumns'
+import ContextMenu from '@/components/ADempiere/DataTable/contextMenu'
 import IconElement from '@/components/ADempiere/IconElement'
 import { formatDate } from '@/filters/ADempiere'
 import MainPanel from '@/components/ADempiere/Panel'
@@ -300,6 +312,7 @@ export default {
     FieldDefinition,
     FilterColumns,
     FixedColumns,
+    ContextMenu,
     IconElement,
     MainPanel
   },
@@ -339,6 +352,9 @@ export default {
   },
   data() {
     return {
+      top: 0,
+      left: 0,
+      isOption: {},
       searchTable: '', // text from search
       defaultMaxPagination: 100,
       option: supportedTypes,
@@ -357,6 +373,9 @@ export default {
     }
   },
   computed: {
+    getShowContextMenuTable() {
+      return this.$store.getters.getShowContextMenuTable
+    },
     getterFieldList() {
       return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
     },
@@ -550,6 +569,29 @@ export default {
     }
   },
   methods: {
+    block() {
+      return false
+    },
+    rowMenu(row, column, event) {
+      const menuMinWidth = 105
+      const offsetLeft = this.$el.getBoundingClientRect().left // container margin left
+      const offsetWidth = this.$el.offsetWidth // container width
+      const maxLeft = offsetWidth - menuMinWidth // left boundary
+      const left = event.clientX - offsetLeft + 15 // 15: margin right
+
+      if (left > maxLeft) {
+        this.left = maxLeft
+      } else {
+        this.left = left
+      }
+
+      this.top = event.clientY - 100
+      this.isOption = row
+      this.visible = true
+      this.$store.dispatch('showMenuTable', {
+        isShowedTable: true
+      })
+    },
     typeFormat(key, keyPath) {
       const type = supportedTypes.find(element => element.type === key)
       if (type !== undefined) {
@@ -946,6 +988,27 @@ export default {
 </script>
 
 <style lang="scss">
+ .contextmenu {
+    margin: 0;
+    background: #fff;
+    z-index: 3000;
+    position: absolute;
+    list-style-type: none;
+    padding: 5px 0;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #333;
+    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
+    li {
+      margin: 0;
+      padding: 7px 16px;
+      cursor: pointer;
+      &:hover {
+        background: #eee;
+      }
+    }
+  }
   .el-table-row {
     .hover-row {
       background-color: black;
