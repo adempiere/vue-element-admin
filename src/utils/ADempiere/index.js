@@ -90,48 +90,6 @@ export function convertField(fieldGRPC, moreAttributes = {}, typeRange = false) 
     }
   }
 
-  var fieldDefinition = fieldGRPC.getFielddefinition()
-  var fieldConditions = []
-  var fieldDefinitionValue = {
-    id: null,
-    uuid: '',
-    value: '',
-    name: '',
-    fieldGroupType: '',
-    conditions: fieldConditions,
-    isActive: false
-  }
-  if (fieldDefinition) {
-    if (fieldDefinition.getConditionsList()) {
-      fieldConditions = fieldDefinition.getConditionsList().map(condition => {
-        return {
-
-          // evaluator.evaluateLogic({
-          //   type: 'displayed',
-          //   logic: field.displayLogic
-          // })
-          id: condition.getId(),
-          uuid: condition.getUuid(),
-          condition: evaluator.evaluateLogic({
-            type: 'displayed',
-            logic: condition.getCondition()
-          }),
-          styleSheet: condition.getStylesheet(),
-          isActive: condition.getIsactive()
-        }
-      })
-    }
-    fieldDefinitionValue = {
-      id: fieldDefinition.getId(),
-      uuid: fieldDefinition.getUuid(),
-      value: fieldDefinition.getValue(),
-      name: fieldDefinition.getName(),
-      fieldGroupType: fieldDefinition.getFieldgrouptype(),
-      conditions: fieldConditions,
-      isActive: fieldDefinition.getIsactive()
-    }
-  }
-
   var componentReference = evalutateTypeField(fieldGRPC.getDisplaytype(), true)
 
   var parsedDefaultValue = fieldGRPC.getDefaultvalue()
@@ -179,7 +137,6 @@ export function convertField(fieldGRPC, moreAttributes = {}, typeRange = false) 
     isActive: fieldGRPC.getIsactive(),
     // displayed attributes
     fieldGroup: group,
-    fieldDefinition: fieldDefinitionValue,
     displayType: fieldGRPC.getDisplaytype(),
     componentPath: componentReference.type,
     isSupport: componentReference.support,
@@ -555,40 +512,6 @@ export function convertMessageTextFromGRPC(messageTextGRPC) {
     }
   }
   return messageText
-}
-
-export function convertFieldDefinitionFromGRPC(contextInfoGRPC) {
-  // int32 id = 1;
-  // string uuid = 2;
-  // string value = 3;
-  // string name = 4;
-  // string fieldGroupType = 5;
-  // repeated FieldCondition conditions = 6;
-  // bool isActive = 7;
-  var contextInfo = {
-    id: null,
-    uuid: '',
-    value: '',
-    name: '',
-    fieldGroupType: '',
-    sqlStatement: '',
-    isActive: false,
-    messageText: convertMessageTextFromGRPC(undefined)
-  }
-  if (contextInfoGRPC !== undefined) {
-    contextInfo = {
-      id: contextInfoGRPC.getId(),
-      uuid: contextInfoGRPC.getUuid(),
-      name: contextInfoGRPC.getName(),
-      description: contextInfoGRPC.getDescription(),
-      sqlStatement: contextInfoGRPC.getSqlstatement(),
-      isActive: contextInfoGRPC.getIsactive(),
-      messageText: convertMessageTextFromGRPC(
-        contextInfoGRPC.getMessagetext()
-      )
-    }
-  }
-  return contextInfo
 }
 
 /**

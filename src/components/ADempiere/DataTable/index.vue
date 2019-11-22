@@ -237,7 +237,7 @@
                       @keyup.enter.native="confirmEdit(scope.row)"
                     />
                   </template>
-                  <span v-else :style="getFieldDefinition(fieldAttributes)">
+                  <span v-else>
                     {{ displayedValue(scope.row, fieldAttributes) }}
                   </span>
                 </template>
@@ -875,19 +875,6 @@ export default {
           }
         })
       }
-    },
-    getFieldDefinition(field) {
-      var styleSheet = ''
-      if (field.fieldDefinition) {
-        if (field.fieldDefinition.id !== null) {
-          field.fieldDefinition.conditions.forEach(condition => {
-            if (condition.condition && condition.isActive) {
-              styleSheet = condition.styleSheet
-            }
-          })
-        }
-      }
-      return styleSheet
     }
   }
 }
