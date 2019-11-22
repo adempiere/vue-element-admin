@@ -5,7 +5,8 @@ import {
   getRecentItems,
   getDefaultValueFromServer,
   convertValueFromGRPC,
-  getContextInfoValueFromServer
+  getContextInfoValueFromServer,
+  requestPrintFormats
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -761,6 +762,23 @@ const data = {
         })
         .catch(error => {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
+        })
+    },
+    requestPrintFormats({ commit }, parameters) {
+      return requestPrintFormats({ processUuid: parameters.processUuid })
+        .then(response => {
+          const printFormatList = response.getPrintformatsList().map(printFormat => {
+            return {
+              uuid: printFormat.getUuid(),
+              name: printFormat.getName(),
+              description: printFormat.getDescription(),
+              isDefault: printFormat.getIsdefault()
+            }
+          })
+          return printFormatList
+        })
+        .catch(error => {
+          console.error(error)
         })
     }
   },

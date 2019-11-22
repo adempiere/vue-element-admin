@@ -160,18 +160,15 @@ export default {
     },
     getPrintFormatList(isShowed) {
       if (isShowed) {
-        this.$store.dispatch('getObjectListFromCriteria', {
-          containerUuid: 'a5216e18-fb40-11e8-a479-7a0060f0aa01',
-          tableName: 'AD_PrintFormat',
-          query: 'SELECT AD_PrintFont_ID, Name FROM AD_PrintFormat',
-          isShowNotification: false
+        this.$store.dispatch('requestPrintFormats', {
+          processUuid: this.reportResult.processUuid
         })
           .then(response => {
-            console.log(response)
+            console.log('component', response)
             this.printFormatList = response.map(printFormat => {
               return {
-                value: printFormat.AD_PrintFont_ID,
-                label: printFormat.Name
+                value: printFormat.uuid,
+                label: printFormat.name
               }
             })
           })
