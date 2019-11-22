@@ -237,7 +237,7 @@
                       @keyup.enter.native="confirmEdit(scope.row)"
                     />
                   </template>
-                  <span v-else :style="getFieldDefinition(fieldAttributes)">
+                  <span v-else :style="getFieldDefinition(fieldAttributes.fieldDefinition, scope.row)">
                     {{ displayedValue(scope.row, fieldAttributes) }}
                   </span>
                 </template>
@@ -279,6 +279,7 @@ import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere'
 import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
+import evaluator from '@/utils/ADempiere/evaluator'
 
 export default {
   name: 'DataTable',
@@ -876,16 +877,19 @@ export default {
         })
       }
     },
-    getFieldDefinition(field) {
+    getFieldDefinition(fieldDefinition, row) {
       var styleSheet = ''
-      if (field.fieldDefinition) {
-        if (field.fieldDefinition.id !== null) {
-          field.fieldDefinition.conditions.forEach(condition => {
-            if (condition.condition && condition.isActive) {
-              styleSheet = condition.styleSheet
-            }
+      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditions.length)) {
+        fieldDefinition.conditions.forEach(condition => {
+          condition.condition = evaluator.evaluateLogic({
+            context: { parentUuid: this.parentUuid, containerUuid: this.containerUuid, value: condition.condition },
+            type: 'displayed',
+            logic: condition.condition
           })
-        }
+          if (condition.condition && condition.isActive) {
+            styleSheet = condition.styleSheet
+          }
+        })
       }
       return styleSheet
     }

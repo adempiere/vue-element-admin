@@ -105,17 +105,9 @@ export function convertField(fieldGRPC, moreAttributes = {}, typeRange = false) 
     if (fieldDefinition.getConditionsList()) {
       fieldConditions = fieldDefinition.getConditionsList().map(condition => {
         return {
-
-          // evaluator.evaluateLogic({
-          //   type: 'displayed',
-          //   logic: field.displayLogic
-          // })
           id: condition.getId(),
           uuid: condition.getUuid(),
-          condition: evaluator.evaluateLogic({
-            type: 'displayed',
-            logic: condition.getCondition()
-          }),
+          condition: condition.getCondition(),
           styleSheet: condition.getStylesheet(),
           isActive: condition.getIsactive()
         }
