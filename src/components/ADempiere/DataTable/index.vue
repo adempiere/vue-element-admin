@@ -292,7 +292,7 @@ import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere'
 import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
-import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/formatExport'
+import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 
 export default {
   name: 'DataTable',

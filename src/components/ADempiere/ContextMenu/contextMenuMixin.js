@@ -1,7 +1,7 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
-import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/formatExport'
+import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 
 export const contextMixin = {
   components: {
