@@ -46,16 +46,15 @@
                   <el-submenu
                     v-if="isPanelWindow"
                     :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
-                    index="xlsx"
-                    @click.native="exporRecordTable('xlsx')"
+                    :index="option[0].type"
+                    @click.native="exporRecordTable(option[0].type)"
                   >
                     <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
-                    <el-menu-item index="xlsx">xlsx</el-menu-item>
-                    <el-menu-item index="csv">csv</el-menu-item>
-                    <el-menu-item index="txt">txt</el-menu-item>
-                    <el-menu-item index="xls">xls</el-menu-item>
-                    <el-menu-item index="xml">xml</el-menu-item>
-                    <el-menu-item index="html">html</el-menu-item>
+                    <template v-for="(format, index) in option">
+                      <el-menu-item :key="index" :index="format.type">
+                        {{ format.type }}
+                      </el-menu-item>
+                    </template>
                   </el-submenu>
                   <el-menu-item index="optional" @click="optionalPanel()">
                     {{ $t('components.filterableItems') }}
@@ -293,6 +292,7 @@ import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere'
 import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { supportedTypes, export_json } from '@/utils/ADempiere/formatExport'
 
 export default {
   name: 'DataTable',
@@ -341,6 +341,7 @@ export default {
     return {
       searchTable: '', // text from search
       defaultMaxPagination: 100,
+      option: supportedTypes,
       menuTable: '1',
       activeName: '',
       isOptional: false,
@@ -550,21 +551,22 @@ export default {
   },
   methods: {
     typeFormat(key, keyPath) {
-      this.exporRecordTable(key)
+      const type = supportedTypes.find(element => element.type === key)
+      if (type !== undefined) {
+        this.exporRecordTable(key)
+      }
     },
     exporRecordTable(key) {
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = this.getterFieldListHeader
-          const filterVal = this.getterFieldListValue
-          const list = this.getDataSelection
-          const data = this.formatJson(filterVal, list)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: '',
-            bookType: key
-          })
-        })
+      const Header = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      const list = this.getDataSelection
+      const data = this.formatJson(filterVal, list)
+      export_json({
+        header: Header,
+        data,
+        filename: '',
+        exportType: key
+      })
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => v[j]))

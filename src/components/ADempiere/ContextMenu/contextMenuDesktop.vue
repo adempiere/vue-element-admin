@@ -37,29 +37,29 @@
           </el-menu-item>
           <el-submenu
             v-if="getDataSelection.length > 0 && panelType === 'browser'"
-            index="xlsx"
-            @click.native="exporBrowser('xlsx')"
+            :index="option[0].type"
+            @click.native="exporBrowser(option[0].type)"
           >
-            <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
-            <el-menu-item index="xlsx">xlsx</el-menu-item>
-            <el-menu-item index="csv">csv</el-menu-item>
-            <el-menu-item index="txt">txt</el-menu-item>
-            <el-menu-item index="xls">xls</el-menu-item>
-            <el-menu-item index="xml">xml</el-menu-item>
-            <el-menu-item index="html">html</el-menu-item>
+            <template slot="title">
+              {{ $t('components.contextMennuWindowReport') }}
+            </template>
+            <template v-for="(format, index) in option">
+              <el-menu-item :key="index" :index="format.type">
+                {{ format.type }}
+              </el-menu-item>
+            </template>
           </el-submenu>
           <el-submenu
             v-if="panelType === 'window'"
-            index="xlsx"
-            @click.native="exporWindow('xlsx')"
+            :index="option[0].type"
+            @click.native="exporWindow(option[0].type)"
           >
             <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
-            <el-menu-item index="xlsx">xlsx</el-menu-item>
-            <el-menu-item index="csv">csv</el-menu-item>
-            <el-menu-item index="txt">txt</el-menu-item>
-            <el-menu-item index="xls">xls</el-menu-item>
-            <el-menu-item index="xml">xml</el-menu-item>
-            <el-menu-item index="html">html</el-menu-item>
+            <template v-for="(format, index) in option">
+              <el-menu-item :key="index" :index="format.type">
+                {{ format.type }}
+              </el-menu-item>
+            </template>
           </el-submenu>
           <el-menu-item v-if="panelType !== 'process'" index="8" @click="refreshData">
             {{ $t('components.contextMenuRefresh') }}

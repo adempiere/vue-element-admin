@@ -1,6 +1,7 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
+import { supportedTypes, export_json } from '@/utils/ADempiere/formatExport'
 
 export const contextMixin = {
   components: {
@@ -50,6 +51,7 @@ export const contextMixin = {
   data() {
     return {
       actions: [],
+      option: supportedTypes,
       references: [],
       file: this.$store.getters.getProcessResult.download,
       downloads: this.$store.getters.getProcessResult.url,
@@ -234,38 +236,35 @@ export const contextMixin = {
       }
     },
     typeFormat(key) {
-      if (this.panelType === 'window' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
+      const type = supportedTypes.find(element => element.type === key)
+      if (this.panelType === 'window' && (type !== undefined)) {
         this.exporWindow(key)
-      } else if (this.panelType === 'browser' && (key === 'xlsx' || key === 'csv' || key === 'txt' || key === 'xls' || key === 'xml' || key === 'html')) {
+      } else if (this.panelType === 'browser' && (type !== undefined)) {
         this.exporBrowser(key)
       }
     },
     exporBrowser(key) {
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = this.getterFieldListHeader
-          const filterVal = this.getterFieldListValue
-          const list = this.getDataSelection
-          const data = this.formatJson(filterVal, list)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: '',
-            bookType: key
-          })
-        })
+      const tHeader = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      const list = this.getDataSelection
+      const data = this.formatJson(filterVal, list)
+      export_json({
+        header: tHeader,
+        data,
+        filename: '',
+        exportType: key
+      })
     },
     exporWindow(key) {
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = this.getterFieldListHeader
-        const filterVal = this.getterFieldListValue
-        const list = this.getDataRecord
-        const data = this.formatJson(filterVal, list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: '',
-          bookType: key
-        })
+      const tHeader = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      const list = this.getDataRecord
+      const data = this.formatJson(filterVal, list)
+      export_json({
+        header: tHeader,
+        data,
+        filename: '',
+        exportType: key
       })
     },
     formatJson(filterVal, jsonData) {
