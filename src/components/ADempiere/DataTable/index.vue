@@ -857,12 +857,12 @@ export default {
         }
         const field = this.fieldList.find(field => field.columnName === column.property)
         if (field.componentPath !== 'FieldNumber') {
-          sums[index] = 'N/A'
+          sums[index] = ''
           return
         }
         const values = data.map(item => Number(item[column.property]))
         if (values.every(value => isNaN(value))) {
-          sums[index] = 'N/A'
+          sums[index] = ''
         } else {
           const total = values.reduce((prev, curr) => {
             const value = Number(curr)
@@ -957,7 +957,7 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
     word-break: break-all;
-    line-height: 50px;
+    line-height: 23px;
     padding-left: 10px;
     padding-right: 10px;
   }
