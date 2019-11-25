@@ -22,25 +22,6 @@
               <el-button slot="reference" type="text" class="title">{{ processMetadata.name }}</el-button>
             </el-popover>
           </h3>
-          <el-form label-position="top" :inline="true" size="mini">
-            <el-form-item :label="$t('views.printFormat')">
-              <el-select
-                v-model="printFormat"
-                :filterable="true"
-                value-key="key"
-                :placeholder="$t('views.changePrintFormat')"
-                @visible-change="getPrintFormatList"
-                @change="changePrintFormat"
-              >
-                <el-option
-                  v-for="(item, index) in printFormatList"
-                  :key="index"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-form>
           <iframe v-if="reportFormat === 'pdf'" key="report-content-pdf" class="content-api" :src="url" width="100%" height="100%" />
           <div v-else-if="collectionReportFormat.includes(reportFormat)" key="report-content-all" class="content-api" :src="url" />
           <div v-else-if="reportFormat === 'html'" key="report-content-html" class="content-txt">
@@ -157,28 +138,6 @@ export default {
       } else {
         this.displayReport(this.reportResult)
       }
-    },
-    getPrintFormatList(isShowed) {
-      if (isShowed) {
-        this.$store.dispatch('requestPrintFormats', {
-          processUuid: this.reportResult.processUuid
-        })
-          .then(response => {
-            console.log('component', response)
-            this.printFormatList = response.map(printFormat => {
-              return {
-                value: printFormat.uuid,
-                label: printFormat.name
-              }
-            })
-          })
-          .catch(error => {
-            console.warn('Error getting print format list: ', error.message + '. Code: ', error.code)
-          })
-      }
-    },
-    changePrintFormat(printFormatValue) {
-      this.printFormat = printFormatValue
     }
   }
 }

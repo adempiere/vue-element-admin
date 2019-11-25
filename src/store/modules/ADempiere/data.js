@@ -17,7 +17,8 @@ const data = {
     recordDetail: [],
     recentItems: [],
     inGetting: [],
-    contextInfoField: []
+    contextInfoField: [],
+    printFormatList: []
   },
   mutations: {
     addInGetting(state, payload) {
@@ -90,6 +91,9 @@ const data = {
     },
     setContextInfoField(state, payload) {
       state.contextInfoField.push(payload)
+    },
+    setPrintFormatList(state, payload) {
+      state.printFormatList.push(payload)
     }
   },
   actions: {
@@ -775,6 +779,10 @@ const data = {
               isDefault: printFormat.getIsdefault()
             }
           })
+          commit('setPrintFormatList', {
+            containerUuid: parameters.processUuid,
+            printFormatList: printFormatList
+          })
           return printFormatList
         })
         .catch(error => {
@@ -905,6 +913,13 @@ const data = {
         info.contextInfoUuid === contextInfoUuid &&
         info.sqlStatement === sqlStatement
       )
+    },
+    getPrintFormatList: (state) => (containerUuid) => {
+      var printFormatList = state.printFormatList.find(list => list.containerUuid === containerUuid)
+      if (printFormatList) {
+        return printFormatList.printFormatList
+      }
+      return []
     }
   }
 }
