@@ -481,9 +481,10 @@ const panel = {
       }
 
       // the field has not changed, then the action is broken
-      if (params.newValue === field.value) {
+      if (params.newValue === field.value && isEmptyValue(displayColumn)) {
         return
       }
+
       commit('changeFieldValue', {
         field: field,
         newValue: params.newValue,
@@ -491,6 +492,7 @@ const panel = {
         displayColumn: displayColumn,
         isChangedOldValue: params.isChangedOldValue
       })
+
       //  Change Dependents
       var dependents = fieldList.filter(fieldItem => {
         return field.dependentFieldsList.includes(fieldItem.columnName)
@@ -1173,10 +1175,10 @@ const panel = {
               }
             }
           }
-          // TODO: Evaluate if is only to fields type Time Date, DateTime
-          if (parameterItem.isRange) {
+          // only to fields type Time, Datea and DateTime
+          if (parameterItem.isRange && parameterItem.componentPath !== 'FieldNumber') {
             parametersRange.push({
-              columnName: parameterItem.columnName + '_To',
+              columnName: `${parameterItem.columnName}_To`,
               value: valueTo
             })
           }

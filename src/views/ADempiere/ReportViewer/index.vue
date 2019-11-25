@@ -10,7 +10,7 @@
     <el-row type="flex" style="min-height: inherit;">
       <el-col :span="24">
         <div class="content">
-          <h3 class="text-center">
+          <h3 class="text-center" style="margin: 0 !important;">
             <el-popover
               v-if="!isEmptyValue(processMetadata.help)"
               placement="top-start"
@@ -22,25 +22,6 @@
               <el-button slot="reference" type="text" class="title">{{ processMetadata.name }}</el-button>
             </el-popover>
           </h3>
-          <el-form label-position="top" :inline="true" size="mini">
-            <el-form-item :label="$t('views.reportView')">
-              <el-select
-                v-model="reportView"
-                :filterable="true"
-                value-key="key"
-                :placeholder="$t('views.changeReportView')"
-                @visible-change="getReportViewList"
-                @change="changeReportView"
-              >
-                <el-option
-                  v-for="(item, index) in reportViewList"
-                  :key="index"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-form>
           <iframe v-if="reportFormat === 'pdf'" key="report-content-pdf" class="content-api" :src="url" width="100%" height="100%" />
           <div v-else-if="collectionReportFormat.includes(reportFormat)" key="report-content-all" class="content-api" :src="url" />
           <div v-else-if="reportFormat === 'html'" key="report-content-html" class="content-txt">
@@ -105,9 +86,7 @@ export default {
       reportContent: '',
       reportHeader: '',
       isLoading: false,
-      reportResult: {},
-      reportViewList: [],
-      reportView: null
+      reportResult: {}
     }
   },
   computed: {
@@ -157,30 +136,6 @@ export default {
       } else {
         this.displayReport(this.reportResult)
       }
-    },
-    getReportViewList(isShowed) {
-      if (isShowed) {
-        this.$store.dispatch('getObjectListFromCriteria', {
-          containerUuid: undefined,
-          tableName: 'AD_ReportView',
-          query: 'SELECT AD_ReportView_ID, Name FROM AD_ReportView',
-          isShowNotification: false
-        })
-          .then(response => {
-            this.reportViewList = response.map(printFormat => {
-              return {
-                value: printFormat.AD_ReportView_ID,
-                label: printFormat.Name
-              }
-            })
-          })
-          .catch(error => {
-            console.warn('Error getting print format list: ', error.message + '. Code: ', error.code)
-          })
-      }
-    },
-    changeReportView(reportViewValue) {
-      this.reportView = reportViewValue
     }
   }
 }
@@ -201,7 +156,6 @@ export default {
 	.content {
     width: 100%;
     height: 100%;
-    padding: 20px 0px;
     position: absolute;
     top: 0%;
   }
@@ -220,13 +174,10 @@ export default {
 		height: inherit;
     padding-left: 10px;
     padding-right: 10px;
-    padding-top: 0px;
-    padding-bottom: 20px;
 
     .sub-content-html {
       min-height: inherit;
       height: inherit;
-      height: -webkit-fill-available;
       max-height: -webkit-max-content;
       max-height: -moz-max-content;
       max-height: max-content;
@@ -244,8 +195,5 @@ export default {
   }
   .container-report {
     width: 100%;
-  }
-  .scroll {
-    max-height: -webkit-fill-available;
   }
 </style>

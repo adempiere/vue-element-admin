@@ -322,3 +322,7 @@ export function getContextInfoValueFromServer({ uuid, query }) {
 export function requestReportViews({ tableName, processUuid }) {
   return Instance.call(this).requestReportViews({ tableName: tableName, processUuid: processUuid })
 }
+
+export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) {
+  return Instance.call(this).requestPrintFormats({ tableName: tableName, reportViewUuid: reportViewUuid, processUuid: processUuid })
+}

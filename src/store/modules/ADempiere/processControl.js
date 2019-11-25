@@ -243,7 +243,8 @@ const processControl = {
               if (reportType !== 'pdf' && reportType !== 'html') {
                 link.click()
               }
-
+              
+              // Report views List to context menu
               var reportViewList = {
                 name: language.t('views.reportView'),
                 type: 'summary',
@@ -261,6 +262,27 @@ const processControl = {
                     // Get contextMenu metadata and concat print report views with contextMenu actions
                     var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                     contextMenuMetadata.actions.push(reportViewList)
+                  })
+              }
+
+              // Print formats to context menu
+              var printFormatList = {
+                name: language.t('views.printFormat'),
+                type: 'summary',
+                action: '',
+                childs: [],
+                option: 'printFormat'
+              }
+              printFormatList.childs = rootGetters.getPrintFormatList(processResult.processUuid)
+              if (!printFormatList.childs.length) {
+                dispatch('requestPrintFormats', {
+                  processUuid: processResult.processUuid
+                })
+                  .then(response => {
+                    printFormatList.childs = response
+                    // Get contextMenu metadata and concat print Format List with contextMenu actions
+                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                    contextMenuMetadata.actions.push(printFormatList)
                   })
               }
             }

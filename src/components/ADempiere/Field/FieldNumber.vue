@@ -3,7 +3,6 @@
     :ref="metadata.columnName"
     v-model="value"
     type="number"
-    :pattern="pattern"
     :min="minValue"
     :max="maxValue"
     :placeholder="metadata.help"
@@ -11,7 +10,6 @@
     :precision="precision"
     controls-position="right"
     :class="'display-type-' + cssClass"
-    @blur="validateInput"
     @change="preHandleChange"
   />
 </template>
@@ -22,30 +20,30 @@ import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 export default {
   name: 'FieldNumber',
   mixins: [fieldMixin],
-  props: {
-    validateInput: {
-      type: Function,
-      default: () => undefined
-    }
-  },
   data() {
+    // value render
+    let value = this.metadata.value
+    if (this.metadata.inTable) {
+      value = this.valueModel
+    }
+    value = this.validateValue(value)
     return {
-      pattern: undefined,
+      value: value,
       showControls: true
     }
   },
   computed: {
     maxValue() {
-      if (!this.isEmptyValue(this.metadata.valueMax)) {
-        return Number(this.metadata.valueMax)
+      if (this.isEmptyValue(this.metadata.valueMax)) {
+        return Infinity
       }
-      return Infinity
+      return Number(this.metadata.valueMax)
     },
     minValue() {
-      if (!this.isEmptyValue(this.metadata.valueMin)) {
-        return Number(this.metadata.valueMin)
+      if (this.isEmptyValue(this.metadata.valueMin)) {
+        return -Infinity
       }
-      return -Infinity
+      return Number(this.metadata.valueMin)
     },
     cssClass() {
       return this.metadata.referenceType
@@ -63,19 +61,21 @@ export default {
     // enable to dataTable records
     valueModel(value) {
       if (this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = null
-        }
-        this.value = value
+        this.value = this.validateValue(value)
       }
     },
     'metadata.value'(value) {
       if (!this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = null
-        }
-        this.value = value
+        this.value = this.validateValue(value)
       }
+    }
+  },
+  methods: {
+    validateValue(value) {
+      if (this.isEmptyValue(value) || isNaN(value)) {
+        return undefined
+      }
+      return Number(value)
     }
   }
 }
@@ -93,11 +93,5 @@ export default {
     input, .el-input__inner {
       text-align: right !important;
     }
-  }
-  /* ADempiere Custom */
-  .el-input-number.is-controls-right .el-input__inner {
-    padding-left: 15px;
-    padding-right: 50px;
-    text-align: -webkit-right;
   }
 </style>
