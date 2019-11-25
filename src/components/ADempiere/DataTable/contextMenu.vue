@@ -10,7 +10,7 @@
         </el-menu-item>
       </template>
     </el-submenu>
-    <el-menu-item index="eliminar">
+    <el-menu-item index="eliminar" style="padding-left: 36px;">
       {{ $t('window.deleteRecord') }}
     </el-menu-item>
   </el-menu>

@@ -119,7 +119,7 @@ export default {
     contextMenuShareLink: 'Compartir Link',
     contextMenuRefresh: 'Actualizar',
     contextMennuExport: 'Exportar Smart Browser',
-    contextMennuWindowReport: 'Exportar de Registro',
+    contextMennuWindowReport: 'Exportar Registro',
     RunProcess: 'Ejecutar',
     ChangeParameters: 'Cambiar Parametros',
     RunProcessAs: 'Ejecutar como',

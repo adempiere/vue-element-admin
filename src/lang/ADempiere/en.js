@@ -123,7 +123,7 @@ export default {
     contextMenuShareLink: 'Share Link',
     contextMenuRefresh: 'Refresh',
     contextMennuExport: 'Export Smart Browser',
-    contextMennuWindowReport: 'Export Records ',
+    contextMennuWindowReport: 'Export Records',
     dateStartPlaceholder: 'Start date',
     dateEndPlaceholder: 'End date',
     timePlaceholder: 'Select time',
