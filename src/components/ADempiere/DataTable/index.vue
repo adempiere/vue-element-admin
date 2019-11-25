@@ -115,6 +115,19 @@
                     >
                       {{ $t('table.dataTable.deleteSelection') }}
                     </el-menu-item>
+                    <el-submenu
+                      v-if="isPanelWindow"
+                      :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
+                      :index="option[0].type"
+                      @click.native="exporRecordTable(option[0].type)"
+                    >
+                      <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
+                      <template v-for="(format, index) in option">
+                        <el-menu-item :key="index" :index="format.type">
+                          {{ format.type }}
+                        </el-menu-item>
+                      </template>
+                    </el-submenu>
                     <el-menu-item index="optional" @click="optionalPanel()">
                       {{ $t('components.filterableItems') }}
                     </el-menu-item>
