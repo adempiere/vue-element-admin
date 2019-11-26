@@ -881,12 +881,16 @@ export default {
       var styleSheet = ''
       if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditions.length)) {
         fieldDefinition.conditions.forEach(condition => {
-          condition.condition = evaluator.evaluateLogic({
-            context: { parentUuid: this.parentUuid, containerUuid: this.containerUuid, value: condition.condition },
-            type: 'displayed',
-            logic: condition.condition
+          var columns = evaluator.parseDepends(condition.condition)
+          var conditionLogic = condition.condition
+          columns.forEach(column => {
+            conditionLogic = conditionLogic.replace(/@/g, '')
+            conditionLogic = conditionLogic.replace(column, row[column])
+            conditionLogic = evaluator.evaluateLogic({
+              logic: conditionLogic
+            })
           })
-          if (condition.condition && condition.isActive) {
+          if (conditionLogic && condition.isActive) {
             styleSheet = condition.styleSheet
           }
         })
