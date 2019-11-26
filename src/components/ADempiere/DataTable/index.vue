@@ -459,6 +459,17 @@ export default {
     getDataSelection() {
       return this.getterDataRecordsAndSelection.selection
     },
+    getJsonSelection() {
+      var Json = this.getDataSelection.map(selection => {
+        Object.keys(selection).forEach(key => {
+          if (typeof selection[key] === 'boolean') {
+            selection[key] = selection[key] ? this.$t('components.switchActiveText') : this.$t('components.switchInactiveText')
+          }
+        })
+        return selection
+      })
+      return Json
+    },
     getterFieldIsDisplayed() {
       return this.$store.getters.getFieldsIsDisplayed(this.containerUuid)
     },
@@ -614,7 +625,7 @@ export default {
     exporRecordTable(key) {
       const Header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      const list = this.getDataSelection
+      const list = this.getJsonSelection
       const data = this.formatJson(filterVal, list)
       exportFileFromJson({
         header: Header,
