@@ -2,6 +2,7 @@ import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
+import ROUTES from '@/utils/ADempiere/zoomWindow'
 
 export const contextMixin = {
   components: {
@@ -58,7 +59,8 @@ export const contextMixin = {
       metadataMenu: {},
       recordUuid: this.$route.query.action,
       isReferencesLoaded: false,
-      exportDefault: 'xls'
+      exportDefault: 'xls',
+      ROUTES
     }
   },
   computed: {
@@ -405,7 +407,16 @@ export const contextMixin = {
         this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: action.windowUuid })
         if (action.windowUuid && action.recordUuid) {
           var windowRoute = this.$store.getters.getWindowRoute(action.windowUuid)
-          this.$router.push({ name: windowRoute.name, query: { action: action.type, referenceUuid: action.uuid, tabParent: 0 }})
+          this.$router.push({
+            name: windowRoute.name,
+            query: {
+              action: action.type,
+              referenceUuid: action.uuid,
+              recordUuid: action.recordUuid,
+              windowUuid: this.parentUuid,
+              tabParent: 0
+            }
+          })
         }
       }
     },
