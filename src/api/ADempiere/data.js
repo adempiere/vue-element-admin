@@ -318,3 +318,7 @@ export function getDefaultValueFromServer(query) {
 export function getContextInfoValueFromServer({ uuid, query }) {
   return Instance.call(this).getContextInfoValue({ uuid: uuid, query: query })
 }
+
+export function getFavoritesFromServer(userUuid) {
+  return Instance.call(this).requestFavorites(userUuid)
+}
