@@ -622,8 +622,8 @@ const data = {
           })
       })
     },
-    getFavoritesFromServer({ commit, rootGetters }) {
-      const userUuid = rootGetters['user/getUserUuid']
+    getFavoritesFromServer({ commit, getters, rootGetters }) {
+      const userUuid = getters.getContext({ columnName: '#AD_User_ID' })
       return new Promise((resolve, reject) => {
         getFavoritesFromServer(userUuid)
           .then(response => {
