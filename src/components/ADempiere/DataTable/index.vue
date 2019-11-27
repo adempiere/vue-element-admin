@@ -44,15 +44,13 @@
                     {{ $t('table.dataTable.deleteSelection') }}
                   </el-menu-item>
                   <el-submenu
-                    v-if="isPanelWindow"
                     :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
-                    :index="option[0].type"
-                    @click.native="exporRecordTable(option[0].type)"
+                    index="xlsx"
                   >
                     <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
                     <template v-for="(format, index) in option">
-                      <el-menu-item :key="index" :index="format.type">
-                        {{ format.type }}
+                      <el-menu-item :key="index" :index="index">
+                        {{ format }}
                       </el-menu-item>
                     </template>
                   </el-submenu>
@@ -118,13 +116,12 @@
                     <el-submenu
                       v-if="isPanelWindow"
                       :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
-                      :index="option[0].type"
-                      @click.native="exporRecordTable(option[0].type)"
+                      index="xlsx"
                     >
                       <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
                       <template v-for="(format, index) in option">
-                        <el-menu-item :key="index" :index="format.type">
-                          {{ format.type }}
+                        <el-menu-item :key="index" :index="index">
+                          {{ format }}
                         </el-menu-item>
                       </template>
                     </el-submenu>
@@ -205,7 +202,8 @@
         </el-header>
         <el-main style="padding: 0px !important; overflow: hidden;">
           <context-menu
-            v-show="getShowContextMenuTable && isParent"
+            v-if="isParent"
+            v-show="getShowContextMenuTable"
             :style="{left:left+'px',top:top+'px'}"
             class="contextmenu"
             :container-uuid="containerUuid"
@@ -368,6 +366,7 @@ export default {
       top: 0,
       left: 0,
       isOption: {},
+      visible: this.getShowContextMenuTable,
       searchTable: '', // text from search
       defaultMaxPagination: 100,
       option: supportedTypes,
@@ -581,6 +580,15 @@ export default {
       return false
     }
   },
+  watch: {
+    visible(value) {
+      if (value) {
+        document.body.addEventListener('click', this.closeMenu)
+      } else {
+        document.body.removeEventListener('click', this.closeMenu)
+      }
+    }
+  },
   created() {
     this.getPanel()
   },
@@ -593,6 +601,11 @@ export default {
     }
   },
   methods: {
+    closeMenu() {
+      this.$store.dispatch('showMenuTable', {
+        isShowedTable: false
+      })
+    },
     block() {
       return false
     },
@@ -617,10 +630,11 @@ export default {
       })
     },
     typeFormat(key, keyPath) {
-      const type = supportedTypes.find(element => element.type === key)
-      if (type !== undefined) {
-        this.exporRecordTable(key)
-      }
+      Object.keys(supportedTypes).forEach(type => {
+        if (type === key) {
+          this.exporRecordTable(key)
+        }
+      })
     },
     exporRecordTable(key) {
       const Header = this.getterFieldListHeader

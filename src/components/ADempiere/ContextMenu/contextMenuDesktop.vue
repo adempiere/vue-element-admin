@@ -37,27 +37,26 @@
           </el-menu-item>
           <el-submenu
             v-if="getDataSelection.length > 0 && panelType === 'browser'"
-            :index="option[0].type"
-            @click.native="exporBrowser(option[0].type)"
+            :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
+            index="xlsx"
+            @click.native="exporBrowser('xlsx')"
           >
-            <template slot="title">
-              {{ $t('components.contextMennuWindowReport') }}
-            </template>
+            <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
             <template v-for="(format, index) in option">
-              <el-menu-item :key="index" :index="format.type">
-                {{ format.type }}
+              <el-menu-item :key="index" :index="index">
+                {{ format }}
               </el-menu-item>
             </template>
           </el-submenu>
           <el-submenu
             v-if="panelType === 'window'"
-            :index="option[0].type"
-            @click.native="exporWindow(option[0].type)"
+            index="xlsx"
+            @click.native="exporWindow('xlsx')"
           >
             <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
             <template v-for="(format, index) in option">
-              <el-menu-item :key="index" :index="format.type">
-                {{ format.type }}
+              <el-menu-item :key="index" :index="index">
+                {{ format }}
               </el-menu-item>
             </template>
           </el-submenu>

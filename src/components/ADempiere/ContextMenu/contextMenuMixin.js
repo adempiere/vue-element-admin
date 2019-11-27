@@ -236,12 +236,13 @@ export const contextMixin = {
       }
     },
     typeFormat(key) {
-      const type = supportedTypes.find(element => element.type === key)
-      if (this.panelType === 'window' && (type !== undefined)) {
-        this.exporWindow(key)
-      } else if (this.panelType === 'browser' && (type !== undefined)) {
-        this.exporBrowser(key)
-      }
+      Object.keys(supportedTypes).forEach(type => {
+        if (type === key && (this.panelType === 'window')) {
+          this.exporWindow(key)
+        } else if (type === key && (this.panelType === 'browser')) {
+          this.exporBrowser(key)
+        }
+      })
     },
     exporBrowser(key) {
       const tHeader = this.getterFieldListHeader

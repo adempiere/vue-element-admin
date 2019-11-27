@@ -1,12 +1,12 @@
 <template>
   <el-menu :collapse="isCollapse" class="el-menu-demo" @select="typeFormat">
     <el-submenu
-      :index="option[0].type"
+      index="xlsx"
     >
       <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
       <template v-for="(format, index) in option">
-        <el-menu-item :key="index" :index="format.type">
-          {{ format.type }}
+        <el-menu-item :key="index" :index="index">
+          {{ format }}
         </el-menu-item>
       </template>
     </el-submenu>

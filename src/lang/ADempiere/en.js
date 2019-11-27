@@ -156,6 +156,14 @@ export default {
     unsupportedInfo: 'Please check that the view is supported in this version, or click the button below to return to the homepage.',
     unsupportedButton: 'Back to dashboard'
   },
+  report: {
+    ExportXlsx: '(xlsx) Excel File Extension',
+    ExportXls: '(xls) Excel File',
+    ExporXml: '(xml) Extensible Markup Language File',
+    ExporCsv: '(csv) Archivo separado por coma',
+    ExportTxt: '(txt) Tab Delimited Text File',
+    ExportHtml: '(html) Hypertext Markup Language'
+  },
   table: {
     ProcessActivity: {
       name: 'Name',

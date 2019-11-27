@@ -156,6 +156,14 @@ export default {
     unsupportedInfo: 'Verifique que la vista sea compatible con esta versión, o haga clic en el botón a continuación para volver a la página de inicio.',
     unsupportedButton: 'Volver al Panel de control'
   },
+  report: {
+    ExportXlsx: '(xlsx) Extencion de Archivo Excel',
+    ExportXls: '(xls)  Archivo Excel ',
+    ExporXml: '(xml)  Archivo Lenguaje de marcas Extensible',
+    ExporCsv: '(csv) Archivo Separado por Coma',
+    ExportTxt: '(txt) Archivo de Texto Delimitado por Tabuladores',
+    ExportHtml: '(html) Lenguaje de Marcas de Hipertexto'
+  },
   table: {
     ProcessActivity: {
       Name: 'Nombre',
@@ -177,7 +185,7 @@ export default {
       advancedQuery: 'Consulta Avanzada',
       showOnlyMandatoryColumns: 'Mostrar Solo Columnas Obligatorias',
       showAllAvailableColumns: 'Mostrar Todas Columnas Disponibles',
-      exportRecordTable: 'Exportar los Registros Seleccionados'
+      exportRecordTable: 'Exportar Registros Seleccionados'
     },
     recentItems: {
       search: 'Filtrar por nombre, descripción o fecha',
