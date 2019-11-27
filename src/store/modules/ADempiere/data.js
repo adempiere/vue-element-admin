@@ -859,6 +859,8 @@ const data = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
+          console.error(error)
+        })
     },
     requestPrintFormats({ commit }, parameters) {
       return requestPrintFormats({ processUuid: parameters.processUuid })
