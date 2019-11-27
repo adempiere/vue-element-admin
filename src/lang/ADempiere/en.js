@@ -38,7 +38,9 @@ export default {
     copyUnsuccessful: 'Error, unable to copy',
     mandatoryFieldMissing: 'Missing fill in the fields ',
     updateFields: 'The record is updated with the field ',
-    invalidEmailFormat: 'Invalid email format'
+    invalidEmailFormat: 'Invalid email format',
+    recordLocked: 'This record has been locked',
+    recordUnlocked: 'This record has been unlocked'
   },
   navbar: {
     badge: {

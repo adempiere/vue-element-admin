@@ -792,9 +792,19 @@ const data = {
       const userUuid = rootGetters['user/getUserUuid']
       return lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
         .then(response => {
+          showMessage({
+            title: language.t('notifications.succesful'),
+            message: language.t('notifications.recordLocked'),
+            type: 'success'
+          })
           console.log(response)
         })
         .catch(error => {
+          showMessage({
+            title: language.t('notifications.error'),
+            message: language.t('login.unexpectedError'),
+            type: 'error'
+          })
           console.error(error)
         })
     },
@@ -803,9 +813,19 @@ const data = {
       const userUuid = rootGetters['user/getUserUuid']
       return unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
         .then(response => {
+          showMessage({
+            title: language.t('notifications.succesful'),
+            message: language.t('notifications.recordLocked'),
+            type: 'success'
+          })
           console.log(response)
         })
         .catch(error => {
+          showMessage({
+            title: language.t('notifications.error'),
+            message: language.t('login.unexpectedError'),
+            type: 'error'
+          })
           console.error(error)
         })
     }

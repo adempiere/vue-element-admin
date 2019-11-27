@@ -38,7 +38,9 @@ export default {
     copyUnsuccessful: 'Error, no se puede copiar',
     mandatoryFieldMissing: 'Falta completar los campos ',
     updateFields: 'Se actualiza el registro con el campo ',
-    invalidEmailFormat: 'Formato de correo electronico invalido'
+    invalidEmailFormat: 'Formato de correo electronico invalido',
+    recordLocked: 'Este registro ha sido bloqueado',
+    recordUnlocked: 'Este registro ha sido desbloqueado'
   },
   navbar: {
     badge: {
