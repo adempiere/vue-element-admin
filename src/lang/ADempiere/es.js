@@ -38,6 +38,7 @@ export default {
     copyUnsuccessful: 'Error, no se puede copiar',
     mandatoryFieldMissing: 'Falta completar los campos ',
     updateFields: 'Se actualiza el registro con el campo ',
+    updateSuccessfully: 'Cambios realizados exitosamente',
     invalidEmailFormat: 'Formato de correo electronico invalido'
   },
   navbar: {
@@ -233,5 +234,9 @@ export default {
     deleteRecordError: 'Error al eliminar el regitro',
     selectionRequired: 'Debe seleccionar un registro',
     undo: 'Deshacer'
+  },
+  sequence: {
+    available: 'Disponibles',
+    sequence: 'Secuencia'
   }
 }

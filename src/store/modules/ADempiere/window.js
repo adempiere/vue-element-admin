@@ -51,14 +51,41 @@ const window = {
           var childrenTabs = []
           var parentTabs = []
 
+          var tabsSequence = []
+          tabs = tabs.filter(itemTab => {
+            if (itemTab.getIssorttab()) {
+              tabsSequence.push({
+                isSortTab: true,
+                name: itemTab.getName(),
+                description: itemTab.getDescription(),
+                tableName: itemTab.getTablename(),
+                sortOrderColumnName: itemTab.getSortordercolumnname(), // order column
+                sortYesNoColumnName: itemTab.getSortyesnocolumnname() // included column
+              })
+            }
+            // TODO: Add support to isAdvancedTab, isTranslationTab and isHasTree
+            return !(itemTab.getIssorttab() || itemTab.getIstranslationtab())
+          })
+
           tabs = tabs.map((tabItem, index) => {
-            var group = {
+            const group = {
               groupName: '',
               groupType: ''
             }
             if (tabItem.getFieldgroup()) {
               group.groupName = tabItem.getFieldgroup().getName()
               group.groupType = tabItem.getFieldgroup().getFieldgrouptype()
+            }
+
+            let orderTab = tabsSequence.find(itemTab => itemTab.tableName === tabItem.getTablename())
+            if (!orderTab) {
+              orderTab = {
+                isSortTab: false,
+                name: undefined,
+                description: undefined,
+                sortOrderColumnName: undefined,
+                sortYesNoColumnName: undefined
+              }
             }
 
             var tab = {
@@ -75,16 +102,24 @@ const window = {
               isView: tabItem.getIsview(),
               isDocument: tabItem.getIsdocument(),
               isInsertRecord: tabItem.getIsinsertrecord(),
-              isSortTab: tabItem.getIssorttab(), // Tab type Order Tab
+              // sort and sequence
+              isSortTab: orderTab.isSortTab,
+              sortOrderColumnName: orderTab.sortOrderColumnName,
+              sortYesNoColumnName: orderTab.sortYesNoColumnName,
+              nameSortTab: orderTab.name,
+              descriptionSortTab: orderTab.description,
+              sequence: tabItem.getSequence(),
               // relations
               isParentTab: Boolean(firstTab === tabItem.getTablename()),
-              sequence: tabItem.getSequence(),
               tabLevel: tabItem.getTablevel(),
               parentTabUuid: tabItem.getParenttabuuid(),
               linkColumnName: tabItem.getLinkcolumnname(),
               parentColumnName: tabItem.getParentcolumnname(),
               //
-              contextInfo: convertContextInfoFromGRPC(tabItem.getContextinfo()),
+              contextInfo: convertContextInfoFromGRPC(
+                tabItem.getContextinfo()
+              ),
+              isActive: tabItem.getIsactive(),
               isAdvancedTab: tabItem.getIsadvancedtab(),
               isHasTree: tabItem.getIshastree(),
               isInfoTab: tabItem.getIsinfotab(),
@@ -149,6 +184,15 @@ const window = {
               }
             })
             actions = actions.concat(processList)
+            if (tab.isSortTab) {
+              actions.push({
+                name: 'Order Sequence',
+                action: 'orderSequence',
+                type: 'application',
+                uuid: tab.uuid,
+                uuidParent: newWindow.uuid
+              })
+            }
 
             //  Add process menu
             dispatch('setContextMenu', {
@@ -158,17 +202,12 @@ const window = {
               references: []
             })
 
-            // TODO: Add support to isSortTab and isTranslationTab
-            if (!(tab.isSortTab || tab.isTranslationTab)) {
-              if (tab.isParentTab) {
-                parentTabs.push(tab)
-              } else {
-                childrenTabs.push(tab)
-              }
+            if (tab.isParentTab) {
+              parentTabs.push(tab)
+            } else {
+              childrenTabs.push(tab)
             }
             return tab
-          }).filter(itemTab => {
-            return !(itemTab.isSortTab || itemTab.isTranslationTab)
           })
 
           var tabProperties = {
@@ -289,7 +328,7 @@ const window = {
           console.warn('Dictionary Tab (State Window) - Error ' + error.code + ': ' + error.message)
         })
     },
-    changeShowedDetailWindow: ({ commit, state }, params) => {
+    changeShowedDetailWindow({ commit, state }, params) {
       var window = state.window.find(itemWindow => {
         return itemWindow.uuid === params.containerUuid
       })
@@ -298,7 +337,7 @@ const window = {
         changeShowedDetail: params.isShowedDetail
       })
     },
-    changeShowedRecordWindow: ({ commit, state }, params) => {
+    changeShowedRecordWindow({ commit, state }, params) {
       var window = state.window.find(itemWindow => {
         return itemWindow.uuid === params.parentUuid
       })
@@ -311,13 +350,13 @@ const window = {
      * @param {string} parameters.parentUuid
      * @param {string} parameters.containerUuid
      */
-    setCurrentTab: ({ commit, getters }, parameters) => {
+    setCurrentTab({ commit, getters }, parameters) {
       commit('setCurrentTab', {
         window: getters.getWindow(parameters.parentUuid),
         tabUuid: parameters.containerUuid
       })
     },
-    setTabIsLoadField: ({ commit, getters }, { parentUuid, containerUuid }) => {
+    setTabIsLoadField({ commit, getters }, { parentUuid, containerUuid }) {
       const tab = getters.getTab(parentUuid, containerUuid)
       commit('setTabIsLoadField', {
         tab: tab,
@@ -330,9 +369,6 @@ const window = {
       return state.window.find(
         item => item.uuid === windowUuid
       )
-    },
-    getIndexWindow: (state) => {
-      return state.windowIndex
     },
     getIsShowedRecordNavigation: (state, getters) => (windowUuid) => {
       const window = getters.getWindow(windowUuid)

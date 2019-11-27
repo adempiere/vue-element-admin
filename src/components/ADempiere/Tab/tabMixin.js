@@ -7,7 +7,7 @@ export const tabMixin = {
       default: ''
     },
     tabsList: {
-      type: [Array, Object],
+      type: Array,
       default: () => []
     }
   },

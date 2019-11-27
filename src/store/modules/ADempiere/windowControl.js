@@ -13,7 +13,10 @@ const windowControl = {
       fullPath: '',
       query: {}
     },
-    dataLog: {} // { containerUuid, recordId, tableName, eventType }
+    dataLog: {}, // { containerUuid, recordId, tableName, eventType }
+    tabSequenceRecord: [],
+    totalResponse: 0,
+    totalRequest: 0
   },
   mutations: {
     addInCreate(state, payload) {
@@ -42,6 +45,15 @@ const windowControl = {
     },
     setWindowOldRoute(state, payload) {
       state.windowOldRoute = payload
+    },
+    setTabSequenceRecord(state, payload) {
+      state.tabSequenceRecord = payload
+    },
+    setTotalResponse(state, payload) {
+      state.totalResponse = payload
+    },
+    setTotalRequest(state, payload) {
+      state.totalRequest = payload
     }
   },
   actions: {
@@ -652,6 +664,78 @@ const windowControl = {
     },
     setWindowOldRoute({ commit }, oldPath = { path: '', fullPath: '', query: {}}) {
       commit('setWindowOldRoute', oldPath)
+    },
+    setTabSequenceRecord({ commit }, record) {
+      commit('setTabSequenceRecord', record)
+    },
+    /**
+     * Update records in tab sort
+     * @param {string} containerUuid
+     * @param {string} parentUuid
+     */
+    updateSequence({ state, commit, dispatch, getters, rootGetters }, {
+      parentUuid,
+      containerUuid
+    }) {
+      const { tableName, sortOrderColumnName, sortYesNoColumnName } = rootGetters.getPanel(containerUuid)
+      const listSequenceToSet = getters.getTabSequenceRecord
+      const recordData = rootGetters.getDataRecordsList(containerUuid)
+
+      recordData.forEach(itemData => {
+        const dataSequence = listSequenceToSet.find(item => item.UUID === itemData.UUID)
+        if (itemData[sortOrderColumnName] === dataSequence[sortOrderColumnName]) {
+          return
+        }
+        const valuesToSend = [{
+          columnName: sortOrderColumnName,
+          value: dataSequence[sortOrderColumnName]
+        }]
+
+        if (itemData[sortYesNoColumnName] !== dataSequence[sortYesNoColumnName]) {
+          valuesToSend.push({
+            columnName: sortYesNoColumnName,
+            value: dataSequence[sortYesNoColumnName]
+          })
+        }
+
+        const countRequest = state.totalRequest + 1
+        commit('setTotalRequest', countRequest)
+
+        updateEntity({
+          tableName: tableName,
+          recordUuid: itemData.UUID,
+          attributesList: valuesToSend
+        })
+          .catch(error => {
+            showMessage({
+              message: error.message,
+              type: 'error'
+            })
+            console.warn('Update Entity Table Error ' + error.code + ': ' + error.message)
+          })
+          .finally(() => {
+            const countResponse = state.totalResponse + 1
+            commit('setTotalResponse', countResponse)
+            if (state.totalResponse === state.totalRequest) {
+              showMessage({
+                message: language.t('notifications.updateSuccessfully'),
+                type: 'success'
+              })
+              dispatch('setShowDialog', {
+                type: 'window',
+                action: undefined
+              })
+              commit('setTotalRequest', 0)
+              commit('setTotalResponse', 0)
+              // refresh record list
+              dispatch('getDataListTab', {
+                parentUuid: parentUuid,
+                containerUuid: containerUuid,
+                isShowNotification: false
+              })
+            }
+          })
+      })
     }
   },
   getters: {
@@ -669,6 +753,9 @@ const windowControl = {
       if (state.windowRoute && state.windowRoute.meta && state.windowRoute.meta.uuid === windowUuid) {
         return state.windowRoute
       }
+    },
+    getTabSequenceRecord: (state) => {
+      return state.tabSequenceRecord
     },
     getDataLog: (state) => (containerUuid, recordUuid) => {
       const current = state.dataLog

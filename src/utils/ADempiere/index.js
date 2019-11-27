@@ -145,8 +145,12 @@ export function convertField(fieldGRPC, moreAttributes = {}, typeRange = false) 
     isRange: fieldGRPC.getIsrange(),
     isSameLine: fieldGRPC.getIssameline(),
     isEncrypted: fieldGRPC.getIsencrypted(), // passswords fields
+    // order
     sequence: fieldGRPC.getSequence(),
+    sortNo: fieldGRPC.getSortno(),
     seqNoGrid: fieldGRPC.getSeqnogrid(),
+    identifierSequence: fieldGRPC.getIdentifiersequence(), // SeqNo
+    //
     displayColumn: undefined, // link to value from selects and table
     // value attributes
     formatPattern: fieldGRPC.getFormatpattern(),

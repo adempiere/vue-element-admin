@@ -63,6 +63,7 @@ const panel = {
     addPanel({ commit, dispatch }, params) {
       var keyColumn = ''
       var selectionColumn = []
+      const identifierColumns = []
       var count = 0
       params.fieldList.forEach(itemField => {
         if (itemField.isKey) {
@@ -70,6 +71,13 @@ const panel = {
         }
         if (itemField.isSelectionColumn) {
           selectionColumn.push(itemField.columnName)
+        }
+        if (itemField.isIdentifier) {
+          console.log(itemField.name, itemField.identifierSequence, itemField.sortNo)
+          identifierColumns.push({
+            columnName: itemField.columnName,
+            identifierSequence: itemField.identifierSequence
+          })
         }
 
         if (params.panelType === 'table' || params.isAdvancedQuery) {
@@ -92,6 +100,11 @@ const panel = {
 
       params.keyColumn = keyColumn
       params.selectionColumn = selectionColumn
+      params.identifierColumns = identifierColumns
+        .sort((itemA, itemB) => {
+          return itemA.identifierSequence - itemB.identifierSequence
+        })
+        .map(item => item.columnName)
       params.recordUuid = null
       params.fieldList = assignedGroup(params.fieldList)
 

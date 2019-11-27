@@ -38,6 +38,7 @@ export default {
     copyUnsuccessful: 'Error, unable to copy',
     mandatoryFieldMissing: 'Missing fill in the fields ',
     updateFields: 'The record is updated with the field ',
+    updateSuccessfully: 'Successfully made changes',
     invalidEmailFormat: 'Invalid email format'
   },
   navbar: {
@@ -258,5 +259,9 @@ export default {
     deleteRecordError: 'Error deleting record',
     selectionRequired: 'You must select a record',
     undo: 'Undo'
+  },
+  sequence: {
+    available: 'Available',
+    sequence: 'Sequence'
   }
 }

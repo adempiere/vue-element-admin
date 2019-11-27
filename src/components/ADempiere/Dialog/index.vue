@@ -1,27 +1,44 @@
 <template>
   <el-dialog
-    :title="modalMetadata.name"
+    :title="name"
     :visible="isVisibleDialog"
-    :show-close="false"
+    show-close
+    :before-close="closeDialog"
     :width="width + '%'"
     top="5vh"
-    :close-on-press-escape="true"
-    :close-on-click-modal="true"
+    close-on-press-escape
+    close-on-click-modal
   >
-    {{ modalMetadata.description }}
-    <main-panel
-      v-if="(modalMetadata.panelType === 'process' || modalMetadata.panelType === 'report') && !isEmptyValue(modalMetadata.uuid)"
+    {{ description }}<br><br>
+    <sequence-order
+      v-if="modalMetadata.isSortTab"
+      key="order"
       :parent-uuid="parentUuid"
       :container-uuid="modalMetadata.uuid"
-      :metadata="modalMetadata"
-      :is-view="false"
-      panel-type="process"
+      :order="modalMetadata.sortOrderColumnName"
+      :included="modalMetadata.sortYesNoColumnName"
+      :identifiers-list="modalMetadata.identifierColumns"
     />
+    <template v-else>
+      <main-panel
+        v-if="!isEmptyValue(modalMetadata.uuid)"
+        key="main-panel"
+        :parent-uuid="parentUuid"
+        :container-uuid="modalMetadata.uuid"
+        :metadata="modalMetadata"
+        :panel-type="modalMetadata.panelType"
+      />
+    </template>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="closeDialog">
+      <el-button
+        @click="closeDialog"
+      >
         {{ $t('components.dialogCancelButton') }}
       </el-button>
-      <el-button type="primary" @click="runAction(modalMetadata)">
+      <el-button
+        type="primary"
+        @click="runAction(modalMetadata)"
+      >
         {{ $t('components.dialogConfirmButton') }}
       </el-button>
     </span>
@@ -30,12 +47,14 @@
 
 <script>
 import MainPanel from '@/components/ADempiere/Panel'
+import SequenceOrder from '@/components/ADempiere/SequenceOrder'
 import { showNotification } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'ModalProcess',
   components: {
-    MainPanel
+    MainPanel,
+    SequenceOrder
   },
   props: {
     parentUuid: {
@@ -76,8 +95,39 @@ export default {
     modalMetadata() {
       return this.$store.state.processControl.metadata
     },
+    name() {
+      if (this.modalMetadata.isSortTab) {
+        return this.modalMetadata.nameSortTab
+      }
+      return this.modalMetadata.name
+    },
+    description() {
+      if (this.modalMetadata.isSortTab) {
+        return this.modalMetadata.descriptionSortTab
+      }
+      return this.modalMetadata.description
+    },
     windowRecordSelected() {
       return this.$store.state.window.recordSelected
+    }
+  },
+  watch: {
+    isVisibleDialog(value) {
+      if (value) {
+        if (this.modalMetadata.isSortTab) {
+          const orderBy = this.modalMetadata.sortOrderColumnName
+          const record = this.$store.getters.getDataRecordsList(this.containerUuid)
+            .map(itemRecord => {
+              return {
+                ...itemRecord
+              }
+            })
+            .sort((itemA, itemB) => {
+              return itemA[orderBy] - itemB[orderBy]
+            })
+          this.$store.dispatch('setTabSequenceRecord', record)
+        }
+      }
     }
   },
   methods: {
@@ -89,6 +139,13 @@ export default {
       })
     },
     runAction(action) {
+      if (action.isSortTab) {
+        this.$store.dispatch('updateSequence', {
+          parentUuid: this.parentUuid,
+          containerUuid: this.containerUuid
+        })
+        return
+      }
       if (action === undefined && this.windowRecordSelected !== undefined) {
         this.$router.push({
           name: this.$route.name,
@@ -126,3 +183,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  .el-dialog__body {
+    padding: 10px 20px;
+  }
+</style>

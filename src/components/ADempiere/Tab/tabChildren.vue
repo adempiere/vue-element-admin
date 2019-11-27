@@ -9,7 +9,7 @@
         :tabuuid="item.uuid"
         :position-tab="key"
         :name="String(item.index)"
-        :lazy="true"
+        lazy
         :disabled="isCreateNew"
       >
         <el-col :span="24">

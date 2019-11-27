@@ -36,6 +36,13 @@
                     {{ $t('window.newRecord') }}
                   </el-menu-item>
                   <el-menu-item
+                    v-if="getterPanel.isSortTab && isPanelWindow"
+                    index="sort"
+                    @click="sortTab()"
+                  >
+                    {{ getterPanel.nameSortTab }}
+                  </el-menu-item>
+                  <el-menu-item
                     v-if="isPanelWindow"
                     :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
                     index="delete"
@@ -185,7 +192,7 @@
             style="width: 100%"
             border
             :row-key="getterPanel.keyColumn"
-            :reserve-selection="true"
+            reserve-selection
             :row-style="rowStyle"
             :data="showTableSearch ? filterResult() : getterDataRecords"
             :element-loading-text="$t('notifications.loading')"
@@ -508,6 +515,13 @@ export default {
     }
   },
   methods: {
+    sortTab() {
+      // TODO: Refactor and remove redundant dispatchs
+      this.$store.dispatch('setShowDialog', {
+        type: 'window',
+        action: this.getterPanel
+      })
+    },
     sortFields,
     handleChange(val) {
       val = !val
