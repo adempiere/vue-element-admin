@@ -330,3 +330,11 @@ export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) 
 export function requestDrillTables(tableName) {
   return Instance.call(this).requestDrillTables(tableName)
 }
+
+export function getReportOutput({ criteria: criteria, printFormatUuid: printFormatUuid, reportViewUuid: reportViewUuid, isSummary: isSummary, reportName: reportName, reportType: reportType }) {
+  var criteriaForReport = ''
+  if (criteria) {
+    criteriaForReport = getCriteria(criteria)
+  }
+  return Instance.call(this).getReportOutput({ criteria: criteriaForReport, printFormatUuid: printFormatUuid, reportViewUuid: reportViewUuid, isSummary: isSummary, reportName: reportName, reportType: reportType })
+}

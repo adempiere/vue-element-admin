@@ -384,6 +384,30 @@ export const contextMixin = {
             }
           })
         }
+      } else if (action.type === 'updateReport') {
+        console.log(action)
+        var updateReportParams = {
+          criteria: undefined,
+          printFormatUuid: '',
+          reportViewUuid: '',
+          isSummary: false,
+          reportName: this.$store.getters.getProcessResult.name,
+          reportType: this.$store.getters.getReportType
+        }
+        if (action.option === 'reportView') {
+          updateReportParams.reportViewUuid = action.uuid
+          updateReportParams.criteria = action.tableName
+        }
+        if (action.option === 'printFormat') {
+          updateReportParams.printFormatUuid = action.uuid
+        }
+        if (action.option === 'drillTable') {
+          updateReportParams.criteria = action.tableName
+        }
+        this.$store.dispatch('getReportOutputFromServer', updateReportParams)
+          .then(response => {
+            console.log('contextMenu', response)
+          })
       }
     },
     setShareLink() {

@@ -1,4 +1,4 @@
-import { requestReportViews, requestPrintFormats, requestDrillTables } from '@/api/ADempiere'
+import { requestReportViews, requestPrintFormats, requestDrillTables, getReportOutput } from '@/api/ADempiere'
 const contextMenu = {
   state: {
     reportFormatsList: [],
@@ -25,7 +25,9 @@ const contextMenu = {
               uuid: printFormat.getUuid(),
               name: printFormat.getName(),
               description: printFormat.getDescription(),
-              isDefault: printFormat.getIsdefault()
+              isDefault: printFormat.getIsdefault(),
+              type: 'updateReport',
+              option: 'printFormat'
             }
           })
           commit('setReportFormatsList', {
@@ -46,7 +48,9 @@ const contextMenu = {
               uuid: reportView.getUuid(),
               name: reportView.getName(),
               tableName: reportView.getTablename(),
-              description: reportView.getDescription()
+              description: reportView.getDescription(),
+              type: 'updateReport',
+              option: 'reportView'
             }
           })
           commit('setReportViewsList', {
@@ -65,7 +69,9 @@ const contextMenu = {
           const drillTablesList = response.getDrilltablesList().map(drillTable => {
             return {
               name: drillTable.getPrintname(),
-              tableName: drillTable.getTablename()
+              tableName: drillTable.getTablename(),
+              type: 'updateReport',
+              option: 'drillTable'
             }
           })
           commit('setDrillTablesList', {
@@ -73,6 +79,15 @@ const contextMenu = {
             drillTablesList: drillTablesList
           })
           return drillTablesList
+        })
+        .catch(error => {
+          console.error(error)
+        })
+    },
+    getReportOutputFromServer({ commit }, parameters) {
+      return getReportOutput({ criteria: parameters.criteria, printFormatUuid: parameters.printFormatUuid, reportViewUuid: parameters.reportViewUuid, isSummary: parameters.isSummary, reportName: parameters.reportName, reportType: parameters.reportType })
+        .then(response => {
+          console.log('store', response)
         })
         .catch(error => {
           console.error(error)

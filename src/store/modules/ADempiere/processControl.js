@@ -290,18 +290,20 @@ const processControl = {
                 childs: [],
                 option: 'drillTable'
               }
-              drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
-              if (!drillTablesList.childs.length) {
-                dispatch('requestDrillTables', {
-                  processUuid: processResult.processUuid,
-                  tableName: response.getResulttablename()
-                })
-                  .then(response => {
-                    drillTablesList.childs = response
-                    // Get contextMenu metadata and concat print Format List with contextMenu actions
-                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                    contextMenuMetadata.actions.push(drillTablesList)
+              if (!isEmptyValue(response.getResulttablename())) {
+                drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
+                if (!drillTablesList.childs.length) {
+                  dispatch('requestDrillTables', {
+                    processUuid: processResult.processUuid,
+                    tableName: response.getResulttablename()
                   })
+                    .then(response => {
+                      drillTablesList.childs = response
+                      // Get contextMenu metadata and concat print Format List with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(drillTablesList)
+                    })
+                }
               }
             }
             // assign new attributes
@@ -312,7 +314,7 @@ const processControl = {
               isError: response.getIserror(),
               isProcessing: response.getIsprocessing(),
               summary: response.getSummary(),
-              ResultTableName: response.getResulttablename(),
+              resultTableName: response.getResulttablename(),
               lastRun: response.getLastrun(),
               logs: logList,
               output: output
