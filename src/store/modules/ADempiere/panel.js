@@ -76,7 +76,8 @@ const panel = {
           console.log(itemField.name, itemField.identifierSequence, itemField.sortNo)
           identifierColumns.push({
             columnName: itemField.columnName,
-            identifierSequence: itemField.identifierSequence
+            identifierSequence: itemField.identifierSequence,
+            componentPath: itemField.componentPath
           })
         }
 
@@ -104,7 +105,6 @@ const panel = {
         .sort((itemA, itemB) => {
           return itemA.identifierSequence - itemB.identifierSequence
         })
-        .map(item => item.columnName)
       params.recordUuid = null
       params.fieldList = assignedGroup(params.fieldList)
 

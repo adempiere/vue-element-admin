@@ -20,7 +20,7 @@
             :key="element.UUID"
             class="board-item"
           >
-            {{ element[identifiersList[0]] }}
+            {{ getIdentifiersList.map(item => element[item.columnName]).join('_') }}
           </div>
         </draggable>
       </div>
@@ -46,7 +46,7 @@
             :key="element.UUID"
             class="board-item"
           >
-            {{ element[identifiersList[0]] }}
+            {{ getIdentifiersList.map(item => element[item.columnName]).join('_') }}
           </div>
         </draggable>
       </div>
@@ -110,6 +110,10 @@ export default {
       },
       set(value) {
       }
+    },
+    getIdentifiersList() {
+      return this.identifiersList
+        .filter(item => item.componentPath !== 'FieldSelect')
     }
   },
   methods: {
