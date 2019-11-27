@@ -214,7 +214,14 @@ const processControl = {
                 mimeType: responseOutput.getMimetype(),
                 output: responseOutput.getOutput(),
                 outputStream: responseOutput.getOutputstream(),
-                reportType: responseOutput.getReporttype()
+                reportType: responseOutput.getReporttype(),
+                dataCols: responseOutput.getDatacols(),
+                dataRows: responseOutput.getDatarows(),
+                footerName: responseOutput.getFootername(),
+                headerName: responseOutput.getHeadername(),
+                printFormatUuid: responseOutput.getPrintformatuuid(),
+                reportViewUuid: responseOutput.getReportviewuuid(),
+                tableName: responseOutput.getTablename()
               }
             }
             var logList = []
@@ -251,7 +258,10 @@ const processControl = {
               reportViewList.childs = getters.getReportViewList(processResult.processUuid)
               if (!reportViewList.childs.length) {
                 dispatch('requestReportViews', {
-                  processUuid: processResult.processUuid
+                  processUuid: processResult.processUuid,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
                 })
                   .then(response => {
                     reportViewList.childs = response
@@ -272,7 +282,10 @@ const processControl = {
               printFormatList.childs = rootGetters.getPrintFormatList(processResult.processUuid)
               if (!printFormatList.childs.length) {
                 dispatch('requestPrintFormats', {
-                  processUuid: processResult.processUuid
+                  processUuid: processResult.processUuid,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
                 })
                   .then(response => {
                     printFormatList.childs = response
@@ -295,7 +308,9 @@ const processControl = {
                 if (!drillTablesList.childs.length) {
                   dispatch('requestDrillTables', {
                     processUuid: processResult.processUuid,
-                    tableName: response.getResulttablename()
+                    tableName: output.tableName,
+                    printFormatUuid: output.printFormatUuid,
+                    reportViewUuid: output.reportViewUuid
                   })
                     .then(response => {
                       drillTablesList.childs = response

@@ -387,9 +387,9 @@ export const contextMixin = {
       } else if (action.type === 'updateReport') {
         console.log(action)
         var updateReportParams = {
-          criteria: undefined,
-          printFormatUuid: '',
-          reportViewUuid: '',
+          criteria: action.tableName,
+          printFormatUuid: action.printFormatUuid,
+          reportViewUuid: action.reportViewUuid,
           isSummary: false,
           reportName: this.$store.getters.getProcessResult.name,
           reportType: this.$store.getters.getReportType

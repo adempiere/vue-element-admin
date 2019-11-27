@@ -27,7 +27,9 @@ const contextMenu = {
               description: printFormat.getDescription(),
               isDefault: printFormat.getIsdefault(),
               type: 'updateReport',
-              option: 'printFormat'
+              option: 'printFormat',
+              tableName: parameters.tableName,
+              reportViewUuid: parameters.reportViewUuid
             }
           })
           commit('setReportFormatsList', {
@@ -50,7 +52,8 @@ const contextMenu = {
               tableName: reportView.getTablename(),
               description: reportView.getDescription(),
               type: 'updateReport',
-              option: 'reportView'
+              option: 'reportView',
+              printFormatUuid: parameters.printFormatUuid
             }
           })
           commit('setReportViewsList', {
@@ -71,7 +74,9 @@ const contextMenu = {
               name: drillTable.getPrintname(),
               tableName: drillTable.getTablename(),
               type: 'updateReport',
-              option: 'drillTable'
+              option: 'drillTable',
+              printFormatUuid: parameters.printFormatUuid,
+              reportViewUuid: parameters.reportViewUuid
             }
           })
           commit('setDrillTablesList', {
