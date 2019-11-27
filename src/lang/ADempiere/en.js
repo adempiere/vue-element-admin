@@ -124,6 +124,7 @@ export default {
     contextMenuRefresh: 'Refresh',
     contextMennuExport: 'Export Smart Browser',
     contextMennuWindowReport: 'Window Report ',
+    contextMenuPrintFormatSetup: 'Print Format Setup',
     dateStartPlaceholder: 'Start date',
     dateEndPlaceholder: 'End date',
     timePlaceholder: 'Select time',
@@ -232,6 +233,7 @@ export default {
   profile: {
     aboutMe: 'About Me',
     recentItems: 'Recent Items',
+    favorites: 'Favorites',
     recentItemsName: 'Name Recent Items',
     role: 'Role',
     availableRoles: 'Available roles',
