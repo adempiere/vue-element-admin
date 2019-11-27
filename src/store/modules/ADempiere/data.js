@@ -8,7 +8,9 @@ import {
   getContextInfoValueFromServer,
   getPrivateAccessFromServer,
   lockPrivateAccessFromServer,
-  unlockPrivateAccessFromServer
+  unlockPrivateAccessFromServer,
+  getFavoritesFromServer,
+  requestPrintFormats
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -18,9 +20,11 @@ const data = {
     recordSelection: [], // record data and selection
     recordDetail: [],
     recentItems: [],
+    favorites: [],
     inGetting: [],
     contextInfoField: [],
-    recordPrivateAccess: {}
+    recordPrivateAccess: {},
+    printFormatList: []
   },
   mutations: {
     addInGetting(state, payload) {
@@ -64,6 +68,9 @@ const data = {
     setRecentItems(state, payload) {
       state.recentItems = payload
     },
+    setFavorites(state, payload) {
+      state.favorites = payload
+    },
     setPageNumber(state, payload) {
       payload.data.pageNumber = payload.pageNumber
     },
@@ -96,6 +103,9 @@ const data = {
     },
     setPrivateAccess(state, payload) {
       state.recordPrivateAccess = payload
+    },
+    setPrintFormatList(state, payload) {
+      state.printFormatList.push(payload)
     }
   },
   actions: {
@@ -619,6 +629,29 @@ const data = {
           })
       })
     },
+    getFavoritesFromServer({ commit, rootGetters }) {
+      const userUuid = rootGetters['user/getUserUuid']
+      return new Promise((resolve, reject) => {
+        getFavoritesFromServer(userUuid)
+          .then(response => {
+            const favorites = response.getFavoritesList().map(favorite => {
+              return {
+                uuid: favorite.getMenuuuid(),
+                name: favorite.getMenuname(),
+                description: favorite.getMenudescription(),
+                referenceUuid: favorite.getReferenceuuid(),
+                action: convertAction(favorite.getAction()).name,
+                icon: convertAction(favorite.getAction()).icon
+              }
+            })
+            commit('setFavorites', favorites)
+            resolve(favorites)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
     /**
      * TODO: Add support to tab children
      * @param {object} objectParams
@@ -826,6 +859,25 @@ const data = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
+    },
+    requestPrintFormats({ commit }, parameters) {
+      return requestPrintFormats({ processUuid: parameters.processUuid })
+        .then(response => {
+          const printFormatList = response.getPrintformatsList().map(printFormat => {
+            return {
+              uuid: printFormat.getUuid(),
+              name: printFormat.getName(),
+              description: printFormat.getDescription(),
+              isDefault: printFormat.getIsdefault()
+            }
+          })
+          commit('setPrintFormatList', {
+            containerUuid: parameters.processUuid,
+            printFormatList: printFormatList
+          })
+          return printFormatList
+        })
+        .catch(error => {
           console.error(error)
         })
     }
@@ -943,6 +995,9 @@ const data = {
     getRecentItems: (state) => {
       return state.recentItems
     },
+    getFavoritesList: (state) => {
+      return state.favorites
+    },
     getLanguageList: (state) => (roleUuid) => {
       return state.recordSelection.find(
         record => record.containerUuid === roleUuid
@@ -961,6 +1016,13 @@ const data = {
         }
         return undefined
       }
+    },
+    getPrintFormatList: (state) => (containerUuid) => {
+      var printFormatList = state.printFormatList.find(list => list.containerUuid === containerUuid)
+      if (printFormatList) {
+        return printFormatList.printFormatList
+      }
+      return []
     }
   }
 }

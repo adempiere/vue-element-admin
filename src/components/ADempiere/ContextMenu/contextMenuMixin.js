@@ -1,6 +1,7 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
+import ROUTES from '@/utils/ADempiere/zoomWindow'
 
 export const contextMixin = {
   components: {
@@ -56,7 +57,8 @@ export const contextMixin = {
       metadataMenu: {},
       recordUuid: this.$route.query.action,
       isReferencesLoaded: false,
-      exportDefault: 'xls'
+      exportDefault: 'xls',
+      ROUTES
     }
   },
   computed: {
@@ -100,6 +102,35 @@ export const contextMixin = {
         containerUuid: this.containerUuid,
         isOnlyDisplayed: true,
         isAdvancedQuery: this.$route.query.action === 'advancedQuery'
+      })
+    },
+    getterFieldList() {
+      return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
+    },
+    getterFieldListHeader() {
+      var header = this.getterFieldList.filter(fieldItem => {
+        const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
+        if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
+          return fieldItem.name
+        }
+      })
+      return header.map(fieldItem => {
+        return fieldItem.name
+      })
+    },
+    getterFieldListValue() {
+      var value = this.getterFieldList.filter(fieldItem => {
+        const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
+        if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
+          return fieldItem
+        }
+      })
+      return value.map(fieldItem => {
+        if (fieldItem.componentPath === 'FieldSelect') {
+          return 'DisplayColumn_' + fieldItem.columnName
+        } else {
+          return fieldItem.columnName
+        }
       })
     },
     getterDataLog() {
@@ -199,15 +230,20 @@ export const contextMixin = {
       }
     },
     exporBrowser() {
-      this.$store.dispatch('startProcess', {
-        parentUuid: this.parentUuid,
-        containerUuid: this.containerUuid,
-        panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
-        reportFormat: this.exportDefault
-      })
-        .catch(error => {
-          console.warn(error)
+        import('@/vendor/Export2Excel').then(excel => {
+          const tHeader = this.getterFieldListHeader
+          const filterVal = this.getterFieldListValue
+          const list = this.getDataSelection
+          const data = this.formatJson(filterVal, list)
+          excel.export_json_to_excel({
+            header: tHeader,
+            data,
+            filename: ''
+          })
         })
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => v[j]))
     },
     generateContextMenu() {
       var recordLocked = false
@@ -366,7 +402,16 @@ export const contextMixin = {
         this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: action.windowUuid })
         if (action.windowUuid && action.recordUuid) {
           var windowRoute = this.$store.getters.getWindowRoute(action.windowUuid)
-          this.$router.push({ name: windowRoute.name, query: { action: action.type, referenceUuid: action.uuid, tabParent: 0 }})
+          this.$router.push({
+            name: windowRoute.name,
+            query: {
+              action: action.type,
+              referenceUuid: action.uuid,
+              recordUuid: action.recordUuid,
+              windowUuid: this.parentUuid,
+              tabParent: 0
+            }
+          })
         }
       }
     },

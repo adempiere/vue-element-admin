@@ -14,6 +14,7 @@
     :xl="sizeFieldResponsive.xl"
     :class="classField"
   >
+    <!-- POPOVER FOR FIELD CONTEXT INFO -->
     <el-popover
       v-if="field.contextInfo && field.contextInfo.isActive"
       ref="contextOptions"
@@ -24,7 +25,24 @@
     >
       <p v-html="field.contextInfo.messageText.msgText" />
     </el-popover>
-    <el-form-item v-popover:contextOptions :label="isFieldOnly()" :required="isMandatory()">
+    <!-- POPOVER FOR ZOOM IN FIELD -->
+    <el-popover
+      v-if="field.reference.zoomWindowList.length"
+      ref="zoomIn"
+      placement="bottom"
+      :title="$t('table.ProcessActivity.zoomIn')"
+      trigger="click"
+    >
+      <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
+        <el-button :key="index" type="text" @click="redirect(zoomItem)">{{ zoomItem.name }}</el-button>
+      </template>
+    </el-popover>
+    <el-form-item
+      v-popover:zoomIn
+      v-popover:contextOptions
+      :label="isFieldOnly()"
+      :required="isMandatory()"
+    >
       <component
         :is="componentRender"
         :ref="field.columnName"
@@ -162,6 +180,9 @@ export default {
       }
 
       if (this.panelType === 'window') {
+        if (this.field.componentPath === 'FieldTextLong') {
+          return sizeField
+        }
         // two columns if is mobile or desktop and show record navigation
         if (this.getWidth <= 768 || (this.getWidth >= 768 && this.getterIsShowedRecordNavigation)) {
           newSizes.xs = 12
@@ -204,6 +225,9 @@ export default {
         return true
       }
       return false
+    },
+    permissionRoutes() {
+      return this.$store.getters.permission_routes
     }
   },
   watch: {
@@ -288,6 +312,11 @@ export default {
       if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[columnName].activeFocus(columnName)
       }
+    },
+    redirect(item) {
+      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: item.uuid })
+      var windowRoute = this.$store.getters.getWindowRoute(item.uuid)
+      this.$router.push({ name: windowRoute.name, query: { action: 'create-new', tabParent: 0 }})
     }
   }
 }

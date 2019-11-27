@@ -122,6 +122,7 @@ export default {
     contextMenuRefresh: 'Actualizar',
     contextMennuExport: 'Exportar Smart Browser',
     contextMennuWindowReport: 'Informe de Ventana',
+    contextMenuPrintFormatSetup: 'Configurar Formato de Impresión',
     RunProcess: 'Ejecutar',
     ChangeParameters: 'Cambiar Parametros',
     RunProcessAs: 'Ejecutar como',
@@ -156,7 +157,9 @@ export default {
     unsupportedSorry: 'Lo sentimos',
     unsupportedHeadline: 'Esta vista no está disponible actualmente',
     unsupportedInfo: 'Verifique que la vista sea compatible con esta versión, o haga clic en el botón a continuación para volver a la página de inicio.',
-    unsupportedButton: 'Volver al Panel de control'
+    unsupportedButton: 'Volver al Panel de control',
+    reportView: 'Vistas de Reporte',
+    printFormat: 'Formatos de Impresión'
   },
   table: {
     ProcessActivity: {
@@ -206,6 +209,7 @@ export default {
   profile: {
     aboutMe: 'Sobre Mi',
     recentItems: 'Artículos Recientes',
+    favorites: 'Favoritos',
     recentItemsName: 'Nombre Ítems Recientes',
     role: 'Rol',
     availableRoles: 'Roles disponibles',

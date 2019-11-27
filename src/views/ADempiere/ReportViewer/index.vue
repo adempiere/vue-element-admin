@@ -10,7 +10,7 @@
     <el-row type="flex" style="min-height: inherit;">
       <el-col :span="24">
         <div class="content">
-          <h3 class="text-center">
+          <h3 class="text-center" style="margin: 0 !important;">
             <el-popover
               v-if="!isEmptyValue(processMetadata.help)"
               placement="top-start"
@@ -156,7 +156,6 @@ export default {
 	.content {
     width: 100%;
     height: 100%;
-    padding: 20px 0px;
     position: absolute;
     top: 0%;
   }
@@ -175,13 +174,10 @@ export default {
 		height: inherit;
     padding-left: 10px;
     padding-right: 10px;
-    padding-top: 0px;
-    padding-bottom: 20px;
 
     .sub-content-html {
       min-height: inherit;
       height: inherit;
-      height: -webkit-fill-available;
       max-height: -webkit-max-content;
       max-height: -moz-max-content;
       max-height: max-content;
@@ -199,8 +195,5 @@ export default {
   }
   .container-report {
     width: 100%;
-  }
-  .scroll {
-    max-height: -webkit-fill-available;
   }
 </style>

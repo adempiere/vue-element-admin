@@ -330,3 +330,15 @@ export function lockPrivateAccessFromServer({ tableName: tableName, recordId: re
 export function unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
   return Instance.call(this).unlockPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
 }
+
+export function getFavoritesFromServer(userUuid) {
+  return Instance.call(this).requestFavorites(userUuid)
+}
+
+export function requestReportViews({ tableName, processUuid }) {
+  return Instance.call(this).requestReportViews({ tableName: tableName, processUuid: processUuid })
+}
+
+export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) {
+  return Instance.call(this).requestPrintFormats({ tableName: tableName, reportViewUuid: reportViewUuid, processUuid: processUuid })
+}
