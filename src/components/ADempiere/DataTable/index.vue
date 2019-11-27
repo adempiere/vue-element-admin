@@ -274,7 +274,7 @@
                       @keyup.enter.native="confirmEdit(scope.row)"
                     />
                   </template>
-                  <span v-else>
+                  <span v-else :style="getFieldDefinition(fieldAttributes.fieldDefinition, scope.row)">
                     {{ displayedValue(scope.row, fieldAttributes) }}
                   </span>
                 </template>
@@ -318,6 +318,7 @@ import { sortFields } from '@/utils/ADempiere'
 import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
+import evaluator from '@/utils/ADempiere/evaluator'
 
 export default {
   name: 'DataTable',
@@ -1064,6 +1065,26 @@ export default {
           }
         })
       }
+    },
+    getFieldDefinition(fieldDefinition, row) {
+      var styleSheet = ''
+      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditions.length)) {
+        fieldDefinition.conditions.forEach(condition => {
+          var columns = evaluator.parseDepends(condition.condition)
+          var conditionLogic = condition.condition
+          columns.forEach(column => {
+            conditionLogic = conditionLogic.replace(/@/g, '')
+            conditionLogic = conditionLogic.replace(column, row[column])
+            conditionLogic = evaluator.evaluateLogic({
+              logic: conditionLogic
+            })
+          })
+          if (conditionLogic && condition.isActive) {
+            styleSheet = condition.styleSheet
+          }
+        })
+      }
+      return styleSheet
     }
   }
 }
