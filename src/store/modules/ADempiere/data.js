@@ -803,18 +803,27 @@ const data = {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
         })
     },
-    getPrivateAccessFromServer({ commit }, parameters) {
-      const { tableName, recordId, userUuid } = parameters
-      getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+    getPrivateAccessFromServer({ commit, rootGetters }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
         .then(privateAccess => {
           if (privateAccess.getRecordid()) {
-            const recordPrivateAccess = {
+            var recordPrivateAccess = {
+              isLocked: true,
               tableName: privateAccess.getTablename(),
               recordId: privateAccess.getRecordid(),
               userUuid: privateAccess.getUseruuid()
             }
-            commit('setPrivateAccess', recordPrivateAccess)
+          } else {
+            recordPrivateAccess = {
+              isLocked: false,
+              tableName: parameters.tableName,
+              recordId: parameters.recordId,
+              userUuid: rootGetters['user/getUserUuid']
+            }
           }
+          return recordPrivateAccess
         })
         .catch(error => {
           console.error(error)
@@ -825,12 +834,21 @@ const data = {
       const userUuid = rootGetters['user/getUserUuid']
       return lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
         .then(response => {
-          showMessage({
-            title: language.t('notifications.succesful'),
-            message: language.t('notifications.recordLocked'),
-            type: 'success'
-          })
-          console.log(response)
+          if (response.getRecordid()) {
+            const recordLocked = {
+              isPrivateAccess: true,
+              isLocked: true,
+              tableName: response.getTablename(),
+              recordId: response.getRecordid(),
+              userUuid: response.getUseruuid()
+            }
+            showMessage({
+              title: language.t('notifications.succesful'),
+              message: language.t('notifications.recordLocked'),
+              type: 'success'
+            })
+            return recordLocked
+          }
         })
         .catch(error => {
           showMessage({
@@ -841,17 +859,26 @@ const data = {
           console.error(error)
         })
     },
-    unlockRecord({ commit, rootGetters }, parameters) {
+    unlockRecord({ commit, rootGetters, state }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
       return unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
         .then(response => {
-          showMessage({
-            title: language.t('notifications.succesful'),
-            message: language.t('notifications.recordLocked'),
-            type: 'success'
-          })
-          console.log(response)
+          if (response.getRecordid()) {
+            const recordUnlocked = {
+              isPrivateAccess: true,
+              isLocked: false,
+              tableName: response.getTablename(),
+              recordId: response.getRecordid(),
+              userUuid: response.getUseruuid()
+            }
+            showMessage({
+              title: language.t('notifications.succesful'),
+              message: language.t('notifications.recordUnlocked'),
+              type: 'success'
+            })
+            return recordUnlocked
+          }
         })
         .catch(error => {
           showMessage({

@@ -161,11 +161,6 @@ export const contextMixin = {
         this.getReferences()
       }
     },
-    'this.$route.params'(newValue, oldValue) {
-      if (!this.isEmptyValue(newValue)) {
-        this.generateContextMenu()
-      }
-    },
     isInsertRecord(newValue, oldValue) {
       if (this.panelType === 'window' && newValue !== oldValue) {
         this.generateContextMenu()
@@ -246,13 +241,16 @@ export const contextMixin = {
       return jsonData.map(v => filterVal.map(j => v[j]))
     },
     generateContextMenu() {
-      var recordLocked = false
       this.metadataMenu = this.getterContextMenu
-      if (this.$route.params && this.$store.getters.getRecordPrivateAccess(this.$route.params.tableName, this.$route.params.recordId)) {
-        recordLocked = true
-      } else {
-        recordLocked = false
-      }
+      this.$store.dispatch('getPrivateAccessFromServer', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+        .then(response => {
+          this.$nextTick(() => {
+            this.validatePrivateAccess(response)
+          })
+        })
       this.actions = this.metadataMenu.actions
 
       if (this.actions && this.actions.length) {
@@ -281,20 +279,6 @@ export const contextMixin = {
             }
             if (itemAction.action === 'undoModifyData') {
               itemAction.disabled = Boolean(!this.getterDataLog && !this.getterWindowOldRoute)
-            }
-            if (recordLocked && itemAction.action === 'unlockRecord') {
-              itemAction.hidden = false
-              itemAction.tableName = this.$route.params.tableName
-              itemAction.recordId = this.$route.params.recordId
-            } else if (!recordLocked && itemAction.action === 'unlockRecord') {
-              itemAction.hidden = true
-            }
-            if (!recordLocked && itemAction.action === 'lockRecord') {
-              itemAction.hidden = false
-              itemAction.tableName = this.$route.params.tableName
-              itemAction.recordId = this.$route.params.recordId
-            } else if (recordLocked && itemAction.action === 'lockRecord') {
-              itemAction.hidden = true
             }
           }
         })
@@ -397,6 +381,11 @@ export const contextMixin = {
             tableName: action.tableName,
             recordId: action.recordId
           })
+            .then(response => {
+              if (response && response.isPrivateAccess) {
+                this.validatePrivateAccess(response)
+              }
+            })
         }
       } else if (action.type === 'reference') {
         this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: action.windowUuid })
@@ -477,6 +466,19 @@ export const contextMixin = {
         type: 'success',
         duration: 1500
       })
+    },
+    validatePrivateAccess(response) {
+      if (response.isLocked) {
+        this.actions.find(item => item.action === 'unlockRecord').hidden = false
+        this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
+        this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
+        this.actions.find(item => item.action === 'lockRecord').hidden = true
+      } else {
+        this.actions.find(item => item.action === 'lockRecord').hidden = false
+        this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
+        this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
+        this.actions.find(item => item.action === 'unlockRecord').hidden = true
+      }
     }
   }
 }
