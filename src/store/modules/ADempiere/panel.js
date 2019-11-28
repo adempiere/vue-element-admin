@@ -61,10 +61,10 @@ const panel = {
   },
   actions: {
     addPanel({ commit, dispatch }, params) {
-      var keyColumn = ''
-      var selectionColumn = []
+      let keyColumn = ''
+      const selectionColumn = []
       const identifierColumns = []
-      var count = 0
+      let count = 0
       params.fieldList.forEach(itemField => {
         if (itemField.isKey) {
           keyColumn = itemField.columnName
@@ -73,7 +73,6 @@ const panel = {
           selectionColumn.push(itemField.columnName)
         }
         if (itemField.isIdentifier) {
-          console.log(itemField.name, itemField.identifierSequence, itemField.sortNo)
           identifierColumns.push({
             columnName: itemField.columnName,
             identifierSequence: itemField.identifierSequence,
@@ -697,7 +696,7 @@ const panel = {
       commit('changeFieldValue', newField)
     },
     getPanelAndFields({ dispatch }, parameters) {
-      if (parameters.type === 'process' || parameters.type === 'report') {
+      if (parameters.panelType === 'process' || parameters.panelType === 'report') {
         return dispatch('getProcessFromServer', parameters)
           .then(response => {
             return response
@@ -705,11 +704,11 @@ const panel = {
           .catch(error => {
             return {
               ...error,
-              moreInfo: `Dictionary getPanelAndFields ${parameters.type} (State Panel)`,
+              moreInfo: `Dictionary getPanelAndFields ${parameters.panelType} (State Panel)`,
               parameters: parameters
             }
           })
-      } else if (parameters.type === 'browser') {
+      } else if (parameters.panelType === 'browser') {
         return dispatch('getBrowserFromServer', parameters)
           .then(response => {
             return response
@@ -721,12 +720,12 @@ const panel = {
               parameters: parameters
             }
           })
-      } else if (parameters.type === 'window' || parameters.type === 'table') {
+      } else if (parameters.panelType === 'window' || parameters.panelType === 'table') {
         return dispatch('getTabAndFieldFromServer', {
           parentUuid: parameters.parentUuid,
           containerUuid: parameters.containerUuid,
           isAdvancedQuery: parameters.isAdvancedQuery,
-          panelType: parameters.type
+          panelType: parameters.panelType
         }).then(response => {
           return response
         }).catch(error => {

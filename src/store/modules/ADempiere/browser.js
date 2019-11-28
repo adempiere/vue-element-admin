@@ -121,7 +121,9 @@ const browser = {
               actions.push({
                 name: process.getName(),
                 type: 'process',
+                panelType: 'process',
                 uuid: process.getUuid(),
+                containerUuid: process.getUuid(),
                 description: process.getDescription(),
                 help: process.getHelp(),
                 isReport: process.getIsreport(),

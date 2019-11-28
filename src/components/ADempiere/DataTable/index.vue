@@ -35,13 +35,17 @@
                   >
                     {{ $t('window.newRecord') }}
                   </el-menu-item>
-                  <el-menu-item
-                    v-if="getterPanel.isSortTab && isPanelWindow"
-                    index="sort"
-                    @click="sortTab()"
-                  >
-                    {{ getterPanel.nameSortTab }}
-                  </el-menu-item>
+                  <template v-if="isPanelWindow && getterPanel.isAssociatedTabSequence">
+                    <el-menu-item
+                      v-for="(actionSequence, key) in getterPanel.tabsOrder"
+                      :key="key"
+                      :disabled="$route.query.action === 'create-new'"
+                      index="sort"
+                      @click="sortTab(actionSequence)"
+                    >
+                      {{ actionSequence.name }}
+                    </el-menu-item>
+                  </template>
                   <el-menu-item
                     v-if="isPanelWindow"
                     :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
@@ -515,11 +519,12 @@ export default {
     }
   },
   methods: {
-    sortTab() {
+    sortTab(actionSequence) {
       // TODO: Refactor and remove redundant dispatchs
       this.$store.dispatch('setShowDialog', {
         type: 'window',
-        action: this.getterPanel
+        action: actionSequence,
+        parentRecordUuid: this.$route.query.action
       })
     },
     sortFields,
@@ -853,7 +858,7 @@ export default {
         this.$store.dispatch('getPanelAndFields', {
           containerUuid: this.containerUuid,
           parentUuid: this.parentUuid,
-          type: this.panelType
+          panelType: this.panelType
         }).then(response => {
           this.isLoadPanelFromServer = true
         }).catch(error => {

@@ -129,7 +129,6 @@
                       :window-uuid="windowUuid"
                       :tabs-list="windowMetadata.tabsListChildren"
                       :first-tab-uuid="windowMetadata.firstTabUuid"
-                      :first-index="String(windowMetadata.tabsListChildren[0].index)"
                       :style="{ 'height': getHeightPanelBottom + 'vh' }"
                     />
                   </el-header>

@@ -25,6 +25,9 @@ export const tabMixin = {
     },
     getterDataRecords() {
       return this.$store.getters.getDataRecordsList(this.tabUuid)
+    },
+    getTabsList() {
+      return this.tabsList.filter(tab => !tab.isSortTab)
     }
   },
   watch: {
@@ -32,12 +35,6 @@ export const tabMixin = {
     getDataSelection(value) {
       if (!value.isLoaded && this.getterIsLoadContextParent && this.getterIsLoadRecordParent) {
         this.getDataTable()
-      }
-    },
-    // Current TabChildren
-    currentTabChild(newValue, oldValue) {
-      if (newValue !== oldValue) {
-        this.$router.push({ query: { ...this.$route.query, tabChild: String(newValue) }})
       }
     },
     // Load parent tab context
@@ -65,11 +62,6 @@ export const tabMixin = {
         containerUuid: this.tabUuid
       })
       this.$route.meta.tabUuid = this.tabUuid
-    },
-    setCurrentTabChild() {
-      if (this.$route.query.tabChild === undefined && this.firstIndex) {
-        this.currentTabChild = this.firstIndex
-      }
     },
     /**
      * @param {object} tabHTML DOM HTML the tab clicked

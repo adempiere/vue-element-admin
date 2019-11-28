@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :title="name"
+    :title="modalMetadata.name"
     :visible="isVisibleDialog"
     show-close
     :before-close="closeDialog"
@@ -9,7 +9,7 @@
     close-on-press-escape
     close-on-click-modal
   >
-    {{ description }}<br><br>
+    {{ modalMetadata.description }}<br><br>
     <sequence-order
       v-if="modalMetadata.isSortTab"
       key="order"
@@ -74,11 +74,6 @@ export default {
       default: ''
     }
   },
-  data() {
-    return {
-      processMetadata: {}
-    }
-  },
   computed: {
     isMobile() {
       return this.$store.state.app.device === 'mobile'
@@ -95,18 +90,6 @@ export default {
     modalMetadata() {
       return this.$store.state.processControl.metadata
     },
-    name() {
-      if (this.modalMetadata.isSortTab) {
-        return this.modalMetadata.nameSortTab
-      }
-      return this.modalMetadata.name
-    },
-    description() {
-      if (this.modalMetadata.isSortTab) {
-        return this.modalMetadata.descriptionSortTab
-      }
-      return this.modalMetadata.description
-    },
     windowRecordSelected() {
       return this.$store.state.window.recordSelected
     }
@@ -116,16 +99,23 @@ export default {
       if (value) {
         if (this.modalMetadata.isSortTab) {
           const orderBy = this.modalMetadata.sortOrderColumnName
-          const record = this.$store.getters.getDataRecordsList(this.containerUuid)
-            .map(itemRecord => {
-              return {
-                ...itemRecord
-              }
+          this.$store.dispatch('getDataListTab', {
+            parentUuid: this.modalMetadata.parentUuid,
+            containerUuid: this.modalMetadata.containerUuid
+          })
+            .then(response => {
+              // const record = this.$store.getters.getDataRecordsList(this.containerUuid)
+              const record = response
+                .map(itemRecord => {
+                  return {
+                    ...itemRecord
+                  }
+                })
+                .sort((itemA, itemB) => {
+                  return itemA[orderBy] - itemB[orderBy]
+                })
+              this.$store.dispatch('setTabSequenceRecord', record)
             })
-            .sort((itemA, itemB) => {
-              return itemA[orderBy] - itemB[orderBy]
-            })
-          this.$store.dispatch('setTabSequenceRecord', record)
         }
       }
     }

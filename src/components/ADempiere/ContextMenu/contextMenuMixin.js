@@ -280,8 +280,10 @@ export const contextMixin = {
       if (action.type === 'process') {
         var processData = this.$store.getters.getProcess(action.uuid)
         if (processData === undefined) {
-          this.$store.dispatch('getProcessFromServer', {
+          this.$store.dispatch('getPanelAndFields', {
+            parentUuid: action.parentUuid,
             containerUuid: action.uuid,
+            panelType: action.panelType,
             routeToDelete: this.$route
           })
             .then(response => {

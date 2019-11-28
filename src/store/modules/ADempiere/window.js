@@ -37,7 +37,7 @@ const window = {
     getWindowFromServer({ commit, state, dispatch }, params) {
       return getWindowMetadata(params.windowUuid)
         .then(response => {
-          var newWindow = {
+          let newWindow = {
             id: response.getId(),
             uuid: params.windowUuid,
             name: response.getName(),
@@ -46,16 +46,23 @@ const window = {
             isShowedRecordNavigation: undefined,
             firstTabUuid: response.getTabsList()[0].getUuid()
           }
-          var tabs = response.getTabsList()
+          let tabs = response.getTabsList()
           const firstTab = tabs[0].getTablename()
-          var childrenTabs = []
-          var parentTabs = []
+          const childrenTabs = []
+          const parentTabs = []
 
-          var tabsSequence = []
+          const tabsSequence = []
           tabs = tabs.filter(itemTab => {
             if (itemTab.getIssorttab()) {
+              // TODO: Add convert tab function
               tabsSequence.push({
-                isSortTab: true,
+                uuid: itemTab.getUuid(),
+                id: itemTab.getId(),
+                parentUuid: params.windowUuid,
+                containerUuid: itemTab.getUuid(),
+                panelType: 'window',
+                type: 'sequence',
+                isSortTab: itemTab.getIssorttab(),
                 name: itemTab.getName(),
                 description: itemTab.getDescription(),
                 tableName: itemTab.getTablename(),
@@ -64,7 +71,7 @@ const window = {
               })
             }
             // TODO: Add support to isAdvancedTab, isTranslationTab and isHasTree
-            return !(itemTab.getIssorttab() || itemTab.getIstranslationtab())
+            return !itemTab.getIstranslationtab()
           })
 
           tabs = tabs.map((tabItem, index) => {
@@ -77,18 +84,7 @@ const window = {
               group.groupType = tabItem.getFieldgroup().getFieldgrouptype()
             }
 
-            let orderTab = tabsSequence.find(itemTab => itemTab.tableName === tabItem.getTablename())
-            if (!orderTab) {
-              orderTab = {
-                isSortTab: false,
-                name: undefined,
-                description: undefined,
-                sortOrderColumnName: undefined,
-                sortYesNoColumnName: undefined
-              }
-            }
-
-            var tab = {
+            const tab = {
               id: tabItem.getId(),
               uuid: tabItem.getUuid(),
               containerUuid: tabItem.getUuid(),
@@ -103,11 +99,9 @@ const window = {
               isDocument: tabItem.getIsdocument(),
               isInsertRecord: tabItem.getIsinsertrecord(),
               // sort and sequence
-              isSortTab: orderTab.isSortTab,
-              sortOrderColumnName: orderTab.sortOrderColumnName,
-              sortYesNoColumnName: orderTab.sortYesNoColumnName,
-              nameSortTab: orderTab.name,
-              descriptionSortTab: orderTab.description,
+              isSortTab: tabItem.getIssorttab(),
+              sortOrderColumnName: tabItem.getSortordercolumnname(),
+              sortYesNoColumnName: tabItem.getSortyesnocolumnname(),
               sequence: tabItem.getSequence(),
               // relations
               isParentTab: Boolean(firstTab === tabItem.getTablename()),
@@ -137,6 +131,7 @@ const window = {
               orderByClause: tabItem.getOrderbyclause(),
               isChangeLog: tabItem.getIschangelog(),
               // app properties
+              isAssociatedTabSequence: false, // show modal with order tab
               isShowedRecordNavigation: !(tabItem.getIssinglerow()),
               isLoadFieldList: false,
               index: index
@@ -144,7 +139,7 @@ const window = {
 
             // Convert from gRPC process list
             // action is dispatch used in vuex
-            var actions = []
+            let actions = []
             actions.push({
               // action to set default values and enable fields not isUpdateable
               name: language.t('window.newRecord'),
@@ -175,6 +170,7 @@ const window = {
                 name: processItem.getName(),
                 type: 'process',
                 uuid: processItem.getUuid(),
+                containerUuid: processItem.getUuid(),
                 description: processItem.getDescription(),
                 help: processItem.getHelp(),
                 isReport: processItem.getIsreport(),
@@ -184,14 +180,20 @@ const window = {
               }
             })
             actions = actions.concat(processList)
-            if (tab.isSortTab) {
-              actions.push({
-                name: 'Order Sequence',
-                action: 'orderSequence',
-                type: 'application',
-                uuid: tab.uuid,
-                uuidParent: newWindow.uuid
+
+            let orderTabs = tabsSequence.filter(itemTab => itemTab.tableName === tab.tableName)
+            if (orderTabs.length) {
+              tab.isAssociatedTabSequence = true
+              tab.tabsOrder = orderTabs
+              orderTabs = orderTabs.map(itemTab => {
+                return {
+                  action: 'orderSequence',
+                  type: 'application',
+                  uuidParent: newWindow.uuid,
+                  ...itemTab
+                }
               })
+              actions = actions.concat(orderTabs)
             }
 
             //  Add process menu
@@ -246,7 +248,6 @@ const window = {
     }) {
       return getTabMetadata(containerUuid)
         .then(response => {
-          var fieldsList = response.getFieldsList()
           const additionalAttributes = {
             parentUuid: parentUuid,
             containerUuid: containerUuid,
@@ -258,10 +259,10 @@ const window = {
             isAdvancedQuery: isAdvancedQuery
           }
 
-          var fieldUuidsequence = 0
-          var fieldLinkColumnName
+          let fieldUuidsequence = 0
+          let fieldLinkColumnName
           //  Convert from gRPC
-          fieldsList = fieldsList.map((item, index) => {
+          const fieldsList = response.getFieldsList().map((item, index) => {
             item = convertField(item, {
               ...additionalAttributes,
               fieldListIndex: index
