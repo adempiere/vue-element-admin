@@ -14,9 +14,17 @@ export function exportFileFromJson({
   data,
   exportType
 }) {
+  var Json = data.map(dataJson => {
+    Object.keys(dataJson).forEach(key => {
+      if (typeof dataJson[key] === 'boolean') {
+        dataJson[key] = dataJson[key] ? language.t('components.switchActiveText') : language.t('components.switchInactiveText')
+      }
+    })
+    return dataJson
+  })
   export_json_to_excel({
     header: header,
-    data: data,
+    data: Json,
     filename: '',
     bookType: exportType
   })

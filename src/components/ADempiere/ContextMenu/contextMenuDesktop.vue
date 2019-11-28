@@ -37,7 +37,7 @@
           </el-menu-item>
           <el-submenu
             v-if="getDataSelection.length > 0 && panelType === 'browser'"
-            :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
+            :disabled="Boolean(getDataSelection.length < 1)"
             index="xlsx"
             @click.native="exporBrowser('xlsx')"
           >
