@@ -334,10 +334,21 @@ export function requestDrillTables(tableName) {
   return Instance.call(this).requestDrillTables(tableName)
 }
 
-export function getReportOutput({ criteria: criteria, printFormatUuid: printFormatUuid, reportViewUuid: reportViewUuid, isSummary: isSummary, reportName: reportName, reportType: reportType }) {
-  var criteriaForReport = ''
-  if (criteria) {
-    criteriaForReport = getCriteria(criteria)
+export function getReportOutput({
+  criteria: criteria,
+  printFormatUuid: printFormatUuid,
+  reportViewUuid: reportViewUuid,
+  isSummary: isSummary,
+  reportName: reportName,
+  reportType: reportType,
+  tableName: tableName
+}) {
+  const criteriaForReport = getCriteria(tableName)
+  if (criteria && criteria.length) {
+    criteria.forEach(parameter => {
+      const convertedParameter = Instance.call(this).convertCondition(parameter)
+      criteriaForReport.addConditions(convertedParameter)
+    })
   }
   return Instance.call(this).getReportOutput({ criteria: criteriaForReport, printFormatUuid: printFormatUuid, reportViewUuid: reportViewUuid, isSummary: isSummary, reportName: reportName, reportType: reportType })
 }

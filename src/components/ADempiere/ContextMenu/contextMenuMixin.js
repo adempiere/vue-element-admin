@@ -387,9 +387,11 @@ export const contextMixin = {
           })
         }
       } else if (action.type === 'updateReport') {
-        console.log(action)
         var updateReportParams = {
-          criteria: action.tableName,
+          instanceUuid: action.instanceUuid,
+          processUuid: action.processUuid,
+          tableName: action.tableName,
+          processId: action.processId,
           printFormatUuid: action.printFormatUuid,
           reportViewUuid: action.reportViewUuid,
           isSummary: false,
@@ -408,7 +410,19 @@ export const contextMixin = {
         }
         this.$store.dispatch('getReportOutputFromServer', updateReportParams)
           .then(response => {
-            console.log('contextMenu', response)
+            var link = {
+              href: undefined,
+              download: undefined
+            }
+            const blob = new Blob([response.outputStream], { type: response.mimeType })
+            link = document.createElement('a')
+            link.href = window.URL.createObjectURL(blob)
+            link.download = response.fileName
+            if (response.reportType !== 'pdf' && response.reportType !== 'html') {
+              link.click()
+            }
+            response.url = link.href
+            this.$store.dispatch('finishProcess', { processOutput: response, routeToDelete: this.$route })
           })
       }
     },

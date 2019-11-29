@@ -6,8 +6,7 @@ import {
   getDefaultValueFromServer,
   convertValueFromGRPC,
   getContextInfoValueFromServer,
-  getFavoritesFromServer,
-  requestPrintFormats
+  getFavoritesFromServer
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -19,8 +18,7 @@ const data = {
     recentItems: [],
     favorites: [],
     inGetting: [],
-    contextInfoField: [],
-    printFormatList: []
+    contextInfoField: []
   },
   mutations: {
     addInGetting(state, payload) {
@@ -96,9 +94,6 @@ const data = {
     },
     setContextInfoField(state, payload) {
       state.contextInfoField.push(payload)
-    },
-    setPrintFormatList(state, payload) {
-      state.printFormatList.push(payload)
     }
   },
   actions: {
@@ -795,27 +790,6 @@ const data = {
         .catch(error => {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
         })
-    },
-    requestPrintFormats({ commit }, parameters) {
-      return requestPrintFormats({ processUuid: parameters.processUuid })
-        .then(response => {
-          const printFormatList = response.getPrintformatsList().map(printFormat => {
-            return {
-              uuid: printFormat.getUuid(),
-              name: printFormat.getName(),
-              description: printFormat.getDescription(),
-              isDefault: printFormat.getIsdefault()
-            }
-          })
-          commit('setPrintFormatList', {
-            containerUuid: parameters.processUuid,
-            printFormatList: printFormatList
-          })
-          return printFormatList
-        })
-        .catch(error => {
-          console.error(error)
-        })
     }
   },
   getters: {
@@ -944,13 +918,6 @@ const data = {
         info.contextInfoUuid === contextInfoUuid &&
         info.sqlStatement === sqlStatement
       )
-    },
-    getPrintFormatList: (state) => (containerUuid) => {
-      var printFormatList = state.printFormatList.find(list => list.containerUuid === containerUuid)
-      if (printFormatList) {
-        return printFormatList.printFormatList
-      }
-      return []
     }
   }
 }

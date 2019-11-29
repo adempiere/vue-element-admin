@@ -3,7 +3,8 @@ const contextMenu = {
   state: {
     reportFormatsList: [],
     reportViewsList: [],
-    drillTablesList: []
+    drillTablesList: [],
+    reportOutput: {}
   },
   mutations: {
     setReportFormatsList(state, payload) {
@@ -14,6 +15,9 @@ const contextMenu = {
     },
     setDrillTablesList(state, payload) {
       state.drillTablesList.push(payload)
+    },
+    setNewReportOutput(state, payload) {
+      state.reportOutput = payload
     }
   },
   actions: {
@@ -26,10 +30,13 @@ const contextMenu = {
               name: printFormat.getName(),
               description: printFormat.getDescription(),
               isDefault: printFormat.getIsdefault(),
+              tableName: printFormat.getTablename(),
+              reportViewUuid: printFormat.getReportviewuuid(),
               type: 'updateReport',
               option: 'printFormat',
-              tableName: parameters.tableName,
-              reportViewUuid: parameters.reportViewUuid
+              instanceUuid: parameters.instanceUuid,
+              processUuid: parameters.processUuid,
+              processId: parameters.processId
             }
           })
           commit('setReportFormatsList', {
@@ -53,7 +60,10 @@ const contextMenu = {
               description: reportView.getDescription(),
               type: 'updateReport',
               option: 'reportView',
-              printFormatUuid: parameters.printFormatUuid
+              instanceUuid: parameters.instanceUuid,
+              printFormatUuid: parameters.printFormatUuid,
+              processUuid: parameters.processUuid,
+              processId: parameters.processId
             }
           })
           commit('setReportViewsList', {
@@ -75,8 +85,11 @@ const contextMenu = {
               tableName: drillTable.getTablename(),
               type: 'updateReport',
               option: 'drillTable',
+              instanceUuid: parameters.instanceUuid,
               printFormatUuid: parameters.printFormatUuid,
-              reportViewUuid: parameters.reportViewUuid
+              reportViewUuid: parameters.reportViewUuid,
+              processUuid: parameters.processUuid,
+              processId: parameters.processId
             }
           })
           commit('setDrillTablesList', {
@@ -89,10 +102,53 @@ const contextMenu = {
           console.error(error)
         })
     },
-    getReportOutputFromServer({ commit }, parameters) {
-      return getReportOutput({ criteria: parameters.criteria, printFormatUuid: parameters.printFormatUuid, reportViewUuid: parameters.reportViewUuid, isSummary: parameters.isSummary, reportName: parameters.reportName, reportType: parameters.reportType })
+    getReportOutputFromServer({ commit, rootGetters }, parameters) {
+      const {
+        tableName,
+        printFormatUuid,
+        reportViewUuid,
+        isSummary,
+        reportName,
+        reportType,
+        processUuid,
+        processId,
+        instanceUuid
+      } = parameters
+      const processParameters = rootGetters.getParametersToServer({ containerUuid: processUuid })
+      return getReportOutput({
+        criteria: processParameters,
+        printFormatUuid: printFormatUuid,
+        reportViewUuid: reportViewUuid,
+        isSummary: isSummary,
+        reportName: reportName,
+        reportType: reportType,
+        tableName: tableName
+      })
         .then(response => {
-          console.log('store', response)
+          const reportOutput = {
+            uuid: response.getUuid(),
+            processName: response.getName(),
+            description: response.getDescription(),
+            fileName: response.getFilename(),
+            output: response.getOutput(),
+            mimeType: response.getMimetype(),
+            dataCols: response.getDatacols(),
+            dataRows: response.getDatarows(),
+            headerName: response.getHeadername(),
+            footerName: response.getFootername(),
+            printFormatUuid: response.getPrintformatuuid(),
+            reportViewUuid: response.getReportviewuuid(),
+            tableName: response.getTablename(),
+            outputStream: response.getOutputstream(),
+            reportType: response.getReporttype(),
+            processId: processId,
+            processUuid: processUuid,
+            isError: false,
+            instanceUuid: instanceUuid,
+            isReport: true
+          }
+          commit('setNewReportOutput', reportOutput)
+          return reportOutput
         })
         .catch(error => {
           console.error(error)
