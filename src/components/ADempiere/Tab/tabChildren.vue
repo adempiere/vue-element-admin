@@ -70,7 +70,6 @@ export default {
             tabChild: String(newValue)
           }
         })
-        this.currentTabChild = String(newValue)
       }
     }
   },
@@ -79,9 +78,11 @@ export default {
   },
   methods: {
     setCurrentTabChild() {
-      if (this.$route.query.tabChild === undefined) {
-        this.currentTabChild = 0
+      let activeTab = this.$route.query.tabChild
+      if (activeTab === undefined) {
+        activeTab = String(0)
       }
+      this.currentTabChild = activeTab
     }
   }
 }

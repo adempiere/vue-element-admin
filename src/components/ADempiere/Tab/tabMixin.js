@@ -45,7 +45,8 @@ export const tabMixin = {
     }
   },
   created() {
-    this.tabUuid = this.tabsList[0].uuid
+    const tabs = this.tabsList.filter(item => !item.isSortTab)
+    this.tabUuid = tabs[0].uuid
   },
   methods: {
     parseContext,
@@ -73,7 +74,9 @@ export const tabMixin = {
       }
     },
     handleBeforeLeave(activeName) {
-      var metadataTab = this.tabsList.find(tab => tab.index === parseInt(activeName))
+      const metadataTab = this.tabsList
+        .filter(tab => !tab.isSortTab)
+        .find(tab => tab.index === parseInt(activeName))
       if (!this.isEmptyValue(metadataTab.whereClause) && metadataTab.whereClause.includes('@')) {
         metadataTab.whereClause = parseContext({
           parentUuid: metadataTab.parentUuid,

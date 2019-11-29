@@ -60,10 +60,10 @@ const panel = {
     }
   },
   actions: {
-    addPanel({ commit, dispatch }, params) {
+    addPanel({ commit, dispatch, getters }, params) {
       let keyColumn = ''
-      const selectionColumn = []
-      const identifierColumns = []
+      let selectionColumn = []
+      let identifierColumns = []
       let count = 0
       params.fieldList.forEach(itemField => {
         if (itemField.isKey) {
@@ -99,11 +99,17 @@ const panel = {
       })
 
       params.keyColumn = keyColumn
+      if (params.isSortTab) {
+        const panelParent = getters.getPanel(params.tabAssociatedUuid)
+        selectionColumn = selectionColumn.concat(panelParent.selectionColumn)
+        identifierColumns = identifierColumns.concat(panelParent.identifierColumns)
+      }
       params.selectionColumn = selectionColumn
       params.identifierColumns = identifierColumns
         .sort((itemA, itemB) => {
           return itemA.identifierSequence - itemB.identifierSequence
         })
+
       params.recordUuid = null
       params.fieldList = assignedGroup(params.fieldList)
 

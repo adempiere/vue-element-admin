@@ -60,6 +60,7 @@ const window = {
                 id: itemTab.getId(),
                 parentUuid: params.windowUuid,
                 containerUuid: itemTab.getUuid(),
+                parentTabUuid: itemTab.getParenttabuuid(),
                 panelType: 'window',
                 type: 'sequence',
                 isSortTab: itemTab.getIssorttab(),
@@ -181,19 +182,31 @@ const window = {
             })
             actions = actions.concat(processList)
 
-            let orderTabs = tabsSequence.filter(itemTab => itemTab.tableName === tab.tableName)
-            if (orderTabs.length) {
-              tab.isAssociatedTabSequence = true
-              tab.tabsOrder = orderTabs
-              orderTabs = orderTabs.map(itemTab => {
-                return {
-                  action: 'orderSequence',
-                  type: 'application',
-                  uuidParent: newWindow.uuid,
-                  ...itemTab
-                }
-              })
-              actions = actions.concat(orderTabs)
+            if (tab.isSortTab) {
+              const tabParent = tabs.find(itemTab => itemTab.getTablename() === tab.tableName && !itemTab.getIssorttab())
+              if (tabParent) {
+                tab.tabAssociatedUuid = tabParent.getUuid() // tab source
+                tab.tabAssociatedName = tabParent.getName() // tab source
+              }
+
+              console.log(tab.name, tabParent, tabs)
+            } else {
+              let orderTabs = tabsSequence.filter(itemTab => itemTab.tableName === tab.tableName)
+              if (orderTabs.length) {
+                orderTabs = orderTabs.map(itemTab => {
+                  return {
+                    ...itemTab,
+                    // appication attributes
+                    tabAssociatedUuid: tab.uuid, // tab source
+                    tabAssociatedName: tab.name, // tab source
+                    action: 'orderSequence',
+                    type: 'application'
+                  }
+                })
+                actions = actions.concat(orderTabs)
+                tab.isAssociatedTabSequence = true
+                tab.tabsOrder = orderTabs
+              }
             }
 
             //  Add process menu

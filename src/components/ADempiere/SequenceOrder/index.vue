@@ -7,7 +7,7 @@
     >
       <div class="board-column">
         <div class="board-column-header">
-          {{ this.$t('sequence.available') }}
+          {{ this.$t('sequence.available') }} ({{ getterListAvaliable.length }})
         </div>
         <draggable
           v-model="getterListAvaliable"
@@ -32,7 +32,7 @@
     >
       <div class="board-column">
         <div class="board-column-header">
-          {{ this.$t('sequence.sequence') }}
+          {{ this.$t('sequence.sequence') }}  ({{ getterListSequence.length }})
         </div>
         <draggable
           v-model="getterListSequence"

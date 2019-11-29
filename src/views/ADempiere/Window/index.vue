@@ -66,7 +66,6 @@
                       :container-uuid="windowMetadata.currentTabUuid"
                       :panel-type="panelType"
                       :is-insert-record="getterIsInsertRecord"
-                      :modal-metadata="windowMetadata"
                     />
                   </el-header>
                   <!-- das -->

@@ -38,10 +38,6 @@ export const contextMixin = {
       type: String,
       default: undefined
     },
-    modalMetadata: {
-      type: Object,
-      default: () => {}
-    },
     // used only window
     isInsertRecord: {
       type: Boolean,
@@ -278,27 +274,10 @@ export const contextMixin = {
     showModal(action) {
       // TODO: Refactor and remove redundant dispatchs
       if (action.type === 'process') {
-        var processData = this.$store.getters.getProcess(action.uuid)
-        if (processData === undefined) {
-          this.$store.dispatch('getPanelAndFields', {
-            parentUuid: action.parentUuid,
-            containerUuid: action.uuid,
-            panelType: action.panelType,
-            routeToDelete: this.$route
-          })
-            .then(response => {
-              this.$store.dispatch('setShowDialog', {
-                type: action.type,
-                action: response
-              })
-            }).catch(error => {
-              console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
-            })
-        } else {
-          this.$store.dispatch('setShowDialog', { type: action.type, action: processData })
-        }
-      } else {
-        this.$store.dispatch('setShowDialog', { type: action.type, action: this.modalMetadata })
+        this.$store.dispatch('setShowDialog', {
+          type: action.type,
+          action: action
+        })
       }
     },
     runAction(action) {
@@ -318,7 +297,10 @@ export const contextMixin = {
             }
           }
           if (this.panelType === 'process') {
-            this.$store.dispatch('setTempShareLink', { processId: this.$route.params.processId, href: window.location.href })
+            this.$store.dispatch('setTempShareLink', {
+              processId: this.$route.params.processId,
+              href: window.location.href
+            })
           }
           this.$store.dispatch(action.action, {
             action: action,
