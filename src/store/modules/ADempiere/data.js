@@ -7,6 +7,7 @@ import {
   convertValueFromGRPC,
   getContextInfoValueFromServer,
   getFavoritesFromServer,
+  getPendingDocumentsFromServer,
   requestPrintFormats
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
@@ -18,6 +19,7 @@ const data = {
     recordDetail: [],
     recentItems: [],
     favorites: [],
+    pendingDocuments: [],
     inGetting: [],
     contextInfoField: [],
     printFormatList: []
@@ -66,6 +68,9 @@ const data = {
     },
     setFavorites(state, payload) {
       state.favorites = payload
+    },
+    setPendingDocuments(state, payload) {
+      state.pendingDocuments = payload
     },
     setPageNumber(state, payload) {
       payload.data.pageNumber = payload.pageNumber
@@ -623,7 +628,7 @@ const data = {
       })
     },
     getFavoritesFromServer({ commit, rootGetters }) {
-      const userUuid = rootGetters['user/getUserUuid']
+      const userUuid = 'a4bd438e-fb40-11e8-a479-7a0060f0aa01'
       return new Promise((resolve, reject) => {
         getFavoritesFromServer(userUuid)
           .then(response => {
@@ -639,6 +644,41 @@ const data = {
             })
             commit('setFavorites', favorites)
             resolve(favorites)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+    getPendingDocumentsFromServer({ commit, getters, rootGetters }) {
+      const userUuid = 'a4bd438e-fb40-11e8-a479-7a0060f0aa01'
+      const roleUuid = getters.getRoleUuid
+      return new Promise((resolve, reject) => {
+        getPendingDocumentsFromServer(userUuid, roleUuid)
+          .then(response => {
+            const documentsList = response.getPendingdocumentsList().map(document => {
+              return {
+                formUuid: document.getFormuuid(),
+                name: document.getDocumentname(),
+                description: document.getDocumentdescription(),
+                criteria: {
+                  type: document.getCriteria().getConditionsList(),
+                  limit: document.getCriteria().getLimit(),
+                  orderbyclause: document.getCriteria().getOrderbyclause(),
+                  orderbycolumnList: document.getCriteria().getOrderbycolumnList(),
+                  query: document.getCriteria().getQuery(),
+                  referenceUuid: document.getCriteria().getReferenceuuid(),
+                  tableName: document.getCriteria().getTablename(),
+                  valuesList: document.getCriteria().getValuesList(),
+                  whereClause: document.getCriteria().getWhereclause()
+                },
+                recordCount: document.getRecordcount(),
+                sequence: document.getSequence(),
+                windowUuid: document.getWindowuuid()
+              }
+            })
+            commit('setPendingDocuments', documentsList)
+            resolve(documentsList)
           })
           .catch(error => {
             reject(error)
@@ -933,6 +973,9 @@ const data = {
     },
     getFavoritesList: (state) => {
       return state.favorites
+    },
+    getPendingDocuments: (state) => {
+      return state.pendingDocuments
     },
     getLanguageList: (state) => (roleUuid) => {
       return state.recordSelection.find(

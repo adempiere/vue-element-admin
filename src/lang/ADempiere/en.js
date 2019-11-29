@@ -235,6 +235,7 @@ export default {
     aboutMe: 'About Me',
     recentItems: 'Recent Items',
     favorites: 'Favorites',
+    PendingDocuments: 'Pending Documents',
     recentItemsName: 'Name Recent Items',
     role: 'Role',
     availableRoles: 'Available roles',
