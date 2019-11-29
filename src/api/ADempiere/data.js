@@ -346,8 +346,17 @@ export function getReportOutput({
   const criteriaForReport = getCriteria(tableName)
   if (criteria && criteria.length) {
     criteria.forEach(parameter => {
+      var isAddCodition = true
+      if (parameter.isRange && criteria.some(param => param.columnName === `${parameter.columnName}_To`)) {
+        parameter.valueTo = criteria.find(param => param.columnName === `${parameter.columnName}_To`).value
+      }
       const convertedParameter = Instance.call(this).convertCondition(parameter)
-      criteriaForReport.addConditions(convertedParameter)
+      if (parameter.isRange && !parameter.hasOwnProperty('valueTo')) {
+        isAddCodition = false
+      }
+      if (isAddCodition) {
+        criteriaForReport.addConditions(convertedParameter)
+      }
     })
   }
   return Instance.call(this).getReportOutput({ criteria: criteriaForReport, printFormatUuid: printFormatUuid, reportViewUuid: reportViewUuid, isSummary: isSummary, reportName: reportName, reportType: reportType })

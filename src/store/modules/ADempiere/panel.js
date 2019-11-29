@@ -1185,7 +1185,8 @@ const panel = {
 
           return {
             columnName: parameterItem.columnName,
-            value: value
+            value: value,
+            isRange: parameterItem.isRange
           }
         })
 
