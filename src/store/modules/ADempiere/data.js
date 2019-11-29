@@ -628,7 +628,7 @@ const data = {
       })
     },
     getFavoritesFromServer({ commit, rootGetters }) {
-      const userUuid = 'a4bd438e-fb40-11e8-a479-7a0060f0aa01'
+      const userUuid = rootGetters['user/getUserUuid']
       return new Promise((resolve, reject) => {
         getFavoritesFromServer(userUuid)
           .then(response => {
@@ -651,7 +651,7 @@ const data = {
       })
     },
     getPendingDocumentsFromServer({ commit, getters, rootGetters }) {
-      const userUuid = 'a4bd438e-fb40-11e8-a479-7a0060f0aa01'
+      const userUuid = rootGetters['user/getUserUuid']
       const roleUuid = getters.getRoleUuid
       return new Promise((resolve, reject) => {
         getPendingDocumentsFromServer(userUuid, roleUuid)
