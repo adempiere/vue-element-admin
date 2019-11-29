@@ -398,30 +398,23 @@ export const contextMixin = {
           reportName: this.$store.getters.getProcessResult.name,
           reportType: this.$store.getters.getReportType
         }
-        if (action.option === 'reportView') {
-          updateReportParams.reportViewUuid = action.uuid
-          updateReportParams.criteria = action.tableName
-        }
-        if (action.option === 'printFormat') {
-          updateReportParams.printFormatUuid = action.uuid
-        }
-        if (action.option === 'drillTable') {
-          updateReportParams.criteria = action.tableName
-        }
         this.$store.dispatch('getReportOutputFromServer', updateReportParams)
           .then(response => {
-            var link = {
-              href: undefined,
-              download: undefined
+            if (!response.isError) {
+              var link = {
+                href: undefined,
+                download: undefined
+              }
+
+              const blob = new Blob([response.outputStream], { type: response.mimeType })
+              link = document.createElement('a')
+              link.href = window.URL.createObjectURL(blob)
+              link.download = response.fileName
+              if (response.reportType !== 'pdf' && response.reportType !== 'html') {
+                link.click()
+              }
+              response.url = link.href
             }
-            const blob = new Blob([response.outputStream], { type: response.mimeType })
-            link = document.createElement('a')
-            link.href = window.URL.createObjectURL(blob)
-            link.download = response.fileName
-            if (response.reportType !== 'pdf' && response.reportType !== 'html') {
-              link.click()
-            }
-            response.url = link.href
             this.$store.dispatch('finishProcess', { processOutput: response, routeToDelete: this.$route })
           })
       }

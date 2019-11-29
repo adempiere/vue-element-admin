@@ -1,4 +1,5 @@
 import { requestReportViews, requestPrintFormats, requestDrillTables, getReportOutput } from '@/api/ADempiere'
+import { isEmptyValue } from '@/utils/ADempiere'
 const contextMenu = {
   state: {
     reportFormatsList: [],
@@ -102,7 +103,10 @@ const contextMenu = {
           console.error(error)
         })
     },
-    getReportOutputFromServer({ commit, rootGetters }, parameters) {
+    getReportOutputFromServer({ commit, getters, rootGetters }, parameters) {
+      if (isEmptyValue(parameters.printFormatUuid)) {
+        parameters.printFormatUuid = getters.getDefaultPrinFormat(parameters.processUuid).uuid
+      }
       const {
         tableName,
         printFormatUuid,
@@ -151,7 +155,30 @@ const contextMenu = {
           return reportOutput
         })
         .catch(error => {
+          const reportOutput = {
+            uuid: '',
+            processName: '',
+            description: '',
+            fileName: '',
+            output: '',
+            mimeType: '',
+            dataCols: null,
+            dataRows: null,
+            headerName: '',
+            footerName: '',
+            printFormatUuid: '',
+            reportViewUuid: '',
+            tableName: '',
+            outputStream: [],
+            reportType: '',
+            processId: null,
+            processUuid: '',
+            isError: true,
+            instanceUuid: '',
+            isReport: true
+          }
           console.error(error)
+          return reportOutput
         })
     }
   },
@@ -162,6 +189,9 @@ const contextMenu = {
         return printFormatList.printFormatList
       }
       return []
+    },
+    getDefaultPrinFormat: (state, getters) => (containerUuid) => {
+      return getters.getPrintFormatList(containerUuid).find(printFormat => printFormat.isDefault)
     },
     getReportViewList: (state) => (containerUuid) => {
       var reportViewList = state.reportViewsList.find(list => list.containerUuid === containerUuid)
