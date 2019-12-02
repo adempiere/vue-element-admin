@@ -16,29 +16,22 @@
   >
     <!-- POPOVER FOR FIELD CONTEXT INFO -->
     <el-popover
-      v-if="field.contextInfo && field.contextInfo.isActive"
+      v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
       :title="$t('components.contextFieldTitle')"
-      width="400"
+      width="300"
       trigger="click"
     >
-      <p v-html="field.contextInfo.messageText.msgText" />
-    </el-popover>
-    <!-- POPOVER FOR ZOOM IN FIELD -->
-    <el-popover
-      v-if="field.reference.zoomWindowList.length"
-      ref="zoomIn"
-      placement="bottom"
-      :title="$t('table.ProcessActivity.zoomIn')"
-      trigger="click"
-    >
-      <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-        <el-button :key="index" type="text" @click="redirect(zoomItem)">{{ zoomItem.name }}</el-button>
+      <p v-if="field.contextInfo && field.contextInfo.isActive" class="pre-formatted" v-html="field.contextInfo.messageText.msgText" />
+      <template v-if="field.reference.zoomWindowList.length">
+        <div class="el-popover__title"> {{ $t('table.ProcessActivity.zoomIn') }}</div>
+        <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
+          <el-button :key="index" type="text" @click="redirect(zoomItem)">{{ zoomItem.name }}</el-button>
+        </template>
       </template>
     </el-popover>
     <el-form-item
-      v-popover:zoomIn
       v-popover:contextOptions
       :label="isFieldOnly()"
       :required="isMandatory()"
@@ -351,5 +344,8 @@ export default {
    */
   .el-form--label-top .el-form-item__label {
     padding-bottom: 0px !important;
+  }
+  .pre-formatted {
+    white-space: pre;
   }
 </style>
