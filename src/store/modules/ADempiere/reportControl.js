@@ -27,7 +27,7 @@ const contextMenu = {
         .then(response => {
           const printFormatList = response.getPrintformatsList().map(printFormat => {
             return {
-              uuid: printFormat.getUuid(),
+              printFormatUuid: printFormat.getUuid(),
               name: printFormat.getName(),
               description: printFormat.getDescription(),
               isDefault: printFormat.getIsdefault(),
@@ -55,7 +55,7 @@ const contextMenu = {
         .then(response => {
           const reportViewList = response.getReportviewsList().map(reportView => {
             return {
-              uuid: reportView.getUuid(),
+              reportViewUuid: reportView.getUuid(),
               name: reportView.getName(),
               tableName: reportView.getTablename(),
               description: reportView.getDescription(),
