@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { saveAs } from 'file-saver'
+require('script-loader!file-saver');
 import XLSX from 'xlsx'
+import language from '@/lang'
 
 function generateArray(table) {
   var out = [];
@@ -151,14 +152,14 @@ export function export_json_to_excel({
   filename,
   merges = [],
   autoWidth = true,
-  bookType = 'xlsx'
+  bookType=  'xlsx'
 } = {}) {
   /* original data */
   filename = filename || 'excel-list'
   data = [...data]
   data.unshift(header);
 
-  for (let i = multiHeader.length - 1; i > -1; i--) {
+  for (let i = multiHeader.length-1; i > -1; i--) {
     data.unshift(multiHeader[i])
   }
 
