@@ -122,6 +122,16 @@ const windowControl = {
               eventType: 'INSERT'
             })
 
+            const oldRoute = router.app._route
+            router.push({
+              name: oldRoute.name,
+              query: {
+                ...oldRoute.query,
+                action: response.getUuid()
+              }
+            })
+            dispatch('tagsView/delView', oldRoute, true)
+
             resolve({
               data: newValues,
               recordUuid: response.getUuid(),
@@ -359,11 +369,10 @@ const windowControl = {
     deleteEntity({ dispatch, rootGetters }, parameters) {
       return new Promise((resolve, reject) => {
         const panel = rootGetters.getPanel(parameters.containerUuid)
-        const recordUuid = rootGetters.getUuid(parameters.containerUuid)
 
         deleteEntity({
           tableName: panel.tableName,
-          recordUuid: recordUuid
+          recordUuid: parameters.recordUuid
         })
           .then(response => {
             const oldRoute = router.app._route
