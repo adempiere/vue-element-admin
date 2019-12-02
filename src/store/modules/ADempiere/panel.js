@@ -366,6 +366,8 @@ const panel = {
         dispatch('notifyFieldChange', {
           isSendToServer: isSendToServer,
           isSendCallout: isSendCallout,
+          isAdvancedQuery: isAdvancedQuery,
+          panelType: panelType,
           parentUuid: parentUuid,
           containerUuid: containerUuid,
           columnName: actionField.columnName,
@@ -642,9 +644,9 @@ const panel = {
             type: 'info'
           })
         }
-      } else if (!params.isDontSendToQuery) {
+      } else {
         if (panelType === 'table' || isAdvancedQuery) {
-          if (fieldIsDisplayed(field) && field.isShowedFromUser) {
+          if (field.isShowedFromUser) {
             // change action to advanced query on field value is changed in this panel
             if (router.currentRoute.query.action !== 'advancedQuery') {
               router.push({

@@ -330,7 +330,7 @@ export default {
       searchTable: '', // text from search
       defaultMaxPagination: 100,
       menuTable: '1',
-      activeName: '',
+      activeName: this.$route.query.action === 'advancedQuery' ? '1' : '',
       isOptional: false,
       isFixed: false,
       isLoadPanelFromServer: false,

@@ -19,7 +19,7 @@
       v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
-      :title="$t('components.contextFieldTitle')"
+      :title="field.contextInfo.isActive ? $t('components.contextFieldTitle') : ''"
       width="300"
       trigger="click"
     >
@@ -27,7 +27,7 @@
       <template v-if="field.reference.zoomWindowList.length">
         <div class="el-popover__title"> {{ $t('table.ProcessActivity.zoomIn') }}</div>
         <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-          <el-button :key="index" type="text" @click="redirect(zoomItem)">{{ zoomItem.name }}</el-button>
+          <el-button :key="index" type="text" @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })">{{ zoomItem.name }}</el-button>
         </template>
       </template>
     </el-popover>
@@ -306,10 +306,10 @@ export default {
         this.$refs[columnName].activeFocus(columnName)
       }
     },
-    redirect(item) {
-      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: item.uuid })
-      var windowRoute = this.$store.getters.getWindowRoute(item.uuid)
-      this.$router.push({ name: windowRoute.name, query: { action: 'create-new', tabParent: 0 }})
+    redirect({ window, columnName, value }) {
+      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: window.uuid })
+      var windowRoute = this.$store.getters.getWindowRoute(window.uuid)
+      this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
     }
   }
 }
