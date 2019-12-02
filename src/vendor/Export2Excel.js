@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { saveAs } from 'file-saver'
+require('script-loader!file-saver');
 import XLSX from 'xlsx'
 
 function generateArray(table) {
