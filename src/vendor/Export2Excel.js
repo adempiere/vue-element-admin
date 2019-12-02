@@ -1,7 +1,6 @@
 /* eslint-disable */
 require('script-loader!file-saver');
 import XLSX from 'xlsx'
-import language from '@/lang'
 
 function generateArray(table) {
   var out = [];
