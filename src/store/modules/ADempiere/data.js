@@ -29,12 +29,11 @@ const data = {
     deleteInGetting(state, payload) {
       state.inGetting = state.inGetting.filter(item => item.containerUuid !== payload.containerUuid)
     },
+    addRecordSelection(state, payload) {
+      state.recordSelection.push(payload)
+    },
     setRecordSelection(state, payload) {
-      if (payload.index > -1 && payload.index !== undefined) {
-        state.recordSelection.splice(payload.index, 1, payload)
-      } else {
-        state.recordSelection.push(payload)
-      }
+      payload.dataStore = payload.newDataStore
     },
     setSelection(state, payload) {
       payload.data.selection = payload.newSelection
@@ -110,24 +109,28 @@ const data = {
      * @param {string}  parameters.pageNumber
      */
     setPageNumber({ commit, state, dispatch, rootGetters }, parameters) {
+      const {
+        parentUuid, containerUuid, panelType = 'window', pageNumber, isAddRecord = false
+      } = parameters
       const data = state.recordSelection.find(recordItem => {
-        return recordItem.containerUuid === parameters.containerUuid
+        return recordItem.containerUuid === containerUuid
       })
       commit('setPageNumber', {
         data: data,
-        pageNumber: parameters.pageNumber
+        pageNumber: pageNumber
       })
 
       // refresh list table with data from server
-      if (parameters.panelType === 'window') {
+      if (panelType === 'window') {
         dispatch('getDataListTab', {
-          parentUuid: parameters.parentUuid,
-          containerUuid: parameters.containerUuid
+          parentUuid: parentUuid,
+          containerUuid: parameters.containerUuid,
+          isAddRecord: isAddRecord
         })
-      } else if (parameters.panelType === 'browser') {
-        if (!rootGetters.isNotReadyForSubmit(parameters.containerUuid)) {
+      } else if (panelType === 'browser') {
+        if (!rootGetters.isNotReadyForSubmit(containerUuid)) {
           dispatch('getBrowserSearch', {
-            containerUuid: parameters.containerUuid,
+            containerUuid: containerUuid,
             isClearSelection: true
           })
         }
@@ -316,19 +319,18 @@ const data = {
      */
     setIsloadContext({ commit, state }, parameters) {
       const { containerUuid } = parameters
-      const data = state.recordSelection.find(recordItem => {
+      const dataStore = state.recordSelection.find(recordItem => {
         return recordItem.containerUuid === containerUuid
       })
-      if (data) {
+      if (dataStore) {
         commit('setIsloadContext', {
-          data: data,
+          data: dataStore,
           isLoadedContext: true
         })
       }
     },
     /**
      * Set record, selection, page number, token, and record count, with container uuid
-     * TODO: Refactor and optimize the mutation of state
      * @param {string}  parameters.containerUuid
      * @param {array}   parameters.record
      * @param {array}   parameters.selection
@@ -337,12 +339,18 @@ const data = {
      * @param {string}  parameters.nextPageToken
      * @param {string}  parameters.panelType
      */
-    setRecordSelection({ commit, state }, parameters) {
-      const { parentUuid, containerUuid, record = [], selection = [], pageNumber = 1, recordCount = 0, nextPageToken, panelType = 'window' } = parameters
-      var index = state.recordSelection.findIndex(recordItem => {
+    setRecordSelection({ state, commit }, parameters) {
+      const {
+        parentUuid, containerUuid, panelType = 'window', record = [],
+        selection = [], pageNumber = 1, recordCount = 0, nextPageToken,
+        originalNextPageToken, isAddRecord = false
+      } = parameters
+
+      const dataStore = state.recordSelection.find(recordItem => {
         return recordItem.containerUuid === containerUuid
       })
-      commit('setRecordSelection', {
+
+      const newDataStore = {
         parentUuid: parentUuid,
         containerUuid: containerUuid,
         record: record,
@@ -350,11 +358,23 @@ const data = {
         pageNumber: pageNumber,
         recordCount: recordCount,
         nextPageToken: nextPageToken,
+        originalNextPageToken: originalNextPageToken,
         panelType: panelType,
         isLoaded: true,
-        isLoadedContext: false,
-        index: index
-      })
+        isLoadedContext: false
+      }
+
+      if (dataStore) {
+        if (isAddRecord) {
+          newDataStore.record = dataStore.record.concat(newDataStore.record)
+        }
+        commit('setRecordSelection', {
+          dataStore: dataStore,
+          newDataStore: newDataStore
+        })
+      } else {
+        commit('addRecordSelection', newDataStore)
+      }
     },
     /**
      * Set selection in data list associated in container
@@ -439,7 +459,11 @@ const data = {
      * @param {array}  conditions, conditions to criteria
      */
     getObjectListFromCriteria({ commit, dispatch, getters, rootGetters }, parameters) {
-      const { parentUuid, containerUuid, tableName, query, whereClause, orderByClause, conditions = [], isShowNotification = true, isParentTab = true } = parameters
+      const {
+        parentUuid, containerUuid,
+        tableName, query, whereClause, orderByClause, conditions = [],
+        isShowNotification = true, isParentTab = true, isAddRecord = false
+      } = parameters
       if (isShowNotification) {
         showMessage({
           title: language.t('notifications.loading'),
@@ -449,12 +473,12 @@ const data = {
       }
       const dataStore = getters.getDataRecordAndSelection(containerUuid)
 
-      var nextPageToken
+      let nextPageToken
       if (!isEmptyValue(dataStore.nextPageToken)) {
         nextPageToken = dataStore.nextPageToken + '-' + dataStore.pageNumber
       }
 
-      var inEdited = []
+      let inEdited = []
       if (!isParentTab) {
         // TODO: Evaluate peformance to evaluate records to edit
         inEdited = dataStore.record.filter(itemRecord => {
@@ -485,11 +509,11 @@ const data = {
         .then(response => {
           const recordList = response.getRecordsList()
           const record = recordList.map(itemRecord => {
-            var values = convertValuesMapToObject(
+            const values = convertValuesMapToObject(
               itemRecord.getValuesMap()
             )
 
-            // datatables attribute
+            // datatables attributes
             values.isNew = false
             values.isEdit = false
             values.isSelected = false
@@ -507,14 +531,15 @@ const data = {
             }
           })
 
-          var token = response.getNextPageToken()
-          if (!isEmptyValue(token)) {
+          const originalNextPageToken = response.getNextPageToken()
+          let token = originalNextPageToken
+          if (isEmptyValue(token)) {
+            token = dataStore.nextPageToken
+          } else {
             token = token.slice(0, -2)
             if (token.substr(-1, 1) === '-') {
               token = token.slice(0, -1)
             }
-          } else {
-            token = dataStore.nextPageToken
           }
           if (isShowNotification) {
             let searchMessage = 'searchWithOutRecords'
@@ -534,6 +559,8 @@ const data = {
             selection: dataStore.selection,
             recordCount: response.getRecordcount(),
             nextPageToken: token,
+            originalNextPageToken: originalNextPageToken,
+            isAddRecord: isAddRecord,
             pageNumber: dataStore.pageNumber
           })
           return record
@@ -553,7 +580,7 @@ const data = {
               type: 'error'
             })
           }
-          console.warn('Error Get Object List ' + error.message + '. Code: ' + error.code)
+          console.warn(`Error Get Object List ${error.message}. Code: ${error.code}`)
         })
         .finally(() => {
           commit('deleteInGetting', {
@@ -836,6 +863,7 @@ const data = {
         selection: [],
         pageNumber: 1,
         nextPageToken: undefined,
+        originalNextPageToken: undefined,
         isLoadedContext: false,
         isLoaded: false // Boolean(false || getters.getInGetting(containerUuid))
       }
@@ -846,8 +874,11 @@ const data = {
     getDataRecordCount: (state, getters) => (containerUuid) => {
       return getters.getDataRecordAndSelection(containerUuid).recordCount
     },
-    getPageNextToken: (state, getters) => (containerUuid) => {
+    getNextPageToken: (state, getters) => (containerUuid) => {
       return getters.getDataRecordAndSelection(containerUuid).nextPageToken
+    },
+    getOriginalNextPageToken: (state, getters) => (containerUuid) => {
+      return getters.getDataRecordAndSelection(containerUuid).originalNextPageToken
     },
     getDataRecordSelection: (state, getters) => (containerUuid) => {
       return getters.getDataRecordAndSelection(containerUuid).selection

@@ -529,19 +529,14 @@ const windowControl = {
      */
     getDataListTab({ dispatch, rootGetters }, parameters) {
       const {
-        parentUuid,
-        containerUuid,
-        recordUuid,
-        isRefreshPanel = false,
-        isLoadAllRecords = false,
-        isReference = false,
-        referenceWhereClause = '',
-        columnName,
-        value
+        parentUuid, containerUuid, recordUuid,
+        referenceWhereClause = '', columnName, value,
+        isRefreshPanel = false, isLoadAllRecords = false, isReference = false
       } = parameters
+      let { isAddRecord = false } = parameters
       const tab = rootGetters.getTab(parentUuid, containerUuid)
 
-      var parsedQuery = tab.query
+      let parsedQuery = tab.query
       if (!isEmptyValue(parsedQuery) && parsedQuery.includes('@')) {
         parsedQuery = parseContext({
           parentUuid: parentUuid,
@@ -550,7 +545,7 @@ const windowControl = {
         }, true)
       }
 
-      var parsedWhereClause = tab.whereClause
+      let parsedWhereClause = tab.whereClause
       if (!isEmptyValue(parsedWhereClause) && parsedWhereClause.includes('@')) {
         parsedWhereClause = parseContext({
           parentUuid: parentUuid,
@@ -567,7 +562,7 @@ const windowControl = {
         }
       }
 
-      var conditions = []
+      const conditions = []
       if (tab.isParentTab && !isEmptyValue(tab.tableName) && !isEmptyValue(value)) {
         conditions.push({
           columnName: columnName,
@@ -583,7 +578,8 @@ const windowControl = {
         orderByClause: tab.orderByClause,
         // TODO: evaluate if overwrite values to conditions
         conditions: isLoadAllRecords ? [] : conditions,
-        isParentTab: tab.isParentTab
+        isParentTab: tab.isParentTab,
+        isAddRecord: isAddRecord
       })
         .then(response => {
           if (isRefreshPanel && !isEmptyValue(recordUuid) && recordUuid !== 'create-new') {
@@ -608,6 +604,37 @@ const windowControl = {
         })
         .catch(error => {
           return error
+        })
+        .finally(() => {
+          const currentData = rootGetters.getDataRecordAndSelection(containerUuid)
+          const { originalNextPageToken, pageNumber, recordCount } = currentData
+          let nextPage = pageNumber
+
+          if (originalNextPageToken && isAddRecord) {
+            const pageInToken = originalNextPageToken.substring(originalNextPageToken.length - 2)
+            if (pageInToken === '-1') {
+              isAddRecord = false
+            }
+            if (pageNumber === 1 && recordCount > 50) {
+              nextPage = nextPage + 1
+              isAddRecord = true
+            }
+          } else {
+            isAddRecord = false
+          }
+          if (recordCount <= 50) {
+            isAddRecord = false
+          }
+
+          if (isAddRecord) {
+            dispatch('setPageNumber', {
+              parentUuid: parentUuid,
+              containerUuid: containerUuid,
+              pageNumber: nextPage,
+              panelType: 'window',
+              isAddRecord: isAddRecord
+            })
+          }
         })
     },
     /**
@@ -711,7 +738,7 @@ const windowControl = {
               message: error.message,
               type: 'error'
             })
-            console.warn('Update Entity Table Error ' + error.code + ': ' + error.message)
+            console.warn(`Update Entity Table Error ${error.code}: ${error.message}`)
           })
           .finally(() => {
             const countResponse = state.totalResponse + 1
@@ -727,7 +754,9 @@ const windowControl = {
               })
               commit('setTotalRequest', 0)
               commit('setTotalResponse', 0)
+
               // refresh record list
+              // TODO: Add multiple request to get data
               dispatch('getDataListTab', {
                 parentUuid: parentUuid,
                 containerUuid: containerUuid,

@@ -101,7 +101,8 @@ export default {
           const orderBy = this.modalMetadata.sortOrderColumnName
           this.$store.dispatch('getDataListTab', {
             parentUuid: this.modalMetadata.parentUuid,
-            containerUuid: this.modalMetadata.containerUuid
+            containerUuid: this.modalMetadata.containerUuid,
+            isAddRecord: true
           })
             .then(response => {
               // const record = this.$store.getters.getDataRecordsList(this.containerUuid)

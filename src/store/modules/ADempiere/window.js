@@ -188,8 +188,6 @@ const window = {
                 tab.tabAssociatedUuid = tabParent.getUuid() // tab source
                 tab.tabAssociatedName = tabParent.getName() // tab source
               }
-
-              console.log(tab.name, tabParent, tabs)
             } else {
               let orderTabs = tabsSequence.filter(itemTab => itemTab.tableName === tab.tableName)
               if (orderTabs.length) {
