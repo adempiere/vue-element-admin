@@ -1,7 +1,6 @@
 /* eslint-disable */
-require('script-loader!file-saver');
+import { saveAs } from 'file-saver'
 import XLSX from 'xlsx'
-import language from '@/lang'
 
 function generateArray(table) {
   var out = [];
@@ -78,9 +77,7 @@ function sheet_from_array_of_arrays(data, opts) {
       if (range.e.r < R) range.e.r = R;
       if (range.e.c < C) range.e.c = C;
       var cell = {
-        v: data[R][C],
-        p: language.t('components.switchActiveText'),
-        x: language.t('components.switchInactiveText')
+        v: data[R][C]
       };
       if (cell.v == null) continue;
       var cell_ref = XLSX.utils.encode_cell({
@@ -89,7 +86,7 @@ function sheet_from_array_of_arrays(data, opts) {
       });
 
       if (typeof cell.v === 'number') cell.t = 'n';
-      else if (typeof cell.v === 'boolean') cell.t = 'p';
+      else if (typeof cell.v === 'boolean') cell.t = 'b';
       else if (cell.v instanceof Date) {
         cell.t = 'n';
         cell.z = XLSX.SSF._table[14];
@@ -154,14 +151,14 @@ export function export_json_to_excel({
   filename,
   merges = [],
   autoWidth = true,
-  bookType=  'xlsx'
+  bookType = 'xlsx'
 } = {}) {
   /* original data */
   filename = filename || 'excel-list'
   data = [...data]
   data.unshift(header);
 
-  for (let i = multiHeader.length-1; i > -1; i--) {
+  for (let i = multiHeader.length - 1; i > -1; i--) {
     data.unshift(multiHeader[i])
   }
 
