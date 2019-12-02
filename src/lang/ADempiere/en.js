@@ -188,7 +188,9 @@ export default {
       advancedQuery: 'Advanced Query',
       showOnlyMandatoryColumns: 'Show Only Mandatory Columns',
       showAllAvailableColumns: 'Show All Available Columns',
-      exportRecordTable: 'Export Selected Records'
+      exportRecordTable: 'Export Selected Records',
+      showTotal: 'Show Totals',
+      hiddenTotal: 'Hidden Totals'
     },
     recentItems: {
       search: 'Filter by name, description or date',
