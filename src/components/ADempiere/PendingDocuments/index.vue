@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import ROUTES from '@/utils/ADempiere/zoomWindow'
 export default {
   name: 'PendingDocuments',
   data() {
@@ -49,8 +48,8 @@ export default {
     cachedViews() {
       return this.$store.getters.cachedViews
     },
-    getRoutes() {
-      return this.$store.getters.router
+    permissionRoutes() {
+      return this.$store.getters.permission_routes
     }
   },
   mounted() {
@@ -74,7 +73,10 @@ export default {
       })
     },
     handleClick(row) {
-      this.$router.push({ name: ROUTES.DOCUMENTS_WINDOW.uuid })
+      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: row.windowUuid })
+      var windowRoute = this.$store.getters.getWindowRoute(row.windowUuid)
+      this.$router.push({ name: windowRoute.name })
+      // conditions for the registration amount (operador: row.criteria.whereClause)
     },
     filterResult(search) {
       return this.documents.filter(item => this.ignoreAccent(item.name).toLowerCase().includes(this.ignoreAccent(search.toLowerCase())))
