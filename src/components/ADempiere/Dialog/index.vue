@@ -98,25 +98,18 @@ export default {
     isVisibleDialog(value) {
       if (value) {
         if (this.modalMetadata.isSortTab) {
-          const orderBy = this.modalMetadata.sortOrderColumnName
           this.$store.dispatch('getDataListTab', {
             parentUuid: this.modalMetadata.parentUuid,
             containerUuid: this.modalMetadata.containerUuid,
             isAddRecord: true
           })
-            .then(response => {
-              // const record = this.$store.getters.getDataRecordsList(this.containerUuid)
-              const record = response
-                .map(itemRecord => {
-                  return {
-                    ...itemRecord
-                  }
-                })
-                .sort((itemA, itemB) => {
-                  return itemA[orderBy] - itemB[orderBy]
-                })
-              this.$store.dispatch('setTabSequenceRecord', record)
-            })
+        }
+      } else {
+        if (this.modalMetadata.isSortTab) {
+          this.$store.dispatch('setRecordSelection', {
+            parentUuid: this.modalMetadata.parentUuid,
+            containerUuid: this.modalMetadata.containerUuid
+          })
         }
       }
     }
@@ -132,8 +125,8 @@ export default {
     runAction(action) {
       if (action.isSortTab) {
         this.$store.dispatch('updateSequence', {
-          parentUuid: this.parentUuid,
-          containerUuid: this.containerUuid
+          parentUuid: this.modalMetadata.parentUuid,
+          containerUuid: this.modalMetadata.containerUuid
         })
         return
       }
@@ -178,5 +171,7 @@ export default {
 <style>
   .el-dialog__body {
     padding: 10px 20px;
+    max-height: 65vh;
+    overflow: auto;
   }
 </style>

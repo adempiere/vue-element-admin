@@ -579,7 +579,8 @@ const windowControl = {
         // TODO: evaluate if overwrite values to conditions
         conditions: isLoadAllRecords ? [] : conditions,
         isParentTab: tab.isParentTab,
-        isAddRecord: isAddRecord
+        isAddRecord: isAddRecord,
+        isSortTab: tab.isSortTab
       })
         .then(response => {
           if (isRefreshPanel && !isEmptyValue(recordUuid) && recordUuid !== 'create-new') {
@@ -708,6 +709,7 @@ const windowControl = {
       const listSequenceToSet = getters.getTabSequenceRecord
       const recordData = rootGetters.getDataRecordsList(containerUuid)
 
+      // scrolls through the logs and checks if there is a change to be sent to server
       recordData.forEach(itemData => {
         const dataSequence = listSequenceToSet.find(item => item.UUID === itemData.UUID)
         if (itemData[sortOrderColumnName] === dataSequence[sortOrderColumnName]) {
@@ -756,12 +758,12 @@ const windowControl = {
               commit('setTotalResponse', 0)
 
               // refresh record list
-              // TODO: Add multiple request to get data
-              dispatch('getDataListTab', {
-                parentUuid: parentUuid,
-                containerUuid: containerUuid,
-                isShowNotification: false
-              })
+              // TODO: Add multiple request to get data with same table name
+              // dispatch('getDataListTab', {
+              //   parentUuid: parentUuid,
+              //   containerUuid: containerUuid,
+              //   isShowNotification: false
+              // })
             }
           })
       })

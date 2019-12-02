@@ -33,7 +33,13 @@ const data = {
       state.recordSelection.push(payload)
     },
     setRecordSelection(state, payload) {
-      payload.dataStore = payload.newDataStore
+      payload.dataStore.record = payload.newDataStore.record
+      payload.dataStore.selection = payload.newDataStore.selection
+      payload.dataStore.pageNumber = payload.newDataStore.pageNumber
+      payload.dataStore.recordCount = payload.newDataStore.recordCount
+      payload.dataStore.nextPageToken = payload.newDataStore.nextPageToken
+      payload.dataStore.isLoadedContext = payload.newDataStore.isLoadedContext
+      payload.dataStore.isLoaded = payload.newDataStore.isLoaded
     },
     setSelection(state, payload) {
       payload.data.selection = payload.newSelection
@@ -110,7 +116,8 @@ const data = {
      */
     setPageNumber({ commit, state, dispatch, rootGetters }, parameters) {
       const {
-        parentUuid, containerUuid, panelType = 'window', pageNumber, isAddRecord = false
+        parentUuid, containerUuid, panelType = 'window', pageNumber,
+        isAddRecord = false
       } = parameters
       const data = state.recordSelection.find(recordItem => {
         return recordItem.containerUuid === containerUuid
@@ -124,7 +131,7 @@ const data = {
       if (panelType === 'window') {
         dispatch('getDataListTab', {
           parentUuid: parentUuid,
-          containerUuid: parameters.containerUuid,
+          containerUuid: containerUuid,
           isAddRecord: isAddRecord
         })
       } else if (panelType === 'browser') {
@@ -339,11 +346,11 @@ const data = {
      * @param {string}  parameters.nextPageToken
      * @param {string}  parameters.panelType
      */
-    setRecordSelection({ state, commit }, parameters) {
+    setRecordSelection({ state, commit, rootGetters, dispatch }, parameters) {
       const {
         parentUuid, containerUuid, panelType = 'window', record = [],
         selection = [], pageNumber = 1, recordCount = 0, nextPageToken,
-        originalNextPageToken, isAddRecord = false
+        originalNextPageToken, isAddRecord = false, isSortTab = false
       } = parameters
 
       const dataStore = state.recordSelection.find(recordItem => {
@@ -372,6 +379,19 @@ const data = {
           dataStore: dataStore,
           newDataStore: newDataStore
         })
+        if (isSortTab) {
+          const { sortOrderColumnName } = rootGetters.getTab(parentUuid, containerUuid)
+          const recordToTab = newDataStore.record
+            .map(itemRecord => {
+              return {
+                ...itemRecord
+              }
+            })
+            .sort((itemA, itemB) => {
+              return itemA[sortOrderColumnName] - itemB[sortOrderColumnName]
+            })
+          dispatch('setTabSequenceRecord', recordToTab)
+        }
       } else {
         commit('addRecordSelection', newDataStore)
       }
@@ -462,7 +482,7 @@ const data = {
       const {
         parentUuid, containerUuid,
         tableName, query, whereClause, orderByClause, conditions = [],
-        isShowNotification = true, isParentTab = true, isAddRecord = false
+        isShowNotification = true, isParentTab = true, isAddRecord = false, isSortTab = false
       } = parameters
       if (isShowNotification) {
         showMessage({
@@ -561,6 +581,7 @@ const data = {
             nextPageToken: token,
             originalNextPageToken: originalNextPageToken,
             isAddRecord: isAddRecord,
+            isSortTab: isSortTab,
             pageNumber: dataStore.pageNumber
           })
           return record
