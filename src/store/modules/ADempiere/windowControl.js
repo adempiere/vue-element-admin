@@ -134,6 +134,16 @@ const windowControl = {
               eventType: 'INSERT'
             })
 
+            const oldRoute = router.app._route
+            router.push({
+              name: oldRoute.name,
+              query: {
+                ...oldRoute.query,
+                action: response.getUuid()
+              }
+            })
+            dispatch('tagsView/delView', oldRoute, true)
+
             resolve({
               data: newValues,
               recordUuid: response.getUuid(),
@@ -371,11 +381,10 @@ const windowControl = {
     deleteEntity({ dispatch, rootGetters }, parameters) {
       return new Promise((resolve, reject) => {
         const panel = rootGetters.getPanel(parameters.containerUuid)
-        const recordUuid = rootGetters.getUuid(parameters.containerUuid)
 
         deleteEntity({
           tableName: panel.tableName,
-          recordUuid: recordUuid
+          recordUuid: parameters.recordUuid
         })
           .then(response => {
             const oldRoute = router.app._route
@@ -530,7 +539,7 @@ const windowControl = {
     getDataListTab({ dispatch, rootGetters }, parameters) {
       const {
         parentUuid, containerUuid, recordUuid,
-        referenceWhereClause = '', columnName, value,
+        referenceWhereClause = '', columnName, value, criteria,
         isRefreshPanel = false, isLoadAllRecords = false, isReference = false
       } = parameters
       let { isAddRecord = false } = parameters
@@ -559,6 +568,14 @@ const windowControl = {
           parsedWhereClause += ' AND ' + referenceWhereClause
         } else {
           parsedWhereClause += referenceWhereClause
+        }
+      }
+
+      if (!isEmptyValue(criteria)) {
+        if (!isEmptyValue(parsedWhereClause)) {
+          parsedWhereClause += ' AND ' + criteria.whereClause
+        } else {
+          parsedWhereClause += criteria.whereClause
         }
       }
 

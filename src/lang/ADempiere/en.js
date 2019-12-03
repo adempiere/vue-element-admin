@@ -39,7 +39,9 @@ export default {
     mandatoryFieldMissing: 'Missing fill in the fields ',
     updateFields: 'The record is updated with the field ',
     updateSuccessfully: 'Successfully made changes',
-    invalidEmailFormat: 'Invalid email format'
+    invalidEmailFormat: 'Invalid email format',
+    recordLocked: 'This record has been locked',
+    recordUnlocked: 'This record has been unlocked'
   },
   navbar: {
     badge: {
@@ -124,7 +126,7 @@ export default {
     contextMenuShareLink: 'Share Link',
     contextMenuRefresh: 'Refresh',
     contextMennuExport: 'Export Smart Browser',
-    contextMennuWindowReport: 'Window Report ',
+    contextMennuWindowReport: 'Export Records',
     contextMenuPrintFormatSetup: 'Print Format Setup',
     dateStartPlaceholder: 'Start date',
     dateEndPlaceholder: 'End date',
@@ -160,6 +162,14 @@ export default {
     reportView: 'Report Views',
     printFormat: 'Print Formats'
   },
+  report: {
+    ExportXlsx: '(xlsx) Excel File Extension',
+    ExportXls: '(xls) Excel File',
+    ExporXml: '(xml) Extensible Markup Language File',
+    ExporCsv: '(csv) Archivo separado por coma',
+    ExportTxt: '(txt) Tab Delimited Text File',
+    ExportHtml: '(html) Hypertext Markup Language'
+  },
   table: {
     ProcessActivity: {
       name: 'Name',
@@ -180,7 +190,10 @@ export default {
       deleteSelection: 'Delete Selected Records',
       advancedQuery: 'Advanced Query',
       showOnlyMandatoryColumns: 'Show Only Mandatory Columns',
-      showAllAvailableColumns: 'Show All Available Columns'
+      showAllAvailableColumns: 'Show All Available Columns',
+      exportRecordTable: 'Export Selected Records',
+      showTotal: 'Show Totals',
+      hiddenTotal: 'Hidden Totals'
     },
     recentItems: {
       search: 'Filter by name, description or date',
@@ -234,6 +247,7 @@ export default {
     aboutMe: 'About Me',
     recentItems: 'Recent Items',
     favorites: 'Favorites',
+    PendingDocuments: 'Pending Documents',
     recentItemsName: 'Name Recent Items',
     role: 'Role',
     availableRoles: 'Available roles',
@@ -258,7 +272,9 @@ export default {
     deleteRecordSuccessful: 'Record deleted successfully',
     deleteRecordError: 'Error deleting record',
     selectionRequired: 'You must select a record',
-    undo: 'Undo'
+    undo: 'Undo',
+    lockRecord: 'Lock Record',
+    unlockRecord: 'Unlock Record'
   },
   sequence: {
     available: 'Available',

@@ -1,6 +1,7 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
+import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 import ROUTES from '@/utils/ADempiere/zoomWindow'
 
 export const contextMixin = {
@@ -47,6 +48,7 @@ export const contextMixin = {
   data() {
     return {
       actions: [],
+      option: supportedTypes,
       references: [],
       file: this.$store.getters.getProcessResult.download,
       downloads: this.$store.getters.getProcessResult.url,
@@ -128,6 +130,17 @@ export const contextMixin = {
           return fieldItem.columnName
         }
       })
+    },
+    getterDataRecordsAll() {
+      return this.$store.getters.getDataRecordAndSelection(this.containerUuid).record
+    },
+    getDataRecord() {
+      var record = this.getterDataRecordsAll.filter(fieldItem => {
+        if (this.recordUuid === fieldItem.UUID) {
+          return fieldItem
+        }
+      })
+      return record
     },
     getterDataLog() {
       if (this.panelType === 'window') {
@@ -220,24 +233,53 @@ export const contextMixin = {
         this.isReferencesLoaded = false
       }
     },
-    exporBrowser() {
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = this.getterFieldListHeader
-          const filterVal = this.getterFieldListValue
-          const list = this.getDataSelection
-          const data = this.formatJson(filterVal, list)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: ''
-          })
-        })
+    typeFormat(key) {
+      Object.keys(supportedTypes).forEach(type => {
+        if (type === key && (this.panelType === 'window')) {
+          this.exporWindow(key)
+        } else if (type === key && (this.panelType === 'browser')) {
+          this.exporBrowser(key)
+        }
+      })
+    },
+    exporBrowser(key) {
+      const tHeader = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      const list = this.getDataSelection
+      const data = this.formatJson(filterVal, list)
+      exportFileFromJson({
+        header: tHeader,
+        data,
+        filename: '',
+        exportType: key
+      })
+    },
+    exporWindow(key) {
+      const tHeader = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      const list = this.getDataRecord
+      const data = this.formatJson(filterVal, list)
+      exportFileFromJson({
+        header: tHeader,
+        data,
+        filename: '',
+        exportType: key
+      })
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => v[j]))
     },
     generateContextMenu() {
       this.metadataMenu = this.getterContextMenu
+      this.$store.dispatch('getPrivateAccessFromServer', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+        .then(response => {
+          this.$nextTick(() => {
+            this.validatePrivateAccess(response)
+          })
+        })
       this.actions = this.metadataMenu.actions
 
       if (this.actions && this.actions.length) {
@@ -352,8 +394,15 @@ export const contextMixin = {
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid,
             panelType: this.panelType,
-            isNewRecord: action.action === 'resetPanelToNew'
+            isNewRecord: action.action === 'resetPanelToNew',
+            tableName: action.tableName,
+            recordId: action.recordId
           })
+            .then(response => {
+              if (response && response.isPrivateAccess) {
+                this.validatePrivateAccess(response)
+              }
+            })
         }
       } else if (action.type === 'reference') {
         this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: action.windowUuid })
@@ -434,6 +483,19 @@ export const contextMixin = {
         type: 'success',
         duration: 1500
       })
+    },
+    validatePrivateAccess(response) {
+      if (response.isLocked) {
+        this.actions.find(item => item.action === 'unlockRecord').hidden = false
+        this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
+        this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
+        this.actions.find(item => item.action === 'lockRecord').hidden = true
+      } else {
+        this.actions.find(item => item.action === 'lockRecord').hidden = false
+        this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
+        this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
+        this.actions.find(item => item.action === 'unlockRecord').hidden = true
+      }
     }
   }
 }

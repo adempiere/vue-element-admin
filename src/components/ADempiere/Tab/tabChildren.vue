@@ -68,6 +68,9 @@ export default {
           query: {
             ...this.$route.query,
             tabChild: String(newValue)
+          },
+          params: {
+            ...this.$route.params
           }
         })
       }
