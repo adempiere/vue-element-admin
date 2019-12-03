@@ -118,9 +118,13 @@ const processControl = {
           if (params.panelType === 'window') {
             const isProcessTable = getters.getRecordUuidMenu
             if (isProcessTable.processTable) {
-              tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
-              tableName = isProcessTable.tableName
-              recordId = isProcessTable.valueRecord
+              if (params.isProcessTableSelection) {
+                recordId = params.recordUuidSelection
+              } else {
+                tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
+                tableName = isProcessTable.tableName
+                recordId = isProcessTable.valueRecord
+              }
             } else {
               tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
               tableName = tab.tableName

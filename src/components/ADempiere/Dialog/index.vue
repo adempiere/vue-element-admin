@@ -111,6 +111,7 @@ export default {
               panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
               reportFormat: this.reportExportType,
               recordUuidSelection: selection,
+              isProcessTableSelection: true,
               routeToDelete: this.$route
             })
               .catch(error => {
@@ -120,6 +121,7 @@ export default {
             this.$store.dispatch('startProcess', {
               action: action, // process metadata
               parentUuid: this.parentUuid,
+              isProcessTableSelection: false,
               containerUuid: this.containerUuid,
               panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
               reportFormat: this.reportExportType,
