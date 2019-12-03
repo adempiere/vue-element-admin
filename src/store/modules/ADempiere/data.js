@@ -391,21 +391,22 @@ const data = {
           dataStore: dataStore,
           newDataStore: newDataStore
         })
-        if (isSortTab) {
-          const { sortOrderColumnName } = rootGetters.getTab(parentUuid, containerUuid)
-          const recordToTab = newDataStore.record
-            .map(itemRecord => {
-              return {
-                ...itemRecord
-              }
-            })
-            .sort((itemA, itemB) => {
-              return itemA[sortOrderColumnName] - itemB[sortOrderColumnName]
-            })
-          dispatch('setTabSequenceRecord', recordToTab)
-        }
       } else {
         commit('addRecordSelection', newDataStore)
+      }
+
+      if (isSortTab) {
+        const { sortOrderColumnName } = rootGetters.getTab(parentUuid, containerUuid)
+        const recordToTab = newDataStore.record
+          .map(itemRecord => {
+            return {
+              ...itemRecord
+            }
+          })
+          .sort((itemA, itemB) => {
+            return itemA[sortOrderColumnName] - itemB[sortOrderColumnName]
+          })
+        dispatch('setTabSequenceRecord', recordToTab)
       }
     },
     /**

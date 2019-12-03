@@ -722,7 +722,7 @@ const windowControl = {
       parentUuid,
       containerUuid
     }) {
-      const { tableName, sortOrderColumnName, sortYesNoColumnName } = rootGetters.getPanel(containerUuid)
+      const { tableName, sortOrderColumnName, sortYesNoColumnName } = rootGetters.getTab(parentUuid, containerUuid)
       const listSequenceToSet = getters.getTabSequenceRecord
       const recordData = rootGetters.getDataRecordsList(containerUuid)
 
