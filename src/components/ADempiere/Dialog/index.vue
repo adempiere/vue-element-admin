@@ -99,7 +99,7 @@ export default {
       if (value) {
         if (this.modalMetadata.isSortTab) {
           const data = this.$store.getters.getDataRecordAndSelection(this.modalMetadata.containerUuid)
-          if (!data.isLoaded) {
+          if (!data.isLoaded && !data.record.length) {
             this.$store.dispatch('getDataListTab', {
               parentUuid: this.modalMetadata.parentUuid,
               containerUuid: this.modalMetadata.containerUuid,

@@ -364,7 +364,7 @@ const data = {
         parentUuid, containerUuid, panelType = 'window', record = [],
         query, whereClause, orderByClause,
         selection = [], pageNumber = 1, recordCount = 0, nextPageToken,
-        originalNextPageToken, isAddRecord = false
+        originalNextPageToken, isAddRecord = false, isLoaded = true
       } = parameters
 
       const dataStore = state.recordSelection.find(recordItem => {
@@ -381,7 +381,7 @@ const data = {
         nextPageToken: nextPageToken,
         originalNextPageToken: originalNextPageToken,
         panelType: panelType,
-        isLoaded: true,
+        isLoaded: isLoaded,
         isLoadedContext: false,
         query: query,
         whereClause: whereClause,

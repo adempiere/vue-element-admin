@@ -739,7 +739,7 @@ const windowControl = {
       parentUuid,
       containerUuid
     }) {
-      const { tableName, sortOrderColumnName, sortYesNoColumnName } = rootGetters.getTab(parentUuid, containerUuid)
+      const { tableName, sortOrderColumnName, sortYesNoColumnName, tabAssociatedUuid } = rootGetters.getTab(parentUuid, containerUuid)
       const listSequenceToSet = getters.getTabSequenceRecord
       const recordData = rootGetters.getDataRecordsList(containerUuid)
 
@@ -793,15 +793,16 @@ const windowControl = {
 
               dispatch('setRecordSelection', {
                 parentUuid: parentUuid,
-                containerUuid: containerUuid
+                containerUuid: containerUuid,
+                isLoaded: false
               })
-              // refresh record list
-              // TODO: Add multiple request to get data with same table name
-              // dispatch('getDataListTab', {
-              //   parentUuid: parentUuid,
-              //   containerUuid: containerUuid,
-              //   isShowNotification: false
-              // })
+              dispatch('setTabSequenceRecord', [])
+
+              // refresh record list in table source
+              dispatch('getDataListTab', {
+                parentUuid: parentUuid,
+                containerUuid: tabAssociatedUuid
+              })
             }
           })
       })
