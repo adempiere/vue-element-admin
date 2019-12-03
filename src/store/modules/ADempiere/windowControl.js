@@ -540,7 +540,8 @@ const windowControl = {
       const {
         parentUuid, containerUuid, recordUuid,
         referenceWhereClause = '', columnName, value, criteria,
-        isRefreshPanel = false, isLoadAllRecords = false, isReference = false
+        isRefreshPanel = false, isLoadAllRecords = false, isReference = false,
+        isShowNotification = true
       } = parameters
       let { isAddRecord = false } = parameters
       const tab = rootGetters.getTab(parentUuid, containerUuid)
@@ -597,7 +598,7 @@ const windowControl = {
         conditions: isLoadAllRecords ? [] : conditions,
         isParentTab: tab.isParentTab,
         isAddRecord: isAddRecord,
-        isSortTab: tab.isSortTab
+        isShowNotification: isShowNotification
       })
         .then(response => {
           if (isRefreshPanel && !isEmptyValue(recordUuid) && recordUuid !== 'create-new') {
@@ -627,7 +628,7 @@ const windowControl = {
           const currentData = rootGetters.getDataRecordAndSelection(containerUuid)
           const { originalNextPageToken, pageNumber, recordCount } = currentData
           let nextPage = pageNumber
-
+          const isAdd = isAddRecord
           if (originalNextPageToken && isAddRecord) {
             const pageInToken = originalNextPageToken.substring(originalNextPageToken.length - 2)
             if (pageInToken === '-1') {
@@ -650,8 +651,24 @@ const windowControl = {
               containerUuid: containerUuid,
               pageNumber: nextPage,
               panelType: 'window',
-              isAddRecord: isAddRecord
+              isAddRecord: isAddRecord,
+              isShowNotification: false
             })
+          }
+          if (isAdd && isAdd !== isAddRecord) {
+            if (tab.isSortTab) {
+              const record = rootGetters.getDataRecordsList(containerUuid)
+              const recordToTab = record
+                .map(itemRecord => {
+                  return {
+                    ...itemRecord
+                  }
+                })
+                .sort((itemA, itemB) => {
+                  return itemA[tab.sortOrderColumnName] - itemB[tab.sortOrderColumnName]
+                })
+              dispatch('setTabSequenceRecord', recordToTab)
+            }
           }
         })
     },
@@ -774,6 +791,10 @@ const windowControl = {
               commit('setTotalRequest', 0)
               commit('setTotalResponse', 0)
 
+              dispatch('setRecordSelection', {
+                parentUuid: parentUuid,
+                containerUuid: containerUuid
+              })
               // refresh record list
               // TODO: Add multiple request to get data with same table name
               // dispatch('getDataListTab', {

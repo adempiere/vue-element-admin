@@ -98,18 +98,14 @@ export default {
     isVisibleDialog(value) {
       if (value) {
         if (this.modalMetadata.isSortTab) {
-          this.$store.dispatch('getDataListTab', {
-            parentUuid: this.modalMetadata.parentUuid,
-            containerUuid: this.modalMetadata.containerUuid,
-            isAddRecord: true
-          })
-        }
-      } else {
-        if (this.modalMetadata.isSortTab) {
-          this.$store.dispatch('setRecordSelection', {
-            parentUuid: this.modalMetadata.parentUuid,
-            containerUuid: this.modalMetadata.containerUuid
-          })
+          const data = this.$store.getters.getDataRecordAndSelection(this.modalMetadata.containerUuid)
+          if (!data.isLoaded) {
+            this.$store.dispatch('getDataListTab', {
+              parentUuid: this.modalMetadata.parentUuid,
+              containerUuid: this.modalMetadata.containerUuid,
+              isAddRecord: true
+            })
+          }
         }
       }
     }

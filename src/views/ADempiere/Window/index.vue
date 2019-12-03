@@ -86,7 +86,7 @@
                             (isMobile && !isShowedRecordNavigation || !isMobile)"
                           v-show="!isShowedTabChildren"
                           icon="el-icon-caret-top"
-                          :class="classIsMObile"
+                          :class="classIsMobile"
                           circle
                           @click="handleChangeShowedTabChildren()"
                         />
@@ -212,7 +212,7 @@ export default {
       return this.$store.state.app.device === 'mobile'
     },
     // convert ternary operator into computed property
-    classIsMObile() {
+    classIsMobile() {
       if (this.isMobile) {
         return 'open-table-detail-mobile'
       } else {

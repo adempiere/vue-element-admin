@@ -129,7 +129,7 @@ const data = {
     setPageNumber({ commit, state, dispatch, rootGetters }, parameters) {
       const {
         parentUuid, containerUuid, panelType = 'window', pageNumber,
-        isAddRecord = false
+        isAddRecord = false, isShowNotification = true
       } = parameters
       const data = state.recordSelection.find(recordItem => {
         return recordItem.containerUuid === containerUuid
@@ -144,7 +144,8 @@ const data = {
         dispatch('getDataListTab', {
           parentUuid: parentUuid,
           containerUuid: containerUuid,
-          isAddRecord: isAddRecord
+          isAddRecord: isAddRecord,
+          isShowNotification: isShowNotification
         })
       } else if (panelType === 'browser') {
         if (!rootGetters.isNotReadyForSubmit(containerUuid)) {
@@ -361,8 +362,9 @@ const data = {
     setRecordSelection({ state, commit, rootGetters, dispatch }, parameters) {
       const {
         parentUuid, containerUuid, panelType = 'window', record = [],
+        query, whereClause, orderByClause,
         selection = [], pageNumber = 1, recordCount = 0, nextPageToken,
-        originalNextPageToken, isAddRecord = false, isSortTab = false
+        originalNextPageToken, isAddRecord = false
       } = parameters
 
       const dataStore = state.recordSelection.find(recordItem => {
@@ -380,7 +382,10 @@ const data = {
         originalNextPageToken: originalNextPageToken,
         panelType: panelType,
         isLoaded: true,
-        isLoadedContext: false
+        isLoadedContext: false,
+        query: query,
+        whereClause: whereClause,
+        orderByClause: orderByClause
       }
 
       if (dataStore) {
@@ -393,20 +398,6 @@ const data = {
         })
       } else {
         commit('addRecordSelection', newDataStore)
-      }
-
-      if (isSortTab) {
-        const { sortOrderColumnName } = rootGetters.getTab(parentUuid, containerUuid)
-        const recordToTab = newDataStore.record
-          .map(itemRecord => {
-            return {
-              ...itemRecord
-            }
-          })
-          .sort((itemA, itemB) => {
-            return itemA[sortOrderColumnName] - itemB[sortOrderColumnName]
-          })
-        dispatch('setTabSequenceRecord', recordToTab)
       }
     },
     /**
@@ -445,6 +436,7 @@ const data = {
         return itemRecord.containerUuid !== viewUuid
       })
       commit('deleteRecordContainer', record)
+      dispatch('setTabSequenceRecord', [])
 
       if (setNews.length) {
         setNews.forEach(uuid => {
@@ -495,7 +487,7 @@ const data = {
       const {
         parentUuid, containerUuid,
         tableName, query, whereClause, orderByClause, conditions = [],
-        isShowNotification = true, isParentTab = true, isAddRecord = false, isSortTab = false
+        isShowNotification = true, isParentTab = true, isAddRecord = false
       } = parameters
       if (isShowNotification) {
         showMessage({
@@ -594,8 +586,10 @@ const data = {
             nextPageToken: token,
             originalNextPageToken: originalNextPageToken,
             isAddRecord: isAddRecord,
-            isSortTab: isSortTab,
-            pageNumber: dataStore.pageNumber
+            pageNumber: dataStore.pageNumber,
+            tableName: tableName,
+            query: query,
+            whereClause: whereClause
           })
           return record
         })
@@ -895,7 +889,11 @@ const data = {
     getPrivateAccessFromServer({ commit, rootGetters }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
-      return getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+      return getPrivateAccessFromServer({
+        tableName: tableName,
+        recordId: recordId,
+        userUuid: userUuid
+      })
         .then(privateAccess => {
           if (privateAccess.getRecordid()) {
             var recordPrivateAccess = {
@@ -921,7 +919,11 @@ const data = {
     lockRecord({ commit, rootGetters }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
-      return lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+      return lockPrivateAccessFromServer({
+        tableName: tableName,
+        recordId: recordId,
+        userUuid: userUuid
+      })
         .then(response => {
           if (response.getRecordid()) {
             const recordLocked = {
@@ -951,7 +953,11 @@ const data = {
     unlockRecord({ commit, rootGetters, state }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
-      return unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+      return unlockPrivateAccessFromServer({
+        tableName: tableName,
+        recordId: recordId,
+        userUuid: userUuid
+      })
         .then(response => {
           if (response.getRecordid()) {
             const recordUnlocked = {
@@ -979,7 +985,9 @@ const data = {
         })
     },
     requestPrintFormats({ commit }, parameters) {
-      return requestPrintFormats({ processUuid: parameters.processUuid })
+      return requestPrintFormats({
+        processUuid: parameters.processUuid
+      })
         .then(response => {
           const printFormatList = response.getPrintformatsList().map(printFormat => {
             return {
