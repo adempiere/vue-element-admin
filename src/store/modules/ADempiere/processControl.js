@@ -344,7 +344,7 @@ const processControl = {
             commit('deleteInExecution', {
               containerUuid: params.containerUuid
             })
-            dispatch('setPorcessTable', {
+            dispatch('serProcessTable', {
               isProcessTable: false
             })
           })

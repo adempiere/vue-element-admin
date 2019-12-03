@@ -1,5 +1,5 @@
 
-export const ADDRESS_HOST = 'http://20.12.0.52'
+export const ADDRESS_HOST = 'http://localhost'
 
 export const PORT_DICTIONARY = '8990'
 export const HOST_GRPC_DICTIONARY = ADDRESS_HOST + ':' + PORT_DICTIONARY

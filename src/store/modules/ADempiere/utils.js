@@ -31,7 +31,7 @@ const utils = {
     setSplitHeightTop(state, splitHeightTop) {
       state.splitHeightTop = splitHeightTop
     },
-    setPorcessTable(state, recordTable) {
+    serProcessTable(state, recordTable) {
       state.recordTable = recordTable
     },
     setTempShareLink(state, payload) {
@@ -63,8 +63,8 @@ const utils = {
     setSplitHeightTop({ commit }, splitHeightTop) {
       commit('setSplitHeightTop', splitHeightTop)
     },
-    setPorcessTable({ commit }, recordTable) {
-      commit('setPorcessTable', recordTable)
+    serProcessTable({ commit }, recordTable) {
+      commit('serProcessTable', recordTable)
     },
     changeShowedDetail({ dispatch }, params) {
       if (params.panelType === 'window') {

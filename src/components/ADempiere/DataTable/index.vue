@@ -627,7 +627,7 @@ export default {
           valueProcess = selection[element]
         }
       }
-      this.$store.dispatch('setPorcessTable', {
+      this.$store.dispatch('serProcessTable', {
         valueRecord: valueProcess,
         tableName: this.getterPanel.keyColumn,
         processTable: true
