@@ -116,13 +116,19 @@ const processControl = {
             }
           }
           if (params.panelType === 'window') {
-            tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
-            tableName = tab.tableName
-            const field = rootGetters.getFieldFromColumnName(params.containerUuid, tableName + '_ID')
-            recordId = field.value
+            const isProcessTable = getters.getRecordUuidMenu
+            if (isProcessTable.processTable) {
+              tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
+              tableName = isProcessTable.tableName
+              recordId = isProcessTable.valueRecord
+            } else {
+              tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
+              tableName = tab.tableName
+              const field = rootGetters.getFieldFromColumnName(params.containerUuid, tableName + '_ID')
+              recordId = field.value
+            }
           }
         }
-
         // get info metadata process
         const processDefinition = rootGetters.getProcess(params.action.uuid)
         var reportType = params.reportFormat
@@ -333,6 +339,9 @@ const processControl = {
 
             commit('deleteInExecution', {
               containerUuid: params.containerUuid
+            })
+            dispatch('setPorcessTable', {
+              isProcessTable: false
             })
           })
       })

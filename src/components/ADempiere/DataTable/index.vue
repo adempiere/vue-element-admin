@@ -43,6 +43,14 @@
                   >
                     {{ $t('table.dataTable.deleteSelection') }}
                   </el-menu-item>
+                  <el-menu-item
+                    v-if="isPanelWindow && getterContextMenu"
+                    :disabled="Boolean(getDataSelection.length < 1)"
+                    index="process"
+                    @click="tableProcess(getterContextMenu)"
+                  >
+                    {{ getterContextMenu.name }}
+                  </el-menu-item>
                   <el-submenu
                     :disabled="Boolean(getDataSelection.length < 1)"
                     index="xlsx"
@@ -326,6 +334,7 @@ import { FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 import evaluator from '@/utils/ADempiere/evaluator'
+import { showNotification } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'DataTable',
@@ -395,6 +404,14 @@ export default {
     }
   },
   computed: {
+    getterContextMenu() {
+      var process = this.$store.getters.getContextMenu(this.containerUuid).actions
+      if (process) {
+        return process.find(menu => menu.type === 'process')
+      }
+      return false
+      // return this.$store.getters.getContextMenu(this.containerUuid).actions
+    },
     getShowContextMenuTable() {
       return this.$store.getters.getShowContextMenuTable
     },
@@ -600,6 +617,50 @@ export default {
     }
   },
   methods: {
+    showNotification,
+    showModal(getterContextMenu) {
+      var processData = this.$store.getters.getProcess(getterContextMenu.uuid)
+      const selection = this.getDataSelection[0]
+      var valueProcess
+      for (const element in selection) {
+        if (element === this.getterPanel.keyColumn) {
+          valueProcess = selection[element]
+        }
+      }
+      this.$store.dispatch('setPorcessTable', {
+        valueRecord: valueProcess,
+        tableName: this.getterPanel.keyColumn,
+        processTable: true
+      })
+      if (this.getDataSelection.length <= 1) {
+        if (processData === undefined) {
+          this.$store.dispatch('getProcessFromServer', {
+            containerUuid: getterContextMenu.uuid,
+            routeToDelete: this.$route
+          })
+            .then(response => {
+              this.$store.dispatch('setShowDialog', {
+                type: getterContextMenu.type,
+                action: response,
+                record: this.getDataSelection
+              })
+            }).catch(error => {
+              console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
+            })
+        } else {
+          this.$store.dispatch('setShowDialog', { type: getterContextMenu.type, action: processData })
+        }
+      } else {
+        this.showNotification({
+          type: 'warning',
+          title: this.$t('notifications.selectionProcess'),
+          message: this.$t('notifications.selectedQuantity') + ' ' + this.getDataSelection.length
+        })
+      }
+    },
+    tableProcess(getterContextMenu) {
+      this.showModal(getterContextMenu)
+    },
     closeMenu() {
       this.$store.dispatch('showMenuTable', {
         isShowedTable: false

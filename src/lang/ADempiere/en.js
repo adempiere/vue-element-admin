@@ -29,6 +29,8 @@ export default {
     processExecuted: 'Executed, see process activity',
     processError: 'Was not executed',
     //
+    selectionProcess: 'You must Select a single Record',
+    selectedQuantity: 'Selected Quantity',
     emptyValues: 'Parameter(s) empty value',
     fieldMandatory: 'The field is mandatory',
     requestError: 'Error executing the request',

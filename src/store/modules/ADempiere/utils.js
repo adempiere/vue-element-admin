@@ -10,7 +10,7 @@ const utils = {
     oldAction: undefined,
     reportType: '',
     isShowedTable: false,
-    recordUuidTable: 0
+    recordTable: 0
   },
   mutations: {
     setWidth(state, width) {
@@ -31,8 +31,8 @@ const utils = {
     setSplitHeightTop(state, splitHeightTop) {
       state.splitHeightTop = splitHeightTop
     },
-    setRecordUuidMenu(state, recordUuidTable) {
-      state.recordUuidTable = recordUuidTable
+    setPorcessTable(state, recordTable) {
+      state.recordTable = recordTable
     },
     setTempShareLink(state, payload) {
       state.tempShareLink = payload
@@ -63,8 +63,8 @@ const utils = {
     setSplitHeightTop({ commit }, splitHeightTop) {
       commit('setSplitHeightTop', splitHeightTop)
     },
-    setRecordUuidMenu({ commit }, recordUuidTable) {
-      commit('setRecordUuidMenu', recordUuidTable)
+    setPorcessTable({ commit }, recordTable) {
+      commit('setPorcessTable', recordTable)
     },
     changeShowedDetail({ dispatch }, params) {
       if (params.panelType === 'window') {
@@ -102,7 +102,7 @@ const utils = {
       return state.getSplitHeightTop
     },
     getRecordUuidMenu: (state) => {
-      return state.recordUuidTable
+      return state.recordTable
     },
     getShowContextMenuTable: (state) => {
       const menu = state.isShowedTable.isShowedTable

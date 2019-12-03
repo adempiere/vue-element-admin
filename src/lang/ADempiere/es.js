@@ -29,7 +29,9 @@ export default {
     processExecuted: 'Ejecutado, ver actividad de proceso',
     processError: 'No fue ejecutado',
     //
+    selectionProcess: 'Debe Seleccionar un solo registro',
     emptyValues: 'Parametro(s) con valores vacios',
+    selectedQuantity: 'Cantidad Seleccionado',
     fieldMandatory: 'El campo es obligatorio',
     requestError: 'Error al ejecutar la petición',
     successChangeRole: 'El rol se ha cambiado',
