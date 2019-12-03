@@ -19,7 +19,7 @@
       v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
-      :title="field.contextInfo.isActive ? $t('components.contextFieldTitle') : ''"
+      :title="isFieldOnly()"
       width="300"
       trigger="click"
     >
