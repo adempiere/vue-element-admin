@@ -105,7 +105,7 @@ const contextMenu = {
     },
     getReportOutputFromServer({ commit, getters, rootGetters }, parameters) {
       if (isEmptyValue(parameters.printFormatUuid)) {
-        parameters.printFormatUuid = getters.getDefaultPrinFormat(parameters.processUuid).uuid
+        parameters.printFormatUuid = getters.getDefaultPrintFormat(parameters.processUuid).printFormatUuid
       }
       const {
         tableName,
@@ -190,7 +190,7 @@ const contextMenu = {
       }
       return []
     },
-    getDefaultPrinFormat: (state, getters) => (containerUuid) => {
+    getDefaultPrintFormat: (state, getters) => (containerUuid) => {
       return getters.getPrintFormatList(containerUuid).find(printFormat => printFormat.isDefault)
     },
     getReportViewList: (state) => (containerUuid) => {
