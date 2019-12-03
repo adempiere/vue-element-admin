@@ -6,7 +6,11 @@ import {
   getDefaultValueFromServer,
   convertValueFromGRPC,
   getContextInfoValueFromServer,
-  getFavoritesFromServer
+  getFavoritesFromServer,
+  getPrivateAccessFromServer,
+  lockPrivateAccessFromServer,
+  unlockPrivateAccessFromServer,
+  getPendingDocumentsFromServer
 } from '@/api/ADempiere'
 import { convertValuesMapToObject, isEmptyValue, showMessage, convertAction } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -17,8 +21,10 @@ const data = {
     recordDetail: [],
     recentItems: [],
     favorites: [],
+    pendingDocuments: [],
     inGetting: [],
-    contextInfoField: []
+    contextInfoField: [],
+    recordPrivateAccess: {}
   },
   mutations: {
     addInGetting(state, payload) {
@@ -65,6 +71,9 @@ const data = {
     setFavorites(state, payload) {
       state.favorites = payload
     },
+    setPendingDocuments(state, payload) {
+      state.pendingDocuments = payload
+    },
     setPageNumber(state, payload) {
       payload.data.pageNumber = payload.pageNumber
     },
@@ -94,6 +103,9 @@ const data = {
     },
     setContextInfoField(state, payload) {
       state.contextInfoField.push(payload)
+    },
+    setPrivateAccess(state, payload) {
+      state.recordPrivateAccess = payload
     }
   },
   actions: {
@@ -640,6 +652,41 @@ const data = {
           })
       })
     },
+    getPendingDocumentsFromServer({ commit, getters, rootGetters }) {
+      const userUuid = rootGetters['user/getUserUuid']
+      const roleUuid = getters.getRoleUuid
+      return new Promise((resolve, reject) => {
+        getPendingDocumentsFromServer(userUuid, roleUuid)
+          .then(response => {
+            const documentsList = response.getPendingdocumentsList().map(document => {
+              return {
+                formUuid: document.getFormuuid(),
+                name: document.getDocumentname(),
+                description: document.getDocumentdescription(),
+                criteria: {
+                  type: document.getCriteria().getConditionsList(),
+                  limit: document.getCriteria().getLimit(),
+                  orderbyclause: document.getCriteria().getOrderbyclause(),
+                  orderbycolumnList: document.getCriteria().getOrderbycolumnList(),
+                  query: document.getCriteria().getQuery(),
+                  referenceUuid: document.getCriteria().getReferenceuuid(),
+                  tableName: document.getCriteria().getTablename(),
+                  valuesList: document.getCriteria().getValuesList(),
+                  whereClause: document.getCriteria().getWhereclause()
+                },
+                recordCount: document.getRecordcount(),
+                sequence: document.getSequence(),
+                windowUuid: document.getWindowuuid()
+              }
+            })
+            commit('setPendingDocuments', documentsList)
+            resolve(documentsList)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
     /**
      * TODO: Add support to tab children
      * @param {object} objectParams
@@ -790,6 +837,92 @@ const data = {
         .catch(error => {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
         })
+    },
+    getPrivateAccessFromServer({ commit, rootGetters }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(privateAccess => {
+          if (privateAccess.getRecordid()) {
+            var recordPrivateAccess = {
+              isLocked: true,
+              tableName: privateAccess.getTablename(),
+              recordId: privateAccess.getRecordid(),
+              userUuid: privateAccess.getUseruuid()
+            }
+          } else {
+            recordPrivateAccess = {
+              isLocked: false,
+              tableName: parameters.tableName,
+              recordId: parameters.recordId,
+              userUuid: rootGetters['user/getUserUuid']
+            }
+          }
+          return recordPrivateAccess
+        })
+        .catch(error => {
+          console.error(error)
+        })
+    },
+    lockRecord({ commit, rootGetters }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(response => {
+          if (response.getRecordid()) {
+            const recordLocked = {
+              isPrivateAccess: true,
+              isLocked: true,
+              tableName: response.getTablename(),
+              recordId: response.getRecordid(),
+              userUuid: response.getUseruuid()
+            }
+            showMessage({
+              title: language.t('notifications.succesful'),
+              message: language.t('notifications.recordLocked'),
+              type: 'success'
+            })
+            return recordLocked
+          }
+        })
+        .catch(error => {
+          showMessage({
+            title: language.t('notifications.error'),
+            message: language.t('login.unexpectedError'),
+            type: 'error'
+          })
+          console.error(error)
+        })
+    },
+    unlockRecord({ commit, rootGetters, state }, parameters) {
+      const { tableName, recordId } = parameters
+      const userUuid = rootGetters['user/getUserUuid']
+      return unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+        .then(response => {
+          if (response.getRecordid()) {
+            const recordUnlocked = {
+              isPrivateAccess: true,
+              isLocked: false,
+              tableName: response.getTablename(),
+              recordId: response.getRecordid(),
+              userUuid: response.getUseruuid()
+            }
+            showMessage({
+              title: language.t('notifications.succesful'),
+              message: language.t('notifications.recordUnlocked'),
+              type: 'success'
+            })
+            return recordUnlocked
+          }
+        })
+        .catch(error => {
+          showMessage({
+            title: language.t('notifications.error'),
+            message: language.t('login.unexpectedError'),
+            type: 'error'
+          })
+          console.error(error)
+        })
     }
   },
   getters: {
@@ -908,6 +1041,9 @@ const data = {
     getFavoritesList: (state) => {
       return state.favorites
     },
+    getPendingDocuments: (state) => {
+      return state.pendingDocuments
+    },
     getLanguageList: (state) => (roleUuid) => {
       return state.recordSelection.find(
         record => record.containerUuid === roleUuid
@@ -918,6 +1054,14 @@ const data = {
         info.contextInfoUuid === contextInfoUuid &&
         info.sqlStatement === sqlStatement
       )
+    },
+    getRecordPrivateAccess: (state) => (tableName, recordId) => {
+      if (!isEmptyValue(tableName) && !isEmptyValue(recordId)) {
+        if (state.recordPrivateAccess.tableName === tableName && state.recordPrivateAccess.recordId === recordId) {
+          return state.recordPrivateAccess
+        }
+        return undefined
+      }
     }
   }
 }

@@ -38,7 +38,9 @@ export default {
     copyUnsuccessful: 'Error, unable to copy',
     mandatoryFieldMissing: 'Missing fill in the fields ',
     updateFields: 'The record is updated with the field ',
-    invalidEmailFormat: 'Invalid email format'
+    invalidEmailFormat: 'Invalid email format',
+    recordLocked: 'This record has been locked',
+    recordUnlocked: 'This record has been unlocked'
   },
   navbar: {
     badge: {
@@ -245,6 +247,7 @@ export default {
     aboutMe: 'About Me',
     recentItems: 'Recent Items',
     favorites: 'Favorites',
+    PendingDocuments: 'Pending Documents',
     recentItemsName: 'Name Recent Items',
     role: 'Role',
     availableRoles: 'Available roles',
@@ -269,6 +272,8 @@ export default {
     deleteRecordSuccessful: 'Record deleted successfully',
     deleteRecordError: 'Error deleting record',
     selectionRequired: 'You must select a record',
-    undo: 'Undo'
+    undo: 'Undo',
+    lockRecord: 'Lock Record',
+    unlockRecord: 'Unlock Record'
   }
 }
