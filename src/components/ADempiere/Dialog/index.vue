@@ -102,17 +102,35 @@ export default {
         const fieldNotReady = this.$store.getters.isNotReadyForSubmit(action.uuid)
         if (!fieldNotReady) {
           this.closeDialog()
-          this.$store.dispatch('startProcess', {
-            action: action, // process metadata
-            parentUuid: this.parentUuid,
-            containerUuid: this.containerUuid,
-            panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
-            reportFormat: this.reportExportType,
-            routeToDelete: this.$route
-          })
-            .catch(error => {
-              console.warn(error)
+          const selection = this.$store.getters.getRecordUuidMenu.valueRecord
+          if (this.$store.getters.getRecordUuidMenu.processTable && selection.length > 1) {
+            this.$store.dispatch('startProcess', {
+              action: action, // process metadata
+              parentUuid: this.parentUuid,
+              containerUuid: this.containerUuid,
+              panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
+              reportFormat: this.reportExportType,
+              recordUuidSelection: selection,
+              isProcessTableSelection: true,
+              routeToDelete: this.$route
             })
+              .catch(error => {
+                console.warn(error)
+              })
+          } else {
+            this.$store.dispatch('startProcess', {
+              action: action, // process metadata
+              parentUuid: this.parentUuid,
+              isProcessTableSelection: false,
+              containerUuid: this.containerUuid,
+              panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
+              reportFormat: this.reportExportType,
+              routeToDelete: this.$route
+            })
+              .catch(error => {
+                console.warn(error)
+              })
+          }
         } else {
           this.showNotification({
             type: 'warning',

@@ -3,15 +3,33 @@
     <el-submenu
       index="xlsx"
     >
-      <template slot="title">{{ $t('components.contextMennuWindowReport') }}</template>
+      <template
+        slot="title"
+      >
+        {{ $t('components.contextMennuWindowReport') }}
+      </template>
       <template v-for="(format, index) in option">
-        <el-menu-item :key="index" :index="index">
+        <el-menu-item
+          :key="index"
+          :index="index"
+        >
           {{ format }}
         </el-menu-item>
       </template>
     </el-submenu>
-    <el-menu-item index="eliminar" style="padding-left: 36px;">
+    <el-menu-item
+      index="eliminar"
+      @click="deleteRecord()"
+    >
       {{ $t('window.deleteRecord') }}
+    </el-menu-item>
+    <el-menu-item
+      v-for="(process, key) in isProcessMenu"
+      :key="key"
+      index="process"
+      @click="tableProcess(process)"
+    >
+      {{ process.name }}
     </el-menu-item>
   </el-menu>
 </template>
@@ -36,6 +54,16 @@ export default {
     isOption: {
       type: Object,
       default: () => {}
+    },
+    isProcessMenu: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
+    isPanelWindow: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -46,6 +74,9 @@ export default {
     }
   },
   computed: {
+    getterPanel() {
+      return this.$store.getters.getPanel(this.containerUuid)
+    },
     getterFieldList() {
       return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
     },
@@ -95,11 +126,11 @@ export default {
       return 'menu-table'
     },
     typeFormat(key, keyPath) {
-      if (key === 'eliminar') {
-        this.rowMenu()
-      } else {
-        this.exporRecordTable(key)
-      }
+      Object.keys(supportedTypes).forEach(type => {
+        if (type === key) {
+          this.exporRecordTable(key)
+        }
+      })
       this.$store.dispatch('showMenuTable', {
         isShowedTable: false
       })
@@ -119,7 +150,7 @@ export default {
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => v[j]))
     },
-    rowMenu() {
+    deleteRecord() {
       this.$store.dispatch('deleteEntity', {
         parentUuid: this.parentUuid,
         containerUuid: this.containerUuid,
@@ -127,37 +158,43 @@ export default {
         panelType: this.panelType,
         isNewRecord: 'deleteEntity' === 'resetPanelToNew'
       })
+    },
+    tableProcess(process) {
+      this.showModal(process)
+    },
+    showModal(process) {
+      var processData = this.$store.getters.getProcess(process.uuid)
+      const selection = this.isOption
+      var valueProcess
+      for (const element in selection) {
+        if (element === this.getterPanel.keyColumn) {
+          valueProcess = selection[element]
+        }
+      }
+      console.log(processData, 'valueRecord:', valueProcess, 'TableName:', this.getterPanel.keyColumn, process)
+      this.$store.dispatch('setProcessTable', {
+        valueRecord: valueProcess,
+        tableName: this.getterPanel.keyColumn,
+        processTable: true
+      })
+      if (processData === undefined) {
+        this.$store.dispatch('getProcessFromServer', {
+          containerUuid: process.uuid,
+          routeToDelete: this.$route
+        })
+          .then(response => {
+            this.$store.dispatch('setShowDialog', {
+              type: process.type,
+              action: response,
+              record: this.getDataSelection
+            })
+          }).catch(error => {
+            console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
+          })
+      } else {
+        this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
+      }
     }
   }
 }
 </script>
-<style>
-.el-menu--vertical .nest-menu .el-submenu>.el-submenu__title:hover, .el-menu--vertical .el-menu-item:hover {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-}
-.el-menu--collapse {
-  width: auto;
-}
-.el-menu-item:hover {
-  background-color: #ffffff !important
-}
-.hover {
-  background-color: initial !important;
-}
-.el-menu-item {
-    height: 56px;
-    line-height: 56px;
-    font-size: 14px;
-    color: #303133;
-    padding: 0 20px;
-    list-style: none;
-    cursor: pointer;
-    position: relative;
-    -webkit-transition: border-color .3s, background-color .3s, color .3s;
-    transition: border-color .3s, background-color .3s, color .3s;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-</style>

@@ -116,10 +116,21 @@ const processControl = {
             }
           }
           if (params.panelType === 'window') {
-            tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
-            tableName = tab.tableName
-            const field = rootGetters.getFieldFromColumnName(params.containerUuid, tableName + '_ID')
-            recordId = field.value
+            const isProcessTable = getters.getRecordUuidMenu
+            if (isProcessTable.processTable) {
+              if (params.isProcessTableSelection) {
+                recordId = params.recordUuidSelection
+              } else {
+                tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
+                tableName = isProcessTable.tableName
+                recordId = isProcessTable.valueRecord
+              }
+            } else {
+              tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
+              tableName = tab.tableName
+              const field = rootGetters.getFieldFromColumnName(params.containerUuid, tableName + '_ID')
+              recordId = field.value
+            }
           }
         }
 
