@@ -60,7 +60,7 @@
               </el-menu-item>
             </template>
           </el-submenu>
-          <el-menu-item v-show="$route.name === 'Report Viewer'" index="9" @click="$router.push({ name: ROUTES.PRINT_FORMAT_SETUP_WINDOW.uuid })">
+          <el-menu-item v-show="$route.name === 'Report Viewer'" index="9" @click="redirect">
             {{ $t('components.contextMenuPrintFormatSetup') }}
           </el-menu-item>
           <el-menu-item v-if="panelType !== 'process'" index="8" @click="refreshData">

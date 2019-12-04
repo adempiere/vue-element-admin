@@ -163,6 +163,9 @@ export const contextMixin = {
         }
       }
       return false
+    },
+    metadataReport() {
+      return this.$store.getters.getCachedReport(this.$route.params.instanceUuid)
     }
   },
   watch: {
@@ -513,6 +516,15 @@ export const contextMixin = {
         message: message,
         type: 'success',
         duration: 1500
+      })
+    },
+    redirect() {
+      this.$router.push({
+        name: ROUTES.PRINT_FORMAT_SETUP_WINDOW.uuid,
+        query: {
+          action: this.metadataReport.output.printFormatUuid,
+          tabParent: ROUTES.PRINT_FORMAT_SETUP_WINDOW.tabParent
+        }
       })
     }
   }

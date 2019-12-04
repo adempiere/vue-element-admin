@@ -272,9 +272,11 @@ const processControl = {
                 })
                   .then(response => {
                     reportViewList.childs = response
-                    // Get contextMenu metadata and concat print report views with contextMenu actions
-                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                    contextMenuMetadata.actions.push(reportViewList)
+                    if (reportViewList.childs.length) {
+                      // Get contextMenu metadata and concat print report views with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(reportViewList)
+                    }
                   })
               }
 
@@ -298,9 +300,11 @@ const processControl = {
                 })
                   .then(response => {
                     printFormatList.childs = response
-                    // Get contextMenu metadata and concat print Format List with contextMenu actions
-                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                    contextMenuMetadata.actions.push(printFormatList)
+                    if (printFormatList.childs.length) {
+                      // Get contextMenu metadata and concat print Format List with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(printFormatList)
+                    }
                   })
               }
 
@@ -312,7 +316,7 @@ const processControl = {
                 childs: [],
                 option: 'drillTable'
               }
-              if (!isEmptyValue(response.getResulttablename())) {
+              if (!isEmptyValue(output.tableName)) {
                 drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
                 if (!drillTablesList.childs.length) {
                   dispatch('requestDrillTables', {
@@ -325,9 +329,11 @@ const processControl = {
                   })
                     .then(response => {
                       drillTablesList.childs = response
-                      // Get contextMenu metadata and concat print Format List with contextMenu actions
-                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                      contextMenuMetadata.actions.push(drillTablesList)
+                      if (drillTablesList.childs.length) {
+                        // Get contextMenu metadata and concat print Format List with contextMenu actions
+                        var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                        contextMenuMetadata.actions.push(drillTablesList)
+                      }
                     })
                 }
               }
