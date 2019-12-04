@@ -44,12 +44,14 @@
                     {{ $t('table.dataTable.deleteSelection') }}
                   </el-menu-item>
                   <el-menu-item
-                    v-if="isPanelWindow && getterContextMenu"
+                    v-for="(process, key) in getterContextMenu"
+                    v-show="isPanelWindow && getterContextMenu"
+                    :key="key"
                     :disabled="Boolean(getDataSelection.length < 1)"
                     index="process"
-                    @click="tableProcess(getterContextMenu)"
+                    @click="tableProcess(process)"
                   >
-                    {{ getterContextMenu.name }}
+                    {{ process.name }}
                   </el-menu-item>
                   <el-submenu
                     :disabled="Boolean(getDataSelection.length < 1)"
@@ -407,10 +409,13 @@ export default {
     getterContextMenu() {
       var process = this.$store.getters.getContextMenu(this.containerUuid).actions
       if (process) {
-        return process.find(menu => menu.type === 'process')
+        return process.filter(menu => {
+          if (menu.type === 'process') {
+            return menu
+          }
+        })
       }
       return false
-      // return this.$store.getters.getContextMenu(this.containerUuid).actions
     },
     getShowContextMenuTable() {
       return this.$store.getters.getShowContextMenuTable
@@ -618,8 +623,8 @@ export default {
   },
   methods: {
     showNotification,
-    showModal(getterContextMenu) {
-      var processData = this.$store.getters.getProcess(getterContextMenu.uuid)
+    showModal(process) {
+      var processData = this.$store.getters.getProcess(process.uuid)
       const selection = this.getDataSelection[0]
       var valueProcess
       for (const element in selection) {
@@ -635,12 +640,12 @@ export default {
       if (this.getDataSelection.length <= 1) {
         if (processData === undefined) {
           this.$store.dispatch('getProcessFromServer', {
-            containerUuid: getterContextMenu.uuid,
+            containerUuid: process.uuid,
             routeToDelete: this.$route
           })
             .then(response => {
               this.$store.dispatch('setShowDialog', {
-                type: getterContextMenu.type,
+                type: process.type,
                 action: response,
                 record: this.getDataSelection
               })
@@ -648,7 +653,7 @@ export default {
               console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
             })
         } else {
-          this.$store.dispatch('setShowDialog', { type: getterContextMenu.type, action: processData })
+          this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
         }
       } else {
         this.showNotification({
@@ -658,8 +663,8 @@ export default {
         })
       }
     },
-    tableProcess(getterContextMenu) {
-      this.showModal(getterContextMenu)
+    tableProcess(process) {
+      this.showModal(process)
     },
     closeMenu() {
       this.$store.dispatch('showMenuTable', {
