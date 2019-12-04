@@ -319,9 +319,26 @@ export function getContextInfoValueFromServer({ uuid, query }) {
   return Instance.call(this).getContextInfoValue({ uuid: uuid, query: query })
 }
 
+export function getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
+  return Instance.call(this).getPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+}
+
+export function lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
+  return Instance.call(this).lockPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+}
+
+export function unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
+  return Instance.call(this).unlockPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+}
+
 export function getFavoritesFromServer(userUuid) {
   return Instance.call(this).requestFavorites(userUuid)
 }
+
+export function getPendingDocumentsFromServer(userUuid, roleUuid) {
+  return Instance.call(this).requestPendingDocuments(userUuid, roleUuid)
+}
+
 export function requestReportViews({ tableName, processUuid }) {
   return Instance.call(this).requestReportViews({ tableName: tableName, processUuid: processUuid })
 }
