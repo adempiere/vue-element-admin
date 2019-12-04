@@ -1,7 +1,8 @@
 import REFERENCES, { FIELD_NOT_SHOWED } from '@/components/ADempiere/Field/references'
 import { FIELD_DISPLAY_SIZES, DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import evaluator from '@/utils/ADempiere/evaluator.js'
-import * as valueUtil from '@/utils/ADempiere/valueUtil.js'
+import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtil.js'
+import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 /**
  * Determinate if field is displayed
@@ -408,84 +409,6 @@ export function getParentFields(fieldGRPC) {
   return parentFields
 }
 
-/**
- * Parse Context String
- * @param {object} context
- *  - value: (REQUIRED) String to parsing
- *  - parentUuid: (REQUIRED from Window) UUID Window
- *  - containerUuid: (REQUIRED) UUID Tab, Process, SmartBrowser, Report and Form
- *  - columnName: (Optional if exists in value) Column name to search in context
- * @param {boolean} isBoolToString, convert boolean values to string
- */
-export function parseContext(context, isBoolToString = false) {
-  const store = require('@/store')
-  var value = String(context.value)
-  var valueSQL = {}
-  if (valueUtil.isEmptyValue(value)) { return '' }
-  if (value.includes('@SQL=')) {
-    value = value.replace('@SQL=', '')
-  }
-  // var instances = value.length - value.replace('@', '').length
-  // if ((instances > 0) && (instances % 2) !== 0) { // could be an email address
-  //   return value
-  // }
-
-  var token
-  var inStr = value
-  var outStr = ''
-
-  var i = inStr.indexOf('@')
-
-  while (i !== -1) {
-    outStr = outStr + inStr.substring(0, i) // up to @
-    inStr = inStr.substring(i + 1, inStr.length)	// from first @
-    var j = inStr.indexOf('@') // next @
-    if (j < 0) {
-      console.log('No second tag: ' + inStr)
-      return ''	//	no second tag
-    }
-
-    token = inStr.substring(0, j)
-    context.columnName = token
-
-    var ctxInfo = store.default.getters.getContext(context)	// get context
-    if (isBoolToString && typeof ctxInfo === 'boolean') {
-      if (ctxInfo) {
-        ctxInfo = 'Y'
-      } else {
-        ctxInfo = 'N'
-      }
-    }
-
-    if ((ctxInfo === undefined || ctxInfo.length === 0) && (token.startsWith('#') || token.startsWith('$'))) {
-      context.parentUuid = undefined
-      context.containerUuid = undefined
-      ctxInfo = store.default.getters.getContext(context)	// get global context
-    }
-    if (ctxInfo === undefined || ctxInfo.length === 0) {
-      console.info('No Context for: ' + token)
-    } else {
-      if (typeof ctxInfo === 'object') {
-        outStr = ctxInfo
-      } else {
-        outStr = outStr + ctxInfo // replace context with Context
-      }
-    }
-
-    inStr = inStr.substring(j + 1, inStr.length)	// from second @
-    i = inStr.indexOf('@')
-  }
-  if (typeof ctxInfo !== 'object') {
-    outStr = outStr + inStr	// add the rest of the string
-  }
-  if (context.isSQL) {
-    valueSQL['query'] = outStr
-    valueSQL['value'] = ctxInfo
-    return valueSQL
-  }
-  return outStr
-}	//	parseContext
-
 export function convertRoleFromGRPC(roleGRPC) {
   return {
     id: roleGRPC.getId(),
@@ -606,7 +529,7 @@ export function assignedGroup(fieldList, assignedGroup) {
 
     // change the first field group, change the band
     if (!firstChangeGroup) {
-      if (!valueUtil.isEmptyValue(fieldElement.fieldGroup.name) &&
+      if (!isEmptyValue(fieldElement.fieldGroup.name) &&
         currentGroup !== fieldElement.fieldGroup.name &&
         fieldElement.isDisplayed) {
         firstChangeGroup = true
@@ -617,7 +540,7 @@ export function assignedGroup(fieldList, assignedGroup) {
     //  assigns the following field items to the current field group whose
     //  field group is '' or null
     if (firstChangeGroup) {
-      if (!valueUtil.isEmptyValue(fieldElement.fieldGroup.name)) {
+      if (!isEmptyValue(fieldElement.fieldGroup.name)) {
         currentGroup = fieldElement.fieldGroup.name
         typeGroup = fieldElement.fieldGroup.fieldGroupType
       }
@@ -657,82 +580,6 @@ export function sortFields(arr, orderBy = 'sequence', type = 'asc', panelType = 
   return arr
 }
 
-export function parsedValueComponent({ fieldType, value, referenceType, isMandatory = false }) {
-  if (value === undefined || value === null) {
-    return undefined
-  }
-  var returnValue
-
-  switch (fieldType) {
-    // data type Number
-    case 'FieldNumber':
-      if (String(value).trim() === '') {
-        returnValue = undefined
-        if (isMandatory) {
-          returnValue = 0
-        }
-      } else if (typeof value === 'object' && value.hasOwnProperty('query')) {
-        returnValue = value
-      } else {
-        returnValue = Number(value)
-      }
-      break
-
-    // data type Boolean
-    case 'FieldYesNo':
-      if (value === 'false' || value === 'N') {
-        value = false
-      } else if (typeof value === 'object' && value.hasOwnProperty('query')) {
-        returnValue = value
-      }
-      returnValue = Boolean(value)
-      break
-
-    // data type String
-    case 'FieldText':
-    case 'FieldTextArea':
-      if (typeof value === 'object' && value.hasOwnProperty('query')) {
-        returnValue = value
-      }
-      returnValue = String(value)
-      break
-
-    // data type Date
-    case 'FieldDate':
-    case 'FieldTime ':
-      if (String(value).trim() === '') {
-        value = undefined
-      }
-      if (!isNaN(value)) {
-        value = Number(value)
-      }
-      if (typeof value === 'number') {
-        value = new Date(value)
-      }
-      if (typeof value === 'object' && value.hasOwnProperty('query')) {
-        returnValue = value
-      }
-      returnValue = value
-      break
-
-    case 'FieldSelect':
-      if (String(value).trim() === '') {
-        value = undefined
-      }
-      if (referenceType === 'TableDirect') {
-        if (value !== '' && value !== null && value !== undefined) {
-          value = Number(value)
-        }
-      } // Search or List
-      returnValue = value
-      break
-
-    default:
-      returnValue = value
-      break
-  }
-  return returnValue
-}
 export function convertAction(action) {
   var actionAttributes = {
     name: '',
@@ -782,7 +629,9 @@ export function convertAction(action) {
   }
   return actionAttributes
 }
+
 export default evaluator // from '@/utils/ADempiere/evaluator.js'
 export * from '@/utils/ADempiere/auth.js'
 export * from '@/utils/ADempiere/notification.js'
 export * from '@/utils/ADempiere/valueUtil.js'
+export * from '@/utils/ADempiere/contextUtils.js'

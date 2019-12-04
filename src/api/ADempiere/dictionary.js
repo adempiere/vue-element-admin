@@ -16,12 +16,12 @@ export function getWindow(uuid, childrenTabs = true) {
   return Instance.call(this).requestWindow(uuid, childrenTabs)
 }
 
-export function getProcess(uuid) {
-  return Instance.call(this).requestProcess(uuid)
+export function getProcess(uuid, isConvert = true) {
+  return Instance.call(this).requestProcess(uuid, isConvert)
 }
 
-export function getBrowser(uuid) {
-  return Instance.call(this).requestBrowser(uuid)
+export function getBrowser(uuid, isConvert = true) {
+  return Instance.call(this).requestBrowser(uuid, isConvert)
 }
 
 export function getTab(uuid, childrenFields = true) {
