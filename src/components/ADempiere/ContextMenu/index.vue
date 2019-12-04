@@ -151,6 +151,10 @@ export default {
     max-height: 400px;
   }
 
+  .scroll-child {
+    max-height: 300px;
+  }
+
   .el-icon-more {
     transform: rotate(90deg);
   }
