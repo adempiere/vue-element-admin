@@ -448,7 +448,8 @@ export const contextMixin = {
           reportViewUuid: action.reportViewUuid,
           isSummary: false,
           reportName: this.$store.getters.getProcessResult.name,
-          reportType: this.$store.getters.getReportType
+          reportType: this.$store.getters.getReportType,
+          option: action.option
         }
         this.$store.dispatch('getReportOutputFromServer', updateReportParams)
           .then(response => {

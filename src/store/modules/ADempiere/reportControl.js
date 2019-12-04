@@ -116,7 +116,8 @@ const contextMenu = {
         reportType,
         processUuid,
         processId,
-        instanceUuid
+        instanceUuid,
+        option
       } = parameters
       const processParameters = rootGetters.getParametersToServer({ containerUuid: processUuid })
       return getReportOutput({
@@ -149,7 +150,8 @@ const contextMenu = {
             processUuid: processUuid,
             isError: false,
             instanceUuid: instanceUuid,
-            isReport: true
+            isReport: true,
+            option: option
           }
           commit('setNewReportOutput', reportOutput)
           return reportOutput
@@ -175,7 +177,8 @@ const contextMenu = {
             processUuid: '',
             isError: true,
             instanceUuid: '',
-            isReport: true
+            isReport: true,
+            option: ''
           }
           console.error(error)
           return reportOutput

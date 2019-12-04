@@ -261,7 +261,7 @@ const processControl = {
                 option: 'reportView'
               }
               reportViewList.childs = getters.getReportViewList(processResult.processUuid)
-              if (!reportViewList.childs.length) {
+              if (reportViewList && !reportViewList.childs.length) {
                 dispatch('requestReportViews', {
                   processUuid: processResult.processUuid,
                   instanceUuid: response.getInstanceuuid(),
@@ -289,7 +289,7 @@ const processControl = {
                 option: 'printFormat'
               }
               printFormatList.childs = rootGetters.getPrintFormatList(processResult.processUuid)
-              if (!printFormatList.childs.length) {
+              if (printFormatList && !printFormatList.childs.length) {
                 dispatch('requestPrintFormats', {
                   processUuid: processResult.processUuid,
                   instanceUuid: response.getInstanceuuid(),
@@ -318,7 +318,7 @@ const processControl = {
               }
               if (!isEmptyValue(output.tableName)) {
                 drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
-                if (!drillTablesList.childs.length) {
+                if (drillTablesList && !drillTablesList.childs.length) {
                   dispatch('requestDrillTables', {
                     processUuid: processResult.processUuid,
                     instanceUuid: response.getInstanceuuid(),
@@ -502,13 +502,21 @@ const processControl = {
         if (isEmptyValue(parameters.processOutput.menuParentUuid)) {
           parameters.processOutput.menuParentUuid = parameters.processOutput.processUuid
         }
+
+        var tableName
+        if (parameters.processOutput.option && !isEmptyValue(parameters.processOutput.option)) {
+          if (parameters.processOutput.option === 'drillTable') {
+            tableName = parameters.processOutput.tableName
+          }
+        }
         router.push({
           name: 'Report Viewer',
           params: {
             processId: parameters.processOutput.processId,
             instanceUuid: parameters.processOutput.instanceUuid,
             fileName: isEmptyValue(parameters.processOutput.output.fileName) ? parameters.processOutput.fileName : parameters.processOutput.output.fileName,
-            menuParentUuid: parameters.processOutput.menuParentUuid
+            menuParentUuid: parameters.processOutput.menuParentUuid,
+            tableName: tableName
           }
         })
       }
