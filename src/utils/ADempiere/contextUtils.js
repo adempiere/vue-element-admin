@@ -1,5 +1,7 @@
-import { isEmptyValue } from '@/utils/ADempiere/valueUtil'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator from '@/utils/ADempiere/evaluator'
+
+export default evaluator
 
 /**
  * Extracts the associated fields from the logics or default values

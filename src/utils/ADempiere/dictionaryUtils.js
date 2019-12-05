@@ -1,15 +1,15 @@
 import evaluator from '@/utils/ADempiere/evaluator'
-import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtil'
+import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
 import { getParentFields, parseContext } from '@/utils/ADempiere/contextUtils'
 import REFERENCES, { FIELD_NOT_SHOWED } from '@/components/ADempiere/Field/references'
 import { FIELD_DISPLAY_SIZES, DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import language from '@/lang'
 
 /**
- *
- * @param {object} fieldToGenerate
- * @param {object} moreAttributes
- * @param {boolean} typeRange
+ * Generate field to app
+ * @param {object}  fieldToGenerate
+ * @param {object}  moreAttributes, additional attributes
+ * @param {boolean} typeRange, indicate if this field is a range used as _To
  */
 export function generateField(fieldToGenerate, moreAttributes, typeRange = false) {
   let isShowedFromUser = false
@@ -52,7 +52,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
     referenceType: componentReference.alias[0],
     isMandatory: fieldToGenerate.isMandatory
   })
-
+  fieldToGenerate.reference.zoomWindowList = fieldToGenerate.reference.windowsList
   const field = {
     ...fieldToGenerate,
     ...moreAttributes,
@@ -67,7 +67,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
     valueTo: parsedDefaultValueTo,
     parsedDefaultValue: parsedDefaultValue,
     parsedDefaultValueTo: parsedDefaultValueTo,
-    //
+    // logics to app
     isDisplayedFromLogic: fieldToGenerate.isDisplayed,
     isReadOnlyFromLogic: undefined,
     isMandatoryFromLogic: undefined,
@@ -136,11 +136,12 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
 }
 
 /**
- *
+ * Generate the actions and the associated process to store in the vuex store,
+ * avoiding additional requests
  * @param {object} processToGenerate
  * @returns {object}
  */
-export function generateProcess({ processToGenerate, isAssociated = false, containerUuidAssociated }) {
+export function generateProcess({ processToGenerate, containerUuidAssociated = undefined }) {
   const panelType = processToGenerate.isReport ? 'report' : 'process'
   const additionalAttributes = {
     processUuid: processToGenerate.uuid,
@@ -245,6 +246,8 @@ export function generateProcess({ processToGenerate, isAssociated = false, conta
   const processDefinition = {
     ...processToGenerate,
     panelType: panelType,
+    isAssociated: Boolean(containerUuidAssociated),
+    containerUuidAssociated: containerUuidAssociated,
     fieldList: fieldDefinitionList
   }
 
@@ -266,4 +269,226 @@ export function evalutateTypeField(displayTypeId, isAllInfo = false) {
     return component
   }
   return component.type
+}
+
+// Default template for injected fields
+export function getFieldTemplate(attributesOverwrite) {
+  const referenceValue = {
+    tableName: '',
+    keyColumnName: '',
+    displayColumnName: '',
+    query: '',
+    parsedQuery: '',
+    directQuery: '',
+    parsedDirectQuery: '',
+    validationCode: '',
+    windowsList: [],
+    zoomWindowList: []
+  }
+  const newField = {
+    id: 0,
+    uuid: '',
+    name: '',
+    description: '',
+    help: '',
+    columnName: '',
+    fieldGroup: {
+      name: '',
+      fieldGroupType: ''
+    },
+    displayType: 10,
+    componentPath: 'FieldButton',
+    referenceType: 'Button',
+    isFieldOnly: false,
+    isRange: false,
+    isSameLine: false,
+    sequence: 0,
+    seqNoGrid: 0,
+    isIdentifier: 0,
+    isKey: false,
+    isSelectionColumn: false,
+    isUpdateable: true,
+    formatPattern: undefined,
+    VFormat: undefined,
+    value: undefined,
+    valueTo: undefined,
+    defaultValue: undefined,
+    parsedDefaultValue: undefined,
+    defaultValueTo: undefined,
+    parsedDefaultValueTo: undefined,
+    valueMin: undefined,
+    valueMax: undefined,
+    //
+    isDisplayed: false,
+    isActive: true,
+    isMandatory: false,
+    isReadOnly: false,
+    isDisplayedFromLogic: false,
+    isReadOnlyFromLogic: false,
+    isMandatoryFromLogic: false,
+    // browser attributes
+    callout: undefined,
+    isQueryCriteria: false,
+    displayLogic: undefined,
+    mandatoryLogic: undefined,
+    readOnlyLogic: undefined,
+    parentFieldsList: undefined,
+    dependentFieldsList: [],
+    reference: referenceValue,
+    contextInfo: undefined,
+    isShowedFromUser: false,
+    isFixedTableColumn: false,
+    sizeFieldFromType: {
+      type: 'Button',
+      size: DEFAULT_SIZE
+    }
+  }
+  return Object.assign(newField, attributesOverwrite)
+}
+
+/**
+ * [assignedGroup]
+ * @param  {array} fieldList Field of List with
+ * @return {array} fieldList
+ */
+export function assignedGroup(fieldList, assignedGroup) {
+  if (fieldList === undefined || fieldList.length <= 0) {
+    return fieldList
+  }
+  fieldList = sortFields(fieldList, 'sequence', 'asc', fieldList[0].panelType)
+
+  let firstChangeGroup = false
+  let currentGroup = ''
+  let typeGroup = ''
+
+  fieldList.forEach(fieldElement => {
+    if (fieldElement.panelType !== 'window') {
+      fieldElement.groupAssigned = ''
+      fieldElement.typeGroupAssigned = ''
+      return
+    }
+
+    // change the first field group, change the band
+    if (!firstChangeGroup) {
+      if (!isEmptyValue(fieldElement.fieldGroup.name) &&
+        currentGroup !== fieldElement.fieldGroup.name &&
+        fieldElement.isDisplayed) {
+        firstChangeGroup = true
+      }
+    }
+    //  if you change the field group for the first time and it is different
+    //  from 0, updates the field group, since it is another field group and
+    //  assigns the following field items to the current field group whose
+    //  field group is '' or null
+    if (firstChangeGroup) {
+      if (!isEmptyValue(fieldElement.fieldGroup.name)) {
+        currentGroup = fieldElement.fieldGroup.name
+        typeGroup = fieldElement.fieldGroup.fieldGroupType
+      }
+    }
+
+    fieldElement.groupAssigned = currentGroup
+    fieldElement.typeGroupAssigned = typeGroup
+
+    if (assignedGroup !== undefined) {
+      fieldElement.groupAssigned = assignedGroup
+    }
+  })
+
+  return fieldList
+}
+
+/**
+ * Order the fields, then assign the groups to each field, and finally group
+ * in an array according to each field group to show in panel (or table).
+ * @param {array} arr
+ * @param {string} orderBy
+ * @param {string} type
+ * @param {string} panelType
+ * @returns {array}
+ */
+export function sortFields(arr, orderBy = 'sequence', type = 'asc', panelType = 'window') {
+  if (panelType === 'browser') {
+    orderBy = 'seqNoGrid'
+  }
+  arr.sort((itemA, itemB) => {
+    return itemA[orderBy] - itemB[orderBy]
+    // return itemA[orderBy] > itemB[orderBy]
+  })
+  if (type.toLowerCase() === 'desc') {
+    return arr.reverse()
+  }
+  return arr
+}
+
+/**
+ * Determinate if field is displayed
+ * @param {boolean} field.isActive
+ * @param {boolean} field.isDisplayed
+ * @param {boolean} field.isDisplayedFromLogic
+ * @param {boolean} field.isQueryCriteria
+ * @param {string}  field.panelType
+ * @returns {boolean}
+ */
+export function fieldIsDisplayed(field) {
+  // if is Advanced Query
+  if (field.panelType === 'table') {
+    return field.isDisplayed && field.isDisplayedFromLogic
+  }
+  const isBrowserDisplayed = field.isQueryCriteria // browser query criteria
+  const isWindowDisplayed = field.isDisplayed && field.isDisplayedFromLogic // window, process and report, browser result
+  const isDisplayedView = (field.panelType === 'browser' && isBrowserDisplayed) || (field.panelType !== 'browser' && isWindowDisplayed)
+
+  //  Verify for displayed and is active
+  return field.isActive && isDisplayedView
+}
+
+export function convertAction(action) {
+  var actionAttributes = {
+    name: '',
+    icon: '',
+    hidden: false,
+    isIndex: false
+  }
+  switch (action) {
+    case 'B':
+      actionAttributes.name = 'Workbench'
+      actionAttributes.icon = 'peoples'
+      break
+    case 'F':
+      actionAttributes.name = 'Workflow'
+      actionAttributes.icon = 'example'
+      break
+    case 'P':
+      actionAttributes.name = 'Process'
+      actionAttributes.icon = 'component'
+      break
+    case 'R':
+      actionAttributes.name = 'Report'
+      actionAttributes.icon = 'skill'
+      break
+    case 'S':
+      actionAttributes.name = 'SmartBrowser'
+      actionAttributes.icon = 'search'
+      break
+    case 'T':
+      actionAttributes.name = 'Task'
+      actionAttributes.icon = 'size'
+      break
+    case 'W':
+      actionAttributes.name = 'Window'
+      actionAttributes.icon = 'tab'
+      break
+    case 'X':
+      actionAttributes.name = 'Form'
+      actionAttributes.icon = 'form'
+
+      break
+    default:
+      actionAttributes.name = 'summary'
+      actionAttributes.icon = 'nested'
+      actionAttributes.isIndex = true
+      break
+  }
+  return actionAttributes
 }

@@ -1,6 +1,6 @@
 import { getProcess as getProcessMetadata } from '@/api/ADempiere'
 import { showMessage } from '@/utils/ADempiere'
-import { generateProcess } from '@/utils/ADempiere/appUtils'
+import { generateProcess } from '@/utils/ADempiere/dictionaryUtils'
 import language from '@/lang'
 import router from '@/router'
 

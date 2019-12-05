@@ -1,6 +1,6 @@
 import { getBrowser as getBrowserMetadata } from '@/api/ADempiere/dictionary'
 import { isEmptyValue, showMessage } from '@/utils/ADempiere'
-import { generateField } from '@/utils/ADempiere/appUtils'
+import { generateField } from '@/utils/ADempiere/dictionaryUtils'
 import router from '@/router'
 import language from '@/lang'
 const browser = {
@@ -114,7 +114,8 @@ const browser = {
               })
               // add process associated in vuex store
               dispatch('addProcessAssociated', {
-                processToGenerate: process
+                processToGenerate: process,
+                containerUuidAssociated: newBrowser.uuid
               })
             }
 
