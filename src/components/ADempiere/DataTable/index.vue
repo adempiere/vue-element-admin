@@ -29,6 +29,8 @@
                 :is-parent="isParent"
                 :is-panel-window="isPanelWindow"
                 :is-process-menu="getterContextMenu"
+                :is-mobile="isMobile"
+                :is-panel="getterPanel"
               />
               <el-button
                 v-if="!isParent && isPanelWindow"
@@ -129,6 +131,8 @@
             :is-option="isOption"
             :is-panel-window="isPanelWindow"
             :is-process-menu="getterContextMenu"
+            :is-mobile="isMobile"
+            :is-panel="getterPanel"
           />
           <context-menu
             v-if="!isParent"
@@ -141,6 +145,8 @@
             :is-option="isOption"
             :is-panel-window="isPanelWindow"
             :is-process-menu="getterContextMenu"
+            :is-mobile="isMobile"
+            :is-panel="getterPanel"
           />
           <el-table
             ref="multipleTable"
@@ -241,8 +247,8 @@ import FieldDefinition from '@/components/ADempiere/Field'
 import Sortable from 'sortablejs'
 import FilterColumns from '@/components/ADempiere/DataTable/filterColumns'
 import FixedColumns from '@/components/ADempiere/DataTable/fixedColumns'
-import ContextMenu from '@/components/ADempiere/DataTable/contextMenu'
-import TableMenu from '@/components/ADempiere/DataTable/Menu'
+import ContextMenu from '@/components/ADempiere/DataTable/menu/contextMenu'
+import TableMenu from '@/components/ADempiere/DataTable/menu'
 import IconElement from '@/components/ADempiere/IconElement'
 import { formatDate } from '@/filters/ADempiere'
 import MainPanel from '@/components/ADempiere/Panel'

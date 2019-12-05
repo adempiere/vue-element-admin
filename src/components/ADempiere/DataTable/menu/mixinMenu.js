@@ -1,67 +1,7 @@
-<template>
-  <el-menu :default-active="menuTable" :class="classTableMenu + ' menu-table-container'" mode="horizontal" @select="typeFormat">
-    <el-submenu index="2">
-      <template slot="title">
-        <i class="el-icon-more" />
-      </template>
-      <el-menu-item
-        v-if="!isParent && isPanelWindow"
-        :disabled="isDisabledAddNew"
-        @click="addNewRow()"
-      >
-        {{ $t('window.newRecord') }}
-      </el-menu-item>
-      <el-menu-item
-        v-if="isPanelWindow"
-        :disabled="Boolean(getDataSelection.length < 1 || (isReadOnlyParent && !isParent))"
-        @click="deleteSelection()"
-      >
-        {{ $t('table.dataTable.deleteSelection') }}
-      </el-menu-item>
-      <el-menu-item
-        v-for="(process, key) in isProcessMenu"
-        v-show="isPanelWindow && isProcessMenu"
-        :key="key"
-        :disabled="Boolean(getDataSelection.length < 1)"
-        index="process"
-        @click="tableProcess(process)"
-      >
-        {{ process.name }}
-      </el-menu-item>
-      <el-submenu
-        :disabled="Boolean(getDataSelection.length < 1)"
-        index="xlsx"
-      >
-        <template slot="title">{{ $t('table.dataTable.exportRecordTable') }}</template>
-        <template v-for="(format, index) in option">
-          <el-menu-item :key="index" :index="index">
-            {{ format }}
-          </el-menu-item>
-        </template>
-      </el-submenu>
-      <el-menu-item index="optional" @click="optionalPanel()">
-        {{ $t('components.filterableItems') }}
-      </el-menu-item>
-      <el-menu-item index="mandatory" @click="showOnlyMandatoryColumns()">
-        {{ $t('table.dataTable.showOnlyMandatoryColumns') }}
-      </el-menu-item>
-      <el-menu-item index="available" @click="showAllAvailableColumns()">
-        {{ $t('table.dataTable.showAllAvailableColumns') }}
-      </el-menu-item>
-      <el-menu-item
-        v-if="['browser', 'window'].includes(panelType)"
-        @click="showTotals()"
-      >
-        {{ getterPanel.isShowedTotals ? $t('table.dataTable.hiddenTotal') : $t('table.dataTable.showTotal') }}
-      </el-menu-item>
-    </el-submenu>
-  </el-menu>
-</template>
-<script>
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
+import { showNotification } from '@/utils/ADempiere/notification'
 
-export default {
-  name: 'TableMenu',
+export const menuTableMixin = {
   props: {
     parentUuid: {
       type: String,
@@ -88,6 +28,22 @@ export default {
       default: function() {
         return []
       }
+    },
+    isPanelWindow: {
+      type: Boolean,
+      default: false
+    },
+    isMobile: {
+      type: Boolean,
+      default: false
+    },
+    isPanel: {
+      type: Object,
+      default: () => {}
+    },
+    isDataRecord: {
+      type: Object,
+      default: () => {}
     }
   },
   data() {
@@ -106,9 +62,6 @@ export default {
       }
       return false
     },
-    isMobile() {
-      return this.$store.state.app.device === 'mobile'
-    },
     classTableMenu() {
       if (this.isMobile) {
         return 'menu-table-mobile'
@@ -117,17 +70,8 @@ export default {
       }
       return 'menu-table'
     },
-    getterPanel() {
-      return this.$store.getters.getPanel(this.containerUuid)
-    },
     getterDataRecordsAndSelection() {
       return this.$store.getters.getDataRecordAndSelection(this.containerUuid)
-    },
-    getterRecordCount() {
-      return this.getterDataRecordsAndSelection.recordCount
-    },
-    getterDataRecords() {
-      return this.getterDataRecordsAndSelection.record
     },
     getterNewRecords() {
       if (this.isPanelWindow && !this.isParent) {
@@ -142,16 +86,13 @@ export default {
       return this.getterDataRecordsAndSelection.selection
     },
     fieldList() {
-      if (this.getterPanel && this.getterPanel.fieldList) {
+      if (this.isPanel && this.isPanel.fieldList) {
         return this.sortFields(
-          this.getterPanel.fieldList,
+          this.isPanel.fieldList,
           this.panelType !== 'browser' ? 'seqNoGrid' : 'sequence'
         )
       }
       return []
-    },
-    isPanelWindow() {
-      return Boolean(this.panelType === 'window')
     },
     isReadOnlyParent() {
       if (this.isPanelWindow) {
@@ -175,7 +116,7 @@ export default {
       if (this.$route.query.action === 'create-new') {
         return true
       }
-      if (!this.getterPanel.isInsertRecord) {
+      if (!this.isPanel.isInsertRecord) {
         return true
       }
       if (this.isReadOnlyParent) {
@@ -223,49 +164,67 @@ export default {
     }
   },
   methods: {
+    showNotification,
+    closeMenu() {
+      this.$store.dispatch('showMenuTable', {
+        isShowedTable: false
+      })
+      this.$store.dispatch('showMenuTabChildren', {
+        isShowedTabChildren: false
+      })
+    },
     showModal(process) {
-      var processData = this.$store.getters.getProcess(process.uuid)
-      console.log(processData, process)
-      const selection = this.getDataSelection[0]
+      var processData, selection
+      processData = this.$store.getters.getProcess(process.uuid)
+      if (!this.isOption) {
+        selection = this.getDataSelection[0]
+      } else {
+        selection = this.isOption
+      }
       var valueProcess
       for (const element in selection) {
-        if (element === this.getterPanel.keyColumn) {
+        if (element === this.isPanel.keyColumn) {
           valueProcess = selection[element]
         }
       }
       this.$store.dispatch('setProcessTable', {
         valueRecord: valueProcess,
-        tableName: this.getterPanel.keyColumn,
+        tableName: this.isPanel.keyColumn,
         processTable: true
       })
-      if (this.getDataSelection.length <= 1) {
-        if (processData === undefined) {
-          this.$store.dispatch('getProcessFromServer', {
-            containerUuid: process.uuid,
-            routeToDelete: this.$route
-          })
-            .then(response => {
-              this.$store.dispatch('setShowDialog', {
-                type: process.type,
-                action: response,
-                record: this.getDataSelection
-              })
-            }).catch(error => {
-              console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
-            })
-        } else {
-          this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
-        }
-      } else {
-        this.showNotification({
-          type: 'warning',
-          title: this.$t('notifications.selectionProcess'),
-          message: this.$t('notifications.selectedQuantity') + ' ' + this.getDataSelection.length
+      // if (this.getDataSelection.length <= 1 && !this.isOption) {
+      if (processData === undefined) {
+        this.$store.dispatch('getProcessFromServer', {
+          containerUuid: process.uuid,
+          routeToDelete: this.$route
         })
+          .then(response => {
+            this.$store.dispatch('setShowDialog', {
+              type: process.type,
+              action: response,
+              record: this.getDataSelection
+            })
+          }).catch(error => {
+            console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
+          })
+      } else {
+        this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
       }
     },
     tableProcess(process) {
-      this.showModal(process)
+      if (!this.isOption) {
+        if (this.getDataSelection.length <= 1) {
+          this.showModal(process)
+        } else {
+          this.showNotification({
+            type: 'warning',
+            title: this.$t('notifications.selectionProcess'),
+            message: this.$t('notifications.selectedQuantity') + ' ' + this.getDataSelection.length
+          })
+        }
+      } else {
+        this.showModal(process)
+      }
     },
     showTotals() {
       this.$store.dispatch('showedTotals', this.containerUuid)
@@ -322,11 +281,18 @@ export default {
           this.exporRecordTable(key)
         }
       })
+      this.closeMenu()
     },
     exporRecordTable(key) {
       const Header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      const list = this.getDataSelection
+      var list
+      if (!this.isOption) {
+        list = this.getDataSelection
+      } else {
+        list = this.gettersRecordContextMenu
+      }
+
       const data = this.formatJson(filterVal, list)
       exportFileFromJson({
         header: Header,
@@ -340,34 +306,3 @@ export default {
     }
   }
 }
-</script>
-<style>
-.el-menu--vertical .nest-menu .el-submenu>.el-submenu__title:hover, .el-menu--vertical .el-menu-item:hover {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-}
-.el-menu--collapse {
-  width: auto;
-}
-.el-menu-item:hover {
-  background-color: #ffffff !important
-}
-.hover {
-  background-color: initial !important;
-}
-.el-menu-item {
-    height: 56px;
-    line-height: 56px;
-    font-size: 14px;
-    color: #303133;
-    padding: 0 20px;
-    list-style: none;
-    cursor: pointer;
-    position: relative;
-    -webkit-transition: border-color .3s, background-color .3s, color .3s;
-    transition: border-color .3s, background-color .3s, color .3s;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-</style>
