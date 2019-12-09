@@ -107,7 +107,7 @@ const actions = {
         return sessionResponse
       })
       .catch(error => {
-        console.warn(`Error gettin context session ${error.message}`)
+        console.warn(`Error getting context session ${error.message}`)
       })
       .finally(() => {
         dispatch('getUserInfoValue', sessionUuid)
@@ -149,7 +149,7 @@ const actions = {
           roles: rolesName
         })
       }).catch(error => {
-        console.warn(`Error gettin user info value ${error.message}`)
+        console.warn(`Error getting user info value ${error.message}`)
         reject(error)
       })
     })
