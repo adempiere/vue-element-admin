@@ -124,7 +124,7 @@ export default {
     displayedName(row) {
       const identifiersList = this.getIdentifiersList.map(item => row[item.columnName]).join('_')
       if (!this.isEmptyValue(identifiersList)) {
-        return identifiersList.join('_')
+        return identifiersList
       }
       return `< ${row[this.keyColumn]} >`
     },
