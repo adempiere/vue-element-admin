@@ -392,7 +392,7 @@ export default {
       defaultMaxPagination: 100,
       option: supportedTypes,
       menuTable: '1',
-      activeName: '',
+      activeName: this.$route.query.action === 'advancedQuery' ? '1' : '',
       isOptional: false,
       isFixed: false,
       isLoadPanelFromServer: false,
@@ -1098,8 +1098,8 @@ export default {
     },
     getFieldDefinition(fieldDefinition, row) {
       var styleSheet = ''
-      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditions.length)) {
-        fieldDefinition.conditions.forEach(condition => {
+      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditionsList.length)) {
+        fieldDefinition.conditionsList.forEach(condition => {
           var columns = evaluator.parseDepends(condition.condition)
           var conditionLogic = condition.condition
           columns.forEach(column => {
