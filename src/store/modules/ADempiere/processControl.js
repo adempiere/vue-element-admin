@@ -17,7 +17,10 @@ const processControl = {
     inRequestMetadata: [],
     reportViewList: [],
     totalResponse: 0,
-    totalRequest: 0
+    totalRequest: 0,
+    totalSelection: 0,
+    errorSelection: 0,
+    successSelection: 0
   },
   mutations: {
     // Add process in execution
@@ -82,6 +85,15 @@ const processControl = {
     },
     setTotalResponse(state, payload) {
       state.totalResponse = payload
+    },
+    setTotalSelection(state, payload) {
+      state.totalSelection = payload
+    },
+    setSuccessSelection(state, payload) {
+      state.successSelection = payload
+    },
+    setErrorSelection(state, payload) {
+      state.errorSelection = payload
     },
     setTotalRequest(state, payload) {
       state.totalRequest = payload
@@ -345,18 +357,27 @@ const processControl = {
                       })
                     }
                   }
+                  if (processResult.isError) {
+                    const countError = state.errorSelection + 1
+                    commit('setErrorSelection', countError)
+                  } else {
+                    const countSuccess = state.successSelection + 1
+                    commit('setSuccessSelection', countSuccess)
+                  }
                   commit('addNotificationProcess', processResult)
                   const countResponse = state.totalResponse + 1
                   commit('setTotalResponse', countResponse)
+
                   if (state.totalResponse === state.totalRequest) {
                     showNotification({
-                      name: processResult.name,
                       title: language.t('notifications.succesful'),
-                      message: language.t('notifications.processExecuted'),
+                      message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
                       type: 'success'
                     })
                     commit('setTotalRequest', 0)
                     commit('setTotalResponse', 0)
+                    commit('setSuccessSelection', 0)
+                    commit('setErrorSelection', 0)
                   }
                   dispatch('setProcessSelect', {
                     selection: 0,
@@ -646,7 +667,7 @@ const processControl = {
         logs: parameters.processOutput.logs,
         summary: parameters.processOutput.summary
       }
-      var errorMessage = !isEmptyValue(parameters.processOutput.message) ? parameters.processOutput.message : language.t('login.unexpectedError')
+      var errorMessage = !isEmptyValue(parameters.processOutput.message) ? parameters.processOutput.message : language.t('login.error')
       // TODO: Add isReport to type always 'success'
       if (parameters.processOutput.isError || isEmptyValue(parameters.processOutput.processId) || isEmptyValue(parameters.processOutput.instanceUuid)) {
         processMessage.title = language.t('notifications.error')
