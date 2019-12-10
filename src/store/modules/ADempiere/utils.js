@@ -11,7 +11,8 @@ const utils = {
     reportType: '',
     isShowedTable: false,
     isShowedTabChildren: false,
-    recordTable: 0
+    recordTable: 0,
+    selectionProcess: []
   },
   mutations: {
     setWidth(state, width) {
@@ -37,6 +38,9 @@ const utils = {
     },
     setProcessTable(state, recordTable) {
       state.recordTable = recordTable
+    },
+    setProcessSelecetion(state, selectionProcess) {
+      state.selectionProcess = selectionProcess
     },
     setTempShareLink(state, payload) {
       state.tempShareLink = payload
@@ -73,6 +77,9 @@ const utils = {
     setProcessTable({ commit }, recordTable) {
       commit('setProcessTable', recordTable)
     },
+    setProcessSelect({ commit }, params) {
+      commit('setProcessSelecetion', params)
+    },
     changeShowedDetail({ dispatch }, params) {
       if (params.panelType === 'window') {
         dispatch('changeShowedDetailWindow', params)
@@ -95,6 +102,9 @@ const utils = {
   getters: {
     getWidth: (state) => {
       return state.width
+    },
+    getProcessSelect: (state) => {
+      return state.selectionProcess
     },
     getWidthLayout: (state, rootGetters) => {
       if (rootGetters.toggleSideBar) {

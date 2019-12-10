@@ -174,25 +174,28 @@ export const menuTableMixin = {
       })
     },
     showModal(process) {
-      var processData, selection
+      var processData
       processData = this.$store.getters.getProcess(process.uuid)
       if (!this.isOption) {
-        selection = this.getDataSelection[0]
+        this.$store.dispatch('setProcessSelect', {
+          selection: this.getDataSelection,
+          processTablaSelection: true,
+          tableName: this.isPanel.keyColumn
+        })
       } else {
-        selection = this.isOption
+        var selection = this.isOption
+        for (const element in selection) {
+          if (element === this.isPanel.keyColumn) {
+            valueProcess = selection[element]
+          }
+        }
+        this.$store.dispatch('setProcessTable', {
+          valueRecord: valueProcess,
+          tableName: this.isPanel.keyColumn,
+          processTable: true
+        })
       }
       var valueProcess
-      for (const element in selection) {
-        if (element === this.isPanel.keyColumn) {
-          valueProcess = selection[element]
-        }
-      }
-      this.$store.dispatch('setProcessTable', {
-        valueRecord: valueProcess,
-        tableName: this.isPanel.keyColumn,
-        processTable: true
-      })
-      // if (this.getDataSelection.length <= 1 && !this.isOption) {
       if (processData === undefined) {
         this.$store.dispatch('getProcessFromServer', {
           containerUuid: process.uuid,
@@ -212,19 +215,14 @@ export const menuTableMixin = {
       }
     },
     tableProcess(process) {
-      if (!this.isOption) {
-        if (this.getDataSelection.length <= 1) {
-          this.showModal(process)
-        } else {
-          this.showNotification({
-            type: 'warning',
-            title: this.$t('notifications.selectionProcess'),
-            message: this.$t('notifications.selectedQuantity') + ' ' + this.getDataSelection.length
-          })
-        }
-      } else {
-        this.showModal(process)
-      }
+      // if (!this.isOption) {
+      //   if (this.getDataSelection.length <= 1) {
+      //     this.showModal(process)
+      //   }
+      // } else {
+      //   this.showModal(process)
+      // }
+      this.showModal(process)
     },
     showTotals() {
       this.$store.dispatch('showedTotals', this.containerUuid)

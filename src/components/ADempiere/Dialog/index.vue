@@ -78,6 +78,12 @@ export default {
     },
     windowRecordSelected() {
       return this.$store.state.window.recordSelected
+    },
+    getterDataRecordsAndSelection() {
+      return this.$store.getters.getDataRecordAndSelection(this.containerUuid)
+    },
+    getDataSelection() {
+      return this.getterDataRecordsAndSelection.selection
     }
   },
   methods: {
@@ -102,8 +108,10 @@ export default {
         const fieldNotReady = this.$store.getters.isNotReadyForSubmit(action.uuid)
         if (!fieldNotReady) {
           this.closeDialog()
-          const selection = this.$store.getters.getRecordUuidMenu.valueRecord
-          if (this.$store.getters.getRecordUuidMenu.processTable && selection.length > 1) {
+          const porcesTabla = this.$store.getters.getProcessSelect.processTablaSelection
+          const selection = this.$store.getters.getProcessSelect
+          if (porcesTabla) {
+            // selection.forEach(element => {
             this.$store.dispatch('startProcess', {
               action: action, // process metadata
               parentUuid: this.parentUuid,
@@ -114,9 +122,7 @@ export default {
               isProcessTableSelection: true,
               routeToDelete: this.$route
             })
-              .catch(error => {
-                console.warn(error)
-              })
+            // })
           } else {
             this.$store.dispatch('startProcess', {
               action: action, // process metadata
