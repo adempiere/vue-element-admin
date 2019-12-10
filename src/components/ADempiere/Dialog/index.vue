@@ -18,6 +18,7 @@
       :order="modalMetadata.sortOrderColumnName"
       :included="modalMetadata.sortYesNoColumnName"
       :identifiers-list="modalMetadata.identifierColumns"
+      :key-column="modalMetadata.keyColumn"
     />
     <template v-else>
       <main-panel

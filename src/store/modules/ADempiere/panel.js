@@ -101,6 +101,8 @@ const panel = {
         const panelParent = getters.getPanel(params.tabAssociatedUuid)
         selectionColumn = selectionColumn.concat(panelParent.selectionColumn)
         identifierColumns = identifierColumns.concat(panelParent.identifierColumns)
+        params.fieldLinkColumnName = panelParent.fieldLinkColumnName
+        params.keyColumn = panelParent.keyColumn
       }
       params.selectionColumn = selectionColumn
       params.identifierColumns = identifierColumns

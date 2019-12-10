@@ -20,7 +20,7 @@
             :key="element.UUID"
             class="board-item"
           >
-            {{ getIdentifiersList.map(item => element[item.columnName]).join('_') }}
+            {{ displayedName(element) }}
           </div>
         </draggable>
       </div>
@@ -46,7 +46,7 @@
             :key="element.UUID"
             class="board-item"
           >
-            {{ getIdentifiersList.map(item => element[item.columnName]).join('_') }}
+            {{ element[order] }}) {{ displayedName(element) }}
           </div>
         </draggable>
       </div>
@@ -78,6 +78,10 @@ export default {
     included: {
       type: String,
       required: true
+    },
+    keyColumn: {
+      type: String,
+      default: undefined
     },
     identifiersList: {
       type: Array,
@@ -117,6 +121,13 @@ export default {
     }
   },
   methods: {
+    displayedName(row) {
+      const identifiersList = this.getIdentifiersList.map(item => row[item.columnName]).join('_')
+      if (!this.isEmptyValue(identifiersList)) {
+        return identifiersList.join('_')
+      }
+      return `< ${row[this.keyColumn]} >`
+    },
     /**
      * @link https://github.com/SortableJS/Vue.Draggable#events
      */
@@ -160,8 +171,8 @@ export default {
      * @param element: the moved element
      */
     movedItem({ newIndex, oldIndex, element }) {
-      let indexSequence = 0
-      const dataSequence = this.getterDataRecords.map((itemSequence, currentIndex) => {
+      let indexEnabledSequence = 0
+      const dataSequence = this.getterDataRecords.map(itemSequence => {
         if (!itemSequence[this.included]) {
           itemSequence[this.order] = 0
           return itemSequence
@@ -172,8 +183,8 @@ export default {
             itemSequence[this.order] = (newIndex + 1) * 10
             return itemSequence
           }
-          if (indexSequence >= oldIndex && indexSequence < newIndex) {
-            itemSequence[this.order] = (indexSequence + 1) * 10
+          if (indexEnabledSequence >= oldIndex && indexEnabledSequence < newIndex) {
+            itemSequence[this.order] = (indexEnabledSequence + 1) * 10
           }
         } else {
           // moved to up
@@ -181,11 +192,11 @@ export default {
             itemSequence[this.order] = (newIndex + 1) * 10
             return itemSequence
           }
-          if (indexSequence < oldIndex && indexSequence >= newIndex) {
+          if (indexEnabledSequence < oldIndex && indexEnabledSequence >= newIndex) {
             itemSequence[this.order] += 10
           }
         }
-        indexSequence++
+        indexEnabledSequence++
         return itemSequence
       })
 
@@ -196,14 +207,14 @@ export default {
      * @param element: the removed element
      */
     delItem({ element, oldIndex }) {
-      const oldSequence = element[this.order]
+      const oldSequence = element[this.order] // (oldIndex + 1) * 10
       const dataSequence = this.getterDataRecords.map(itemSequence => {
         if (itemSequence.UUID === element.UUID) {
           itemSequence[this.included] = !itemSequence[this.included]
           itemSequence[this.order] = 0
           return itemSequence
         }
-        if (oldSequence < itemSequence[this.order]) {
+        if (itemSequence[this.order] > oldSequence && itemSequence[this.order] > 0) {
           itemSequence[this.order] = itemSequence[this.order] - 10
         }
         return itemSequence
