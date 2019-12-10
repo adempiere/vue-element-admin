@@ -1,6 +1,6 @@
 import { getMenu } from '@/api/user'
 import { getToken } from '@/utils/auth'
-import { convertAction } from '@/utils/ADempiere/menu'
+import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
 
 /* Layout  */
 import Layout from '@/layout'

@@ -1,6 +1,6 @@
 import { showNotification } from '@/utils/ADempiere/notification'
 import Item from './items'
-import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtil'
+import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtils'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 import ROUTES from '@/utils/ADempiere/zoomWindow'
 
@@ -275,15 +275,17 @@ export const contextMixin = {
     },
     generateContextMenu() {
       this.metadataMenu = this.getterContextMenu
-      this.$store.dispatch('getPrivateAccessFromServer', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
-        .then(response => {
-          this.$nextTick(() => {
-            this.validatePrivateAccess(response)
-          })
+      if (this.panelType === 'window') {
+        this.$store.dispatch('getPrivateAccessFromServer', {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
         })
+          .then(response => {
+            this.$nextTick(() => {
+              this.validatePrivateAccess(response)
+            })
+          })
+      }
       this.actions = this.metadataMenu.actions
 
       if (this.actions && this.actions.length) {
