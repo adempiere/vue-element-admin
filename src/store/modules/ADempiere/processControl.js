@@ -220,6 +220,10 @@ const processControl = {
         if (params.isProcessTableSelection) {
           var windowSelectionProcess = getters.getProcessSelect
           windowSelectionProcess.selection.forEach(selection => {
+            Object.assign(processResult, {
+              selection: selection.UUID,
+              record: selection[windowSelectionProcess.tableName]
+            })
             const countRequest = state.totalRequest + 1
             commit('setTotalRequest', countRequest)
             if (!windowSelectionProcess.finish) {
@@ -335,6 +339,7 @@ const processControl = {
                     output: output
                   })
                   dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                  commit('addNotificationProcess', processResult)
                   resolve(processResult)
                 })
                 .catch(error => {
@@ -347,16 +352,6 @@ const processControl = {
                   reject(error)
                 })
                 .finally(() => {
-                  if (!processResult.isError) {
-                    if (params.panelType === 'window') {
-                      // TODO: Add conditional to indicate when update record
-                      dispatch('updateRecordAfterRunProcess', {
-                        parentUuid: params.parentUuid,
-                        containerUuid: params.containerUuid,
-                        tab: tab
-                      })
-                    }
-                  }
                   if (processResult.isError) {
                     const countError = state.errorSelection + 1
                     commit('setErrorSelection', countError)
@@ -364,16 +359,20 @@ const processControl = {
                     const countSuccess = state.successSelection + 1
                     commit('setSuccessSelection', countSuccess)
                   }
-                  commit('addNotificationProcess', processResult)
                   const countResponse = state.totalResponse + 1
                   commit('setTotalResponse', countResponse)
-
                   if (state.totalResponse === state.totalRequest) {
-                    showNotification({
+                    // showNotification({
+                    //   title: language.t('notifications.succesful'),
+                    //   message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
+                    //   type: 'success'
+                    // })
+                    var processMessage = {
                       title: language.t('notifications.succesful'),
                       message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
                       type: 'success'
-                    })
+                    }
+                    showNotification(processMessage)
                     commit('setTotalRequest', 0)
                     commit('setTotalResponse', 0)
                     commit('setSuccessSelection', 0)
@@ -384,6 +383,8 @@ const processControl = {
                     finish: true,
                     tableName: ''
                   })
+                  commit('addNotificationProcess', processResult)
+                  commit('addStartedProcess', processResult)
                   commit('deleteInExecution', {
                     containerUuid: params.containerUuid
                   })
@@ -551,6 +552,198 @@ const processControl = {
             })
         }
       })
+    },
+    // Supported to process selection
+    SelectionProcess({ commit, state, dispatch, getters, rootGetters }, params) {
+      // get info metadata process
+      const processDefinition = rootGetters.getProcess(params.action.uuid)
+      var reportType = 'pdf'
+      const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
+
+      showNotification({
+        title: language.t('notifications.processing'),
+        message: processDefinition.name,
+        summary: processDefinition.description,
+        type: 'info'
+      })
+      const timeInitialized = (new Date()).getTime()
+      // Run process on server and wait for it for notify
+      if (params.isProcessTableSelection) {
+        var windowSelectionProcess = getters.getProcessSelect
+        windowSelectionProcess.selection.forEach(selection => {
+          var processResult = {
+            // panel attributes from where it was executed
+            parentUuid: params.parentUuid,
+            containerUuid: params.containerUuid,
+            panelType: params.panelType,
+            menuParentUuid: params.menuParentUuid,
+            processIdPath: params.routeToDelete.path,
+            // process attributes
+            lastRun: timeInitialized,
+            action: processDefinition.name,
+            name: processDefinition.name,
+            description: processDefinition.description,
+            instanceUuid: '',
+            processUuid: processDefinition.uuid,
+            processId: processDefinition.id,
+            processName: processDefinition.processName,
+            parameters: finalParameters,
+            isError: false,
+            isProcessing: true,
+            isReport: processDefinition.isReport,
+            summary: '',
+            resultTableName: '',
+            logs: [],
+            selection: selection.UUID,
+            record: selection[windowSelectionProcess.tableName],
+            output: {
+              uuid: '',
+              name: '',
+              description: '',
+              fileName: '',
+              output: '',
+              outputStream: '',
+              reportType: ''
+            }
+          }
+          const countRequest = state.totalRequest + 1
+          commit('addInExecution', processResult)
+          commit('setTotalRequest', countRequest)
+          if (!windowSelectionProcess.finish) {
+            return runProcess({
+              uuid: processDefinition.uuid,
+              id: processDefinition.id,
+              reportType: reportType,
+              parameters: finalParameters,
+              selection: selection,
+              tableName: windowSelectionProcess.tableName,
+              recordId: selection[windowSelectionProcess.tableName]
+            })
+              .then(response => {
+                var output = {
+                  uuid: '',
+                  name: '',
+                  description: '',
+                  fileName: '',
+                  mimeType: '',
+                  output: '',
+                  outputStream: '',
+                  reportType: ''
+                }
+                if (response.getOutput()) {
+                  const responseOutput = response.getOutput()
+                  output = {
+                    uuid: responseOutput.getUuid(),
+                    name: responseOutput.getName(),
+                    description: responseOutput.getDescription(),
+                    fileName: responseOutput.getFilename(),
+                    mimeType: responseOutput.getMimetype(),
+                    output: responseOutput.getOutput(),
+                    outputStream: responseOutput.getOutputstream(),
+                    reportType: responseOutput.getReporttype()
+                  }
+                }
+                var logList = []
+                if (response.getLogsList()) {
+                  logList = response.getLogsList().map(itemLog => {
+                    return {
+                      log: itemLog.getLog(),
+                      recordId: itemLog.getRecordid()
+                    }
+                  })
+                }
+
+                var link = {
+                  href: undefined,
+                  download: undefined
+                }
+                if (processDefinition.isReport) {
+                  const blob = new Blob([output.outputStream], { type: output.mimeType })
+                  link = document.createElement('a')
+                  link.href = window.URL.createObjectURL(blob)
+                  link.download = output.fileName
+                  if (reportType !== 'pdf' && reportType !== 'html') {
+                    link.click()
+                  }
+
+                  // Report views List to context menu
+                  var reportViewList = {
+                    name: language.t('views.reportView'),
+                    type: 'summary',
+                    action: '',
+                    childs: [],
+                    option: 'reportView'
+                  }
+                  reportViewList.childs = getters.getReportViewList(processResult.processUuid)
+                  if (!reportViewList.childs.length) {
+                    dispatch('requestReportViews', {
+                      processUuid: processResult.processUuid
+                    })
+                      .then(response => {
+                        reportViewList.childs = response
+                        // Get contextMenu metadata and concat print report views with contextMenu actions
+                        var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                        contextMenuMetadata.actions.push(reportViewList)
+                      })
+                  }
+                }
+                // assign new attributes
+                Object.assign(processResult, {
+                  instanceUuid: response.getInstanceuuid(),
+                  url: link.href,
+                  download: link.download,
+                  isError: response.getIserror(),
+                  isProcessing: response.getIsprocessing(),
+                  summary: response.getSummary(),
+                  ResultTableName: response.getResulttablename(),
+                  lastRun: response.getLastrun(),
+                  logs: logList,
+                  output: output
+                })
+                dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                if (processResult.isError) {
+                  const countError = state.errorSelection + 1
+                  commit('setErrorSelection', countError)
+                } else {
+                  const countSuccess = state.successSelection + 1
+                  commit('setSuccessSelection', countSuccess)
+                }
+                const countResponse = state.totalResponse + 1
+                commit('setTotalResponse', countResponse)
+                if (state.totalResponse === state.totalRequest) {
+                  var processMessage = {
+                    title: language.t('notifications.succesful'),
+                    message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
+                    type: 'success'
+                  }
+                  showNotification(processMessage)
+                  commit('setTotalRequest', 0)
+                  commit('setTotalResponse', 0)
+                  commit('setSuccessSelection', 0)
+                  commit('setErrorSelection', 0)
+                }
+                dispatch('setProcessSelect', {
+                  selection: 0,
+                  finish: true,
+                  tableName: ''
+                })
+                commit('addNotificationProcess', processResult)
+                commit('addStartedProcess', processResult)
+                commit('deleteInExecution', {
+                  containerUuid: params.containerUuid
+                })
+              })
+              .catch(error => {
+                Object.assign(processResult, {
+                  isError: true,
+                  message: error.message,
+                  isProcessing: false
+                })
+                console.log('Error running the process', error)
+              })
+          }
+        })
+      }
     },
     /**
      * TODO: Add date time in which the process/report was executed
