@@ -150,7 +150,7 @@ export default {
           const selection = this.$store.getters.getProcessSelect
           if (porcesTabla) {
             // selection.forEach(element => {
-            this.$store.dispatch('startProcess', {
+            this.$store.dispatch('SelectionProcess', {
               action: action, // process metadata
               parentUuid: this.parentUuid,
               containerUuid: this.containerUuid,
