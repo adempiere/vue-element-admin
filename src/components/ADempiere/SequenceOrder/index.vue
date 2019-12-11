@@ -46,7 +46,7 @@
             :key="element.UUID"
             class="board-item"
           >
-            {{ element[order] }}) {{ displayedName(element) }}
+            {{ displayedName(element) }}
           </div>
         </draggable>
       </div>
