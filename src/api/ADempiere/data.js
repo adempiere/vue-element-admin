@@ -26,60 +26,41 @@ export function convertValueFromGRPC(grpcValue) {
  * @param {string}  parameters.tableName
  * @param {array}   parameters.attributesList
  */
-export function createEntity(parameters) {
-  var entityRequest = Instance.call(this).getCreateEntityRequest()
-  entityRequest.setTablename(parameters.tableName)
-  if (parameters.attributesList && parameters.attributesList.length) {
-    parameters.attributesList.forEach(attribute => {
-      const convertedAttribute = Instance.call(this).convertParameter(attribute)
-      entityRequest.addAttributes(convertedAttribute)
-    })
-  }
-  //  Create Entity
-  return Instance.call(this).createEntity(entityRequest)
+export function createEntity({ tableName, attributesList }) {
+  return Instance.call(this).createEntity({
+    tableName,
+    attributesList
+  })
 }
 
 /**
  * Update entity
- * @param {string}  parameters.tableName
- * @param {integer} parameters.recordId
- * @param {string}  parameters.recordUuid
- * @param {array}   parameters.attributesList
+ * @param {string}  tableName
+ * @param {integer} recordId
+ * @param {string}  recordUuid
+ * @param {array}   attributesList
  */
-export function updateEntity(parameters) {
-  var entityRequest = Instance.call(this).getUpdateEntityRequest()
-  entityRequest.setTablename(parameters.tableName)
-  if (parameters.recordId) {
-    entityRequest.setRecordid(parameters.recordId)
-  }
-  entityRequest.setUuid(parameters.recordUuid)
-  if (parameters.attributesList && parameters.attributesList.length) {
-    parameters.attributesList.forEach(attribute => {
-      const convertedAttribute = Instance.call(this).convertParameter(attribute)
-      entityRequest.addAttributes(convertedAttribute)
-    })
-  }
-  //  Update Entity
-  return Instance.call(this).updateEntity(entityRequest)
+export function updateEntity({ tableName, recordId, recordUuid, attributesList }) {
+  return Instance.call(this).updateEntity({
+    tableName,
+    recordId,
+    recordUuid,
+    attributesList
+  })
 }
 
 /**
  * Delete entity
- * @param {string}  parameters.tableName
- * @param {integer} parameters.recordId
- * @param {string}  parameters.recordUuid
- * @param {array}   parameters.attributesList
+ * @param {string}  tableName
+ * @param {integer} recordId
+ * @param {string}  recordUuid
  */
-export function deleteEntity(parameters) {
-  var entityRequest = Instance.call(this).getUpdateEntityRequest()
-  entityRequest.setTablename(parameters.tableName)
-  if (parameters.recordId) {
-    entityRequest.setRecordid(parameters.recordId)
-  }
-  entityRequest.setUuid(parameters.recordUuid)
-
-  //  Delete Entity
-  return Instance.call(this).deleteEntity(entityRequest)
+export function deleteEntity({ tableName, recordId, recordUuid }) {
+  return Instance.call(this).deleteEntity({
+    tableName,
+    recordId,
+    recordUuid
+  })
 }
 
 export function getCriteria(tableName) {
@@ -87,62 +68,45 @@ export function getCriteria(tableName) {
 }
 
 export function getObject(table, uuid = false, id = false) {
-  return Instance.call(this).getEntity(
-    Instance.call(this).getEntityRequest(table, uuid, id)
-  )
+  return Instance.call(this).requestEntity({
+    table,
+    recordId: id,
+    uuid
+  })
 }
 
 /**
  * Object List from window
- * @param {string} object.tableName
- * @param {string} object.query
- * @param {string} object.whereClause
- * @param {string} object.orderByClause
+ * @param {string} tableName
+ * @param {string} query
+ * @param {string} whereClause
+ * @param {array}  conditions
+ * @param {string} orderByClause
+ * @param {string} nextPageToken
  */
-export function getObjectListFromCriteria(object) {
-  const criteriaForList = getCriteria(object.tableName)
-
-  criteriaForList.setQuery(object.query)
-
-  if (object.whereClause) {
-    criteriaForList.setWhereclause(object.whereClause)
-  }
-  if (object.orderByClause) {
-    criteriaForList.setOrderbyclause(object.orderByClause)
-  }
-
-  // add conditions
-  if (object.conditions && object.conditions.length) {
-    object.conditions.forEach(itemCondition => {
-      const convertCondition = Instance.call(this).convertCondition(itemCondition)
-      criteriaForList.addConditions(convertCondition)
-    })
-  }
-
-  var nextPageToken
-  if (object.nextPageToken) {
-    nextPageToken = object.nextPageToken
-  }
-  return Instance.call(this).requestObjectListFromCriteria(criteriaForList, nextPageToken)
+export function getObjectListFromCriteria({ tableName, query, whereClause, conditions = [], orderByClause, nextPageToken }) {
+  return Instance.call(this).requestEntitiesList({
+    tableName,
+    query,
+    whereClause,
+    conditionsList: conditions,
+    orderByClause,
+    nextPageToken
+  })
 }
 
 /**
  * Rollback entity (Create, Update, Delete)
- * @param {string} parametersRollback.tableName
- * @param {integer} parametersRollback.recordId
- * @param {string} parametersRollback.eventType
+ * @param {string} tableName
+ * @param {integer} recordId
+ * @param {string} eventType
  */
-export function rollbackEntity(parametersRollback) {
-  var rollbackRequest = Instance.call(this).getRollbackEntityRequest()
-  rollbackRequest.setTablename(parametersRollback.tableName)
-  rollbackRequest.setRecordid(parametersRollback.recordId)
-
-  // set event type
-  var eventType = Instance.call(this).getEventType()
-  eventType = eventType[parametersRollback.eventType]
-  rollbackRequest.setEventtype(eventType)
-
-  return Instance.call(this).rollbackEntityRequest(rollbackRequest)
+export function rollbackEntity({ tableName, recordId, eventType }) {
+  return Instance.call(this).rollbackEntityRequest({
+    tableName,
+    recordId,
+    eventTypeExecuted: eventType
+  })
 }
 
 /**
@@ -172,90 +136,51 @@ export function getLookup(reference) {
 /**
  * Request a process
  * This function allows follow structure:
- * @param {object}  process
- * @param {string}  process.uuid, uuid from process to run
- * @param {integer} process.tableName, table name of tab, used only window
- * @param {integer} process.recordId, record identifier, used only window
- * @param {array}   process.parameters, parameters from process
-      [ { columnName, value } ]
- * @param {array}   process.selection, selection records, used only browser
-      [ {
+ * @param {string}  uuid, uuid from process to run
+ * @param {integer} tableName, table name of tab, used only window
+ * @param {integer} recordId, record identifier, used only window
+ * @param {array}   parameters, parameters from process [{ columnName, value }]
+ * @param {array}   selection, selection records, used only browser
+      [{
           selectionId,
-          selectionValues [
-            { columnName, value }
-          ]
-      } ]
+          selectionValues: [{ columnName, value }]
+      }]
  */
-export function runProcess(process) {
-  var processRequest = Instance.call(this).getProcessRequest()
-  //  Fill Request process
-  processRequest.setUuid(process.uuid)
-  // report export type
-  if (process.reportType) {
-    processRequest.setReporttype(process.reportType)
-  }
-  // process params
-  if (process.parameters && process.parameters.length) {
-    process.parameters.forEach(parameter => {
-      const convertedParameter = Instance.call(this).convertParameter(parameter)
-      processRequest.addParameters(convertedParameter)
-    })
-  }
-
-  // record in window
-  if (process.tableName) {
-    processRequest.setTablename(process.tableName)
-    processRequest.setRecordid(process.recordId)
-  }
-
-  // browser selection list records
-  if (process.selection && process.selection.length) {
-    process.selection.forEach(record => {
-      // selection format = { selectionId: integer, selectionValues: array }
-      const convertedRecord = Instance.call(this).convertSelection(record)
-      processRequest.addSelections(convertedRecord)
-    })
-  }
-
+export function runProcess({ uuid, reportType, tableName, recordId, parameters, selection }) {
   //  Run Process
-  return Instance.call(this).requestProcess(processRequest)
+  return Instance.call(this).requestRunProcess({
+    uuid,
+    reportType,
+    tableName,
+    recordId,
+    parametersList: parameters,
+    selection
+  })
 }
 
 /**
  * Request a browser search
- * This function allows follow structure:
- * @param {string} browser.uuid
- * @param {string} browser.query
- * @param {string} browser.whereClause
- * @param {string} browser.orderByClause
- * @param {array}  browser.parameters
+ * @param {string} uuid
+ * @param {string} query
+ * @param {string} whereClause
+ * @param {string} orderByClause
+ * @param {string}  nextPageToken
+ * @param {array}  parameters, This allows follow structure:
  * [{
  *     columnName,
  *     value
  * }]
  */
-export function getBrowserSearch(browser) {
-  var browserRequest = Instance.call(this).getBrowserRequest()
-  var criteria = Instance.call(this).getCriteria('')
-  //  Fill Request browser
-  browserRequest.setUuid(browser.uuid)
-  criteria.setQuery(browser.query)
-  criteria.setWhereclause(browser.whereClause)
-  criteria.setOrderbyclause(browser.orderByClause)
-
-  if (browser.nextPageToken) {
-    browserRequest.setPageToken(browser.nextPageToken)
-  }
-  browserRequest.setCriteria(criteria)
-  /* isQueryCriteria fields parameters */
-  if (browser.parameters !== undefined) {
-    browser.parameters.forEach(parameter => {
-      const convertedParameter = Instance.call(this).convertParameter(parameter)
-      browserRequest.addParameters(convertedParameter)
-    })
-  }
+export function getBrowserSearch({ uuid, parameters = [], query, whereClause, orderByClause, nextPageToken }) {
   //  Run browser
-  return Instance.call(this).requestBrowser(browserRequest)
+  return Instance.call(this).requestBrowserSearch({
+    uuid,
+    parametersList: parameters,
+    query,
+    whereClause,
+    orderByClause,
+    nextPageToken
+  })
 }
 
 // Request a Process Activity list
@@ -267,6 +192,7 @@ export function requestProcessActivity() {
 export function getRecentItems() {
   return Instance.call(this).requestRecentItems()
 }
+
 /**
  * forget password
  * @param {string} parameters.forgetPassword
@@ -334,6 +260,7 @@ export function unlockPrivateAccessFromServer({ tableName: tableName, recordId: 
 export function getFavoritesFromServer(userUuid) {
   return Instance.call(this).requestFavorites(userUuid)
 }
+
 export function getPendingDocumentsFromServer(userUuid, roleUuid) {
   return Instance.call(this).requestPendingDocuments(userUuid, roleUuid)
 }
