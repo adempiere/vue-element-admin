@@ -81,6 +81,14 @@ export default {
     }
   },
   watch: {
+    isLoading(value) {
+      console.log(value)
+      if (value) {
+        this.value = ''
+      } else {
+        this.value = this.metadata.displayColumn
+      }
+    },
     valueModel(value) {
       if (this.metadata.inTable) {
         this.value = value
