@@ -82,7 +82,6 @@ export default {
   },
   watch: {
     isLoading(value) {
-      console.log(value)
       if (value) {
         this.value = ''
       } else {
