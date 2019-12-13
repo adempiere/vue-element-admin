@@ -163,6 +163,9 @@ export default {
       return selected
     },
     async getDataLookupItem() {
+      if (this.isEmptyValue(this.metadata.reference.directQuery)) {
+        return
+      }
       this.isLoading = true
       this.$store.dispatch('getLookupItemFromServer', {
         parentUuid: this.metadata.parentUuid,
@@ -171,12 +174,12 @@ export default {
         directQuery: this.metadata.reference.directQuery,
         value: this.metadata.value
       })
-        .then(response => {
+        .then(responseLookupItem => {
           if (this.isPanelWindow) {
             this.$store.dispatch('notifyFieldChangeDisplayColumn', {
               containerUuid: this.metadata.containerUuid,
               columnName: this.metadata.columnName,
-              displayColumn: response.label
+              displayColumn: responseLookupItem.label
             })
           }
           this.options = this.getterLookupAll
@@ -199,6 +202,9 @@ export default {
       }
     },
     remoteMethod() {
+      if (this.isEmptyValue(this.metadata.reference.query)) {
+        return
+      }
       this.isLoading = true
       this.$store.dispatch('getLookupListFromServer', {
         parentUuid: this.metadata.parentUuid,
@@ -206,7 +212,7 @@ export default {
         tableName: this.metadata.reference.tableName,
         query: this.metadata.reference.query
       })
-        .then(response => {
+        .then(responseLookupList => {
           const list = this.getterLookupAll.filter(options => {
             if (options.key !== undefined) {
               return options
