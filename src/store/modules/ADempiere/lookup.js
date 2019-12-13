@@ -199,7 +199,7 @@ const lookup = {
      */
     getLookupAll: (state, getters, rootState, rootGetters) => (parameters) => {
       const item = getters.getLookupItem(parameters)
-      var list = getters.getLookupList(parameters)
+      const list = getters.getLookupList(parameters)
       if (item && !list.find(itemLookup => itemLookup.key === item.key)) {
         list.push(item)
       }

@@ -61,7 +61,7 @@ export default {
       return this.$store.state.app.device === 'mobile'
     },
     getterLookupItem() {
-      if (this.isEmptyValue(this.metadata.reference)) {
+      if (this.isEmptyValue(this.metadata.reference.directQuery)) {
         return this.blanckOption
       }
       return this.$store.getters.getLookupItem({
@@ -73,7 +73,7 @@ export default {
       })
     },
     getterLookupList() {
-      if (this.isEmptyValue(this.metadata.reference)) {
+      if (this.isEmptyValue(this.metadata.reference.query)) {
         return this.blanckOption
       }
       return this.$store.getters.getLookupList({
@@ -92,7 +92,7 @@ export default {
         tableName: this.metadata.reference.tableName,
         value: this.value
       })
-      if (allOptions.length && !allOptions[0].key) {
+      if (allOptions && ((allOptions.length && allOptions[0].key !== this.blanckOption.key) || !allOptions.length)) {
         allOptions.unshift(this.blanckOption)
       }
       return allOptions
@@ -196,6 +196,7 @@ export default {
      */
     getDataLookupList(showList) {
       if (showList) {
+        // TODO: Evaluate if length = 1 and this element key = blanckOption
         if (this.getterLookupList.length === 0) {
           this.remoteMethod()
         }
@@ -213,12 +214,7 @@ export default {
         query: this.metadata.reference.query
       })
         .then(responseLookupList => {
-          const list = this.getterLookupAll.filter(options => {
-            if (options.key !== undefined) {
-              return options
-            }
-          })
-          this.options = list
+          this.options = this.getterLookupAll
         })
         .finally(() => {
           this.isLoading = false
@@ -234,6 +230,7 @@ export default {
         value: this.metadata.value
       })
       // TODO: Evaluate if is number -1 or string '' (or default value)
+      this.options = this.getterLookupAll
       this.value = this.blanckOption.key
     }
   }
