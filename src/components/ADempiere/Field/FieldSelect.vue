@@ -25,6 +25,17 @@
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 
+/**
+ * This component is a lookup type field, use as a replacement for fields:
+ * - Reference List
+ * - Table List
+ * - Table Direct
+ *
+ * TODO: ALL: Although in the future these will have different components, and
+ * are currently not supported is also displayed as a substitute for fields:
+ * - Locator (WH)
+ * - Search Field
+ */
 export default {
   name: 'FieldSelect',
   mixins: [fieldMixin],
@@ -36,6 +47,7 @@ export default {
         key: undefined
       }],
       blanckOption: {
+        // label with '' value is assumed to be undefined non-existent
         label: ' ',
         key: undefined
       }
@@ -49,6 +61,9 @@ export default {
       return this.$store.state.app.device === 'mobile'
     },
     getterLookupItem() {
+      if (this.isEmptyValue(this.metadata.reference)) {
+        return this.blanckOption
+      }
       return this.$store.getters.getLookupItem({
         parentUuid: this.metadata.parentUuid,
         containerUuid: this.metadata.containerUuid,
@@ -58,6 +73,9 @@ export default {
       })
     },
     getterLookupList() {
+      if (this.isEmptyValue(this.metadata.reference)) {
+        return this.blanckOption
+      }
       return this.$store.getters.getLookupList({
         parentUuid: this.metadata.parentUuid,
         containerUuid: this.metadata.containerUuid,
@@ -66,7 +84,7 @@ export default {
       })
     },
     getterLookupAll() {
-      var allOptions = this.$store.getters.getLookupAll({
+      const allOptions = this.$store.getters.getLookupAll({
         parentUuid: this.metadata.parentUuid,
         containerUuid: this.metadata.containerUuid,
         query: this.metadata.reference.query,
