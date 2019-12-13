@@ -1105,6 +1105,7 @@ export default {
     },
     zoomRecord() {
       const browserMetadata = this.$store.getters.getBrowser(this.$route.meta.uuid)
+      const elementName = browserMetadata.fieldList.find(field => field.columnName === browserMetadata.keyColumn).elementName
       const records = []
       this.getDataSelection.forEach(record => {
         if (!isNaN(record[browserMetadata.keyColumn])) {
@@ -1120,7 +1121,7 @@ export default {
         name: windowRoute.name,
         query: {
           action: 'advancedQuery',
-          [browserMetadata.keyColumn]: records
+          [elementName]: records
         }
       })
     }
