@@ -23,7 +23,11 @@ const lookup = {
   actions: {
     getLookupItemFromServer({ commit, rootGetters }, parameters) {
       const { parentUuid, containerUuid, value, tableName, directQuery } = parameters
-      var parsedDirectQuery = directQuery
+      if (isEmptyValue(directQuery)) {
+        return
+      }
+
+      let parsedDirectQuery = directQuery
       if (parsedDirectQuery.includes('@')) {
         parsedDirectQuery = parseContext({
           parentUuid: parentUuid,
@@ -40,7 +44,7 @@ const lookup = {
         .then(response => {
           const map = response.getValuesMap()
           const label = convertValueFromGRPC(map.get('DisplayColumn'))
-          var option = {
+          const option = {
             label: isEmptyValue(label) ? ' ' : label,
             // key: convertValueFromGRPC(map.get('KeyColumn'))
             key: value
@@ -66,7 +70,10 @@ const lookup = {
      */
     getLookupListFromServer({ commit, rootGetters }, parameters) {
       const { parentUuid, containerUuid, tableName, query } = parameters
-      var parsedQuery = query
+      if (isEmptyValue(query)) {
+        return
+      }
+      let parsedQuery = query
       if (parsedQuery.includes('@')) {
         parsedQuery = parseContext({
           parentUuid: parentUuid,
@@ -81,7 +88,7 @@ const lookup = {
       })
         .then(response => {
           const recordList = response.getRecordsList()
-          var options = []
+          const options = []
           recordList.forEach(element => {
             const map = element.getValuesMap()
             const name = convertValueFromGRPC(map.get('DisplayColumn'))
@@ -108,8 +115,8 @@ const lookup = {
     deleteLookupList({ commit, state }, params) {
       const { parentUuid, containerUuid, tableName, query, directQuery, value } = params
 
-      var parsedDirectQuery = directQuery
-      if (parsedDirectQuery.includes('@')) {
+      let parsedDirectQuery = directQuery
+      if (directQuery && parsedDirectQuery.includes('@')) {
         parsedDirectQuery = parseContext({
           parentUuid: parentUuid,
           containerUuid: containerUuid,
@@ -123,8 +130,8 @@ const lookup = {
         itemLookup.roleUuid !== getCurrentRole()
       })
 
-      var parsedQuery = query
-      if (parsedQuery.includes('@')) {
+      let parsedQuery = query
+      if (parsedQuery && parsedQuery.includes('@')) {
         parsedQuery = parseContext({
           parentUuid: parentUuid,
           containerUuid: containerUuid,
@@ -144,8 +151,8 @@ const lookup = {
   },
   getters: {
     getLookupItem: (state, getters, rootState, rootGetters) => (params) => {
-      var parsedDirectQuery = params.directQuery
-      if (parsedDirectQuery.includes('@')) {
+      let parsedDirectQuery = params.directQuery
+      if (parsedDirectQuery && parsedDirectQuery.includes('@')) {
         parsedDirectQuery = parseContext({
           parentUuid: params.parentUuid,
           containerUuid: params.containerUuid,
@@ -165,8 +172,8 @@ const lookup = {
       return undefined
     },
     getLookupList: (state, getters, rootState, rootGetters) => (params) => {
-      var parsedQuery = params.query
-      if (parsedQuery.includes('@')) {
+      let parsedQuery = params.query
+      if (parsedQuery && parsedQuery.includes('@')) {
         parsedQuery = parseContext({
           parentUuid: params.parentUuid,
           containerUuid: params.containerUuid,
@@ -194,7 +201,7 @@ const lookup = {
      */
     getLookupAll: (state, getters, rootState, rootGetters) => (parameters) => {
       const item = getters.getLookupItem(parameters)
-      var list = getters.getLookupList(parameters)
+      const list = getters.getLookupList(parameters)
       if (item && !list.find(itemLookup => itemLookup.key === item.key)) {
         list.push(item)
       }
