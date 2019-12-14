@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {
-  getObject,
+  getEntity,
   getObjectListFromCriteria,
   getRecentItems,
   getDefaultValueFromServer,
@@ -453,9 +453,17 @@ const data = {
      * @param {string} tableName
      * @param {string} recordUuid
      */
-    getEntity({ commit }, parameters) {
+    getEntity({ commit }, {
+      tableName,
+      recordUuid,
+      recordId
+    }) {
       return new Promise((resolve, reject) => {
-        getObject(parameters.tableName, parameters.recordUuid)
+        getEntity({
+          tableName,
+          recordUuid,
+          recordId
+        })
           .then(response => {
             var map = response.getValuesMap()
             var newValues = convertValuesMapToObject(map)
@@ -463,7 +471,7 @@ const data = {
               data: newValues,
               id: response.getId(),
               uuid: response.getUuid(),
-              tableName: parameters.tableName
+              tableName
             }
 
             commit('setRecordDetail', responseConvert)

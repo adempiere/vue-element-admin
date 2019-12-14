@@ -67,11 +67,11 @@ export function getCriteria(tableName) {
   return Instance.call(this).getCriteria(tableName)
 }
 
-export function getObject(table, uuid = false, id = false) {
+export function getEntity({ tableName, recordId, recordUuid }) {
   return Instance.call(this).requestEntity({
-    table,
-    recordId: id,
-    uuid
+    tableName,
+    recordId,
+    recordUuid
   })
 }
 
@@ -98,7 +98,7 @@ export function getObjectListFromCriteria({ tableName, query, whereClause, condi
 /**
  * Rollback entity (Create, Update, Delete)
  * @param {string} tableName
- * @param {integer} recordId
+ * @param {number} recordId
  * @param {string} eventType
  */
 export function rollbackEntity({ tableName, recordId, eventType }) {
@@ -110,35 +110,39 @@ export function rollbackEntity({ tableName, recordId, eventType }) {
 }
 
 /**
- * Request a Lookup list data from Reference
+ * Request a Lookup data from Reference
  * The main attributes that function hope are:
- * @param {string} reference.tableName
- * @param {string} reference.query
+ * @param {string} tableName
+ * @param {string} directQuery
+ * @param {string|number} value
  */
-export function getLookupList(reference) {
-  return Instance.call(this).requestLookupListFromReference(reference)
+export function getLookup({ tableName, directQuery, value }) {
+  return Instance.call(this).requestLookupFromReference({
+    tableName,
+    directQuery,
+    value
+  })
 }
 
 /**
- * Request a Lookup data from Reference
+ * Request a Lookup list data from Reference
  * The main attributes that function hope are:
- * @param {string} reference.tableName
- * @param {string} reference.directQuery
- * @param {string|number} value
+ * @param {string} tableName
+ * @param {string} query
  */
-export function getLookup(reference) {
-  return Instance.call(this).requestLookupFromReference({
-    tableName: reference.tableName,
-    directQuery: reference.directQuery
-  }, reference.value)
+export function getLookupList({ tableName, query }) {
+  return Instance.call(this).requestLookupListFromReference({
+    tableName,
+    query
+  })
 }
 
 /**
  * Request a process
  * This function allows follow structure:
  * @param {string}  uuid, uuid from process to run
- * @param {integer} tableName, table name of tab, used only window
- * @param {integer} recordId, record identifier, used only window
+ * @param {number}  tableName, table name of tab, used only window
+ * @param {number}  recordId, record identifier, used only window
  * @param {array}   parameters, parameters from process [{ columnName, value }]
  * @param {array}   selection, selection records, used only browser
       [{
@@ -146,14 +150,14 @@ export function getLookup(reference) {
           selectionValues: [{ columnName, value }]
       }]
  */
-export function runProcess({ uuid, reportType, tableName, recordId, parameters, selection }) {
+export function runProcess({ uuid, reportType, tableName, recordId, parameters: parametersList = [], selection = [] }) {
   //  Run Process
   return Instance.call(this).requestRunProcess({
     uuid,
     reportType,
     tableName,
     recordId,
-    parametersList: parameters,
+    parametersList,
     selection
   })
 }
@@ -171,11 +175,11 @@ export function runProcess({ uuid, reportType, tableName, recordId, parameters, 
  *     value
  * }]
  */
-export function getBrowserSearch({ uuid, parameters = [], query, whereClause, orderByClause, nextPageToken }) {
+export function getBrowserSearch({ uuid, parameters: parametersList = [], query, whereClause, orderByClause, nextPageToken }) {
   //  Run browser
   return Instance.call(this).requestBrowserSearch({
     uuid,
-    parametersList: parameters,
+    parametersList,
     query,
     whereClause,
     orderByClause,
@@ -194,47 +198,46 @@ export function getRecentItems() {
 }
 
 /**
- * forget password
- * @param {string} parameters.forgetPassword
- */
-export function getForgetPassword(parameters) {
-  return Instance.call(this).requestForgetPassword(parameters)
-}
-
-/**
  * Reference List from Window
- * @param {string}  parameters.tableName
- * @param {string}  parameters.windowUuid
- * @param {string}  parameters.recordUuid
- * @param {integer} parameters.recordId
+ * @param {string}  tableName
+ * @param {string}  windowUuid
+ * @param {string}  recordUuid
+ * @param {number}  recordId
  */
-export function getReferencesList(parameters) {
-  var requestReference = Instance.call(this).getReferencesRequest()
-  requestReference.setWindowuuid(parameters.windowUuid)
-  requestReference.setTablename(parameters.tableName)
-  requestReference.setUuid(parameters.recordUuid)
-  if (parameters.recordId) {
-    requestReference.setRecordid(parameters.recordId)
-  }
-
-  return Instance.call(this).listReferencesRequest(requestReference)
+export function getReferencesList({ windowUuid, tableName, recordId, recordUuid }) {
+  return Instance.call(this).listReferencesRequest({
+    windowUuid,
+    tableName,
+    recordId,
+    recordUuid
+  })
 }
 
 /**
  * Run callout request
- * @param {string}  parametersCallout.windowUuid
- * @param {integer} parametersCallout.windowNo
- * @param {string}  parametersCallout.tabUuid
- * @param {string}  parametersCallout.tableName
- * @param {string}  parametersCallout.columnName
- * @param {mixed}   parametersCallout.value
- * @param {mixed}   parametersCallout.oldValue
- * @param {string}  parametersCallout.callout
- * @param {array}   parametersCallout.attributesList
+ * @param {string}  windowUuid
+ * @param {number}  windowNo
+ * @param {string}  tabUuid
+ * @param {string}  tableName
+ * @param {string}  columnName
+ * @param {mixed}   value
+ * @param {mixed}   oldValue
+ * @param {string}  callout
+ * @param {array}   attributesList
  * @returns {Map} Entity
  */
-export function runCallOutRequest(parametersCallout) {
-  return Instance.call(this).runCalloutRequest(parametersCallout)
+export function runCallOutRequest({ windowUuid, windowNo, tabUuid, tableName, columnName, value, oldValue, callout, attributesList = [] }) {
+  return Instance.call(this).runCalloutRequest({
+    windowUuid,
+    windowNo,
+    tabUuid,
+    tableName,
+    columnName,
+    value,
+    oldValue,
+    callout,
+    attributesList
+  })
 }
 
 export function getDefaultValueFromServer(query) {
@@ -245,30 +248,61 @@ export function getContextInfoValueFromServer({ uuid, query }) {
   return Instance.call(this).getContextInfoValue({ uuid: uuid, query: query })
 }
 
-export function getPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
-  return Instance.call(this).getPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+export function getPrivateAccessFromServer({ tableName, recordId, userUuid }) {
+  return Instance.call(this).getPrivateAccess({
+    tableName,
+    recordId,
+    userUuid
+  })
 }
 
-export function lockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
-  return Instance.call(this).lockPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+export function lockPrivateAccessFromServer({ tableName, recordId, userUuid }) {
+  return Instance.call(this).lockPrivateAccess({
+    tableName,
+    recordId,
+    userUuid
+  })
 }
 
-export function unlockPrivateAccessFromServer({ tableName: tableName, recordId: recordId, userUuid: userUuid }) {
-  return Instance.call(this).unlockPrivateAccess({ tableName: tableName, recordId: recordId, userUuid: userUuid })
+export function unlockPrivateAccessFromServer({ tableName, recordId, userUuid }) {
+  return Instance.call(this).unlockPrivateAccess({
+    tableName,
+    recordId,
+    userUuid
+  })
 }
 
+/**
+ * Request Favorites List
+ * @param {string} userUuid
+ */
 export function getFavoritesFromServer(userUuid) {
   return Instance.call(this).requestFavorites(userUuid)
 }
 
 export function getPendingDocumentsFromServer(userUuid, roleUuid) {
-  return Instance.call(this).requestPendingDocuments(userUuid, roleUuid)
+  return Instance.call(this).requestPendingDocuments({
+    userUuid,
+    roleUuid
+  })
 }
 
+/**
+ * Request Pending Documents List
+ * @param {string} tableName
+ * @param {string} processUuid
+ */
 export function requestReportViews({ tableName, processUuid }) {
-  return Instance.call(this).requestReportViews({ tableName: tableName, processUuid: processUuid })
+  return Instance.call(this).requestReportViews({
+    tableName,
+    processUuid
+  })
 }
 
 export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) {
-  return Instance.call(this).requestPrintFormats({ tableName: tableName, reportViewUuid: reportViewUuid, processUuid: processUuid })
+  return Instance.call(this).requestPrintFormats({
+    tableName,
+    reportViewUuid,
+    processUuid
+  })
 }
