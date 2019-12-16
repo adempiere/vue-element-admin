@@ -36,7 +36,7 @@ export function createEntity({ tableName, attributesList }) {
 /**
  * Update entity
  * @param {string}  tableName
- * @param {integer} recordId
+ * @param {number}  recordId
  * @param {string}  recordUuid
  * @param {array}   attributesList
  */
@@ -52,7 +52,7 @@ export function updateEntity({ tableName, recordId, recordUuid, attributesList }
 /**
  * Delete entity
  * @param {string}  tableName
- * @param {integer} recordId
+ * @param {number}  recordId
  * @param {string}  recordUuid
  */
 export function deleteEntity({ tableName, recordId, recordUuid }) {
@@ -61,10 +61,6 @@ export function deleteEntity({ tableName, recordId, recordUuid }) {
     recordId,
     recordUuid
   })
-}
-
-export function getCriteria(tableName) {
-  return Instance.call(this).getCriteria(tableName)
 }
 
 export function getEntity({ tableName, recordId, recordUuid }) {
@@ -84,7 +80,7 @@ export function getEntity({ tableName, recordId, recordUuid }) {
  * @param {string} orderByClause
  * @param {string} nextPageToken
  */
-export function getObjectListFromCriteria({ tableName, query, whereClause, conditions = [], orderByClause, nextPageToken }) {
+export function getEntitiesList({ tableName, query, whereClause, conditions = [], orderByClause, nextPageToken }) {
   return Instance.call(this).requestEntitiesList({
     tableName,
     query,

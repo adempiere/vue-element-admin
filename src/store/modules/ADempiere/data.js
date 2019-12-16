@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import {
   getEntity,
-  getObjectListFromCriteria,
+  getEntitiesList,
   getRecentItems,
   getDefaultValueFromServer,
   convertValueFromGRPC,
@@ -12,8 +12,8 @@ import {
   getFavoritesFromServer,
   getPendingDocumentsFromServer,
   requestPrintFormats
-} from '@/api/ADempiere'
-import { convertValuesMapToObject, isEmptyValue } from '@/utils/ADempiere/valueUtils'
+} from '@/api/ADempiere/data'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
 import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
 import language from '@/lang'
@@ -21,7 +21,6 @@ import language from '@/lang'
 const data = {
   state: {
     recordSelection: [], // record data and selection
-    recordDetail: [],
     recentItems: [],
     favorites: [],
     pendingDocuments: [],
@@ -89,21 +88,6 @@ const data = {
     setIsloadContext(state, payload) {
       payload.data.isLoadedContext = payload.isLoadedContext
     },
-    setRecordDetail(state, payload) {
-      var isFinded = false
-      state.recordDetail = state.recordDetail.map(itemData => {
-        if (itemData.uuid === payload.uuid) {
-          isFinded = true
-          var newValues = Object.assign(itemData.data, payload.data)
-          payload.data = newValues
-          return payload
-        }
-        return itemData
-      })
-      if (!isFinded) {
-        state.recordDetail.push(payload)
-      }
-    },
     addNewRow(state, payload) {
       payload.data = payload.data.unshift(payload.values)
     },
@@ -167,7 +151,7 @@ const data = {
      */
     addNewRow({ commit, getters, rootGetters, dispatch }, parameters) {
       const { parentUuid, containerUuid, isPanelValues = false, isEdit = true, isNew = true } = parameters
-      var { fieldList = [] } = parameters
+      let { fieldList = [] } = parameters
 
       const tabPanel = rootGetters.getPanel(containerUuid)
 
@@ -175,7 +159,7 @@ const data = {
         fieldList = tabPanel.fieldList
       }
 
-      var values = {}
+      let values = {}
       // add row with default values to create new record
       if (isPanelValues) {
         // add row with values used from record in panel
@@ -361,7 +345,7 @@ const data = {
      * @param {string}  parameters.nextPageToken
      * @param {string}  parameters.panelType
      */
-    setRecordSelection({ state, commit, rootGetters, dispatch }, parameters) {
+    setRecordSelection({ state, commit }, parameters) {
       const {
         parentUuid, containerUuid, panelType = 'window', record = [],
         query, whereClause, orderByClause,
@@ -452,6 +436,7 @@ const data = {
     /**
      * @param {string} tableName
      * @param {string} recordUuid
+     * @param {number} recordId
      */
     getEntity({ commit }, {
       tableName,
@@ -464,18 +449,8 @@ const data = {
           recordUuid,
           recordId
         })
-          .then(response => {
-            var map = response.getValuesMap()
-            var newValues = convertValuesMapToObject(map)
-            const responseConvert = {
-              data: newValues,
-              id: response.getId(),
-              uuid: response.getUuid(),
-              tableName
-            }
-
-            commit('setRecordDetail', responseConvert)
-            resolve(newValues)
+          .then(responseGetEntity => {
+            resolve(responseGetEntity.values)
           })
           .catch(error => {
             reject(error)
@@ -533,20 +508,17 @@ const data = {
         containerUuid: containerUuid,
         isGetServer: false
       })
-      return getObjectListFromCriteria({
-        tableName: tableName,
-        query: query,
-        whereClause: whereClause,
-        conditions: conditions,
-        orderByClause: orderByClause,
-        nextPageToken: nextPageToken
+      return getEntitiesList({
+        tableName,
+        query,
+        whereClause,
+        conditions,
+        orderByClause,
+        nextPageToken
       })
-        .then(response => {
-          const recordList = response.getRecordsList()
-          const record = recordList.map(itemRecord => {
-            const values = convertValuesMapToObject(
-              itemRecord.getValuesMap()
-            )
+        .then(dataResponse => {
+          const recordsList = dataResponse.recordsList.map(itemRecord => {
+            const values = itemRecord.values
 
             // datatables attributes
             values.isNew = false
@@ -566,7 +538,7 @@ const data = {
             }
           })
 
-          const originalNextPageToken = response.getNextPageToken()
+          const originalNextPageToken = dataResponse.nextPageToken
           let token = originalNextPageToken
           if (isEmptyValue(token)) {
             token = dataStore.nextPageToken
@@ -578,7 +550,7 @@ const data = {
           }
           if (isShowNotification) {
             let searchMessage = 'searchWithOutRecords'
-            if (record.length) {
+            if (recordsList.length) {
               searchMessage = 'succcessSearch'
             }
             showMessage({
@@ -588,20 +560,20 @@ const data = {
             })
           }
           dispatch('setRecordSelection', {
-            parentUuid: parentUuid,
-            containerUuid: containerUuid,
-            record: record,
+            parentUuid,
+            containerUuid,
+            record: recordsList,
             selection: dataStore.selection,
-            recordCount: response.getRecordcount(),
+            recordCount: dataResponse.recordCount,
             nextPageToken: token,
             originalNextPageToken: originalNextPageToken,
-            isAddRecord: isAddRecord,
+            isAddRecord,
             pageNumber: dataStore.pageNumber,
-            tableName: tableName,
-            query: query,
-            whereClause: whereClause
+            tableName,
+            query,
+            whereClause
           })
-          return record
+          return recordsList
         })
         .catch(error => {
           // Set default registry values so that the table does not say loading,
@@ -622,8 +594,8 @@ const data = {
         })
         .finally(() => {
           commit('deleteInGetting', {
-            containerUuid: containerUuid,
-            tableName: tableName
+            containerUuid,
+            tableName
           })
         })
     },
@@ -1069,55 +1041,34 @@ const data = {
       })
     },
     /**
-     * @returns {object}
-     */
-    getRecordDetail: (state) => (parameters) => {
-      return state.recordDetail.find(itemData => {
-        if (itemData.uuid === parameters.recordUuid) {
-          return true
-        }
-      }) || {}
-    },
-    /**
      * Getter converter selection data record in format
      * @param {string} containerUuid
-     * [
-     *  {
+     * @param {array}  selection
+     * [{
      *    selectionId: keyColumn Value,
-     *    selectionValues: [
-     *      { columname, value },
-     *      { columname, value },
-     *      { columname, value }
-     *    ]
-     *  },
-     *  {
-     *    selectionId: keyColumn Value,
-     *    selectionValues: [
-     *      { columname, value },
-     *      { columname, value }
-     *    ]
-     *  }
-     * ]
+     *    selectionValues: [{ columname, value }]
+     * }]
      */
-    getSelectionToServer: (state, getters, rootState, rootGetters) => (parameters) => {
-      var { containerUuid, selection = [] } = parameters
-      var selectionToServer = []
+    getSelectionToServer: (state, getters, rootState, rootGetters) => ({ containerUuid, selection = [] }) => {
+      const selectionToServer = []
       const withOut = ['isEdit', 'isSelected', 'isSendToServer']
 
       if (selection.length <= 0) {
         selection = getters.getDataRecordSelection(containerUuid)
       }
       if (selection.length) {
-        const panel = rootGetters.getPanel(containerUuid)
+        const { fieldList, keyColumn } = rootGetters.getPanel(containerUuid)
+        // reduce list
+        const fieldsList = fieldList.filter(itemField => itemField.isIdentifier || itemField.isUpdateable)
 
         selection.forEach(itemRow => {
-          var records = []
+          const records = []
 
           Object.keys(itemRow).forEach(key => {
             if (!key.includes('DisplayColumn') && !withOut.includes(key)) {
               // evaluate metadata attributes before to convert
-              const field = panel.fieldList.find(itemField => itemField.columnName === key)
-              if (field && (field.isIdentifier || field.isUpdateable)) {
+              const field = fieldsList.find(itemField => itemField.columnName === key)
+              if (field) {
                 records.push({
                   columnName: key,
                   value: itemRow[key]
@@ -1127,7 +1078,7 @@ const data = {
           })
 
           selectionToServer.push({
-            selectionId: itemRow[panel.keyColumn],
+            selectionId: itemRow[keyColumn],
             selectionValues: records
           })
         })

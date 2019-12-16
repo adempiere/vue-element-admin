@@ -1,5 +1,7 @@
 import { createEntity, updateEntity, deleteEntity, getReferencesList, rollbackEntity } from '@/api/ADempiere/data'
-import { convertObjectToArrayPairs, convertValuesMapToObject, isEmptyValue, parseContext, showMessage } from '@/utils/ADempiere'
+import { convertObjectToArrayPairs, convertValuesMapToObject, isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { parseContext } from '@/utils/ADempiere/contextUtils'
+import { showMessage } from '@/utils/ADempiere/notification'
 import language from '@/lang'
 import router from '@/router'
 
@@ -69,27 +71,30 @@ const windowControl = {
         newValues: oldAttributes
       })
     },
-    createNewEntity({ commit, dispatch, getters, rootGetters }, parameters) {
+    createNewEntity({ commit, dispatch, getters, rootGetters }, {
+      parentUuid,
+      containerUuid
+    }) {
       return new Promise((resolve, reject) => {
         // exists some call to create new record with container uuid
-        if (getters.getInCreate(parameters.containerUuid)) {
+        if (getters.getInCreate(containerUuid)) {
           return reject({
             error: 0,
-            message: `In this panel (${parameters.containerUuid}) is a create new record in progress`
+            message: `In this panel (${containerUuid}) is a create new record in progress`
           })
         }
 
-        const panel = rootGetters.getPanel(parameters.containerUuid)
+        const panel = rootGetters.getPanel(containerUuid)
         // delete key from attributes
         const finalAttributes = rootGetters.getColumnNamesAndValues({
-          containerUuid: parameters.containerUuid,
+          containerUuid,
           propertyName: 'value',
           isEvaluateValues: true,
           isAddDisplayColumn: true
         })
 
         commit('addInCreate', {
-          containerUuid: parameters.containerUuid,
+          containerUuid,
           tableName: panel.tableName,
           attributesList: finalAttributes
         })
@@ -97,8 +102,8 @@ const windowControl = {
           tableName: panel.tableName,
           attributesList: finalAttributes
         })
-          .then(response => {
-            var newValues = convertValuesMapToObject(response.getValuesMap())
+          .then(createEntityResponse => {
+            const newValues = createEntityResponse.values
             finalAttributes.forEach(element => {
               if (element.columnName.includes('DisplayColumn')) {
                 newValues[element.columnName] = element.value
@@ -112,14 +117,14 @@ const windowControl = {
 
             // update fields with new values
             dispatch('notifyPanelChange', {
-              parentUuid: parameters.parentUuid,
-              containerUuid: parameters.containerUuid,
-              newValues: newValues,
+              parentUuid,
+              containerUuid,
+              newValues,
               isSendToServer: false
             })
             dispatch('addNewRow', {
-              parentUuid: parameters.parentUuid,
-              containerUuid: parameters.containerUuid,
+              parentUuid,
+              containerUuid,
               isPanelValues: true,
               isEdit: false
             })
@@ -127,7 +132,7 @@ const windowControl = {
             // set data log to undo action
             const fieldId = panel.fieldList.find(itemField => itemField.isKey)
             dispatch('setDataLog', {
-              containerUuid: parameters.containerUuid,
+              containerUuid,
               tableName: panel.tableName,
               recordId: fieldId.value, // TODO: Verify performance with tableName_ID
               recordUuid: newValues.UUID,
@@ -139,16 +144,16 @@ const windowControl = {
               name: oldRoute.name,
               query: {
                 ...oldRoute.query,
-                action: response.getUuid()
+                action: createEntityResponse.uuid
               }
             })
             dispatch('tagsView/delView', oldRoute, true)
 
             resolve({
               data: newValues,
-              recordUuid: response.getUuid(),
-              recordId: response.getId(),
-              tableName: response.getTablename()
+              recordUuid: createEntityResponse.uuid,
+              recordId: createEntityResponse.id,
+              tableName: createEntityResponse.tableName
             })
           })
           .catch(error => {
@@ -161,7 +166,7 @@ const windowControl = {
           })
           .finally(() => {
             commit('deleteInCreate', {
-              containerUuid: parameters.containerUuid,
+              containerUuid: containerUuid,
               tableName: panel.tableName,
               attributesList: finalAttributes
             })
@@ -244,7 +249,7 @@ const windowControl = {
           })
         })
     },
-    updateCurrentEntity({ commit, dispatch, rootGetters }, {
+    updateCurrentEntity({ dispatch, rootGetters }, {
       containerUuid,
       recordUuid = null
     }) {
@@ -257,7 +262,7 @@ const windowControl = {
       const columnsToDontSend = ['Account_Acct']
 
       // attributes or fields
-      var finalAttributes = rootGetters.getColumnNamesAndValues({
+      let finalAttributes = rootGetters.getColumnNamesAndValues({
         containerUuid: containerUuid,
         isEvaluatedChangedValue: true
       })
@@ -275,29 +280,38 @@ const windowControl = {
 
       return updateEntity({
         tableName: panel.tableName,
-        recordUuid: recordUuid,
+        recordUuid,
         attributesList: finalAttributes
       })
-        .then(response => {
-          const newValues = convertValuesMapToObject(response.getValuesMap())
-          const responseConvert = {
-            data: newValues,
-            id: response.getId(),
-            uuid: recordUuid,
-            tableName: panel.tableName
-          }
+        .then(updateEntityResponse => {
+          const newValues = updateEntityResponse.values
 
           // set data log to undo action
-          const fieldId = panel.fieldList.find(itemField => itemField.isKey)
+          // TODO: Verify performance with tableName_ID
+          let recordId = updateEntityResponse.id
+          if (isEmptyValue(recordId)) {
+            recordId = newValues[`${panel.tableName}_ID`]
+          }
+          if (isEmptyValue(recordId)) {
+            const fieldId = panel.fieldList.find(itemField => itemField.isKey)
+            recordId = fieldId.value
+          }
+
+          if (isEmptyValue(recordUuid)) {
+            recordUuid = updateEntityResponse.uuid
+          }
+          if (isEmptyValue(recordUuid)) {
+            recordUuid = newValues.UUID
+          }
+
           dispatch('setDataLog', {
-            containerUuid: containerUuid,
+            containerUuid,
             tableName: panel.tableName,
-            recordId: fieldId.value, // TODO: Verify performance with tableName_ID
-            recordUuid: newValues.UUID,
+            recordId,
+            recordUuid,
             eventType: 'UPDATE'
           })
 
-          commit('setRecordDetail', responseConvert)
           return newValues
         })
         .catch(error => {
@@ -305,7 +319,7 @@ const windowControl = {
             message: error.message,
             type: 'error'
           })
-          console.warn('Update Entity Error ' + error.code + ': ' + error.message)
+          console.warn(`Update Entity Error ${error.code}: ${error.message}`)
         })
     },
     updateCurrentEntityFromTable({ rootGetters }, parameters) {
@@ -386,7 +400,7 @@ const windowControl = {
           tableName: panel.tableName,
           recordUuid: parameters.recordUuid
         })
-          .then(response => {
+          .then(responseDeleteEntity => {
             const oldRoute = router.app._route
 
             // refresh record list
@@ -394,9 +408,9 @@ const windowControl = {
               parentUuid: parameters.parentUuid,
               containerUuid: parameters.containerUuid
             })
-              .then(response => {
+              .then(responseDataList => {
                 // if response is void, go to new record
-                if (response.length <= 0) {
+                if (responseDataList.length <= 0) {
                   dispatch('resetPanelToNew', {
                     parentUuid: parameters.parentUuid,
                     containerUuid: parameters.containerUuid,
@@ -409,7 +423,7 @@ const windowControl = {
                     name: oldRoute.name,
                     query: {
                       ...oldRoute.query,
-                      action: response[0].UUID
+                      action: responseDataList[0].UUID
                     }
                   })
                 }
@@ -429,7 +443,7 @@ const windowControl = {
               eventType: 'DELETE'
             })
 
-            resolve(response)
+            resolve(responseDeleteEntity)
           })
           .catch(error => {
             showMessage({
