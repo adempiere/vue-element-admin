@@ -523,6 +523,9 @@ export default {
         return true
       }
       return false
+    },
+    permissionRoutes() {
+      return this.$store.getters.permission_routes
     }
   },
   watch: {
@@ -1067,6 +1070,28 @@ export default {
         })
       }
       return styleSheet
+    },
+    zoomRecord() {
+      const browserMetadata = this.$store.getters.getBrowser(this.$route.meta.uuid)
+      const elementName = browserMetadata.fieldList.find(field => field.columnName === browserMetadata.keyColumn).elementName
+      const records = []
+      this.getDataSelection.forEach(record => {
+        if (!isNaN(record[browserMetadata.keyColumn])) {
+          records.push(Number(record[browserMetadata.keyColumn]))
+        } else {
+          records.push(record[browserMetadata.keyColumn])
+        }
+      })
+
+      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: browserMetadata.window.uuid })
+      var windowRoute = this.$store.getters.getWindowRoute(browserMetadata.window.uuid)
+      this.$router.push({
+        name: windowRoute.name,
+        query: {
+          action: 'advancedQuery',
+          [elementName]: records
+        }
+      })
     }
   }
 }
