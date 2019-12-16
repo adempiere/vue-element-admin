@@ -66,8 +66,8 @@ export default {
 </script>
 <style>
 .el-menu--vertical .nest-menu .el-submenu>.el-submenu__title:hover, .el-menu--vertical .el-menu-item:hover {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
+  background-color: #263445 !important;
+  background: #263445 !important;
 }
 .el-menu--collapse {
   width: auto;
