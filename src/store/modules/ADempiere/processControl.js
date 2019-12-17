@@ -1,4 +1,9 @@
-import { runProcess, requestProcessActivity, requestReportViews } from '@/api/ADempiere'
+import {
+  runProcess,
+  requestProcessActivity,
+  requestReportViews,
+  requestPrintFormats
+} from '@/api/ADempiere/data'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
@@ -15,7 +20,8 @@ const processControl = {
     sessionProcess: [],
     notificationProcess: [],
     inRequestMetadata: [],
-    reportViewList: []
+    reportViewList: [],
+    printFormatList: []
   },
   mutations: {
     // Add process in execution
@@ -77,6 +83,9 @@ const processControl = {
     },
     setReportViewsList(state, payload) {
       state.reportViewList.push(payload)
+    },
+    setPrintFormatList(state, payload) {
+      state.printFormatList.push(payload)
     }
   },
   actions: {
@@ -439,6 +448,21 @@ const processControl = {
         })
         .catch(error => {
           console.warn(`Error getting report views: ${error.message}. Code: ${error.code}`)
+        })
+    },
+    requestPrintFormats({ commit }, parameters) {
+      return requestPrintFormats({
+        processUuid: parameters.processUuid
+      })
+        .then(printFormatResponse => {
+          commit('setPrintFormatList', {
+            containerUuid: parameters.processUuid,
+            printFormatList: printFormatResponse.reportViewsList
+          })
+          return printFormatResponse.reportViewsList
+        })
+        .catch(error => {
+          console.warn(`Error getting print formats: ${error.message}. Code: ${error.code}`)
         })
     }
   },
