@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import { getPendingDocumentsFromServer } from '@/api/ADempiere'
 export default {
   name: 'PendingDocuments',
   data() {
@@ -56,39 +55,10 @@ export default {
   },
   methods: {
     getPendingDocuments() {
-      const userUuid = this.$store.getters['user/getUserUuid']
-      const roleUuid = this.$store.getters.getRoleUuid
-      return new Promise((resolve, reject) => {
-        getPendingDocumentsFromServer(userUuid, roleUuid)
-          .then(response => {
-            const documentsList = response.getPendingdocumentsList().map(document => {
-              return {
-                formUuid: document.getFormuuid(),
-                name: document.getDocumentname(),
-                description: document.getDocumentdescription(),
-                criteria: {
-                  type: document.getCriteria().getConditionsList(),
-                  limit: document.getCriteria().getLimit(),
-                  orderbyclause: document.getCriteria().getOrderbyclause(),
-                  orderbycolumnList: document.getCriteria().getOrderbycolumnList(),
-                  query: document.getCriteria().getQuery(),
-                  referenceUuid: document.getCriteria().getReferenceuuid(),
-                  tableName: document.getCriteria().getTablename(),
-                  valuesList: document.getCriteria().getValuesList(),
-                  whereClause: document.getCriteria().getWhereclause()
-                },
-                recordCount: document.getRecordcount(),
-                sequence: document.getSequence(),
-                windowUuid: document.getWindowuuid()
-              }
-            })
-            this.documents = documentsList
-            resolve(documentsList)
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+      this.$store.dispatch('getPendingDocumentsFromServer')
+        .then(pendingDocumentsResponse => {
+          this.documents = pendingDocumentsResponse
+        })
     },
     subscribeChanges() {
       this.$store.subscribe((mutation, state) => {

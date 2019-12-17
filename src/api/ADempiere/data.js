@@ -276,7 +276,7 @@ export function getFavoritesFromServer(userUuid) {
   return Instance.call(this).requestFavorites(userUuid)
 }
 
-export function getPendingDocumentsFromServer(userUuid, roleUuid) {
+export function getPendingDocumentsFromServer({ userUuid, roleUuid }) {
   return Instance.call(this).requestPendingDocuments({
     userUuid,
     roleUuid

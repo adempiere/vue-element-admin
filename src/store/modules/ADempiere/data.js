@@ -652,14 +652,15 @@ const data = {
       const userUuid = rootGetters['user/getUserUuid']
       return new Promise((resolve, reject) => {
         getFavoritesFromServer(userUuid)
-          .then(response => {
-            const favorites = response.getFavoritesList().map(favorite => {
-              const actionConverted = convertAction(favorite.getAction())
+          .then(favoritesResponse => {
+            const favorites = favoritesResponse.favoritesList.map(favorite => {
+              const actionConverted = convertAction(favorite.action)
               return {
-                uuid: favorite.getMenuuuid(),
-                name: favorite.getMenuname(),
-                description: favorite.getMenudescription(),
-                referenceUuid: favorite.getReferenceuuid(),
+                ...favorite,
+                originalAction: favorite.action,
+                uuid: favorite.menuUuid,
+                name: favorite.menuName,
+                description: favorite.menuDescription,
                 action: actionConverted.name,
                 icon: actionConverted.icon
               }
@@ -676,29 +677,12 @@ const data = {
       const userUuid = rootGetters['user/getUserUuid']
       const roleUuid = getters.getRoleUuid
       return new Promise((resolve, reject) => {
-        getPendingDocumentsFromServer(userUuid, roleUuid)
+        getPendingDocumentsFromServer({
+          userUuid,
+          roleUuid
+        })
           .then(response => {
-            const documentsList = response.getPendingdocumentsList().map(document => {
-              return {
-                formUuid: document.getFormuuid(),
-                name: document.getDocumentname(),
-                description: document.getDocumentdescription(),
-                criteria: {
-                  type: document.getCriteria().getConditionsList(),
-                  limit: document.getCriteria().getLimit(),
-                  orderbyclause: document.getCriteria().getOrderbyclause(),
-                  orderbycolumnList: document.getCriteria().getOrderbycolumnList(),
-                  query: document.getCriteria().getQuery(),
-                  referenceUuid: document.getCriteria().getReferenceuuid(),
-                  tableName: document.getCriteria().getTablename(),
-                  valuesList: document.getCriteria().getValuesList(),
-                  whereClause: document.getCriteria().getWhereclause()
-                },
-                recordCount: document.getRecordcount(),
-                sequence: document.getSequence(),
-                windowUuid: document.getWindowuuid()
-              }
-            })
+            const documentsList = response.pendingDocumentsList
             commit('setPendingDocuments', documentsList)
             resolve(documentsList)
           })
