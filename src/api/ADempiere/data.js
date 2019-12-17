@@ -154,7 +154,7 @@ export function runProcess({ uuid, reportType, tableName, recordId, parameters: 
     tableName,
     recordId,
     parametersList,
-    selection
+    selectionsList: selection
   })
 }
 

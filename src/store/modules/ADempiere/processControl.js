@@ -1,6 +1,6 @@
 import { runProcess, requestProcessActivity, requestReportViews } from '@/api/ADempiere'
 import { showNotification } from '@/utils/ADempiere/notification'
-import { isEmptyValue, convertMapToArrayPairs } from '@/utils/ADempiere'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
 import router from '@/router'
 
@@ -94,9 +94,9 @@ const processControl = {
         }
 
         // additional attributes to send server, selection to browser, or table name and record id to window
-        var selection = []
-        var allData = {}
-        var tab, tableName, recordId
+        let selection = []
+        let allData = {}
+        let tab, tableName, recordId
         if (params.panelType) {
           if (params.panelType === 'browser') {
             allData = getters.getDataRecordAndSelection(params.containerUuid)
@@ -125,7 +125,7 @@ const processControl = {
 
         // get info metadata process
         const processDefinition = rootGetters.getProcess(params.action.uuid)
-        var reportType = params.reportFormat
+        let reportType = params.reportFormat
         const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
 
         showNotification({
@@ -191,61 +191,36 @@ const processControl = {
         runProcess({
           uuid: processDefinition.uuid,
           id: processDefinition.id,
-          reportType: reportType,
+          reportType,
           parameters: finalParameters,
-          selection: selection,
-          tableName: tableName,
-          recordId: recordId
+          selection,
+          tableName,
+          recordId
         })
-          .then(response => {
-            var output = {
-              uuid: '',
-              name: '',
-              description: '',
-              fileName: '',
-              mimeType: '',
-              output: '',
-              outputStream: '',
-              reportType: ''
-            }
-            if (response.getOutput()) {
-              const responseOutput = response.getOutput()
-              output = {
-                uuid: responseOutput.getUuid(),
-                name: responseOutput.getName(),
-                description: responseOutput.getDescription(),
-                fileName: responseOutput.getFilename(),
-                mimeType: responseOutput.getMimetype(),
-                output: responseOutput.getOutput(),
-                outputStream: responseOutput.getOutputstream(),
-                reportType: responseOutput.getReporttype()
-              }
-            }
-            var logList = []
-            if (response.getLogsList()) {
-              logList = response.getLogsList().map(itemLog => {
-                return {
-                  log: itemLog.getLog(),
-                  recordId: itemLog.getRecordid()
-                }
-              })
+          .then(runProcessResponse => {
+            let logList = []
+            if (runProcessResponse.logsList) {
+              logList = runProcessResponse.logsList
             }
 
-            var link = {
+            let link = {
               href: undefined,
               download: undefined
             }
             if (processDefinition.isReport) {
-              const blob = new Blob([output.outputStream], { type: output.mimeType })
+              const blob = new Blob(
+                [runProcessResponse.output.outputStream],
+                { type: runProcessResponse.output.mimeType }
+              )
               link = document.createElement('a')
               link.href = window.URL.createObjectURL(blob)
-              link.download = output.fileName
+              link.download = runProcessResponse.output.fileName
               if (reportType !== 'pdf' && reportType !== 'html') {
                 link.click()
               }
 
               // Report views List to context menu
-              var reportViewList = {
+              const reportViewList = {
                 name: language.t('views.reportView'),
                 type: 'summary',
                 action: '',
@@ -266,7 +241,7 @@ const processControl = {
               }
 
               // Print formats to context menu
-              var printFormatList = {
+              const printFormatList = {
                 name: language.t('views.printFormat'),
                 type: 'summary',
                 action: '',
@@ -288,16 +263,10 @@ const processControl = {
             }
             // assign new attributes
             Object.assign(processResult, {
-              instanceUuid: response.getInstanceuuid(),
+              ...runProcessResponse,
               url: link.href,
               download: link.download,
-              isError: response.getIserror(),
-              isProcessing: response.getIsprocessing(),
-              summary: response.getSummary(),
-              ResultTableName: response.getResulttablename(),
-              lastRun: response.getLastrun(),
-              logs: logList,
-              output: output
+              logs: logList
             })
             dispatch('setReportTypeToShareLink', processResult.output.reportType)
             resolve(processResult)
@@ -308,7 +277,7 @@ const processControl = {
               message: error.message,
               isProcessing: false
             })
-            console.log('Error running the process', error)
+            console.warn(`Error running the process ${error.message}. Code: ${error.code}`)
             reject(error)
           })
           .finally(() => {
@@ -330,7 +299,10 @@ const processControl = {
             }
 
             commit('addNotificationProcess', processResult)
-            dispatch('finishProcess', { processOutput: processResult, routeToDelete: params.routeToDelete })
+            dispatch('finishProcess', {
+              processOutput: processResult,
+              routeToDelete: params.routeToDelete
+            })
 
             commit('deleteInExecution', {
               containerUuid: params.containerUuid
@@ -344,63 +316,31 @@ const processControl = {
     getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }) {
       // process Activity
       return requestProcessActivity()
-        .then(response => {
-          var responseList = response.getResponsesList().map(responseItem => {
-            var uuid = responseItem.getUuid()
-            var responseOutput = responseItem.getOutput()
-            var output
-            if (responseOutput !== undefined) {
-              output = {
-                uuid: uuid,
-                name: responseOutput.getName(),
-                description: responseOutput.getDescription(),
-                fileName: responseOutput.getFilename(),
-                mimeType: responseOutput.getMimetype(),
-                output: responseOutput.getOutput(),
-                outputStream: responseOutput.getOutputstream(),
-                outputStream_asB64: responseOutput.getOutputstream_asB64(),
-                outputStream_asU8: responseOutput.getOutputstream_asU8(),
-                reportType: responseOutput.getReporttype()
-              }
-            }
-            var logList = responseItem.getLogsList().map(log => {
-              return {
-                recordId: log.getRecordid(),
-                log: log.getLog()
-              }
-            })
-            var processMetadata = rootGetters.getProcess(uuid)
+        .then(processActivityResponse => {
+          const responseList = processActivityResponse.responsesList.map(businessProcessItem => {
+            const processMetadata = rootGetters.getProcess(businessProcessItem.uuid)
             // if no exists metadata process in store and no request progess
-            if (processMetadata === undefined && getters.getInRequestMetadata(uuid) === undefined) {
-              commit('addInRequestMetadata', uuid)
-              dispatch('getProcessFromServer', { containerUuid: uuid })
+            if (processMetadata === undefined && getters.getInRequestMetadata(businessProcessItem.uuid) === undefined) {
+              commit('addInRequestMetadata', businessProcessItem.uuid)
+              dispatch('getProcessFromServer', {
+                containerUuid: businessProcessItem.uuid
+              })
                 .finally(() => {
-                  commit('deleteInRequestMetadata', uuid)
+                  commit('deleteInRequestMetadata', businessProcessItem.uuid)
                 })
             }
 
-            var process = {
-              processUuid: responseItem.getUuid(),
-              instanceUuid: responseItem.getInstanceuuid(),
-              isError: responseItem.getIserror(),
-              isProcessing: responseItem.getIsprocessing(),
-              logs: logList,
-              output: output,
-              lastRun: responseItem.getLastrun(),
-              parametersMap: responseItem.getParametersMap(),
-              parameters: convertMapToArrayPairs(
-                responseItem.getParametersMap()
-              ),
-              ResultTableName: responseItem.getResulttablename(),
-              summary: responseItem.getSummary()
+            const process = {
+              ...businessProcessItem,
+              processUuid: businessProcessItem.uuid
             }
             return process
           })
 
-          var processResponseList = {
-            recordCount: response.getRecordcount(),
+          const processResponseList = {
+            recordCount: processActivityResponse.recordCount,
             processList: responseList,
-            nextPageToken: response.getNextPageToken()
+            nextPageToken: processActivityResponse.nextPageToken
           }
           commit('setSessionProcess', processResponseList)
           return processResponseList
@@ -411,7 +351,7 @@ const processControl = {
             message: error.message,
             type: 'error'
           })
-          console.warn('Error getting process activity:' + error.message + '. Code: ' + error.code)
+          console.warn(`Error getting process activity: ${error.message}. Code: ${error.code}`)
         })
     },
     /**
@@ -487,24 +427,18 @@ const processControl = {
       commit('clearProcessControl')
     },
     requestReportViews({ commit }, parameters) {
-      return requestReportViews({ processUuid: parameters.processUuid })
-        .then(response => {
-          const reportViewList = response.getReportviewsList().map(reportView => {
-            return {
-              uuid: reportView.getUuid(),
-              name: reportView.getName(),
-              tableName: reportView.getTablename(),
-              description: reportView.getDescription()
-            }
-          })
+      return requestReportViews({
+        processUuid: parameters.processUuid
+      })
+        .then(reportViewResponse => {
           commit('setReportViewsList', {
             containerUuid: parameters.processUuid,
-            viewList: reportViewList
+            viewList: reportViewResponse.reportViewsList
           })
-          return reportViewList
+          return reportViewResponse.reportViewsList
         })
         .catch(error => {
-          console.error(error)
+          console.warn(`Error getting report views: ${error.message}. Code: ${error.code}`)
         })
     }
   },

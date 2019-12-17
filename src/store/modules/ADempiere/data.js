@@ -605,7 +605,7 @@ const data = {
         getDefaultValueFromServer(query)
           .then(response => {
             var valueToReturn = {}
-            valueToReturn['key'] = convertValueFromGRPC(response)
+            valueToReturn.key = convertValueFromGRPC(response)
             // add display Column for table
             if (field.componentPath === 'FieldSelect') {
               dispatch('getLookupItemFromServer', {
@@ -616,7 +616,7 @@ const data = {
                 value: valueToReturn.key
               })
                 .then(responseLookup => {
-                  valueToReturn['label'] = responseLookup.label
+                  valueToReturn.label = responseLookup.label
                   dispatch('addDisplayColumn', {
                     containerUuid: field.containerUuid,
                     columnName: field.columnName,
@@ -727,7 +727,7 @@ const data = {
      * @param {objec}  objectParams.isEdit, if the row displayed to edit mode
      * @param {objec}  objectParams.isNew, if insert data to new row
      */
-    notifyRowTableChange({ commit, state, getters, rootGetters }, objectParams) {
+    notifyRowTableChange({ commit, getters, rootGetters }, objectParams) {
       const { parentUuid, containerUuid, isEdit = true } = objectParams
       var currentValues = {}
       if (objectParams.hasOwnProperty('values')) {
@@ -870,7 +870,7 @@ const data = {
           console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
         })
     },
-    getPrivateAccessFromServer({ commit, rootGetters }, parameters) {
+    getPrivateAccessFromServer({ rootGetters }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
       return getPrivateAccessFromServer({
@@ -900,7 +900,7 @@ const data = {
           console.error(error)
         })
     },
-    lockRecord({ commit, rootGetters }, parameters) {
+    lockRecord({ rootGetters }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
       return lockPrivateAccessFromServer({
@@ -934,7 +934,7 @@ const data = {
           console.error(error)
         })
     },
-    unlockRecord({ commit, rootGetters, state }, parameters) {
+    unlockRecord({ rootGetters }, parameters) {
       const { tableName, recordId } = parameters
       const userUuid = rootGetters['user/getUserUuid']
       return unlockPrivateAccessFromServer({

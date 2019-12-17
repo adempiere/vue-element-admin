@@ -173,9 +173,9 @@ export default {
   },
   table: {
     ProcessActivity: {
-      name: 'Name',
+      Name: 'Name',
       zoomIn: 'Zoom in',
-      description: 'Description',
+      Description: 'Description',
       actions: 'Action',
       status: 'Status',
       Logs: 'Summary',
