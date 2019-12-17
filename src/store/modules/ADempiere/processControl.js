@@ -209,7 +209,7 @@ const processControl = {
               outputStream: '',
               reportType: ''
             }
-            if (response.getOutput()) {
+            if (response.hasOutput()) {
               const responseOutput = response.getOutput()
               output = {
                 uuid: responseOutput.getUuid(),
@@ -318,7 +318,7 @@ const processControl = {
               }
               if (!isEmptyValue(output.tableName)) {
                 drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
-                if (drillTablesList && !drillTablesList.childs.length) {
+                if (drillTablesList && isEmptyValue(drillTablesList.childs)) {
                   dispatch('requestDrillTables', {
                     processUuid: processResult.processUuid,
                     instanceUuid: response.getInstanceuuid(),

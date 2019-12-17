@@ -106,7 +106,7 @@ export default {
     displayReport(reportResult) {
       if (!reportResult.isError) {
         this.reportFormat = this.isEmptyValue(reportResult.output.reportType) ? reportResult.reportType : reportResult.output.reportType
-        this.reportContent = this.isEmptyValue(reportResult.output.output) ? reportResult : reportResult.output.output
+        this.reportContent = this.isEmptyValue(reportResult.output.output) ? reportResult.output : reportResult.output.output
         this.reportHeader = this.isEmptyValue(reportResult.output.name) ? reportResult.processName : reportResult.output.name
         this.name = this.isEmptyValue(reportResult.output.fileName) ? reportResult.fileName : reportResult.output.fileName
         this.isLoading = true
