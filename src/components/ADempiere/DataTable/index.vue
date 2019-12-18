@@ -299,9 +299,9 @@
                     v-else
                   >
                     <el-tag
-                      v-if="fieldAttributes.columnName === 'DocStatus'"
+                      v-if="fieldAttributes.columnName === 'DocStatus' || (fieldAttributes.columnName === 'O_DocStatus')"
                       :style="getFieldDefinition(fieldAttributes.fieldDefinition, scope.row)"
-                      :type="tagStatus(scope.row.DocStatus)"
+                      :type="fieldAttributes.columnName === 'DocStatus' ? tagStatus(scope.row.DocStatus) : tagStatus(scope.row.O_DocStatus)"
                       disable-transitions
                     >
                       {{ displayedValue(scope.row, fieldAttributes) }}
