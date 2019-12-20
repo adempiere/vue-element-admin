@@ -459,11 +459,6 @@ export default {
               panelType: this.panelType
             })
             parameters.isWindow = false
-          } else {
-            this.$store.dispatch('resetPanelToNew', {
-              containerUuid: this.containerUuid,
-              panelType: this.panelType
-            })
           }
         }
       }
