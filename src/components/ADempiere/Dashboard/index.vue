@@ -28,20 +28,14 @@
 
     <el-row :gutter="8">
       <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <dashboard :component-path="RecentItems" />
+        <component
+          :is="renderDashboard"
+          :ref="dashboard.dashboardName"
+          :metadata="{
+            fileName: dashboard.componentPath
+          }"
+        />
       </el-col>
-      <!-- <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <favorites />
-      </el-col> -->
-      <!-- <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <todo-list />
-      </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <box-card />
-      </el-col> -->
-      <!-- <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <pending-documents />
-      </el-col> -->
     </el-row>
   </div>
 </template>
@@ -57,55 +51,29 @@
 // import TodoList from './components/TodoList'
 // import BoxCard from './components/BoxCard'
 // import RecentItems from '@/components/ADempiere/RecentItems'
-import Dashboard from '@/components/ADempiere/Dashboard'
 // import Favorites from '@/components/ADempiere/Favorites'
 // import PendingDocuments from '@/components/ADempiere/PendingDocuments'
-//
-// const lineChartData = {
-//   newVisitis: {
-//     expectedData: [100, 120, 161, 134, 105, 160, 165],
-//     actualData: [120, 82, 91, 154, 162, 140, 145]
-//   },
-//   messages: {
-//     expectedData: [200, 192, 120, 144, 160, 130, 140],
-//     actualData: [180, 160, 151, 106, 145, 150, 130]
-//   },
-//   purchases: {
-//     expectedData: [80, 100, 121, 104, 105, 90, 100],
-//     actualData: [120, 90, 100, 138, 142, 130, 130]
-//   },
-//   shoppings: {
-//     expectedData: [130, 140, 141, 142, 145, 150, 160],
-//     actualData: [120, 82, 91, 154, 162, 140, 130]
-//   }
-// }
 
 export default {
-  name: 'DashboardAdmin',
-  components: {
-    // GithubCorner,
-    // PanelGroup,
-    // LineChart,
-    // RaddarChart,
-    // PieChart,
-    // BarChart,
-    // // TransactionTable,
-    // TodoList,
-    // BoxCard,
-    Dashboard
-    // ,
-    // Favorites,
-    // PendingDocuments
+  name: 'Dashboard',
+  props: {
+    componentPath: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
-      // lineChartData: lineChartData.newVisitis
+      dashboard: {}
     }
   },
-  methods: {
-    // handleSetLineChartData(type) {
-    //   this.lineChartData = lineChartData[type]
-    // }
+  computed: {
+    // load the component that is indicated in the attributes of received property
+    renderDashboard() {
+      console.log(this.componentPath)
+      return () => import(`@/components/ADempiere/Dashboard/${this.componentPath}`)
+      // return () => import(`@/components/ADempiere/Dashboard/RecentItems`)
+    }
   }
 }
 </script>
