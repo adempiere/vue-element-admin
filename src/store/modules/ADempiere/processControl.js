@@ -143,6 +143,7 @@ const processControl = {
           panelType: params.panelType,
           menuParentUuid: params.menuParentUuid,
           processIdPath: params.routeToDelete.path,
+          printFormatUuid: params.action.printFormatUuid,
           // process attributes
           lastRun: timeInitialized,
           action: processDefinition.name,
@@ -195,7 +196,8 @@ const processControl = {
           parameters: finalParameters,
           selection: selection,
           tableName: tableName,
-          recordId: recordId
+          recordId: recordId,
+          printFormatUuid: processResult.printFormatUuid
         })
           .then(response => {
             var output = {
