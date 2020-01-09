@@ -1,78 +1,33 @@
 <template>
   <div class="dashboard-editor-container">
-    <!-- <github-corner class="github-corner" /> -->
-
-    <!-- <panel-group @handleSetLineChartData="handleSetLineChartData" /> -->
-
-    <!-- <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <line-chart :chart-data="lineChartData" />
-    </el-row> -->
-
-    <!-- <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <raddar-chart />
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <pie-chart />
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <bar-chart />
-        </div>
-      </el-col>
-    </el-row> -->
-
-    <el-row :gutter="8">
-      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
-        <component
-          :is="renderDashboard"
-          :ref="dashboard.dashboardName"
-          :metadata="{
-            fileName: dashboard.componentPath
-          }"
-        />
-      </el-col>
-    </el-row>
+    <component
+      :is="renderDashboard"
+      :ref="dashboard.dashboardName"
+      :metadata="dashboard"
+    />
   </div>
 </template>
 
 <script>
-// import GithubCorner from '@/components/GithubCorner'
-// import PanelGroup from './components/PanelGroup'
-// import LineChart from './components/LineChart'
-// import RaddarChart from './components/RaddarChart'
-// import PieChart from './components/PieChart'
-// import BarChart from './components/BarChart'
-// // import TransactionTable from './components/TransactionTable'
-// import TodoList from './components/TodoList'
-// import BoxCard from './components/BoxCard'
-// import RecentItems from '@/components/ADempiere/RecentItems'
-// import Favorites from '@/components/ADempiere/Favorites'
-// import PendingDocuments from '@/components/ADempiere/PendingDocuments'
 
 export default {
   name: 'Dashboard',
   props: {
-    componentPath: {
-      type: String,
-      default: ''
+    metadata: {
+      type: Object,
+      required: true
     }
   },
   data() {
     return {
-      dashboard: {}
+      dashboard: this.metadata
     }
   },
   computed: {
     // load the component that is indicated in the attributes of received property
     renderDashboard() {
-      console.log(this.componentPath)
-      return () => import(`@/components/ADempiere/Dashboard/${this.componentPath}`)
-      // return () => import(`@/components/ADempiere/Dashboard/RecentItems`)
+      console.log(this.metadata.fileName, `@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
+      return () => import(`@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
     }
   }
 }

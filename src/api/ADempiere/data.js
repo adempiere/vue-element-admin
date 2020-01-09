@@ -345,3 +345,7 @@ export function requestReportViews({ tableName, processUuid }) {
 export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) {
   return Instance.call(this).requestPrintFormats({ tableName: tableName, reportViewUuid: reportViewUuid, processUuid: processUuid })
 }
+
+export function requestLisDashboards(roleUuid) {
+  return Instance.call(this).requestDashboards(roleUuid)
+}
