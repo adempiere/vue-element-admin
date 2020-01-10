@@ -1,4 +1,4 @@
-import { runProcess, requestProcessActivity, requestReportViews } from '@/api/ADempiere'
+import { runProcess, requestProcessActivity } from '@/api/ADempiere'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue, convertMapToArrayPairs } from '@/utils/ADempiere'
 import language from '@/lang'
@@ -62,7 +62,12 @@ const processControl = {
     },
     setReportValues(state, payload) {
       state.reportObject = payload
-      state.reportList.push(payload)
+      if (state.reportList.some(report => report.instanceUuid === payload.instanceUuid)) {
+        var reportIndex = state.reportList.findIndex(report => report.instanceUuid === payload.instanceUuid)
+        state.reportList.splice(reportIndex, 1, payload)
+      } else {
+        state.reportList.push(payload)
+      }
     },
     setSessionProcess(state, payload) {
       state.sessionProcess = payload.processList
@@ -870,13 +875,24 @@ const processControl = {
       }
       if (parameters.processOutput.isReport && !parameters.processOutput.isError) {
         // open report viewer with report response
+        if (isEmptyValue(parameters.processOutput.menuParentUuid)) {
+          parameters.processOutput.menuParentUuid = parameters.processOutput.processUuid
+        }
+
+        var tableName
+        if (parameters.processOutput.option && !isEmptyValue(parameters.processOutput.option)) {
+          if (parameters.processOutput.option === 'drillTable') {
+            tableName = parameters.processOutput.tableName
+          }
+        }
         router.push({
           name: 'Report Viewer',
           params: {
             processId: parameters.processOutput.processId,
             instanceUuid: parameters.processOutput.instanceUuid,
-            fileName: parameters.processOutput.output.fileName,
-            menuParentUuid: parameters.processOutput.menuParentUuid
+            fileName: isEmptyValue(parameters.processOutput.output.fileName) ? parameters.processOutput.fileName : parameters.processOutput.output.fileName,
+            menuParentUuid: parameters.processOutput.menuParentUuid,
+            tableName: tableName
           }
         })
       }
@@ -892,27 +908,6 @@ const processControl = {
     },
     clearProcessControl({ commit }) {
       commit('clearProcessControl')
-    },
-    requestReportViews({ commit }, parameters) {
-      return requestReportViews({ processUuid: parameters.processUuid })
-        .then(response => {
-          const reportViewList = response.getReportviewsList().map(reportView => {
-            return {
-              uuid: reportView.getUuid(),
-              name: reportView.getName(),
-              tableName: reportView.getTablename(),
-              description: reportView.getDescription()
-            }
-          })
-          commit('setReportViewsList', {
-            containerUuid: parameters.processUuid,
-            viewList: reportViewList
-          })
-          return reportViewList
-        })
-        .catch(error => {
-          console.error(error)
-        })
     }
   },
   getters: {
@@ -957,13 +952,6 @@ const processControl = {
       return state.reportList.find(
         item => item.instanceUuid === instanceUuid
       )
-    },
-    getReportViewList: (state) => (containerUuid) => {
-      var reportViewList = state.reportViewList.find(list => list.containerUuid === containerUuid)
-      if (reportViewList) {
-        return reportViewList.viewList
-      }
-      return []
     }
   }
 }
