@@ -240,6 +240,7 @@ const processControl = {
                 selection: selection,
                 tableName: windowSelectionProcess.tableName,
                 recordId: selection[windowSelectionProcess.tableName]
+
               })
                 .then(response => {
                   var output = {
@@ -438,33 +439,47 @@ const processControl = {
                     recordId: itemLog.getRecordid()
                   }
                 })
+              reportViewList.childs = getters.getReportViewList(processResult.processUuid)
+              if (reportViewList && !reportViewList.childs.length) {
+                dispatch('requestReportViews', {
+                  processUuid: processResult.processUuid,
+                  instanceUuid: response.getInstanceuuid(),
+                  processId: processDefinition.id,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
+                })
+                  .then(response => {
+                    reportViewList.childs = response
+                    if (reportViewList.childs.length) {
+                      // Get contextMenu metadata and concat print report views with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(reportViewList)
+                    }
+                  })
               }
 
               var link = {
                 href: undefined,
                 download: undefined
               }
-              if (processDefinition.isReport) {
-                const blob = new Blob([output.outputStream], { type: output.mimeType })
-                link = document.createElement('a')
-                link.href = window.URL.createObjectURL(blob)
-                link.download = output.fileName
-                if (reportType !== 'pdf' && reportType !== 'html') {
-                  link.click()
-                }
-
-                // Report views List to context menu
-                var reportViewList = {
-                  name: language.t('views.reportView'),
-                  type: 'summary',
-                  action: '',
-                  childs: [],
-                  option: 'reportView'
-                }
-                reportViewList.childs = getters.getReportViewList(processResult.processUuid)
-                if (!reportViewList.childs.length) {
-                  dispatch('requestReportViews', {
-                    processUuid: processResult.processUuid
+              printFormatList.childs = rootGetters.getPrintFormatList(processResult.processUuid)
+              if (printFormatList && !printFormatList.childs.length) {
+                dispatch('requestPrintFormats', {
+                  processUuid: processResult.processUuid,
+                  instanceUuid: response.getInstanceuuid(),
+                  processId: processDefinition.id,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
+                })
+                  .then(response => {
+                    printFormatList.childs = response
+                    if (printFormatList.childs.length) {
+                      // Get contextMenu metadata and concat print Format List with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(printFormatList)
+                    }
                   })
                     .then(response => {
                       reportViewList.childs = response
@@ -495,21 +510,49 @@ const processControl = {
                     })
                 }
               }
-              // assign new attributes
-              Object.assign(processResult, {
-                instanceUuid: response.getInstanceuuid(),
-                url: link.href,
-                download: link.download,
-                isError: response.getIserror(),
-                isProcessing: response.getIsprocessing(),
-                summary: response.getSummary(),
-                ResultTableName: response.getResulttablename(),
-                lastRun: response.getLastrun(),
-                logs: logList,
-                output: output
-              })
-              dispatch('setReportTypeToShareLink', processResult.output.reportType)
-              resolve(processResult)
+
+              // Drill Tables to context menu
+              var drillTablesList = {
+                name: language.t('views.drillTable'),
+                type: 'summary',
+                action: '',
+                childs: [],
+                option: 'drillTable'
+              }
+              if (!isEmptyValue(output.tableName)) {
+                drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
+                if (drillTablesList && isEmptyValue(drillTablesList.childs)) {
+                  dispatch('requestDrillTables', {
+                    processUuid: processResult.processUuid,
+                    instanceUuid: response.getInstanceuuid(),
+                    processId: processDefinition.id,
+                    tableName: output.tableName,
+                    printFormatUuid: output.printFormatUuid,
+                    reportViewUuid: output.reportViewUuid
+                  })
+                    .then(response => {
+                      drillTablesList.childs = response
+                      if (drillTablesList.childs.length) {
+                        // Get contextMenu metadata and concat print Format List with contextMenu actions
+                        var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                        contextMenuMetadata.actions.push(drillTablesList)
+                      }
+                    })
+                }
+              }
+            }),
+            // assign new attributes
+            Object.assign(processResult, {
+              instanceUuid: response.getInstanceuuid(),
+              url: link.href,
+              download: link.download,
+              isError: response.getIserror(),
+              isProcessing: response.getIsprocessing(),
+              summary: response.getSummary(),
+              resultTableName: response.getResulttablename(),
+              lastRun: response.getLastrun(),
+              logs: logList,
+              output: output
             })
             .catch(error => {
               Object.assign(processResult, {
