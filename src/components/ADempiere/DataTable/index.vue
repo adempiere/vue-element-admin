@@ -751,7 +751,7 @@ export default {
           type = 'danger'
           break
         case 'RE':
-          type = 'warning'
+          type = 'danger'
           break
       }
       return type
