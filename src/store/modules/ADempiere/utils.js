@@ -1,4 +1,5 @@
 
+import { requestLanguages } from '@/api/ADempiere'
 const utils = {
   state: {
     width: 0,
@@ -10,7 +11,11 @@ const utils = {
     oldAction: undefined,
     reportType: '',
     isShowedTable: false,
-    recordUuidTable: 0
+    recordUuidTable: 0,
+    languageList: [],
+    isShowedTabChildren: false,
+    recordTable: 0,
+    selectionProcess: []
   },
   mutations: {
     setWidth(state, width) {
@@ -28,11 +33,17 @@ const utils = {
     showMenuTable(state, isShowedTable) {
       state.isShowedTable = isShowedTable
     },
+    showMenuTabChildren(state, isShowedTabChildren) {
+      state.isShowedTabChildren = isShowedTabChildren
+    },
     setSplitHeightTop(state, splitHeightTop) {
       state.splitHeightTop = splitHeightTop
     },
-    setRecordUuidMenu(state, recordUuidTable) {
-      state.recordUuidTable = recordUuidTable
+    setProcessTable(state, recordTable) {
+      state.recordTable = recordTable
+    },
+    setProcessSelecetion(state, selectionProcess) {
+      state.selectionProcess = selectionProcess
     },
     setTempShareLink(state, payload) {
       state.tempShareLink = payload
@@ -42,6 +53,9 @@ const utils = {
     },
     setReportTypeToShareLink(state, payload) {
       state.reportType = payload
+    },
+    setLanguageList(state, payload) {
+      state.languageList = payload
     }
   },
   actions: {
@@ -57,14 +71,20 @@ const utils = {
     showMenuTable({ commit }, isShowedTable) {
       commit('showMenuTable', isShowedTable)
     },
+    showMenuTabChildren({ commit }, isShowedTabChildren) {
+      commit('showMenuTabChildren', isShowedTabChildren)
+    },
     setSplitHeight({ commit }, splitHeight) {
       commit('setSplitHeight', splitHeight)
     },
     setSplitHeightTop({ commit }, splitHeightTop) {
       commit('setSplitHeightTop', splitHeightTop)
     },
-    setRecordUuidMenu({ commit }, recordUuidTable) {
-      commit('setRecordUuidMenu', recordUuidTable)
+    setProcessTable({ commit }, recordTable) {
+      commit('setProcessTable', recordTable)
+    },
+    setProcessSelect({ commit }, params) {
+      commit('setProcessSelecetion', params)
     },
     changeShowedDetail({ dispatch }, params) {
       if (params.panelType === 'window') {
@@ -83,11 +103,39 @@ const utils = {
     },
     setReportTypeToShareLink({ commit }, value) {
       commit('setReportTypeToShareLink', value)
+    },
+    getLanguagesFromServer({ commit }) {
+      return new Promise((resolve, reject) => {
+        requestLanguages()
+          .then(response => {
+            const languageList = response.getLanguagesList().map(item => {
+              return {
+                language: item.getLanguage(),
+                languageName: item.getLanguagename(),
+                languageIso: item.getLanguageiso(),
+                countryCode: item.getCountrycode(),
+                isBaseLanguage: item.getIsbaselanguage(),
+                isSystemLanguage: item.getIssystemlanguage(),
+                isDecimalPoint: item.getIsdecimalpoint(),
+                datePattern: item.getDatepattern(),
+                timePattern: item.getTimepattern()
+              }
+            })
+            commit('setLanguageList', languageList)
+            resolve(languageList)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
     }
   },
   getters: {
     getWidth: (state) => {
       return state.width
+    },
+    getProcessSelect: (state) => {
+      return state.selectionProcess
     },
     getWidthLayout: (state, rootGetters) => {
       if (rootGetters.toggleSideBar) {
@@ -102,10 +150,14 @@ const utils = {
       return state.getSplitHeightTop
     },
     getRecordUuidMenu: (state) => {
-      return state.recordUuidTable
+      return state.recordTable
     },
     getShowContextMenuTable: (state) => {
       const menu = state.isShowedTable.isShowedTable
+      return menu
+    },
+    getShowContextMenuTabChildren: (state) => {
+      const menu = state.isShowedTabChildren.isShowedTabChildren
       return menu
     },
     getSplitHeight: (state) => {
@@ -126,6 +178,17 @@ const utils = {
     },
     getReportType: (state) => {
       return state.reportType
+    },
+    getLanguageList: (state) => {
+      return state.languageList
+    },
+    getLanguageByParameter: (state) => (parameter) => {
+      var list = state.languageList
+      list.forEach(language => {
+        if (language.hasOwnProperty(parameter)) {
+          return language
+        }
+      })
     }
   }
 }

@@ -351,6 +351,10 @@ export function requestLisDashboards(roleUuid) {
   return Instance.call(this).requestDashboards(roleUuid)
 }
 
+export function requestLanguages() {
+  return Instance.call(this).requestLanguages()
+}
+
 export function requestDrillTables(tableName) {
   return Instance.call(this).requestDrillTables(tableName)
 }
