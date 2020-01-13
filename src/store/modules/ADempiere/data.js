@@ -5,10 +5,10 @@ import {
   getRecentItems,
   getDefaultValueFromServer,
   getContextInfoValueFromServer,
+  getFavoritesFromServer,
   getPrivateAccessFromServer,
   lockPrivateAccessFromServer,
   unlockPrivateAccessFromServer,
-  getFavoritesFromServer,
   getPendingDocumentsFromServer
 } from '@/api/ADempiere/data'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
@@ -1068,13 +1068,6 @@ const data = {
         }
         return undefined
       }
-    },
-    getPrintFormatList: (state) => (containerUuid) => {
-      var printFormatList = state.printFormatList.find(list => list.containerUuid === containerUuid)
-      if (printFormatList) {
-        return printFormatList.printFormatList
-      }
-      return []
     }
   }
 }

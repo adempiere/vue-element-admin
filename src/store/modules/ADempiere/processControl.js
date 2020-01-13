@@ -1,8 +1,6 @@
 import {
   runProcess,
-  requestProcessActivity,
-  requestReportViews,
-  requestPrintFormats
+  requestProcessActivity
 } from '@/api/ADempiere/data'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
@@ -63,7 +61,12 @@ const processControl = {
     },
     setReportValues(state, payload) {
       state.reportObject = payload
-      state.reportList.push(payload)
+      if (state.reportList.some(report => report.instanceUuid === payload.instanceUuid)) {
+        var reportIndex = state.reportList.findIndex(report => report.instanceUuid === payload.instanceUuid)
+        state.reportList.splice(reportIndex, 1, payload)
+      } else {
+        state.reportList.push(payload)
+      }
     },
     setSessionProcess(state, payload) {
       state.sessionProcess = payload.processList
@@ -80,12 +83,6 @@ const processControl = {
       state.sessionProcess = []
       state.notificationProcess = []
       state.inRequestMetadata = []
-    },
-    setReportViewsList(state, payload) {
-      state.reportViewList.push(payload)
-    },
-    setPrintFormatList(state, payload) {
-      state.printFormatList.push(payload)
     }
   },
   actions: {
@@ -207,6 +204,7 @@ const processControl = {
           recordId
         })
           .then(runProcessResponse => {
+            const { instanceUuid, output } = runProcessResponse
             let logList = []
             if (runProcessResponse.logsList) {
               logList = runProcessResponse.logsList
@@ -218,12 +216,12 @@ const processControl = {
             }
             if (processDefinition.isReport) {
               const blob = new Blob(
-                [runProcessResponse.output.outputStream],
-                { type: runProcessResponse.output.mimeType }
+                [output.outputStream],
+                { type: output.mimeType }
               )
               link = document.createElement('a')
               link.href = window.URL.createObjectURL(blob)
-              link.download = runProcessResponse.output.fileName
+              link.download = output.fileName
               if (reportType !== 'pdf' && reportType !== 'html') {
                 link.click()
               }
@@ -237,15 +235,22 @@ const processControl = {
                 option: 'reportView'
               }
               reportViewList.childs = getters.getReportViewList(processResult.processUuid)
-              if (!reportViewList.childs.length) {
+              if (reportViewList && !reportViewList.childs.length) {
                 dispatch('requestReportViews', {
-                  processUuid: processResult.processUuid
+                  processUuid: processResult.processUuid,
+                  instanceUuid,
+                  processId: processDefinition.id,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
                 })
-                  .then(response => {
-                    reportViewList.childs = response
-                    // Get contextMenu metadata and concat print report views with contextMenu actions
-                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                    contextMenuMetadata.actions.push(reportViewList)
+                  .then(responseReportView => {
+                    reportViewList.childs = responseReportView
+                    if (reportViewList.childs.length) {
+                      // Get contextMenu metadata and concat print report views with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(reportViewList)
+                    }
                   })
               }
 
@@ -258,16 +263,53 @@ const processControl = {
                 option: 'printFormat'
               }
               printFormatList.childs = rootGetters.getPrintFormatList(processResult.processUuid)
-              if (!printFormatList.childs.length) {
+              if (printFormatList && !printFormatList.childs.length) {
                 dispatch('requestPrintFormats', {
-                  processUuid: processResult.processUuid
+                  processUuid: processResult.processUuid,
+                  instanceUuid,
+                  processId: processDefinition.id,
+                  tableName: output.tableName,
+                  printFormatUuid: output.printFormatUuid,
+                  reportViewUuid: output.reportViewUuid
                 })
                   .then(response => {
                     printFormatList.childs = response
-                    // Get contextMenu metadata and concat print Format List with contextMenu actions
-                    var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
-                    contextMenuMetadata.actions.push(printFormatList)
+                    if (printFormatList.childs.length) {
+                      // Get contextMenu metadata and concat print Format List with contextMenu actions
+                      var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                      contextMenuMetadata.actions.push(printFormatList)
+                    }
                   })
+              }
+
+              // Drill Tables to context menu
+              var drillTablesList = {
+                name: language.t('views.drillTable'),
+                type: 'summary',
+                action: '',
+                childs: [],
+                option: 'drillTable'
+              }
+              if (!isEmptyValue(output.tableName)) {
+                drillTablesList.childs = rootGetters.getDrillTablesList(processResult.processUuid)
+                if (drillTablesList && isEmptyValue(drillTablesList.childs)) {
+                  dispatch('requestDrillTables', {
+                    processUuid: processResult.processUuid,
+                    instanceUuid,
+                    processId: processDefinition.id,
+                    tableName: output.tableName,
+                    printFormatUuid: output.printFormatUuid,
+                    reportViewUuid: output.reportViewUuid
+                  })
+                    .then(response => {
+                      drillTablesList.childs = response
+                      if (drillTablesList.childs.length) {
+                        // Get contextMenu metadata and concat print Format List with contextMenu actions
+                        var contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
+                        contextMenuMetadata.actions.push(drillTablesList)
+                      }
+                    })
+                }
               }
             }
             // assign new attributes
@@ -275,7 +317,8 @@ const processControl = {
               ...runProcessResponse,
               url: link.href,
               download: link.download,
-              logs: logList
+              logs: logList,
+              output
             })
             dispatch('setReportTypeToShareLink', processResult.output.reportType)
             resolve(processResult)
@@ -370,7 +413,9 @@ const processControl = {
     setShowDialog({ state, commit, dispatch, rootGetters }, params) {
       const panels = ['process', 'report', 'window']
       if (params.action && (panels.includes(params.type) || panels.includes(params.action.panelType))) {
-        if (state.metadata && state.metadata.containerUuid === params.action.containerUuid) {
+        // show some process loaded in store
+        if (state.metadata && !isEmptyValue(state.metadata.containerUuid) &&
+        state.metadata.containerUuid === params.action.containerUuid) {
           commit('setShowDialog', true)
           return
         }
@@ -378,7 +423,7 @@ const processControl = {
         if (panel === undefined) {
           dispatch('getPanelAndFields', {
             parentUuid: params.action.parentUuid,
-            containerUuid: params.action.containerUuid || params.action.uuid,
+            containerUuid: isEmptyValue(params.action.uuid) ? params.action.containerUuid : params.action.uuid,
             panelType: params.action.panelType
           })
             .then(response => {
@@ -412,13 +457,24 @@ const processControl = {
       }
       if (parameters.processOutput.isReport && !parameters.processOutput.isError) {
         // open report viewer with report response
+        if (isEmptyValue(parameters.processOutput.menuParentUuid)) {
+          parameters.processOutput.menuParentUuid = parameters.processOutput.processUuid
+        }
+
+        var tableName
+        if (parameters.processOutput.option && !isEmptyValue(parameters.processOutput.option)) {
+          if (parameters.processOutput.option === 'drillTable') {
+            tableName = parameters.processOutput.tableName
+          }
+        }
         router.push({
           name: 'Report Viewer',
           params: {
             processId: parameters.processOutput.processId,
             instanceUuid: parameters.processOutput.instanceUuid,
-            fileName: parameters.processOutput.output.fileName,
-            menuParentUuid: parameters.processOutput.menuParentUuid
+            fileName: isEmptyValue(parameters.processOutput.output.fileName) ? parameters.processOutput.fileName : parameters.processOutput.output.fileName,
+            menuParentUuid: parameters.processOutput.menuParentUuid,
+            tableName: tableName
           }
         })
       }
@@ -434,36 +490,6 @@ const processControl = {
     },
     clearProcessControl({ commit }) {
       commit('clearProcessControl')
-    },
-    requestReportViews({ commit }, parameters) {
-      return requestReportViews({
-        processUuid: parameters.processUuid
-      })
-        .then(reportViewResponse => {
-          commit('setReportViewsList', {
-            containerUuid: parameters.processUuid,
-            viewList: reportViewResponse.reportViewsList
-          })
-          return reportViewResponse.reportViewsList
-        })
-        .catch(error => {
-          console.warn(`Error getting report views: ${error.message}. Code: ${error.code}`)
-        })
-    },
-    requestPrintFormats({ commit }, parameters) {
-      return requestPrintFormats({
-        processUuid: parameters.processUuid
-      })
-        .then(printFormatResponse => {
-          commit('setPrintFormatList', {
-            containerUuid: parameters.processUuid,
-            printFormatList: printFormatResponse.reportViewsList
-          })
-          return printFormatResponse.reportViewsList
-        })
-        .catch(error => {
-          console.warn(`Error getting print formats: ${error.message}. Code: ${error.code}`)
-        })
     }
   },
   getters: {
@@ -508,13 +534,6 @@ const processControl = {
       return state.reportList.find(
         item => item.instanceUuid === instanceUuid
       )
-    },
-    getReportViewList: (state) => (containerUuid) => {
-      var reportViewList = state.reportViewList.find(list => list.containerUuid === containerUuid)
-      if (reportViewList) {
-        return reportViewList.viewList
-      }
-      return []
     }
   }
 }
