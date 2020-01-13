@@ -272,8 +272,8 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
       description: actionValue.description,
       isReport: processToGenerate.isReport,
       isDirectPrint: processToGenerate.isDirectPrint,
-      reportExportType: actionValue.reportExportType,
-      printFormatUuid: actionValue.uuid
+      reportExportType: 'html',
+      printFormatUuid: actionValue.printFormatUuid
     })
   })
   //  Add summary Actions
