@@ -201,7 +201,6 @@ const processControl = {
           printFormatUuid: processResult.printFormatUuid
         })
           .then(response => {
-            console.log(response)
             var output = {
               uuid: '',
               name: '',

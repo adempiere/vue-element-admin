@@ -272,7 +272,7 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
       description: actionValue.description,
       isReport: processToGenerate.isReport,
       isDirectPrint: processToGenerate.isDirectPrint,
-      reportExportType: 'html',
+      reportExportType: undefined,
       printFormatUuid: actionValue.printFormatUuid
     })
   })
