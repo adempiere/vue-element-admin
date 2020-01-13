@@ -91,6 +91,7 @@ const contextMenu = {
           const drillTablesList = responseDrillTables.drillTablesList.map(drillTableItem => {
             return {
               ...drillTableItem,
+              name: drillTableItem.printName,
               type: 'updateReport',
               option: 'drillTable',
               instanceUuid,
@@ -138,21 +139,7 @@ const contextMenu = {
       })
         .then(response => {
           const reportOutput = {
-            uuid: response.getUuid(),
-            processName: response.getName(),
-            description: response.getDescription(),
-            fileName: response.getFilename(),
-            output: response.getOutput(),
-            mimeType: response.getMimetype(),
-            dataCols: response.getDatacols(),
-            dataRows: response.getDatarows(),
-            headerName: response.getHeadername(),
-            footerName: response.getFootername(),
-            printFormatUuid: response.getPrintformatuuid(),
-            reportViewUuid: response.getReportviewuuid(),
-            tableName: response.getTablename(),
-            outputStream: response.getOutputstream(),
-            reportType: response.getReporttype(),
+            ...response,
             processId: processId,
             processUuid: processUuid,
             isError: false,
