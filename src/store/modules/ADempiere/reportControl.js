@@ -127,9 +127,9 @@ const contextMenu = {
         instanceUuid,
         option
       } = parameters
-      const processParameters = rootGetters.getParametersToServer({ containerUuid: processUuid })
+      const parametersList = rootGetters.getParametersToServer({ containerUuid: processUuid })
       return getReportOutput({
-        criteria: processParameters,
+        parametersList,
         printFormatUuid,
         reportViewUuid,
         isSummary,

@@ -308,32 +308,17 @@ export function requestDrillTables(tableName) {
 }
 
 export function getReportOutput({
-  criteria,
+  parametersList,
+  tableName,
   printFormatUuid,
   reportViewUuid,
   isSummary,
   reportName,
-  reportType,
-  tableName
+  reportType
 }) {
-  const criteriaForReport = Instance.call(this).convertCriteriaToGRPC({ tableName })
-  if (criteria && criteria.length) {
-    criteria.forEach(parameter => {
-      var isAddCodition = true
-      if (parameter.isRange && criteria.some(param => param.columnName === `${parameter.columnName}_To`)) {
-        parameter.valueTo = criteria.find(param => param.columnName === `${parameter.columnName}_To`).value
-      }
-      const convertedParameter = Instance.call(this).convertCondition(parameter)
-      if (parameter.isRange && !parameter.hasOwnProperty('valueTo')) {
-        isAddCodition = false
-      }
-      if (isAddCodition) {
-        criteriaForReport.addConditions(convertedParameter)
-      }
-    })
-  }
   return Instance.call(this).getReportOutput({
-    criteria: criteriaForReport,
+    parametersList,
+    tableName,
     printFormatUuid,
     reportViewUuid,
     isSummary,
