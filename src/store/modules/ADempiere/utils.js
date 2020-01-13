@@ -12,7 +12,10 @@ const utils = {
     reportType: '',
     isShowedTable: false,
     recordUuidTable: 0,
-    languageList: []
+    languageList: [],
+    isShowedTabChildren: false,
+    recordTable: 0,
+    selectionProcess: []
   },
   mutations: {
     setWidth(state, width) {
@@ -30,11 +33,17 @@ const utils = {
     showMenuTable(state, isShowedTable) {
       state.isShowedTable = isShowedTable
     },
+    showMenuTabChildren(state, isShowedTabChildren) {
+      state.isShowedTabChildren = isShowedTabChildren
+    },
     setSplitHeightTop(state, splitHeightTop) {
       state.splitHeightTop = splitHeightTop
     },
-    setRecordUuidMenu(state, recordUuidTable) {
-      state.recordUuidTable = recordUuidTable
+    setProcessTable(state, recordTable) {
+      state.recordTable = recordTable
+    },
+    setProcessSelecetion(state, selectionProcess) {
+      state.selectionProcess = selectionProcess
     },
     setTempShareLink(state, payload) {
       state.tempShareLink = payload
@@ -62,14 +71,20 @@ const utils = {
     showMenuTable({ commit }, isShowedTable) {
       commit('showMenuTable', isShowedTable)
     },
+    showMenuTabChildren({ commit }, isShowedTabChildren) {
+      commit('showMenuTabChildren', isShowedTabChildren)
+    },
     setSplitHeight({ commit }, splitHeight) {
       commit('setSplitHeight', splitHeight)
     },
     setSplitHeightTop({ commit }, splitHeightTop) {
       commit('setSplitHeightTop', splitHeightTop)
     },
-    setRecordUuidMenu({ commit }, recordUuidTable) {
-      commit('setRecordUuidMenu', recordUuidTable)
+    setProcessTable({ commit }, recordTable) {
+      commit('setProcessTable', recordTable)
+    },
+    setProcessSelect({ commit }, params) {
+      commit('setProcessSelecetion', params)
     },
     changeShowedDetail({ dispatch }, params) {
       if (params.panelType === 'window') {
@@ -119,6 +134,9 @@ const utils = {
     getWidth: (state) => {
       return state.width
     },
+    getProcessSelect: (state) => {
+      return state.selectionProcess
+    },
     getWidthLayout: (state, rootGetters) => {
       if (rootGetters.toggleSideBar) {
         return state.width - 250
@@ -132,10 +150,14 @@ const utils = {
       return state.getSplitHeightTop
     },
     getRecordUuidMenu: (state) => {
-      return state.recordUuidTable
+      return state.recordTable
     },
     getShowContextMenuTable: (state) => {
       const menu = state.isShowedTable.isShowedTable
+      return menu
+    },
+    getShowContextMenuTabChildren: (state) => {
+      const menu = state.isShowedTabChildren.isShowedTabChildren
       return menu
     },
     getSplitHeight: (state) => {
