@@ -16,9 +16,10 @@ export default {
     // simplex
     completed: 'Completed',
     loading: 'Loading',
-    succesful: 'Successful',
-    error: 'Error',
+    succesful: ' Successful ',
+    error: ' Error ',
     opened: 'Opened',
+    totalProcess: 'Total Processor Records ',
     // search
     searching: 'Searching records on the server',
     succcessSearch: 'The search has been made',
@@ -161,7 +162,8 @@ export default {
     unsupportedInfo: 'Please check that the view is supported in this version, or click the button below to return to the homepage.',
     unsupportedButton: 'Back to dashboard',
     reportView: 'Report Views',
-    printFormat: 'Print Formats'
+    printFormat: 'Print Formats',
+    drillTable: 'Drill Down'
   },
   report: {
     ExportXlsx: '(xlsx) Excel File Extension',

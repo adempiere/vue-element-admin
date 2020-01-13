@@ -16,9 +16,10 @@ export default {
     // simplex
     completed: 'Completado',
     loading: 'Cargando',
-    succesful: 'Exitoso',
-    error: 'Error',
+    succesful: ' Exitoso ',
+    error: ' Error ',
     opened: 'Abierto',
+    totalProcess: 'Total de Registros Procesador ',
     // search
     searching: 'Buscando registros en el servidor',
     succcessSearch: 'La búsqueda se ha realizado',
@@ -161,7 +162,8 @@ export default {
     unsupportedInfo: 'Verifique que la vista sea compatible con esta versión, o haga clic en el botón a continuación para volver a la página de inicio.',
     unsupportedButton: 'Volver al Panel de control',
     reportView: 'Vistas de Reporte',
-    printFormat: 'Formatos de Impresión'
+    printFormat: 'Formatos de Impresión',
+    drillTable: 'Entrar en Detalle'
   },
   report: {
     ExportXlsx: '(xlsx) Extencion de Archivo Excel',

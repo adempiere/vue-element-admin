@@ -1239,6 +1239,7 @@ const panel = {
           return {
             columnName: parameterItem.columnName,
             value: value,
+            isRange: parameterItem.isRange,
             values: values
           }
         })
