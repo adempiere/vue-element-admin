@@ -149,9 +149,6 @@ export function getLookupList({ tableName, query }) {
  * @param {string}  printFormatUuid
  */
 export function runProcess({ uuid, reportType, tableName, recordId, parameters: parametersList = [], selection = [], printFormatUuid }) {
-  // if (process.printFormatUuid) {
-  //   processRequest.setPrintformatuuid(process.printFormatUuid)
-  // }
   //  Run Process
   return Instance.call(this).requestRunProcess({
     uuid,

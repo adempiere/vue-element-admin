@@ -19,27 +19,10 @@ const dashboard = {
     listDashboard({ commit }, roleUuid) {
       return new Promise((resolve, reject) => {
         requestLisDashboards(roleUuid)
-          .then(response => {
-            const dashboards = response.getDashboardsList().map(item => {
-              return {
-                windowUuid: item.getWindowuuid(),
-                browserUuid: item.getBrowseruuid(),
-                dashboardName: item.getDashboardname(),
-                dashboardDescription: item.getDashboarddescription(),
-                dashboardHtml: item.getDashboardhtml(),
-                columnNo: item.getColumnno(),
-                lineNo: item.getLineno(),
-                isCollapsible: item.getIscollapsible(),
-                isOpenByDefault: item.getIsopenbydefault(),
-                isEventRequired: item.getIseventrequired(),
-                fileName: item.getFilename()
-              }
-            })
+          .then(dashboardResponse => {
             const roleDashboards = {
               roleUuid: roleUuid,
-              recordCount: response.getRecordcount(),
-              dashboardList: dashboards,
-              nextPageToken: response.getNextPageToken()
+              ...dashboardResponse
             }
             commit('addDashboard', roleDashboards)
             resolve(roleDashboards)

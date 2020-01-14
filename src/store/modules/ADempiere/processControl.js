@@ -876,7 +876,7 @@ const processControl = {
         logs: parameters.processOutput.logs,
         summary: parameters.processOutput.summary
       }
-      var errorMessage = !isEmptyValue(parameters.processOutput.message) ? parameters.processOutput.message : language.t('login.error')
+      var errorMessage = !isEmptyValue(parameters.processOutput.message) ? parameters.processOutput.message : language.t('notifications.error')
       // TODO: Add isReport to type always 'success'
       if (parameters.processOutput.isError || isEmptyValue(parameters.processOutput.processId) || isEmptyValue(parameters.processOutput.instanceUuid)) {
         processMessage.title = language.t('notifications.error')
