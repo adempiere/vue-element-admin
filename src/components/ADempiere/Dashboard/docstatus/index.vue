@@ -2,7 +2,8 @@
   <el-collapse v-model="activeDocuments" accordion>
     <el-collapse-item name="documents">
       <template slot="title">
-        <i class="el-icon-document" style="margin-right: 4px;margin-left: 10px;" /> {{ $t('profile.PendingDocuments') }}
+        <i class="el-icon-document" style="margin-right: 4px;margin-left: 10px;" />
+        {{ $t('profile.PendingDocuments') }}
       </template>
       <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
         <div class="recent-items">

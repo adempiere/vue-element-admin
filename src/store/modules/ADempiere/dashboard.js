@@ -1,8 +1,11 @@
 // Default store for handle dashboard refresh and other functionalities
-import { requestLisDashboards } from '@/api/ADempiere/data'
+import { requestLisDashboards, getRecentItems } from '@/api/ADempiere/data'
+import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
+
 const dashboard = {
   state: {
-    dashboard: []
+    dashboard: [],
+    recentItems: []
   },
   mutations: {
     addDashboard(state, payload) {
@@ -10,10 +13,13 @@ const dashboard = {
     },
     notifyDashboardRefresh: (state, payload) => {
 
+    },
+    setRecentItems(state, payload) {
+      state.recentItems = payload
     }
   },
   actions: {
-    refreshDashboard({ commit, getters }, parameters) {
+    refreshDashboard({ commit }, parameters) {
       commit('notifyDashboardRefresh', parameters)
     },
     listDashboard({ commit }, roleUuid) {
@@ -31,6 +37,28 @@ const dashboard = {
             reject(error)
           })
       })
+    },
+    getRecentItemsFromServer({ commit }) {
+      return new Promise((resolve, reject) => {
+        getRecentItems()
+          .then(recentItemsResponse => {
+            const recentItems = recentItemsResponse.recentItemsList.map(item => {
+              const actionConverted = convertAction(item.action)
+              return {
+                ...item,
+                originalAction: item.action,
+                action: actionConverted.name,
+                icon: actionConverted.icon
+              }
+            })
+            commit('setRecentItems', recentItems)
+            resolve(recentItems)
+          })
+          .catch(error => {
+            console.warn(`Error gettin recent items: ${error.message}. Code: ${error.code}`)
+            reject(error)
+          })
+      })
     }
   },
   getters: {
@@ -43,6 +71,9 @@ const dashboard = {
       return state.dashboard.find(
         item => item.roleUuid === roleUuid
       )
+    },
+    getRecentItems: (state) => {
+      return state.recentItems
     }
   }
 }

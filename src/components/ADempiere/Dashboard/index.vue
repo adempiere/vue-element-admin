@@ -24,6 +24,11 @@ export default {
   computed: {
     // load the component that is indicated in the attributes of received property
     renderDashboard() {
+      // TODO: Add support to this list of currently unsupported dashboards
+      const unsupportedDashboards = ['activities', 'views', 'calendar', 'performance']
+      if (unsupportedDashboards.includes(this.metadata.fileName)) {
+        return
+      }
       if (this.metadata.fileName === 'userfavorites') {
         return () => import('@/components/ADempiere/Dashboard/favourites')
       }

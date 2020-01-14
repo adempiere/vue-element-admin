@@ -2,26 +2,19 @@ import Vue from 'vue'
 import {
   getEntity,
   getEntitiesList,
-  getRecentItems,
   getDefaultValueFromServer,
   getContextInfoValueFromServer,
-  getFavoritesFromServer,
   getPrivateAccessFromServer,
   lockPrivateAccessFromServer,
-  unlockPrivateAccessFromServer,
-  getPendingDocumentsFromServer
+  unlockPrivateAccessFromServer
 } from '@/api/ADempiere/data'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
-import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
 import language from '@/lang'
 
 const data = {
   state: {
     recordSelection: [], // record data and selection
-    recentItems: [],
-    favorites: [],
-    pendingDocuments: [],
     inGetting: [],
     contextInfoField: [],
     recordPrivateAccess: {}
@@ -69,15 +62,6 @@ const data = {
     },
     notifyRowTableChange: (state, payload) => {
       Object.assign(payload.row, payload.newRow)
-    },
-    setRecentItems(state, payload) {
-      state.recentItems = payload
-    },
-    setFavorites(state, payload) {
-      state.favorites = payload
-    },
-    setPendingDocuments(state, payload) {
-      state.pendingDocuments = payload
     },
     setPageNumber(state, payload) {
       payload.data.pageNumber = payload.pageNumber
@@ -629,71 +613,6 @@ const data = {
           })
       })
     },
-    getRecentItemsFromServer({ commit }) {
-      return new Promise((resolve, reject) => {
-        getRecentItems()
-          .then(recentItemsResponse => {
-            const recentItems = recentItemsResponse.recentItemsList.map(item => {
-              const actionConverted = convertAction(item.action)
-              return {
-                ...item,
-                originalAction: item.action,
-                action: actionConverted.name,
-                icon: actionConverted.icon
-              }
-            })
-            commit('setRecentItems', recentItems)
-            resolve(recentItems)
-          })
-          .catch(error => {
-            console.warn(`Error gettin recent items: ${error.message}. Code: ${error.code}`)
-            reject(error)
-          })
-      })
-    },
-    getFavoritesFromServer({ commit, rootGetters }) {
-      const userUuid = rootGetters['user/getUserUuid']
-      return new Promise((resolve, reject) => {
-        getFavoritesFromServer(userUuid)
-          .then(favoritesResponse => {
-            const favorites = favoritesResponse.favoritesList.map(favorite => {
-              const actionConverted = convertAction(favorite.action)
-              return {
-                ...favorite,
-                originalAction: favorite.action,
-                uuid: favorite.menuUuid,
-                name: favorite.menuName,
-                description: favorite.menuDescription,
-                action: actionConverted.name,
-                icon: actionConverted.icon
-              }
-            })
-            commit('setFavorites', favorites)
-            resolve(favorites)
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
-    },
-    getPendingDocumentsFromServer({ commit, getters, rootGetters }) {
-      const userUuid = rootGetters['user/getUserUuid']
-      const roleUuid = getters.getRoleUuid
-      return new Promise((resolve, reject) => {
-        getPendingDocumentsFromServer({
-          userUuid,
-          roleUuid
-        })
-          .then(response => {
-            const documentsList = response.pendingDocumentsList
-            commit('setPendingDocuments', documentsList)
-            resolve(documentsList)
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
-    },
     /**
      * TODO: Add support to tab children
      * @param {object} objectParams
@@ -1043,15 +962,6 @@ const data = {
         })
       }
       return selectionToServer
-    },
-    getRecentItems: (state) => {
-      return state.recentItems
-    },
-    getFavoritesList: (state) => {
-      return state.favorites
-    },
-    getPendingDocuments: (state) => {
-      return state.pendingDocuments
     },
     getContextInfoField: (state) => (contextInfoUuid, sqlStatement) => {
       return state.contextInfoField.find(info =>

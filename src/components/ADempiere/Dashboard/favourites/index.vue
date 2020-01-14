@@ -2,7 +2,8 @@
   <el-collapse v-model="activeFavorites" accordion>
     <el-collapse-item name="favorites">
       <template slot="title">
-        <i class="el-icon-time" style="margin-right: 4px;margin-left: 10px;" /> {{ $t('profile.favorites') }}
+        <i class="el-icon-time" style="margin-right: 4px;margin-left: 10px;" />
+        {{ $t('profile.favorites') }}
       </template>
       <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
         <div class="recent-items">
@@ -34,6 +35,9 @@
 </template>
 
 <script>
+import { getFavoritesFromServer } from '@/api/ADempiere/data'
+import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
+
 export default {
   name: 'Favorites',
   data() {
@@ -46,9 +50,6 @@ export default {
     }
   },
   computed: {
-    getterFavoritesList() {
-      return this.$store.getters.getFavoritesList
-    },
     cachedViews() {
       return this.$store.getters.cachedViews
     }
@@ -59,10 +60,28 @@ export default {
   },
   methods: {
     getFavoritesList() {
-      this.$store.dispatch('getFavoritesFromServer')
-        .then(favoritesResponse => {
-          this.favorites = favoritesResponse
-        })
+      const userUuid = this.$store.getters['user/getUserUuid']
+      return new Promise((resolve, reject) => {
+        getFavoritesFromServer(userUuid)
+          .then(response => {
+            const favorites = response.favoritesList.map(favoriteElement => {
+              const actionConverted = convertAction(favoriteElement.action)
+              return {
+                ...favoriteElement,
+                uuid: favoriteElement.menuUuid,
+                name: favoriteElement.menuName,
+                description: favoriteElement.menuDescription,
+                action: actionConverted.name,
+                icon: actionConverted.icon
+              }
+            })
+            this.favorites = favorites
+            resolve(favorites)
+          })
+          .catch(error => {
+            console.warn(`Error getting favorites: ${error.message}. Code: ${error.code}.`)
+          })
+      })
     },
     subscribeChanges() {
       this.$store.subscribe((mutation, state) => {
