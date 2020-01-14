@@ -137,6 +137,7 @@ export function getLookupList({ tableName, query }) {
  * Request a process
  * This function allows follow structure:
  * @param {string}  uuid, uuid from process to run
+ * @param {number}  reportType
  * @param {number}  tableName, table name of tab, used only window
  * @param {number}  recordId, record identifier, used only window
  * @param {array}   parameters, parameters from process [{ columnName, value }]
@@ -145,8 +146,12 @@ export function getLookupList({ tableName, query }) {
           selectionId,
           selectionValues: [{ columnName, value }]
       }]
+ * @param {string}  printFormatUuid
  */
-export function runProcess({ uuid, reportType, tableName, recordId, parameters: parametersList = [], selection = [] }) {
+export function runProcess({ uuid, reportType, tableName, recordId, parameters: parametersList = [], selection = [], printFormatUuid }) {
+  // if (process.printFormatUuid) {
+  //   processRequest.setPrintformatuuid(process.printFormatUuid)
+  // }
   //  Run Process
   return Instance.call(this).requestRunProcess({
     uuid,
@@ -154,7 +159,8 @@ export function runProcess({ uuid, reportType, tableName, recordId, parameters: 
     tableName,
     recordId,
     parametersList,
-    selectionsList: selection
+    selectionsList: selection,
+    printFormatUuid
   })
 }
 
@@ -164,7 +170,7 @@ export function runProcess({ uuid, reportType, tableName, recordId, parameters: 
  * @param {string} query
  * @param {string} whereClause
  * @param {string} orderByClause
- * @param {string}  nextPageToken
+ * @param {string} nextPageToken
  * @param {array}  parameters, This allows follow structure:
  * [{
  *     columnName,
@@ -301,6 +307,14 @@ export function requestPrintFormats({ tableName, reportViewUuid, processUuid }) 
     reportViewUuid,
     processUuid
   })
+}
+
+export function requestLisDashboards(roleUuid) {
+  return Instance.call(this).requestDashboards(roleUuid)
+}
+
+export function requestLanguages() {
+  return Instance.call(this).requestLanguages()
 }
 
 export function requestDrillTables(tableName) {

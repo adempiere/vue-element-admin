@@ -193,7 +193,7 @@ export default {
   props: {
     parentUuid: {
       type: String,
-      default: ''
+      default: undefined
     },
     containerUuid: {
       type: String,
@@ -251,7 +251,7 @@ export default {
       return false
     },
     getterFieldList() {
-      var panel = this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
+      const panel = this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
       if (panel) {
         return panel.fieldList
       }
@@ -293,7 +293,8 @@ export default {
     // used if the first load contains a uuid
     isLoadRecord(value) {
       // TODO: Validate UUID value
-      if (value && this.isPanelWindow && this.uuidRecord !== 'create-new' && !this.isEmptyValue(this.uuidRecord)) {
+      if (value && this.isPanelWindow && this.uuidRecord !== 'create-new' &&
+        !this.isEmptyValue(this.uuidRecord)) {
         this.setTagsViewTitle(this.uuidRecord)
       }
     },
@@ -326,9 +327,9 @@ export default {
      * Get the tab object with all its attributes as well as the fields it contains
      */
     getPanel() {
-      var fieldList = this.getterFieldList
-      if (fieldList && Array.isArray(fieldList)) {
-        this.generatePanel(fieldList)
+      const fieldsList = this.getterFieldList
+      if (fieldsList && Array.isArray(fieldsList)) {
+        this.generatePanel(fieldsList)
       } else {
         this.$store.dispatch('getPanelAndFields', {
           parentUuid: this.parentUuid,
@@ -338,15 +339,15 @@ export default {
         }).then(() => {
           this.generatePanel(this.getterFieldList)
         }).catch(error => {
-          console.warn('Field Load Error ' + error.code + ': ' + error.message)
+          console.warn(`Field Load Error ${error.code}: ${error.message}`)
         })
       }
     },
-    generatePanel(fieldList) {
+    generatePanel(fieldsList) {
       // order and assign groups
-      this.fieldList = fieldList
-      if (fieldList.length) {
-        this.fieldGroups = this.sortAndGroup(fieldList)
+      this.fieldList = fieldsList
+      if (fieldsList.length) {
+        this.fieldGroups = this.sortAndGroup(fieldsList)
       }
       var firstGroup
       if (this.fieldGroups[0] && this.fieldGroups[0].groupFinal === '') {
@@ -382,10 +383,10 @@ export default {
                 fieldType: fieldItem.componentPath,
                 value: route.query[fieldItem.columnName]
               })
-              if (fieldItem.isRange && this.$route.query[fieldItem.columnName + '_To']) {
+              if (fieldItem.isRange && this.$route.query[`${fieldItem.columnName}_To`]) {
                 fieldItem.valueTo = parsedValueComponent({
                   fieldType: fieldItem.componentPath,
-                  value: route.query[fieldItem.columnName + '_To']
+                  value: route.query[`${fieldItem.columnName}_To`]
                 })
               }
             }
@@ -429,10 +430,10 @@ export default {
                   fieldType: fieldItem.componentPath,
                   value: route.query[fieldItem.columnName]
                 })
-                if (fieldItem.isRange && route.query[fieldItem.columnName + '_To']) {
+                if (fieldItem.isRange && route.query[`${fieldItem.columnName}_To`]) {
                   this.dataRecords[fieldItem.columnName] = parsedValueComponent({
                     fieldType: fieldItem.componentPath,
-                    value: route.query[fieldItem.columnName + '_To']
+                    value: route.query[`${fieldItem.columnName}_To`]
                   })
                 }
               }
@@ -459,11 +460,6 @@ export default {
               panelType: this.panelType
             })
             parameters.isWindow = false
-          } else {
-            this.$store.dispatch('resetPanelToNew', {
-              containerUuid: this.containerUuid,
-              panelType: this.panelType
-            })
           }
         }
       }
@@ -556,7 +552,7 @@ export default {
       if (arr === undefined) {
         return
       }
-      var res = [{
+      let res = [{
         groupFinal: '',
         metadataFields: arr
       }]
@@ -655,7 +651,7 @@ export default {
       this.setFocus()
     },
     setFocus() {
-      var isFocusEnabled = false
+      let isFocusEnabled = false
       this.getterFieldList.forEach(fieldItem => {
         if (!isFocusEnabled) {
           if (this.isFocusable(fieldItem) && this.$refs.hasOwnProperty(fieldItem.columnName)) {
