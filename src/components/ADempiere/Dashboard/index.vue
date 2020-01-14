@@ -1,11 +1,9 @@
 <template>
-  <div class="dashboard-editor-container">
-    <component
-      :is="renderDashboard"
-      :ref="dashboard.dashboardName"
-      :metadata="dashboard"
-    />
-  </div>
+  <component
+    :is="renderDashboard"
+    :ref="dashboard.dashboardName"
+    :metadata="dashboard"
+  />
 </template>
 
 <script>
@@ -26,7 +24,9 @@ export default {
   computed: {
     // load the component that is indicated in the attributes of received property
     renderDashboard() {
-      console.log(this.metadata.fileName, `@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
+      if (this.metadata.fileName === 'userfavorites') {
+        return () => import('@/components/ADempiere/Dashboard/favourites')
+      }
       return () => import(`@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
     }
   }
