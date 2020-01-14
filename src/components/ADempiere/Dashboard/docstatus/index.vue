@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import { getPendingDocumentsFromServer } from '@/api/ADempiere/data'
+
 export default {
   name: 'PendingDocuments',
   data() {
@@ -55,10 +57,25 @@ export default {
   },
   methods: {
     getPendingDocuments() {
-      this.$store.dispatch('getPendingDocumentsFromServer')
-        .then(pendingDocumentsResponse => {
-          this.documents = pendingDocumentsResponse
-        })
+      const userUuid = this.$store.getters['user/getUserUuid']
+      const roleUuid = this.$store.getters.getRoleUuid
+      return new Promise((resolve, reject) => {
+        getPendingDocumentsFromServer({ userUuid, roleUuid })
+          .then(response => {
+            const documentsList = response.pendingDocumentsList.map(documentItem => {
+              return {
+                ...documentItem,
+                name: documentItem.documentName,
+                description: documentItem.documentDescription
+              }
+            })
+            this.documents = documentsList
+            resolve(documentsList)
+          })
+          .catch(error => {
+            console.warn(`Error getting pending documents: ${error.message}. Code: ${error.code}.`)
+          })
+      })
     },
     subscribeChanges() {
       this.$store.subscribe((mutation, state) => {
