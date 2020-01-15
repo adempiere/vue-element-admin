@@ -17,18 +17,27 @@
   >
     <!-- POPOVER FOR FIELD CONTEXT INFO -->
     <el-popover
-      v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+      v-if="field.isTranslated || (field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
       :title="isFieldOnly()"
       width="300"
       trigger="click"
     >
+      <field-translated v-if="field.isTranslated" />
       <p v-if="field.contextInfo && field.contextInfo.isActive" class="pre-formatted" v-html="field.contextInfo.messageText.msgText" />
       <template v-if="field.reference.zoomWindowList.length">
-        <div class="el-popover__title"> {{ $t('table.ProcessActivity.zoomIn') }}</div>
+        <div class="el-popover__title">
+          {{ $t('table.ProcessActivity.zoomIn') }}
+        </div>
         <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-          <el-button :key="index" type="text" @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })">{{ zoomItem.name }}</el-button>
+          <el-button
+            :key="index"
+            type="text"
+            @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
+          >
+            {{ zoomItem.name }}
+          </el-button>
         </template>
       </template>
     </el-popover>
@@ -42,9 +51,9 @@
         :ref="field.columnName"
         :metadata="{
           ...field,
-          panelType: panelType,
-          inTable: inTable,
-          isAdvancedQuery: isAdvancedQuery,
+          panelType,
+          inTable,
+          isAdvancedQuery,
           // DOM properties
           required: isMandatory(),
           readonly: isReadOnly(),
@@ -62,8 +71,8 @@
     :class="classField"
     :metadata="{
       ...field,
-      panelType: panelType,
-      inTable: inTable,
+      panelType,
+      inTable,
       // DOM properties
       required: isMandatory(),
       readonly: isReadOnly(),
@@ -74,6 +83,7 @@
 </template>
 
 <script>
+import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
@@ -84,6 +94,9 @@ import { fieldIsDisplayed } from '@/utils/ADempiere'
  */
 export default {
   name: 'Field',
+  components: {
+    FieldTranslated
+  },
   props: {
     parentUuid: {
       type: String,
@@ -309,9 +322,19 @@ export default {
       }
     },
     redirect({ window, columnName, value }) {
-      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: window.uuid })
-      var windowRoute = this.$store.getters.getWindowRoute(window.uuid)
-      this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
+      this.$store.dispatch('getWindowByUuid', {
+        routes: this.permissionRoutes,
+        windowUuid: window.uuid
+      })
+      const windowRoute = this.$store.getters.getWindowRoute(window.uuid)
+      this.$router.push({
+        name: windowRoute.name,
+        query: {
+          action: 'advancedQuery',
+          tabParent: 0,
+          [columnName]: value
+        }
+      })
     }
   }
 }

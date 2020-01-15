@@ -40,7 +40,7 @@
                     :container-uuid="containerUuid"
                     :metadata-field="{
                       ...fieldAttributes,
-                      optionCRUD: optionCRUD
+                      optionCRUD
                     }"
                     :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                     :panel-type="panelType"
@@ -97,7 +97,7 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD: optionCRUD
+                            optionCRUD
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
@@ -149,7 +149,7 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD: optionCRUD
+                            optionCRUD
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
