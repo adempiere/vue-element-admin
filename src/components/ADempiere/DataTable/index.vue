@@ -6,8 +6,9 @@
           <el-collapse
             v-if="isParent && isAdvancedQuery"
             v-show="isAdvancedQuery"
-            v-model="activeName"
-            accordion
+            v-model="activeNames"
+            v-shortkey="{f6: ['f6'], ctrlf: ['ctrl', 'f']}"
+            @shortkey.native="actionAdvancedQuery()"
           >
             <el-collapse-item :title="$t('table.dataTable.advancedQuery')" name="1">
               <main-panel
@@ -323,6 +324,7 @@ export default {
       top: 0,
       left: 0,
       isOption: {},
+      activeNames: ['0'],
       focusTable: false,
       currentRow: null,
       currentTable: 0,
@@ -583,6 +585,13 @@ export default {
     }
   },
   methods: {
+    actionAdvancedQuery() {
+      if (this.activeNames < 1) {
+        this.activeNames = '1'
+      } else {
+        this.activeNames = '0'
+      }
+    },
     setCurrent(row) {
       this.$refs.multipleTable.setCurrentRow(row)
     },
