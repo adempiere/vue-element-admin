@@ -17,35 +17,46 @@
   >
     <!-- POPOVER FOR FIELD CONTEXT INFO -->
     <el-popover
-      v-if="field.isTranslated || (field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+      v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
       :title="isFieldOnly()"
       width="300"
       trigger="click"
     >
-      <field-translated v-if="field.isTranslated" />
-      <p v-if="field.contextInfo && field.contextInfo.isActive" class="pre-formatted" v-html="field.contextInfo.messageText.msgText" />
-      <template v-if="field.reference.zoomWindowList.length">
-        <div class="el-popover__title">
-          {{ $t('table.ProcessActivity.zoomIn') }}
-        </div>
-        <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-          <el-button
-            :key="index"
-            type="text"
-            @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
-          >
-            {{ zoomItem.name }}
-          </el-button>
-        </template>
+      <p
+        class="pre-formatted"
+        v-html="field.contextInfo.messageText.msgText"
+      />
+      <div class="el-popover__title">
+        {{ $t('table.ProcessActivity.zoomIn') }}
+      </div>
+      <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
+        <el-button
+          :key="index"
+          type="text"
+          @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
+        >
+          {{ zoomItem.name }}
+        </el-button>
       </template>
     </el-popover>
     <el-form-item
-      v-popover:contextOptions
-      :label="isFieldOnly()"
       :required="isMandatory()"
     >
+      <template slot="label">
+        <span v-popover:contextOptions>
+          {{ isFieldOnly() }}
+        </span>
+        <field-translated
+          v-if="field.isTranslated"
+          :name="field.name"
+          :container-uuid="containerUuid"
+          :column-name="field.columnName"
+          :record-uuid="field.optionCRUD"
+          :table-name="field.tableName"
+        />
+      </template>
       <component
         :is="componentRender"
         :ref="field.columnName"
@@ -349,6 +360,13 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
   }
+  /**
+   * Reduce the spacing between the form element and its label
+   */
+  .el-form--label-top .el-form-item__label {
+    padding-bottom: 0px !important;
+  }
+
   .in-table {
     margin-bottom: 0px !important;
     margin-left: 0px;
