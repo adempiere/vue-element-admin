@@ -122,14 +122,14 @@ const REFERENCES = [
   },
   {
     id: 21,
-    type: 'FieldText',
+    type: 'FieldLocation',
     support: false,
     description: 'Location/Address',
     alias: ['Location', 'Location (Address)', 'Location/Address']
   },
   {
     id: 31,
-    type: 'FieldSelect',
+    type: 'FieldLocation',
     support: true,
     description: 'Warehouse Locator Data type',
     alias: ['Locator', 'Locator (WH)', 'Locator/WH']

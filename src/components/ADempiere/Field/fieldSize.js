@@ -71,6 +71,16 @@ export const FIELD_DISPLAY_SIZES = [
     }
   },
   {
+    type: 'FieldLocation',
+    size: {
+      xs: 24,
+      sm: 12,
+      md: 8,
+      lg: 6,
+      xl: 6
+    }
+  },
+  {
     type: 'FieldText',
     size: {
       xs: 24,
