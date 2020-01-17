@@ -51,6 +51,7 @@
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
           :name="field.name"
+          :help="field.help"
           :container-uuid="containerUuid"
           :column-name="field.columnName"
           :record-uuid="field.optionCRUD"

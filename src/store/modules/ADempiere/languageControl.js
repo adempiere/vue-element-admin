@@ -1,6 +1,7 @@
 import {
   requestLanguages,
-  requestTranslations
+  requestTranslations,
+  updateEntity
 } from '@/api/ADempiere/data'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 const languageControl = {
@@ -20,7 +21,7 @@ const languageControl = {
       payload.translations.push(payload.translationToAdd)
     },
     setTranslationToRecord(state, payload) {
-      payload.values = payload.newValues
+      payload.currentTranslation.values = payload.newValues
     },
     addTranslationChangeRecord(state, payload) {
       payload.currentTranslation = payload.newTranlation
@@ -41,6 +42,7 @@ const languageControl = {
     },
     setTranslation({ state, commit }, {
       containerUuid,
+      tableName,
       recordUuid,
       recordId,
       translations
@@ -51,6 +53,7 @@ const languageControl = {
 
       const newTranlation = {
         containerUuid,
+        tableName,
         recordUuid,
         recordId,
         translations
@@ -68,7 +71,7 @@ const languageControl = {
           } else {
             // there is translation for the language and change the values in the translation record
             commit('setTranslationToRecord', {
-              values: translationRecord.values,
+              currentTranslation: translationRecord,
               newValues: translations[0].values
             })
           }
@@ -104,6 +107,7 @@ const languageControl = {
           }
           dispatch('setTranslation', {
             containerUuid,
+            tableName,
             recordUuid,
             recordId,
             translations: [{
@@ -115,8 +119,53 @@ const languageControl = {
           return translationResponse.translationsList[0].values
         })
         .catch(error => {
-          console.warn(error)
+          console.warn(`Error Get Translations List ${error.message}. Code: ${error.code}.`)
         })
+    },
+    changeTranslationValue({ state, commit }, {
+      containerUuid,
+      language,
+      columnName,
+      value
+    }) {
+      return new Promise(resolve => {
+        const translationData = state.translationsList.find(itemTranslation => {
+          return itemTranslation.containerUuid === containerUuid
+        })
+        const translationSelected = translationData.translations.find(itemTranslation => {
+          return itemTranslation.language === language
+        })
+
+        const values = translationSelected.values
+        // not change value
+        if (values[columnName] === value) {
+          resolve(value)
+          return value
+        }
+
+        updateEntity({
+          tableName: `${translationData.tableName}_Trl`, // '_Trl' is suffix for translation tables
+          recordUuid: translationSelected.translationUuid,
+          attributesList: [{
+            columnName,
+            value
+          }]
+        })
+          .then(responseEntity => {
+            const newValues = {}
+            Object.keys(values).forEach(key => {
+              newValues[key] = responseEntity.values[key]
+            })
+            commit('setTranslationToRecord', {
+              currentTranslation: translationSelected,
+              newValues
+            })
+            resolve(newValues)
+          })
+          .catch(error => {
+            console.warn(`Error Update Translation ${error.message}. Code: ${error.code}.`)
+          })
+      })
     }
   },
   getters: {

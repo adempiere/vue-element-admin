@@ -5,19 +5,15 @@
       placement="top"
       width="300"
       trigger="click"
+      @show="getTranslation"
     >
       <div>
         <span class="custom-tittle-popover">
           {{ name }}
         </span>
-        <el-button
-          type="primary"
-          style="float: right;"
-          :icon="icon"
-          circle
-          size="mini"
-          @click="getTranslationsFromServer"
-        />
+        <template v-if="!isEmptyValue(help)">
+          : {{ help }}
+        </template>
       </div>
       <el-form-item
         :required="true"
@@ -29,6 +25,7 @@
           v-model="langValue"
           size="medium"
           style="width: 100%;"
+          filterable
           @change="getTranslation"
         >
           <!-- <el-option
@@ -49,7 +46,7 @@
         :required="true"
       >
         <el-input
-          v-model="gettterValue"
+          v-model="translatedValue"
           :disabled="isEmptyValue(langValue)"
           @change="changeTranslationValue"
         />
@@ -81,6 +78,10 @@ export default {
       type: String,
       default: undefined
     },
+    help: {
+      type: String,
+      default: undefined
+    },
     recordUuid: {
       type: String,
       default: undefined
@@ -92,7 +93,7 @@ export default {
   },
   data() {
     return {
-      langValue: getLanguage() || 'en_US',
+      langValue: undefined,
       translatedValue: '',
       isLoading: false
     }
@@ -128,6 +129,22 @@ export default {
       return values[this.columnName]
     }
   },
+  watch: {
+    gettterValue(newValue, oldValue) {
+      this.translatedValue = newValue
+    }
+  },
+  created() {
+    let langMatch = this.languageList.find(itemLanguage => {
+      return itemLanguage.languageISO === getLanguage()
+    })
+    if (langMatch) {
+      langMatch = langMatch.language
+    } else {
+      langMatch = this.languageList[0].language
+    }
+    this.langValue = langMatch
+  },
   methods: {
     getTranslation() {
       if (this.isEmptyValue(this.getterTranslationValues)) {
@@ -147,7 +164,12 @@ export default {
         })
     },
     changeTranslationValue(value) {
-      // this.$store.dispatch('')
+      this.$store.dispatch('changeTranslationValue', {
+        containerUuid: this.containerUuid,
+        language: this.langValue,
+        columnName: this.columnName,
+        value
+      })
     }
   }
 }
@@ -155,7 +177,7 @@ export default {
 
 <style lang="scss" scoped>
   .custom-tittle-popover {
-    font-size: 17px;
+    font-size: 14px;
     font-weight: bold;
   }
 </style>
