@@ -162,6 +162,9 @@ export const contextMixin = {
     },
     metadataReport() {
       return this.$store.getters.getCachedReport(this.$route.params.instanceUuid)
+    },
+    isPersonalLock() {
+      return this.$store.getters['user/getIsPersonalLock']
     }
   },
   watch: {
@@ -544,16 +547,18 @@ export const contextMixin = {
       })
     },
     validatePrivateAccess(response) {
-      if (response.isLocked) {
-        this.actions.find(item => item.action === 'unlockRecord').hidden = false
-        this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
-        this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
-        this.actions.find(item => item.action === 'lockRecord').hidden = true
-      } else {
-        this.actions.find(item => item.action === 'lockRecord').hidden = false
-        this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
-        this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
-        this.actions.find(item => item.action === 'unlockRecord').hidden = true
+      if (this.isPersonalLock) {
+        if (response.isLocked) {
+          this.actions.find(item => item.action === 'unlockRecord').hidden = false
+          this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
+          this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
+          this.actions.find(item => item.action === 'lockRecord').hidden = true
+        } else {
+          this.actions.find(item => item.action === 'lockRecord').hidden = false
+          this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
+          this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
+          this.actions.find(item => item.action === 'unlockRecord').hidden = true
+        }
       }
     }
   }
