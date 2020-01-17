@@ -49,7 +49,7 @@
           {{ isFieldOnly() }}
         </span>
         <field-translated
-          v-if="field.isTranslated"
+          v-if="field.isTranslated && !isAdvancedQuery"
           :name="field.name"
           :container-uuid="containerUuid"
           :column-name="field.columnName"

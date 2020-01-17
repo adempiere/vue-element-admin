@@ -16,7 +16,7 @@
           :icon="icon"
           circle
           size="mini"
-          @click="getTranslations"
+          @click="getTranslationsFromServer"
         />
       </div>
       <el-form-item
@@ -29,16 +29,17 @@
           v-model="langValue"
           size="medium"
           style="width: 100%;"
+          @change="getTranslation"
         >
-          <el-option
+          <!-- <el-option
             key="blank-option"
             :value="undefined"
             label=" "
-          />
+          /> -->
           <el-option
             v-for="(optionLang, key) in languageList"
             :key="key"
-            :value="optionLang.languageISO"
+            :value="optionLang.language"
             :label="optionLang.languageName"
           />
         </el-select>
@@ -48,8 +49,9 @@
         :required="true"
       >
         <el-input
-          v-model="translatedValue"
+          v-model="gettterValue"
           :disabled="isEmptyValue(langValue)"
+          @change="changeTranslationValue"
         />
       </el-form-item>
     </el-popover>
@@ -97,17 +99,42 @@ export default {
   },
   computed: {
     languageList() {
-      return this.$store.getters.getLanguagesList
+      return this.$store.getters.getLanguagesList.filter(itemLanguage => {
+        return !itemLanguage.isBaseLanguage
+      })
     },
     icon() {
       if (this.isLoading) {
         return 'el-icon-loading'
       }
       return 'el-icon-refresh'
+    },
+    getterTranslationValues() {
+      const values = this.$store.getters.getTranslationByLanguage({
+        containerUuid: this.containerUuid,
+        language: this.langValue,
+        recordUuid: this.recordUuid
+      })
+      if (this.isEmptyValue(values)) {
+        return undefined
+      }
+      return values
+    },
+    gettterValue() {
+      const values = this.getterTranslationValues
+      if (this.isEmptyValue(values)) {
+        return undefined
+      }
+      return values[this.columnName]
     }
   },
   methods: {
-    getTranslations() {
+    getTranslation() {
+      if (this.isEmptyValue(this.getterTranslationValues)) {
+        this.getTranslationsFromServer()
+      }
+    },
+    getTranslationsFromServer() {
       this.isLoading = true
       this.$store.dispatch('getTranslationsFromServer', {
         containerUuid: this.containerUuid,
@@ -115,12 +142,12 @@ export default {
         tableName: this.tableName,
         language: this.langValue
       })
-        .then(translationResponse => {
-          console.log(translationResponse)
-        })
         .finally(() => {
           this.isLoading = false
         })
+    },
+    changeTranslationValue(value) {
+      // this.$store.dispatch('')
     }
   }
 }

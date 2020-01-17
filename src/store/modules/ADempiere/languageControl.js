@@ -1,5 +1,8 @@
-import { requestLanguages, requestTranslations } from '@/api/ADempiere/data'
-
+import {
+  requestLanguages,
+  requestTranslations
+} from '@/api/ADempiere/data'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 const languageControl = {
   state: {
     languagesList: [],
@@ -9,11 +12,18 @@ const languageControl = {
     setlanguagesList(state, payload) {
       state.languagesList = payload
     },
-    setTranslationsList(state, payload) {
-      state.translationsList = payload
+    // Add data in container
+    addTranslationToList(state, payload) {
+      state.translationsList.push(payload)
     },
-    setTranslation(state, payload) {
-      payload.currentTranlation = payload.newTranlation
+    addTranslationToRecord(state, payload) {
+      payload.translations.push(payload.translationToAdd)
+    },
+    setTranslationToRecord(state, payload) {
+      payload.values = payload.newValues
+    },
+    addTranslationChangeRecord(state, payload) {
+      payload.currentTranslation = payload.newTranlation
     }
   },
   actions: {
@@ -33,25 +43,53 @@ const languageControl = {
       containerUuid,
       recordUuid,
       recordId,
-      language
+      translations
     }) {
-      const currentTranlation = state.translationsList.find(itemTrannslation => {
-        return itemTrannslation.containerUuid === containerUuid &&
-        itemTrannslation.language === language &&
-        (itemTrannslation.recordUuid === recordUuid || itemTrannslation.recordId === recordId)
+      const currentTranslation = state.translationsList.find(itemTrannslation => {
+        return itemTrannslation.containerUuid === containerUuid
       })
-      const newTranlation = {}
-      commit('setTranslation', {
-        currentTranlation,
-        newTranlation
-      })
+
+      const newTranlation = {
+        containerUuid,
+        recordUuid,
+        recordId,
+        translations
+      }
+      if (currentTranslation) {
+        if (currentTranslation.recordUuid === recordUuid) {
+          const translationRecord = currentTranslation.translations.find(itemTrannslation => {
+            return itemTrannslation.language === translations[0].language
+          })
+          if (isEmptyValue(translationRecord)) {
+            commit('addTranslationToRecord', {
+              translations: currentTranslation.translations,
+              translationToAdd: translations[0]
+            })
+          } else {
+            // there is translation for the language and change the values in the translation record
+            commit('setTranslationToRecord', {
+              values: translationRecord.values,
+              newValues: translations[0].values
+            })
+          }
+        } else {
+          // this same container uuid, and other record
+          commit('addTranslationChangeRecord', {
+            currentTranslation,
+            newTranlation
+          })
+        }
+      } else {
+        // no translation has been uploaded to this container uuid
+        commit('addTranslationToList', newTranlation)
+      }
     },
-    getTranslationsFromServer({ commit }, {
+    getTranslationsFromServer({ dispatch }, {
       containerUuid,
+      language,
       tableName,
       recordUuid,
-      recordId,
-      language
+      recordId
     }) {
       return requestTranslations({
         recordUuid,
@@ -60,15 +98,21 @@ const languageControl = {
         language
       })
         .then(translationResponse => {
-          commit('setTranslationsList', {
+          if (translationResponse.translationsList.length < 1) {
+            console.warn(translationResponse)
+            return
+          }
+          dispatch('setTranslation', {
             containerUuid,
-            tableName,
             recordUuid,
             recordId,
-            language,
-            values: translationResponse.values
+            translations: [{
+              language,
+              translationUuid: translationResponse.translationsList[0].translationUuid,
+              values: translationResponse.translationsList[0].values
+            }]
           })
-          return translationResponse
+          return translationResponse.translationsList[0].values
         })
         .catch(error => {
           console.warn(error)
@@ -80,12 +124,36 @@ const languageControl = {
       return state.languagesList
     },
     getLanguageByParameter: (state) => (parameter) => {
-      var list = state.languagesList
+      const list = state.languagesList
       list.forEach(language => {
         if (language.hasOwnProperty(parameter)) {
           return language
         }
       })
+    },
+    getTranslationsList: (state) => {
+      return state.translationsList
+    },
+    getTranslationContainer: (state) => (containerUuid) => {
+      return state.translationsList.find(itemTranslation => itemTranslation.containerUuid === containerUuid)
+    },
+    getTranslationByLanguage: (state, getters) => ({
+      containerUuid,
+      language,
+      recordUuid,
+      recordId
+    }) => {
+      const translationContainer = getters.getTranslationContainer(containerUuid)
+      if (translationContainer && translationContainer.recordUuid === recordUuid) {
+        const translationRecord = translationContainer.translations.find(itemTranslation => {
+          return itemTranslation.language === language
+        })
+        if (translationRecord) {
+          return translationRecord.values
+        }
+        return {}
+      }
+      return {}
     }
   }
 }
