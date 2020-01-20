@@ -135,12 +135,11 @@ export const contextMixin = {
       return this.$store.getters.getDataRecordAndSelection(this.containerUuid).record
     },
     getDataRecord() {
-      var record = this.getterDataRecordsAll.filter(fieldItem => {
+      return this.getterDataRecordsAll.filter(fieldItem => {
         if (this.recordUuid === fieldItem.UUID) {
           return fieldItem
         }
       })
-      return record
     },
     getterDataLog() {
       if (this.panelType === 'window') {
@@ -195,6 +194,58 @@ export const contextMixin = {
   },
   methods: {
     showNotification,
+    actionContextMenu(event) {
+      console.log(event)
+      switch (event.srcKey) {
+        case 'f2':
+          this.$store.dispatch('resetPanelToNew', {
+            parentUuid: this.parentUuid,
+            containerUuid: this.containerUuid,
+            recordUuid: this.recordUuid,
+            panelType: 'window',
+            isNewRecord: true
+          })
+          break
+        case 'f3':
+          this.$store.dispatch('deleteEntity', {
+            parentUuid: this.parentUuid,
+            containerUuid: this.containerUuid,
+            recordUuid: this.recordUuid,
+            panelType: 'window',
+            isNewRecord: false
+          })
+          break
+        case 'f5':
+          if (this.panelType === 'window') {
+            this.$store.dispatch('getDataListTab', {
+              parentUuid: this.parentUuid,
+              containerUuid: this.containerUuid,
+              isRefreshPanel: true,
+              recordUuid: this.recordUuid
+            })
+          } else if (this.panelType === 'browser') {
+            this.$store.dispatch('getBrowserSearch', {
+              containerUuid: this.containerUuid,
+              isClearSelection: true
+            })
+          }
+          break
+      }
+      // this.$store.dispatch('resetPanelToNew', {
+      //   parentUuid: this.parentUuid,
+      //   containerUuid: this.containerUuid,
+      //   recordUuid: this.recordUuid,
+      //   panelType: 'window',
+      //   isNewRecord: true
+      // })
+      // this.$store.dispatch('deleteEntity', {
+      //   parentUuid: this.parentUuid,
+      //   containerUuid: this.containerUuid,
+      //   recordUuid: this.recordUuid,
+      //   panelType: 'window',
+      //   isNewRecord: false
+      // })
+    },
     refreshData() {
       if (this.panelType === 'window') {
         this.$store.dispatch('getDataListTab', {
@@ -277,15 +328,25 @@ export const contextMixin = {
     },
     generateContextMenu() {
       this.metadataMenu = this.getterContextMenu
+
+      // the function is broken avoiding that an error is generated when closing
+      // session being in a window, since the store of vuex is cleaned, being
+      // this.metadataMenu with value undefined
+      if (this.isEmptyValue(this.metadataMenu)) {
+        return
+      }
+
       if (this.panelType === 'window') {
         this.$store.dispatch('getPrivateAccessFromServer', {
           tableName: this.$route.params.tableName,
           recordId: this.$route.params.recordId
         })
-          .then(response => {
-            this.$nextTick(() => {
-              this.validatePrivateAccess(response)
-            })
+          .then(privateAccessResponse => {
+            if (!this.isEmptyValue(privateAccessResponse)) {
+              this.$nextTick(() => {
+                this.validatePrivateAccess(privateAccessResponse)
+              })
+            }
           })
       }
       this.actions = this.metadataMenu.actions
@@ -334,6 +395,7 @@ export const contextMixin = {
       }
     },
     runAction(action) {
+      console.log(action)
       if (action.type === 'action') {
         // run process or report
         const fieldNotReady = this.$store.getters.isNotReadyForSubmit(this.$route.meta.uuid)
@@ -410,6 +472,14 @@ export const contextMixin = {
             }
           })
         } else {
+          console.log('actionaction', action.action)
+          console.log('parentUuid:', this.parentUuid)
+          console.log('containerUuid:', this.containerUuid,)
+          console.log('recordUuid:', this.recordUuid)
+          console.log('panelType:', this.panelType)
+          console.log('isNewRecord:', action.action === 'resetPanelToNew')
+          console.log('tableName:', action.tableName)
+          console.log('recordId:', action.recordId)
           this.$store.dispatch(action.action, {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
@@ -420,6 +490,7 @@ export const contextMixin = {
             recordId: action.recordId
           })
             .then(response => {
+              console.log(response)
               if (response && response.isPrivateAccess) {
                 this.validatePrivateAccess(response)
               }
@@ -546,19 +617,41 @@ export const contextMixin = {
         }
       })
     },
-    validatePrivateAccess(response) {
-      if (this.isPersonalLock) {
-        if (response.isLocked) {
-          this.actions.find(item => item.action === 'unlockRecord').hidden = false
-          this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
-          this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
-          this.actions.find(item => item.action === 'lockRecord').hidden = true
-        } else {
-          this.actions.find(item => item.action === 'lockRecord').hidden = false
-          this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
-          this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
-          this.actions.find(item => item.action === 'unlockRecord').hidden = true
-        }
+    validatePrivateAccess({ isLocked, tableName, recordId }) {
+      if (isLocked) {
+        this.actions = this.actions.map(actionItem => {
+          if (actionItem.action === 'unlockRecord') {
+            return {
+              ...actionItem,
+              hidden: false,
+              tableName,
+              recordId
+            }
+          } else if (actionItem.action === 'lockRecord') {
+            return {
+              ...actionItem,
+              hidden: true
+            }
+          }
+          return actionItem
+        })
+      } else {
+        this.actions = this.actions.map(actionItem => {
+          if (actionItem.action === 'lockRecord') {
+            return {
+              ...actionItem,
+              hidden: false,
+              tableName,
+              recordId
+            }
+          } else if (actionItem.action === 'unlockRecord') {
+            return {
+              ...actionItem,
+              hidden: true
+            }
+          }
+          return actionItem
+        })
       }
     }
   }
