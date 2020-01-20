@@ -77,6 +77,7 @@
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { showMessage } from '@/utils/ADempiere/notification'
 
 /**
  * This is the base component for linking the components according to the
@@ -235,6 +236,7 @@ export default {
     this.field = this.metadataField
   },
   methods: {
+    showMessage,
     isDisplayed() {
       if (this.isAdvancedQuery) {
         return this.field.isShowedFromUser
@@ -311,7 +313,14 @@ export default {
     redirect({ window, columnName, value }) {
       this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: window.uuid })
       var windowRoute = this.$store.getters.getWindowRoute(window.uuid)
-      this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
+      if (windowRoute) {
+        this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
+      } else {
+        this.showMessage({
+          type: 'error',
+          message: this.$t('notifications.noRoleAccess')
+        })
+      }
     }
   }
 }
