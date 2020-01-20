@@ -74,8 +74,13 @@ export const contextMixin = {
     relations() {
       if (this.$route.params.menuParentUuid !== undefined) {
         return this.$store.getters.getRelations(this.$route.params.menuParentUuid)
+      } else {
+        return this.$store.getters.getRelations(this.menuParentUuid).filter(relations => {
+          if (!relations.hidden) {
+            return relations
+          }
+        })
       }
-      return this.$store.getters.getRelations(this.menuParentUuid)
     },
     getterContextMenu() {
       return this.$store.getters.getContextMenu(this.containerUuid)
