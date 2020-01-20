@@ -300,7 +300,6 @@ export const menuTableMixin = {
       })
     },
     exporZipRecordTable() {
-      console.log('mixinMenu')
       const Header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
       var list
