@@ -20,7 +20,6 @@
       v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
       ref="contextOptions"
       placement="top"
-      :title="isFieldOnly()"
       width="300"
       trigger="click"
     >
@@ -28,8 +27,13 @@
         class="pre-formatted"
         v-html="field.contextInfo.messageText.msgText"
       />
-      <div class="el-popover__title">
-        {{ $t('table.ProcessActivity.zoomIn') }}
+      <div>
+        <span class="custom-tittle-popover">
+          {{ field.name }}
+        </span>
+        <template v-if="!isEmptyValue(field.help)">
+          : {{ field.help }}
+        </template>
       </div>
       <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
         <el-button
@@ -37,7 +41,7 @@
           type="text"
           @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
         >
-          {{ zoomItem.name }}
+          {{ $t('table.ProcessActivity.zoomIn') }}
         </el-button>
       </template>
     </el-popover>
@@ -359,6 +363,10 @@ export default {
 </script>
 
 <style lang="scss">
+  .custom-tittle-popover {
+    font-size: 14px;
+    font-weight: bold;
+  }
   /**
    * Separation between elements (item) of the form
    */
