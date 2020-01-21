@@ -267,7 +267,12 @@ export default {
   window: {
     newRecord: 'New Record',
     deleteRecord: 'Delete Record',
-    undoNew: 'Undo New Record'
+    undoNew: 'Undo New Record',
+    containerInfo: {
+      notes: 'Notes',
+      changeLog: 'Change Log',
+      workflowLog: 'Workflow Log'
+    }
   },
   data: {
     emtpyTableName: 'Error: Table Name is not defined',

@@ -242,7 +242,12 @@ export default {
   window: {
     newRecord: 'Nuevo Registro',
     deleteRecord: 'Eliminar Registro',
-    undoNew: 'Descartar Nuevo Registro'
+    undoNew: 'Descartar Nuevo Registro',
+    containerInfo: {
+      notes: 'Notas',
+      changeLog: 'Histórico de Cambios',
+      workflowLog: 'Histórico de Flujo de Trabajo'
+    }
   },
   data: {
     emtpyTableName: 'Error: El nombre de la tabla no esta definida',
