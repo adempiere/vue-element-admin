@@ -200,7 +200,6 @@ export const contextMixin = {
   methods: {
     showNotification,
     actionContextMenu(event) {
-      console.log(event)
       switch (event.srcKey) {
         case 'f2':
           this.$store.dispatch('resetPanelToNew', {
@@ -400,7 +399,6 @@ export const contextMixin = {
       }
     },
     runAction(action) {
-      console.log(action)
       if (action.type === 'action') {
         // run process or report
         const fieldNotReady = this.$store.getters.isNotReadyForSubmit(this.$route.meta.uuid)
@@ -477,14 +475,6 @@ export const contextMixin = {
             }
           })
         } else {
-          console.log('actionaction', action.action)
-          console.log('parentUuid:', this.parentUuid)
-          console.log('containerUuid:', this.containerUuid,)
-          console.log('recordUuid:', this.recordUuid)
-          console.log('panelType:', this.panelType)
-          console.log('isNewRecord:', action.action === 'resetPanelToNew')
-          console.log('tableName:', action.tableName)
-          console.log('recordId:', action.recordId)
           this.$store.dispatch(action.action, {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
@@ -495,7 +485,6 @@ export const contextMixin = {
             recordId: action.recordId
           })
             .then(response => {
-              console.log(response)
               if (response && response.isPrivateAccess) {
                 this.validatePrivateAccess(response)
               }
