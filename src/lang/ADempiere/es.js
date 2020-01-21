@@ -1,7 +1,9 @@
 export default {
+  language: 'Idioma',
   route: {
     dashboard: 'Panel de control',
     documentation: 'Documentación',
+    calendar: 'Calendario',
     forgotPassword: '¿Olvidó su Contraseña?',
     userEnrollment: 'Registrarse',
     guide: 'Guía',
@@ -193,6 +195,7 @@ export default {
       selected: 'Seleccionados',
       deleteSelection: 'Eliminar Registros Seleccionados',
       advancedQuery: 'Consulta Avanzada',
+      exportZip: 'Exportar Zip',
       showOnlyMandatoryColumns: 'Mostrar Solo Columnas Obligatorias',
       showAllAvailableColumns: 'Mostrar Todas Columnas Disponibles',
       exportRecordTable: 'Exportar Registros Seleccionados',

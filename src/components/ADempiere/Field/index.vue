@@ -24,27 +24,48 @@
       width="300"
       trigger="click"
     >
-      <p v-if="field.contextInfo && field.contextInfo.isActive" class="pre-formatted" v-html="field.contextInfo.messageText.msgText" />
-      <template v-if="field.reference.zoomWindowList.length">
-        <div class="el-popover__title"> {{ $t('table.ProcessActivity.zoomIn') }}</div>
-        <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-          <el-button :key="index" type="text" @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })">{{ zoomItem.name }}</el-button>
-        </template>
+      <p
+        class="pre-formatted"
+        v-html="field.contextInfo.messageText.msgText"
+      />
+      <div class="el-popover__title">
+        {{ $t('table.ProcessActivity.zoomIn') }}
+      </div>
+      <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
+        <el-button
+          :key="index"
+          type="text"
+          @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
+        >
+          {{ zoomItem.name }}
+        </el-button>
       </template>
     </el-popover>
     <el-form-item
-      v-popover:contextOptions
-      :label="isFieldOnly()"
       :required="isMandatory()"
     >
+      <template slot="label">
+        <span v-popover:contextOptions>
+          {{ isFieldOnly() }}
+        </span>
+        <field-translated
+          v-if="field.isTranslated && !isAdvancedQuery"
+          :name="field.name"
+          :help="field.help"
+          :container-uuid="containerUuid"
+          :column-name="field.columnName"
+          :record-uuid="field.optionCRUD"
+          :table-name="field.tableName"
+        />
+      </template>
       <component
         :is="componentRender"
         :ref="field.columnName"
         :metadata="{
           ...field,
-          panelType: panelType,
-          inTable: inTable,
-          isAdvancedQuery: isAdvancedQuery,
+          panelType,
+          inTable,
+          isAdvancedQuery,
           // DOM properties
           required: isMandatory(),
           readonly: isReadOnly(),
@@ -62,8 +83,8 @@
     :class="classField"
     :metadata="{
       ...field,
-      panelType: panelType,
-      inTable: inTable,
+      panelType,
+      inTable,
       // DOM properties
       required: isMandatory(),
       readonly: isReadOnly(),
@@ -74,6 +95,7 @@
 </template>
 
 <script>
+import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
@@ -85,6 +107,9 @@ import { showMessage } from '@/utils/ADempiere/notification'
  */
 export default {
   name: 'Field',
+  components: {
+    FieldTranslated
+  },
   props: {
     parentUuid: {
       type: String,
@@ -314,7 +339,14 @@ export default {
       this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: window.uuid })
       var windowRoute = this.$store.getters.getWindowRoute(window.uuid)
       if (windowRoute) {
-        this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
+        this.$router.push({
+          name: windowRoute.name,
+          query: {
+            action: 'advancedQuery',
+            tabParent: 0,
+            [columnName]: value
+          }
+        })
       } else {
         this.showMessage({
           type: 'error',
@@ -335,6 +367,13 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
   }
+  /**
+   * Reduce the spacing between the form element and its label
+   */
+  .el-form--label-top .el-form-item__label {
+    padding-bottom: 0px !important;
+  }
+
   .in-table {
     margin-bottom: 0px !important;
     margin-left: 0px;
