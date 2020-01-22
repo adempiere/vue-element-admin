@@ -40,9 +40,14 @@ export default {
       return getLanguage()
     },
     editorOptions() {
+      // const options = {
+      //   viewer: true,
+      //   height: '500px',
+      //   initialValue: '# content to be rendered'
+      // }
       const options = {
-        previewStyle: 'vertical',
-        useCommandShortcut: true,
+        previewStyle: 'tab',
+        useCommandShortcut: false,
         usageStatistics: false
       }
       options.initialEditType = this.mode
@@ -71,9 +76,14 @@ export default {
       }
     },
     value(newValue, oldValue) {
+      this.editor.preview.isViewer = true
       if (newValue !== oldValue && newValue !== this.editor.getValue()) {
         this.editor.setValue(newValue)
       }
+      console.log(this.editor)
+    },
+    editorOptions(options) {
+      console.lg(options)
     },
     language(langValue) {
       this.destroyEditor()
@@ -85,6 +95,7 @@ export default {
   },
   mounted() {
     this.initEditor()
+    console.log(this.editor.preview.isViewer)
   },
   destroyed() {
     this.destroyEditor()
@@ -113,6 +124,7 @@ export default {
       this.editor.setHtml(value)
     },
     getHtml() {
+      console.log(this.editor.getHtml())
       return this.editor.getHtml()
     }
   }

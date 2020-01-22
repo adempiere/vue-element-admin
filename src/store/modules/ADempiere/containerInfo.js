@@ -23,8 +23,10 @@ const containerInfo = {
       const recordId = params.recordId
       const page_size = 0
       const page_token = 0
+      console.log('tableName = ', tableName, 'recordId= ', recordId)
       return requestListWorkflowsLogs({ tableName, recordId, page_size, page_token })
         .then(response => {
+          console.log(response)
           commit('addListWorkflow', response)
         })
         .catch(error => {
@@ -36,8 +38,10 @@ const containerInfo = {
       const recordId = params.recordId
       const page_size = 0
       const page_token = 0
+      console.log(params, 'tableName = ', tableName, 'recordId= ', recordId)
       return requestListRecordsLogs({ tableName, recordId, page_size, page_token })
         .then(response => {
+          console.log(response)
           commit('addListRecordLogs', response)
         })
         .catch(error => {

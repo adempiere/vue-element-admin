@@ -154,8 +154,9 @@
                     <el-tabs v-model="activeName" @tab-click="handleClick">
                       <el-tab-pane
                         :label="$t('window.containerInfo.changeLog')"
-                        :name="$t('window.containerInfo.changeLog')"
+                        name="listRecordLogs"
                       >
+                        <span slot="label"><i class="el-icon-s-help" /> {{ $t('window.containerInfo.changeLog') }} </span>
                         <el-card
                           class="box-card"
                           style="overflow: auto;height: 75vh;"
@@ -166,9 +167,9 @@
                         </el-card>
                       </el-tab-pane>
                       <el-tab-pane
-                        :label="$t('window.containerInfo.workflowLog')"
-                        :name="$t('window.containerInfo.workflowLog')"
+                        name="listWorkflowLogs"
                       >
+                        <span slot="label"><i class="el-icon-s-help" /> {{ $t('window.containerInfo.workflowLog') }} </span>
                         <el-card
                           class="box-card"
                           style="overflow: auto;height: 75vh;"
@@ -182,9 +183,9 @@
                         </el-card>
                       </el-tab-pane>
                       <el-tab-pane
-                        :label="$t('window.containerInfo.notes')"
-                        :name="$t('window.containerInfo.notes')"
+                        name="listChatEntries"
                       >
+                        <span slot="label"><i class="el-icon-s-comment" /> {{ $t('window.containerInfo.notes') }} </span>
                         <el-card
                           class="box-card"
                           style="overflow: auto;height: 75vh;"
@@ -245,7 +246,7 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
-      activeName: this.$t('window.containerInfo.changeLog'),
+      activeName: 'listRecordLogs',
       show: false,
       isLoadingFromServer: false,
       listRecordNavigation: 0,
@@ -366,29 +367,17 @@ export default {
     conteInfo() {
       this.show = !this.show
       if (this.show) {
-        this.$store.dispatch('listWorkflowLogs', {
+        this.$store.dispatch('listRecordLogs', {
           tableName: this.$route.params.tableName,
           recordId: this.$route.params.recordId
         })
       }
     },
     handleClick(tab, event) {
-      if (tab.index === 1) {
-        this.$store.dispatch('listRecordLogs', {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      } else if (tab.index === 2) {
-        this.$store.dispatch('listChatEntries', {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      } else if (tab.index === 0) {
-        this.$store.dispatch('listWorkflowLogs', {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      }
+      this.$store.dispatch(tab.name, {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
     },
     // callback new size
     onDrag(size) {
