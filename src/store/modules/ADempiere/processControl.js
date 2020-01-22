@@ -1,6 +1,6 @@
 import {
   runProcess,
-  requestProcessActivity
+  requestListProcessesLogs
 } from '@/api/ADempiere/data'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
@@ -449,7 +449,7 @@ const processControl = {
                 if (reportType !== 'pdf' && reportType !== 'html') {
                   link.click()
                 }
-
+                const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                 // Report views List to context menu
                 const reportViewList = {
                   name: language.t('views.reportView'),
@@ -472,7 +472,6 @@ const processControl = {
                       reportViewList.childs = responseReportView
                       if (reportViewList.childs.length) {
                         // Get contextMenu metadata and concat print report views with contextMenu actions
-                        const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                         contextMenuMetadata.actions.push(reportViewList)
                       }
                     })
@@ -500,10 +499,14 @@ const processControl = {
                       printFormatList.childs = printFormarResponse
                       if (printFormatList.childs.length) {
                         // Get contextMenu metadata and concat print Format List with contextMenu actions
-                        const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                         contextMenuMetadata.actions.push(printFormatList)
                       }
                     })
+                } else {
+                  var index = contextMenuMetadata.actions.findIndex(action => action.option === 'printFormat')
+                  if (index !== -1) {
+                    contextMenuMetadata.actions[index] = printFormatList
+                  }
                 }
 
                 // Drill Tables to context menu
@@ -529,7 +532,6 @@ const processControl = {
                         drillTablesList.childs = drillTablesResponse
                         if (drillTablesList.childs.length) {
                           // Get contextMenu metadata and concat print Format List with contextMenu actions
-                          const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                           contextMenuMetadata.actions.push(drillTablesList)
                         }
                       })
@@ -794,26 +796,26 @@ const processControl = {
     /**
      * TODO: Add date time in which the process/report was executed
      */
-    getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }) {
+    getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }, parameters) {
       // process Activity
-      return requestProcessActivity()
+      const { pageToken, pageSize } = parameters
+      return requestListProcessesLogs({ pageToken, pageSize })
         .then(processActivityResponse => {
-          const responseList = processActivityResponse.processLogsList.map(businessProcessItem => {
-            const processMetadata = rootGetters.getProcess(businessProcessItem.uuid)
+          const responseList = processActivityResponse.processLogsList.map(processLogItem => {
+            const processMetadata = rootGetters.getProcess(processLogItem.uuid)
             // if no exists metadata process in store and no request progess
-            if (processMetadata === undefined && getters.getInRequestMetadata(businessProcessItem.uuid) === undefined) {
-              commit('addInRequestMetadata', businessProcessItem.uuid)
+            if (processMetadata === undefined && getters.getInRequestMetadata(processLogItem.uuid) === undefined) {
+              commit('addInRequestMetadata', processLogItem.uuid)
               dispatch('getProcessFromServer', {
-                containerUuid: businessProcessItem.uuid
+                containerUuid: processLogItem.uuid
               })
                 .finally(() => {
-                  commit('deleteInRequestMetadata', businessProcessItem.uuid)
+                  commit('deleteInRequestMetadata', processLogItem.uuid)
                 })
             }
-
             const process = {
-              ...businessProcessItem,
-              processUuid: businessProcessItem.uuid
+              ...processLogItem,
+              processUuid: processLogItem.uuid
             }
             return process
           })

@@ -80,6 +80,9 @@ export const menuTableMixin = {
     getDataSelection() {
       return this.getterDataRecordsAndSelection.selection
     },
+    getDataAllRecord() {
+      return this.getterDataRecordsAndSelection.record
+    },
     fieldList() {
       if (this.panelMetadata && this.panelMetadata.fieldList) {
         return this.sortFields(
@@ -219,7 +222,10 @@ export const menuTableMixin = {
       this.showModal(process)
     },
     showTotals() {
-      this.$store.dispatch('showedTotals', this.containerUuid)
+      this.$store.dispatch('changePanelAttributesBoolean', {
+        containerUuid: this.containerUuid,
+        attributeName: 'isShowedTotals'
+      })
     },
     showOnlyMandatoryColumns() {
       this.$store.dispatch('showOnlyMandatoryColumns', {
@@ -261,9 +267,11 @@ export const menuTableMixin = {
         type: 'info'
       })
     },
-    optionalPanel() {
-      this.showTableSearch = false
-      this.isOptional = !this.isOptional
+    showOptionalColums() {
+      this.$store.dispatch('changePanelAttributesBoolean', {
+        containerUuid: this.containerUuid,
+        attributeName: 'isShowedTableOptionalColumns'
+      })
     },
     fixedPanel() {
       this.showTableSearch = false
@@ -297,10 +305,9 @@ export const menuTableMixin = {
       const header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
       let list = this.getDataSelection
-      if (this.isOption) {
-        list = this.gettersRecrdContextMenu
+      if (this.getDataSelection.length <= 0) {
+        list = this.getDataAllRecord
       }
-
       const data = this.formatJson(filterVal, list)
       exportFileZip({
         header,
