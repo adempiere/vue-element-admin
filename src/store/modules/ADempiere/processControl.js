@@ -1,6 +1,6 @@
 import {
   runProcess,
-  requestProcessActivity
+  requestListProcessesLogs
 } from '@/api/ADempiere/data'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
@@ -797,7 +797,7 @@ const processControl = {
     getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }, parameters) {
       // process Activity
       const { pageToken, pageSize } = parameters
-      return requestProcessActivity({ pageToken, pageSize })
+      return requestListProcessesLogs({ pageToken, pageSize })
         .then(processActivityResponse => {
           const responseList = processActivityResponse.processLogsList.map(processLogItem => {
             const processMetadata = rootGetters.getProcess(processLogItem.uuid)
