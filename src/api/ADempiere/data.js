@@ -403,6 +403,10 @@ export function requestListRecordsLogs({
   pageToken,
   pageSize
 }) {
+  console.log(tableName,
+    recordId,
+    pageToken,
+    pageSize)
   return Instance.call(this).requestListRecordsLogs({
     tableName,
     recordId,
