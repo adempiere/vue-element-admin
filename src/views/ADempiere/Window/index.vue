@@ -154,7 +154,7 @@
                     <el-tabs v-model="activeName" @tab-click="handleClick">
                       <el-tab-pane
                         :label="$t('window.containerInfo.changeLog')"
-                        name="first"
+                        :name="$t('window.containerInfo.changeLog')"
                       >
                         <el-card
                           class="box-card"
@@ -167,7 +167,7 @@
                       </el-tab-pane>
                       <el-tab-pane
                         :label="$t('window.containerInfo.workflowLog')"
-                        name="second"
+                        :name="$t('window.containerInfo.workflowLog')"
                       >
                         <el-card
                           class="box-card"
@@ -183,7 +183,7 @@
                       </el-tab-pane>
                       <el-tab-pane
                         :label="$t('window.containerInfo.notes')"
-                        name="third"
+                        :name="$t('window.containerInfo.notes')"
                       >
                         <el-card
                           class="box-card"
@@ -245,7 +245,7 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
-      activeName: 'q',
+      activeName: this.$t('window.containerInfo.changeLog'),
       show: false,
       isLoadingFromServer: false,
       listRecordNavigation: 0,
@@ -255,6 +255,7 @@ export default {
     }
   },
   beforeRouteUpdate(to, from, next) {
+    // this.activeName = this.$t('window.containerInfo.changeLog')
     this.$store.dispatch('setWindowOldRoute', {
       path: from.path,
       fullPath: from.fullPath,
@@ -364,14 +365,30 @@ export default {
   methods: {
     conteInfo() {
       this.show = !this.show
-      console.log(this.show, this.$route, this.$route.params)
-      this.$store.dispatch('listWorkflowLogs', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
+      if (this.show) {
+        this.$store.dispatch('listWorkflowLogs', {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      }
     },
     handleClick(tab, event) {
-      console.log(tab, event)
+      if (tab.index === 1) {
+        this.$store.dispatch('listRecordLogs', {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      } else if (tab.index === 2) {
+        this.$store.dispatch('listChatEntries', {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      } else if (tab.index === 0) {
+        this.$store.dispatch('listWorkflowLogs', {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      }
     },
     // callback new size
     onDrag(size) {
