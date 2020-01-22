@@ -1,5 +1,6 @@
 import { supportedTypes, exportFileFromJson, exportFileZip } from '@/utils/ADempiere/exportUtil'
 import { showNotification } from '@/utils/ADempiere/notification'
+import { FIELDS_QUANTITY } from '@/components/ADempiere/Field/references'
 
 export const menuTableMixin = {
   props: {
@@ -23,11 +24,9 @@ export const menuTableMixin = {
       type: Boolean,
       default: false
     },
-    isProcessMenu: {
+    processMenu: {
       type: Array,
-      default: function() {
-        return []
-      }
+      default: () => []
     },
     isPanelWindow: {
       type: Boolean,
@@ -37,11 +36,7 @@ export const menuTableMixin = {
       type: Boolean,
       default: false
     },
-    isPanel: {
-      type: Object,
-      default: () => {}
-    },
-    isDataRecord: {
+    panelMetadata: {
       type: Object,
       default: () => {}
     }
@@ -57,8 +52,7 @@ export const menuTableMixin = {
   },
   computed: {
     isProcessTable() {
-      console.log(this.$route)
-      if (this.isProcessMenu) {
+      if (this.processMenu) {
         return true
       }
       return false
@@ -76,7 +70,7 @@ export const menuTableMixin = {
     },
     getterNewRecords() {
       if (this.isPanelWindow && !this.isParent) {
-        var newRecordTable = this.getterDataRecordsAndSelection.record.filter(recordItem => {
+        const newRecordTable = this.getterDataRecordsAndSelection.record.filter(recordItem => {
           return recordItem.isNew
         })
         return newRecordTable.length
@@ -87,9 +81,9 @@ export const menuTableMixin = {
       return this.getterDataRecordsAndSelection.selection
     },
     fieldList() {
-      if (this.isPanel && this.isPanel.fieldList) {
+      if (this.panelMetadata && this.panelMetadata.fieldList) {
         return this.sortFields(
-          this.isPanel.fieldList,
+          this.panelMetadata.fieldList,
           this.panelType !== 'browser' ? 'seqNoGrid' : 'sequence'
         )
       }
@@ -117,7 +111,7 @@ export const menuTableMixin = {
       if (this.$route.query.action === 'create-new') {
         return true
       }
-      if (!this.isPanel.isInsertRecord) {
+      if (!this.panelMetadata.isInsertRecord) {
         return true
       }
       if (this.isReadOnlyParent) {
@@ -128,11 +122,17 @@ export const menuTableMixin = {
       }
       return false
     },
+    isFieldsQuantity() {
+      const fieldsQuantity = this.getterFieldList.filter(fieldItem => {
+        return FIELDS_QUANTITY.includes(fieldItem.referenceType)
+      }).length
+      return !fieldsQuantity
+    },
     getterFieldList() {
       return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
     },
     getterFieldListHeader() {
-      var header = this.getterFieldList.filter(fieldItem => {
+      const header = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem.name
@@ -143,7 +143,7 @@ export const menuTableMixin = {
       })
     },
     getterFieldListValue() {
-      var value = this.getterFieldList.filter(fieldItem => {
+      const value = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem
@@ -152,15 +152,13 @@ export const menuTableMixin = {
       return value.map(fieldItem => {
         if (fieldItem.componentPath === 'FieldSelect') {
           return 'DisplayColumn_' + fieldItem.columnName
-        } else {
-          return fieldItem.columnName
         }
+        return fieldItem.columnName
       })
     },
     gettersRecordContextMenu() {
-      var record = []
-      var recordTable = this.isOption
-      record.push(recordTable)
+      const record = []
+      record.push(this.isOption)
       return record
     }
   },
@@ -175,28 +173,27 @@ export const menuTableMixin = {
       })
     },
     showModal(process) {
-      var processData
-      processData = this.$store.getters.getProcess(process.uuid)
+      const processData = this.$store.getters.getProcess(process.uuid)
       if (!this.isOption) {
         this.$store.dispatch('setProcessSelect', {
           selection: this.getDataSelection,
           processTablaSelection: true,
-          tableName: this.isPanel.keyColumn
+          tableName: this.panelMetadata.keyColumn
         })
       } else {
-        var selection = this.isOption
+        let valueProcess
+        const selection = this.isOption
         for (const element in selection) {
-          if (element === this.isPanel.keyColumn) {
+          if (element === this.panelMetadata.keyColumn) {
             valueProcess = selection[element]
           }
         }
         this.$store.dispatch('setProcessTable', {
           valueRecord: valueProcess,
-          tableName: this.isPanel.keyColumn,
+          tableName: this.panelMetadata.keyColumn,
           processTable: true
         })
       }
-      var valueProcess
       if (processData === undefined) {
         this.$store.dispatch('getProcessFromServer', {
           containerUuid: process.uuid,
@@ -209,10 +206,13 @@ export const menuTableMixin = {
               record: this.getDataSelection
             })
           }).catch(error => {
-            console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
+            console.warn(`ContextMenu: Dictionary Process (State) - Error ${error.code}: ${error.message}.`)
           })
       } else {
-        this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
+        this.$store.dispatch('setShowDialog', {
+          type: process.type,
+          action: processData
+        })
       }
     },
     tableProcess(process) {
@@ -251,13 +251,15 @@ export const menuTableMixin = {
           isEdit: true,
           isSendServer: false
         })
-      } else {
-        const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({ containerUuid: this.containerUuid })
-        this.$message({
-          message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
-          type: 'info'
-        })
+        return
       }
+      const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
+        containerUuid: this.containerUuid
+      })
+      this.$message({
+        message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+        type: 'info'
+      })
     },
     optionalPanel() {
       this.showTableSearch = false
@@ -276,43 +278,39 @@ export const menuTableMixin = {
       this.closeMenu()
     },
     exporRecordTable(key) {
-      const Header = this.getterFieldListHeader
+      const header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      var list
-      if (!this.isOption) {
-        list = this.getDataSelection
-      } else {
-        list = this.gettersRecordContextMenu
+      let list = this.getDataSelection
+      if (this.isOption) {
+        list = this.gettersRecrdContextMenu
       }
 
       const data = this.formatJson(filterVal, list)
       exportFileFromJson({
-        header: Header,
+        header,
         data,
         filename: '',
         exportType: key
       })
     },
     exporZipRecordTable() {
-      const Header = this.getterFieldListHeader
+      const header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      var list
-      if (!this.isOption) {
-        list = this.getDataSelection
-      } else {
-        list = this.gettersRecordContextMenu
+      let list = this.getDataSelection
+      if (this.isOption) {
+        list = this.gettersRecrdContextMenu
       }
 
       const data = this.formatJson(filterVal, list)
       exportFileZip({
-        header: Header,
+        header,
         data,
         title: this.$route.meta.title,
         exportType: 'zip'
       })
     },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => v[j]))
+      return jsonData.map(rowData => filterVal.map(j => rowData[j]))
     }
   }
 }
