@@ -518,6 +518,12 @@ export const contextMixin = {
           reportType: this.$store.getters.getReportType,
           option: action.option
         }
+        if (this.isEmptyValue(updateReportParams.instanceUuid)) {
+          updateReportParams.instanceUuid = this.$route.params.instanceUuid
+        }
+        if (this.isEmptyValue(updateReportParams.processId)) {
+          updateReportParams.processId = this.$route.params.processId
+        }
         this.$store.dispatch('getReportOutputFromServer', updateReportParams)
           .then(response => {
             if (!response.isError) {
@@ -612,40 +618,42 @@ export const contextMixin = {
       })
     },
     validatePrivateAccess({ isLocked, tableName, recordId }) {
-      if (isLocked) {
-        this.actions = this.actions.map(actionItem => {
-          if (actionItem.action === 'unlockRecord') {
-            return {
-              ...actionItem,
-              hidden: false,
-              tableName,
-              recordId
+      if (this.isPersonalLock) {
+        if (isLocked) {
+          this.actions = this.actions.map(actionItem => {
+            if (actionItem.action === 'unlockRecord') {
+              return {
+                ...actionItem,
+                hidden: false,
+                tableName,
+                recordId
+              }
+            } else if (actionItem.action === 'lockRecord') {
+              return {
+                ...actionItem,
+                hidden: true
+              }
             }
-          } else if (actionItem.action === 'lockRecord') {
-            return {
-              ...actionItem,
-              hidden: true
+            return actionItem
+          })
+        } else {
+          this.actions = this.actions.map(actionItem => {
+            if (actionItem.action === 'lockRecord') {
+              return {
+                ...actionItem,
+                hidden: false,
+                tableName,
+                recordId
+              }
+            } else if (actionItem.action === 'unlockRecord') {
+              return {
+                ...actionItem,
+                hidden: true
+              }
             }
-          }
-          return actionItem
-        })
-      } else {
-        this.actions = this.actions.map(actionItem => {
-          if (actionItem.action === 'lockRecord') {
-            return {
-              ...actionItem,
-              hidden: false,
-              tableName,
-              recordId
-            }
-          } else if (actionItem.action === 'unlockRecord') {
-            return {
-              ...actionItem,
-              hidden: true
-            }
-          }
-          return actionItem
-        })
+            return actionItem
+          })
+        }
       }
     }
   }

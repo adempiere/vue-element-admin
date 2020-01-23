@@ -115,6 +115,8 @@ const panel = {
         })
 
       params.recordUuid = null
+      // show/hidden optionals columns to table
+      params.isShowedTableOptionalColumns = false
 
       commit('addPanel', params)
     },
@@ -576,7 +578,7 @@ const panel = {
       })
 
       // the field has not changed, then the action is broken
-      if (newValue === field.value && isEmptyValue(displayColumn)) {
+      if (newValue === field.value && isEmptyValue(displayColumn) && !isAdvancedQuery) {
         return
       }
 
@@ -772,10 +774,18 @@ const panel = {
           }
         })
     },
-    showedTotals({ commit, getters }, containerUuid) {
+    changePanelAttributesBoolean({ commit, getters }, {
+      containerUuid,
+      attributeName,
+      attributeValue
+    }) {
       const panel = getters.getPanel(containerUuid)
       const newPanel = panel
-      newPanel.isShowedTotals = !panel.isShowedTotals
+      if (isEmptyValue(attributeValue)) {
+        newPanel[attributeName] = !panel[attributeName]
+      } else {
+        newPanel[attributeName] = attributeValue
+      }
       commit('changePanel', {
         panel: panel,
         newPanel: newPanel
