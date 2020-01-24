@@ -1,7 +1,21 @@
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator from '@/utils/ADempiere/evaluator'
+import store from '@/store'
 
 export default evaluator
+
+// get context state from vuex store
+export const getContext = ({
+  parentUuid,
+  containerUuid,
+  columnName
+}) => {
+  return store.getters.getContext({
+    parentUuid,
+    containerUuid,
+    columnName
+  })
+}
 
 /**
  * Extracts the associated fields from the logics or default values
@@ -58,8 +72,6 @@ export function parseContext({
   value,
   isSQL = false
 }) {
-  const store = require('@/store')
-  const getContext = (parametersToGetContext) => store.default.getters.getContext(parametersToGetContext)
   const isBooleanToString = value.includes('@SQL=')
   let isError = false
   const errorsList = []
@@ -161,36 +173,57 @@ export function parseContext({
  *      3)  Login settings
  *      4)  Accounting settings
  *  </pre>
- *  @param  ctx context
- *  @param  AD_Window_ID window no
- *  @param  context     Entity to search
- *  @param  system      System level preferences (vs. user defined)
+ *  @param  {string} parentUuid UUID Window
+ *  @param  {string} containerUuid  UUID Tab, Process, SmartBrowser, Report and Form
+ *  @param  {string}  columnName (context)  Entity to search
  *  @return preference value
  */
-export function getPreference(ctx, AD_Window_ID, context, system) {
-  if (ctx === null || context === null) {
-    console.warn('Require Context')
+export function getPreference({
+  parentUuid,
+  containerUuid,
+  columnName
+}) {
+  let retValue
+  if (isEmptyValue(columnName)) {
+    console.warn('Require Context ColumnName')
+    return retValue
   }
 
-  let retValue = null
+  //        USER PREFERENCES
+  // View Preferences
+  retValue = getContext({
+    parentUuid: 'P' + parentUuid,
+    containerUuid,
+    columnName: columnName
+  })
+  if (!isEmptyValue(retValue)) {
+    return retValue
+  }
 
-  if (system) {
-    //  System Preferences
-    // Login setting
-    retValue = ctx.getProperty('#' + context)
-    if (retValue == null) {
-      //  Accounting setting
-      retValue = ctx.getProperty('$' + context)
-    }
-  } else {
-    //  User Preferences
-    // Window Pref
-    retValue = ctx.getProperty('P' + AD_Window_ID + '|' + context)
-    if (retValue == null) {
-      //  Global Pref
-      retValue = ctx.getProperty('P|' + context)
+  //  Global Preferences
+  retValue = getContext({
+    columnName: 'P|' + columnName
+  })
+  if (!isEmptyValue(retValue)) {
+    return retValue
+  }
+
+  //        SYSTEM PREFERENCES
+  // Login setting
+  if (!isEmptyValue(parentUuid)) {
+    // get # globals context only window
+    retValue = getContext({
+      columnName: '#' + columnName
+    })
+    if (!isEmptyValue(retValue)) {
+      return retValue
     }
   }
 
-  return retValue == null ? '' : retValue
+  //  Accounting setting
+  retValue = getContext({
+    columnName: '$' + columnName
+  })
+
+  return retValue
 } //  getPreference

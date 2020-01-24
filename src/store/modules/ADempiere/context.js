@@ -154,7 +154,7 @@ const context = {
       return contextContainer
     },
     getContextAll: (state) => {
-      state.context
+      return state.context
     },
     getContextClientId: (state) => {
       return parseInt(state.context['#AD_Client_ID'], 10)
