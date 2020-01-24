@@ -1,9 +1,11 @@
-import { requestListRecordsLogs, requestListWorkflowsLogs, requestListRecordChats } from '@/api/ADempiere/data'
+import { requestListRecordsLogs, requestListWorkflowsLogs, requestListRecordChats, requestListChatEntries } from '@/api/ADempiere/data'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 const containerInfo = {
   state: {
     listworkflowLog: [],
     listRecordLogs: [],
+    listRecordChats: [],
     listChatEntries: []
   },
   mutations: {
@@ -12,6 +14,9 @@ const containerInfo = {
     },
     addListRecordLogs(state, payload) {
       state.listRecordLogs = payload
+    },
+    addListRecordChats(state, payload) {
+      state.listRecordChats = payload
     },
     addListChatEntries(state, payload) {
       state.listChatEntries = payload
@@ -55,7 +60,20 @@ const containerInfo = {
       const page_token = 0
       return requestListRecordChats({ tableName, recordId, page_size, page_token })
         .then(response => {
-          console.log('response =>', response)
+          console.log('requestListRecordChats response =>', response)
+          commit('addListChatEntries', response)
+        })
+        .catch(error => {
+          console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
+        })
+    },
+    listRecordChat({ commit, state }, params) {
+      const uuid = params.uuid
+      const page_size = 0
+      const page_token = 0
+      return requestListChatEntries({ uuid, page_size, page_token })
+        .then(response => {
+          console.log('requestListChatEntries response =>', response)
           commit('addListChatEntries', response)
         })
         .catch(error => {
@@ -68,29 +86,49 @@ const containerInfo = {
       return state.listworkflowLog.workflowLogsList
     },
     getRecordLogs: (state) => {
-      if (state.listRecordLogs) {
-        return state.listRecordLogs
-      } else {
+      const recordLogs = state.listRecordLogs.recorLogs
+      if (isEmptyValue(recordLogs)) {
         var listRecord = [{
-          columnName: 0,
-          description: '',
-          displayColumnName: '',
+          columnName: 'Compañía',
+          description: 'Compañía',
+          displayColumnName: 'Compañía',
           eventType: 0,
-          eventTypeName: 0,
+          eventTypeName: 'INSERT',
           logDate: 0,
-          logUuid: 0,
+          logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
           newDisplayValue: '',
-          newValue: 0,
+          newValue: '',
           oldDisplayValue: '',
-          oldValue: 0,
-          recordId: 0,
+          oldValue: '',
+          recordId: 100000,
           sessionUuid: '',
           tableName: '',
           transactionName: '',
           userName: '',
-          userUuid: 0
+          userUuid: ''
+        },
+        {
+          columnName: 'Compañía',
+          description: 'Compañía',
+          displayColumnName: 'Compañía',
+          eventType: 0,
+          eventTypeName: 'INSERT',
+          logDate: 0,
+          logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
+          newDisplayValue: '',
+          newValue: '',
+          oldDisplayValue: '',
+          oldValue: '',
+          recordId: 100000,
+          sessionUuid: '',
+          tableName: '',
+          transactionName: '',
+          userName: '',
+          userUuid: ''
         }]
         return listRecord
+      } else {
+        return state.listRecordLogs
       }
     },
     getChatEntries: (state) => {

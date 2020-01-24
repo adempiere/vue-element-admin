@@ -427,6 +427,13 @@ export default {
     },
     conteInfo() {
       this.show = !this.show
+      this.$store.dispatch('listRecordChat', {
+        uuid: this.$route.query.action
+      })
+      this.$store.dispatch('listChatEntries', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
       this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
       if (this.show) {
         this.$store.dispatch('listRecordLogs', {
@@ -436,10 +443,20 @@ export default {
       }
     },
     handleClick(tab, event) {
-      this.$store.dispatch(tab.name, {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
+      if (tab.name === 'listChatEntries') {
+        this.$store.dispatch('listRecordChat', {
+          uuid: this.$route.query.action
+        })
+        this.$store.dispatch(tab.name, {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      } else {
+        this.$store.dispatch(tab.name, {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
+        })
+      }
     },
     // callback new size
     onDrag(size) {
