@@ -1,5 +1,5 @@
 <template>
-  <el-collapse v-model="activeFavorites" accordion>
+  <el-collapse v-if="metadata.isCollapsible" v-model="activeFavorites" accordion>
     <el-collapse-item name="favorites">
       <template slot="title">
         <i class="el-icon-time" style="margin-right: 4px;margin-left: 10px;" />
@@ -32,6 +32,31 @@
       </el-card>
     </el-collapse-item>
   </el-collapse>
+  <el-card v-else class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+    <div class="recent-items">
+      <el-table :data="search.length ? filterResult(search) : favorites" max-height="455" @row-click="handleClick">
+        <el-table-column width="40">
+          <template slot-scope="{row}">
+            <svg-icon :icon-class="row.icon" class="icon-window" />
+          </template>
+        </el-table-column>
+        <el-table-column>
+          <template slot="header" slot-scope="scope">
+            <el-input
+              v-model="search"
+              size="mini"
+              :metadata="scope"
+              :placeholder="$t('table.dataTable.search')"
+            />
+          </template>
+          <template slot-scope="{row}">
+            <span>{{ row.name }}</span>
+            <el-tag class="action-tag">{{ $t(`views.${row.action}`) }}</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </el-card>
 </template>
 
 <script>
@@ -40,9 +65,15 @@ import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
 
 export default {
   name: 'Favorites',
+  props: {
+    metadata: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
-      activeFavorites: 'favorites',
+      activeFavorites: this.metadata.isOpenByDefault ? 'favorites' : undefined,
       favorites: [],
       isLoaded: true,
       search: '',
