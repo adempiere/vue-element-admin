@@ -1,4 +1,4 @@
-import { requestListRecordsLogs, requestListWorkflowsLogs } from '@/api/ADempiere/data'
+import { requestListRecordsLogs, requestListWorkflowsLogs, requestListRecordChats } from '@/api/ADempiere/data'
 
 const containerInfo = {
   state: {
@@ -8,13 +8,13 @@ const containerInfo = {
   },
   mutations: {
     addListWorkflow(state, payload) {
-      state.listworkflowLog.push(payload)
+      state.listworkflowLog = payload
     },
     addListRecordLogs(state, payload) {
-      state.listRecordLogs.push(payload)
+      state.listRecordLogs = payload
     },
     addListChatEntries(state, payload) {
-      state.listChatEntries.push(payload)
+      state.listChatEntries = payload
     }
   },
   actions: {
@@ -23,10 +23,8 @@ const containerInfo = {
       const recordId = params.recordId
       const page_size = 0
       const page_token = 0
-      console.log('tableName = ', tableName, 'recordId= ', recordId)
       return requestListWorkflowsLogs({ tableName, recordId, page_size, page_token })
         .then(response => {
-          console.log(response)
           commit('addListWorkflow', response)
         })
         .catch(error => {
@@ -38,36 +36,62 @@ const containerInfo = {
       const recordId = params.recordId
       const page_size = 0
       const page_token = 0
-      console.log(params, 'tableName = ', tableName, 'recordId= ', recordId)
       return requestListRecordsLogs({ tableName, recordId, page_size, page_token })
         .then(response => {
-          console.log(response)
-          commit('addListRecordLogs', response)
+          var listRecord = {
+            recordCount: response.recordCount,
+            recorLogs: response.recordLogsList
+          }
+          commit('addListRecordLogs', listRecord)
         })
         .catch(error => {
           console.warn(`Error getting List Record Logs: ${error.message}. Code: ${error.code}.`)
         })
+    },
+    listChatEntries({ commit, state }, params) {
+      const tableName = params.tableName
+      const recordId = params.recordId
+      const page_size = 0
+      const page_token = 0
+      return requestListRecordChats({ tableName, recordId, page_size, page_token })
+        .then(response => {
+          console.log('response =>', response)
+          commit('addListChatEntries', response)
+        })
+        .catch(error => {
+          console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
+        })
     }
-    // listChatEntries({ commit, state }, params) {
-    //   const tableName = params.tableName
-    //   const recordId = params.recordId
-    //   const page_size = 0
-    //   const page_token = 0
-    // return ListRecordChatsRequest({ tableName, recordId, page_size, page_token })
-    //   .then(response => {
-    //     commit('addListChatEntries', response)
-    //   })
-    //   .catch(error => {
-    //     console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
-    //   })
-    // }
   },
   getters: {
     getWorkflow: (state) => {
-      return state.lisworkflowLog
+      return state.listworkflowLog.workflowLogsList
     },
     getRecordLogs: (state) => {
-      return state.listRecordLogs
+      if (state.listRecordLogs) {
+        return state.listRecordLogs
+      } else {
+        var listRecord = [{
+          columnName: 0,
+          description: '',
+          displayColumnName: '',
+          eventType: 0,
+          eventTypeName: 0,
+          logDate: 0,
+          logUuid: 0,
+          newDisplayValue: '',
+          newValue: 0,
+          oldDisplayValue: '',
+          oldValue: 0,
+          recordId: 0,
+          sessionUuid: '',
+          tableName: '',
+          transactionName: '',
+          userName: '',
+          userUuid: 0
+        }]
+        return listRecord
+      }
     },
     getChatEntries: (state) => {
       return state.listChatEntries

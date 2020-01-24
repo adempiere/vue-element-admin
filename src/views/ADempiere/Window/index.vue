@@ -155,48 +155,49 @@
                       <el-tab-pane
                         :label="$t('window.containerInfo.changeLog')"
                         name="listRecordLogs"
+                        style="overflow: auto;max-height: 74vh;"
                       >
-                        <span slot="label"><i class="el-icon-s-help" /> {{ $t('window.containerInfo.changeLog') }} </span>
+                        <span slot="label"><svg-icon icon-class="tree-table" /> {{ $t('window.containerInfo.changeLog') }} </span>
                         <el-card
-                          class="box-card"
-                          style="overflow: auto;height: 75vh;"
+                          v-for="(logs, index) in getTypeLogs"
+                          :key="index"
                         >
-                          <el-scrollbar wrap-class="scroll">
-                            aswd
-                          </el-scrollbar>
+                          <el-timeline>
+                            <el-timeline-item
+                              v-for="(evenType, key) in logs.logs"
+                              :key="key"
+                              :timestamp="translateDate(evenType.logDate)"
+                              placement="top"
+                            >
+                              <el-card shadow="hover" @click.native="changeField(evenType)">
+                                <span>{{ evenType.userName }}</span>
+                                <el-button type="text" style="float: right; padding: 3px 0" @click="showkey(key)"> {{ $t('window.containerInfo.changeDetail') }} </el-button>
+                                <el-collapse-transition>
+                                  <div v-show="currentKey === key" :key="key" class="text item">
+                                    <span>  {{ $t('window.containerInfo.eventType.update') }} {{ $t('window.containerInfo.eventType.field') }} {{ evenType.displayColumnName }}<br> {{ $t('window.containerInfo.eventType.newValue') }} {{ evenType.newDisplayValue }} <br> {{ $t('window.containerInfo.eventType.oldValue') }} {{ evenType.oldDisplayValue }}</span>
+                                  </div>
+                                </el-collapse-transition>
+                              </el-card>
+                            </el-timeline-item>
+                          </el-timeline>
                         </el-card>
                       </el-tab-pane>
                       <el-tab-pane
                         name="listWorkflowLogs"
                       >
+
                         <span slot="label"><i class="el-icon-s-help" /> {{ $t('window.containerInfo.workflowLog') }} </span>
                         <el-card
                           class="box-card"
-                          style="overflow: auto;height: 75vh;"
+                          style="overflow: auto;height: 50vh;"
                         >
-                          <el-steps :active="2" finish-status="success" align-center>
-                            <el-step title="Step 1" description="Some description" />
-                            <el-step title="Step 2" description="Some description" />
-                            <el-step title="Step 3" description="Some description" />
-                            <el-step title="Step 4" description="Some description" />
-                          </el-steps>
+                          {{ gettersrecorCount }}
                         </el-card>
                       </el-tab-pane>
                       <el-tab-pane
                         name="listChatEntries"
                       >
                         <span slot="label"><i class="el-icon-s-comment" /> {{ $t('window.containerInfo.notes') }} </span>
-                        <el-card
-                          class="box-card"
-                          style="overflow: auto;height: 75vh;"
-                        >
-                          Notas <br>
-                          <el-input
-                            type="textarea"
-                            :rows="2"
-                            placeholder="Please input"
-                          />
-                        </el-card>
                       </el-tab-pane>
                     </el-tabs>
                   </el-card>
@@ -250,6 +251,8 @@ export default {
       show: false,
       isLoadingFromServer: false,
       listRecordNavigation: 0,
+      show3: false,
+      currentKey: 100,
       isShowedTabChildren: true,
       isShowedRecordPanel: false,
       isShowedRecordNavigation: this.$route.query.action === 'advancedQuery'
@@ -351,6 +354,38 @@ export default {
         return tab.isInsertRecord
       }
       return false
+    },
+    gettersListRecordLogs() {
+      return this.$store.getters.getRecordLogs.recorLogs
+    },
+    getTypeLogs() {
+      const reducer = this.gettersListRecordLogs.reduce((reducer, item) => {
+        if (!reducer.includes(item.eventTypeName)) {
+          reducer.push(item.eventTypeName)
+        }
+        return reducer
+      }, [])
+        .map(i => {
+          // agrup for logId
+          return {
+            logs: this.gettersListRecordLogs.filter(b => b.eventTypeName === i),
+            eventTypeName: i
+          }
+        })
+      console.log(reducer)
+      return reducer
+    },
+    gettersListWorkflow() {
+      return this.$store.getters.getWorkflow
+    },
+    gettersrecorCount() {
+      return 1
+    },
+    language() {
+      return this.$store.getters.language
+    },
+    getterShowContainerInfo() {
+      return this.$store.getters.getShowContainerInfo
     }
   },
   watch: {
@@ -364,8 +399,28 @@ export default {
     this.getWindow()
   },
   methods: {
+    showkey(key) {
+      if (key === this.currentKey) {
+        this.currentKey = 1000
+      } else {
+        this.currentKey = key
+      }
+      this.show3 = !this.show3
+    },
+    changeField(log) {
+      this.$store.dispatch('notifyPanelChange', {
+        newValues: log.oldDisplayValue,
+        isSendToServer: false,
+        isSendCallout: false,
+        isPrivateAccess: false
+      })
+    },
+    translateDate(value) {
+      return this.$d(new Date(value), 'long', this.language)
+    },
     conteInfo() {
       this.show = !this.show
+      this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
       if (this.show) {
         this.$store.dispatch('listRecordLogs', {
           tableName: this.$route.params.tableName,
