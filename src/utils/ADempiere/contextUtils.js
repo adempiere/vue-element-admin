@@ -45,15 +45,16 @@ export function getParentFields({ displayLogic, mandatoryLogic, readOnlyLogic, d
 
 /**
  * Parse Context String
- * @param {object} context
- *  - value: (REQUIRED) String to parsing
- *  - parentUuid: (REQUIRED from Window) UUID Window
- *  - containerUuid: (REQUIRED) UUID Tab, Process, SmartBrowser, Report and Form
- *  - columnName: (Optional if exists in value) Column name to search in context
+ * @param {string} value: (REQUIRED) String to parsing
+ * @param {string} parentUuid: (REQUIRED from Window) UUID Window
+ * @param {string} containerUuid: (REQUIRED) UUID Tab, Process, SmartBrowser, Report and Form
+ * @param {string} columnName: (Optional if exists in value) Column name to search in context
  * @param {boolean} isBoolToString, convert boolean values to string
  */
 export function parseContext(context, isBoolToString = false) {
   const store = require('@/store')
+  const getContext = (parametersToGetContext) => store.default.getters.getContext(parametersToGetContext)
+  // const isSQL = value.includes('@SQL=')
   var value = String(context.value)
   var valueSQL = {}
   if (isEmptyValue(value)) {
@@ -78,29 +79,29 @@ export function parseContext(context, isBoolToString = false) {
     inStr = inStr.substring(i + 1, inStr.length)	// from first @
     var j = inStr.indexOf('@') // next @
     if (j < 0) {
-      console.log('No second tag: ' + inStr)
-      return ''	//	no second tag
+      console.log(`No second tag: ${inStr}`)
+      return '' // no second tag
     }
 
     token = inStr.substring(0, j)
     context.columnName = token
 
-    var ctxInfo = store.default.getters.getContext(context)	// get context
+    var ctxInfo = getContext(context)	// get context
     if (isBoolToString && typeof ctxInfo === 'boolean') {
+      ctxInfo = 'N'
       if (ctxInfo) {
         ctxInfo = 'Y'
-      } else {
-        ctxInfo = 'N'
       }
     }
 
-    if ((ctxInfo === undefined || ctxInfo.length === 0) && (token.startsWith('#') || token.startsWith('$'))) {
+    if ((ctxInfo === undefined || ctxInfo.length === 0) &&
+       (token.startsWith('#') || token.startsWith('$'))) {
       context.parentUuid = undefined
       context.containerUuid = undefined
-      ctxInfo = store.default.getters.getContext(context)	// get global context
+      ctxInfo = getContext(context)	// get global context
     }
     if (ctxInfo === undefined || ctxInfo.length === 0) {
-      console.info('No Context for: ' + token)
+      console.info(`No Context for: ${token}`)
     } else {
       if (typeof ctxInfo === 'object') {
         outStr = ctxInfo
