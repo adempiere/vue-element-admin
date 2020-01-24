@@ -1,36 +1,5 @@
 <template>
-  <el-collapse v-if="metadata.isCollapsible" v-model="activeDocuments" accordion>
-    <el-collapse-item name="documents">
-      <template slot="title">
-        <i class="el-icon-document" style="margin-right: 4px;margin-left: 10px;" />
-        {{ $t('profile.PendingDocuments') }}
-      </template>
-      <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
-        <div class="recent-items">
-          <el-table :data="search.length ? filterResult(search) : documents" max-height="455" @row-click="handleClick">
-            <el-table-column
-              prop="recordCount"
-              width="60"
-            />
-            <el-table-column>
-              <template slot="header" slot-scope="scope">
-                <el-input
-                  v-model="search"
-                  size="mini"
-                  :metadata="scope"
-                  :placeholder="$t('table.dataTable.search')"
-                />
-              </template>
-              <template slot-scope="{row}">
-                <span>{{ row.name }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-card>
-    </el-collapse-item>
-  </el-collapse>
-  <el-card v-else class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+  <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
     <div class="recent-items">
       <el-table :data="search.length ? filterResult(search) : documents" max-height="455" @row-click="handleClick">
         <el-table-column
@@ -68,7 +37,6 @@ export default {
   },
   data() {
     return {
-      activeDocuments: this.metadata.isOpenByDefault ? 'documents' : undefined,
       documents: [],
       search: ''
     }

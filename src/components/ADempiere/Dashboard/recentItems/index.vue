@@ -1,40 +1,5 @@
 <template>
-  <el-collapse v-if="metadata.isCollapsible" v-model="activeRecentItems" accordion>
-    <el-collapse-item name="recentItems">
-      <template slot="title">
-        <i class="el-icon-time" style="margin-right: 4px;margin-left: 10px;" />
-        {{ $t('profile.recentItems') }}
-      </template>
-      <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
-        <div class="recent-items">
-          <el-table :data="search.length ? filterResult(search) : recentItems" max-height="455" @row-click="handleClick">
-            <el-table-column width="40">
-              <template slot-scope="{row}">
-                <svg-icon :icon-class="row.icon" class="icon-window" />
-              </template>
-            </el-table-column>
-            <el-table-column>
-              <template slot="header" slot-scope="scope" class="clearfix">
-                <el-input
-                  v-model="search"
-                  size="mini"
-                  :metadata="scope"
-                  :placeholder="$t('table.dataTable.search')"
-                />
-              </template>
-              <template slot-scope="{row}">
-                <span>{{ row.displayName }}</span>
-                <el-tag class="action-tag">{{ $t(`views.${row.action}`) }}</el-tag>
-                <br>
-                <span class="time">{{ translateDate(row.updated) }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-card>
-    </el-collapse-item>
-  </el-collapse>
-  <el-card v-else class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+  <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
     <div class="recent-items">
       <el-table :data="search.length ? filterResult(search) : recentItems" max-height="455" @row-click="handleClick">
         <el-table-column width="40">
@@ -76,7 +41,6 @@ export default {
   },
   data() {
     return {
-      activeRecentItems: this.metadata.isOpenByDefault ? 'recentItems' : undefined,
       recentItems: [],
       isLoaded: true,
       search: '',
