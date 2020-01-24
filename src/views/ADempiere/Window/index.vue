@@ -159,15 +159,16 @@
                       >
                         <span slot="label"><svg-icon icon-class="tree-table" /> {{ $t('window.containerInfo.changeLog') }} </span>
                         <el-card
-                          v-for="(logs, index) in getTypeLogs"
+                          v-for="(listLogs, index) in getTypeLogs"
                           :key="index"
                         >
                           <el-timeline>
                             <el-timeline-item
-                              v-for="(evenType, key) in logs.logs"
+                              v-for="(evenType, key) in listLogs.logs"
                               :key="key"
                               :timestamp="translateDate(evenType.logDate)"
                               placement="top"
+                              :color="listLogs.eventTypeName === 'UPDATE' ? 'rgb(22, 130, 230)' : '#52c384'"
                             >
                               <el-card shadow="hover" @click.native="changeField(evenType)">
                                 <div>
@@ -181,7 +182,7 @@
                                 <br>
                                 <el-collapse-transition>
                                   <div v-show="currentKey === key" :key="key" class="text item">
-                                    <span>{{ $t('window.containerInfo.eventType.update') }} {{ $t('window.containerInfo.eventType.field') }}<p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
+                                    <span><p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
                                   </div>
                                 </el-collapse-transition>
                               </el-card>
@@ -379,7 +380,6 @@ export default {
             eventTypeName: i
           }
         })
-      console.log(reducer)
       return reducer
     },
     gettersListWorkflow() {
