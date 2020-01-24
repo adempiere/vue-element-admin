@@ -583,7 +583,7 @@ const windowControl = {
           parentUuid: parentUuid,
           containerUuid: containerUuid,
           value: tab.query
-        }, true)
+        }).value
       }
 
       let parsedWhereClause = tab.whereClause
@@ -592,7 +592,7 @@ const windowControl = {
           parentUuid: parentUuid,
           containerUuid: containerUuid,
           value: tab.whereClause
-        }, true)
+        }).value
       }
 
       if (isReference) {
