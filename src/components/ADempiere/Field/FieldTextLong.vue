@@ -1,5 +1,5 @@
 <template>
-  <div :id="id" />
+  <div :id="id" :class="classDisable" />
 </template>
 
 <script>
@@ -32,6 +32,12 @@ export default {
     }
   },
   computed: {
+    classDisable() {
+      if (this.isDisabled) {
+        return 'isdisable'
+      }
+      return ''
+    },
     language() {
       // https://github.com/nhnent/tui.editor/tree/master/src/js/langs
       if (this.isEmptyValue(getLanguage())) {
@@ -40,11 +46,6 @@ export default {
       return getLanguage()
     },
     editorOptions() {
-      // const options = {
-      //   viewer: true,
-      //   height: '500px',
-      //   initialValue: '# content to be rendered'
-      // }
       const options = {
         previewStyle: 'vertical',
         useCommandShortcut: true,
@@ -94,10 +95,6 @@ export default {
           this.editor.setValue(oldValue)
         }
       }
-      console.log(this.editor)
-    },
-    editorOptions(options) {
-      console.lg(options)
     },
     language(langValue) {
       this.destroyEditor()
@@ -107,13 +104,13 @@ export default {
       this.editor.height(heightValue)
     },
     isDisabled(value) {
+      this.classDisable
       this.destroyEditor()
       this.initEditor()
     }
   },
   mounted() {
     this.initEditor()
-    console.log(this.editor.preview.isViewer)
   },
   destroyed() {
     this.destroyEditor()
@@ -169,9 +166,13 @@ export default {
       this.editor.setHtml(value)
     },
     getHtml() {
-      console.log(this.editor.getHtml())
       return this.editor.getHtml()
     }
   }
 }
 </script>
+<style>
+  .isdisable {
+    background: #F5F7FA;
+  }
+</style>
