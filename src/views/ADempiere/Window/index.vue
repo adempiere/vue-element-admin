@@ -173,7 +173,7 @@
                                 <div>
                                   <span>{{ evenType.userName }}</span>
                                   <el-dropdown style="float: right;">
-                                    <span class="el-dropdown-link" @click="showkey(key)">
+                                    <span class="el-dropdown-link" style="color: #1682e6" @click="showkey(key)">
                                       {{ $t('window.containerInfo.changeDetail') }}
                                     </span>
                                   </el-dropdown>
@@ -181,7 +181,7 @@
                                 <br>
                                 <el-collapse-transition>
                                   <div v-show="currentKey === key" :key="key" class="text item">
-                                    <span>  {{ $t('window.containerInfo.eventType.update') }} {{ $t('window.containerInfo.eventType.field') }} {{ evenType.displayColumnName }}<br> {{ $t('window.containerInfo.eventType.newValue') }} {{ evenType.newDisplayValue }} <br> {{ $t('window.containerInfo.eventType.oldValue') }} {{ evenType.oldDisplayValue }}</span>
+                                    <span>{{ $t('window.containerInfo.eventType.update') }} {{ $t('window.containerInfo.eventType.field') }}<p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
                                   </div>
                                 </el-collapse-transition>
                               </el-card>
