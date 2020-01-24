@@ -170,8 +170,15 @@
                               placement="top"
                             >
                               <el-card shadow="hover" @click.native="changeField(evenType)">
-                                <span>{{ evenType.userName }}</span>
-                                <el-button type="text" style="float: right; padding: 3px 0" @click="showkey(key)"> {{ $t('window.containerInfo.changeDetail') }} </el-button>
+                                <div>
+                                  <span>{{ evenType.userName }}</span>
+                                  <el-dropdown style="float: right;">
+                                    <span class="el-dropdown-link" @click="showkey(key)">
+                                      {{ $t('window.containerInfo.changeDetail') }}
+                                    </span>
+                                  </el-dropdown>
+                                </div>
+                                <br>
                                 <el-collapse-transition>
                                   <div v-show="currentKey === key" :key="key" class="text item">
                                     <span>  {{ $t('window.containerInfo.eventType.update') }} {{ $t('window.containerInfo.eventType.field') }} {{ evenType.displayColumnName }}<br> {{ $t('window.containerInfo.eventType.newValue') }} {{ evenType.newDisplayValue }} <br> {{ $t('window.containerInfo.eventType.oldValue') }} {{ evenType.oldDisplayValue }}</span>
