@@ -51,14 +51,26 @@ export function getParentFields({ displayLogic, mandatoryLogic, readOnlyLogic, d
  * @param {string} columnName: (Optional if exists in value) Column name to search in context
  * @param {boolean} isBoolToString, convert boolean values to string
  */
-export function parseContext(context, isBoolToString = false) {
+export function parseContext({
+  parentUuid,
+  containerUuid,
+  columnName,
+  value,
+  isSQL = false
+}) {
   const store = require('@/store')
   const getContext = (parametersToGetContext) => store.default.getters.getContext(parametersToGetContext)
-  // const isSQL = value.includes('@SQL=')
-  var value = String(context.value)
-  var valueSQL = {}
+  const isBooleanToString = value.includes('@SQL=')
+  let isError = false
+  const errorsList = []
+  value = String(value)
+
   if (isEmptyValue(value)) {
-    return ''
+    return {
+      value: undefined,
+      isError: true,
+      errorsList: []
+    }
   }
   if (value.includes('@SQL=')) {
     value = value.replace('@SQL=', '')
@@ -72,22 +84,31 @@ export function parseContext(context, isBoolToString = false) {
   var inStr = value
   var outStr = ''
 
-  var i = inStr.indexOf('@')
+  let firstIndexTag = inStr.indexOf('@')
 
-  while (i !== -1) {
-    outStr = outStr + inStr.substring(0, i) // up to @
-    inStr = inStr.substring(i + 1, inStr.length)	// from first @
-    var j = inStr.indexOf('@') // next @
-    if (j < 0) {
+  while (firstIndexTag !== -1) {
+    outStr = outStr + inStr.substring(0, firstIndexTag) // up to @
+    inStr = inStr.substring(firstIndexTag + 1, inStr.length) // from first @
+    const secondIndexTag = inStr.indexOf('@') // next @
+    // no exists second tag
+    if (secondIndexTag < 0) {
       console.log(`No second tag: ${inStr}`)
-      return '' // no second tag
+      return {
+        value: undefined,
+        isError: true,
+        errorsList
+      }
     }
 
-    token = inStr.substring(0, j)
-    context.columnName = token
+    token = inStr.substring(0, secondIndexTag)
+    columnName = token
 
-    var ctxInfo = getContext(context)	// get context
-    if (isBoolToString && typeof ctxInfo === 'boolean') {
+    var ctxInfo = getContext({
+      parentUuid,
+      containerUuid,
+      columnName
+    }) // get context
+    if (isBooleanToString && typeof ctxInfo === 'boolean') {
       ctxInfo = 'N'
       if (ctxInfo) {
         ctxInfo = 'Y'
@@ -95,13 +116,15 @@ export function parseContext(context, isBoolToString = false) {
     }
 
     if ((ctxInfo === undefined || ctxInfo.length === 0) &&
-       (token.startsWith('#') || token.startsWith('$'))) {
-      context.parentUuid = undefined
-      context.containerUuid = undefined
-      ctxInfo = getContext(context)	// get global context
+      (token.startsWith('#') || token.startsWith('$'))) {
+      ctxInfo = getContext({
+        columnName
+      }) // get global context
     }
     if (ctxInfo === undefined || ctxInfo.length === 0) {
       console.info(`No Context for: ${token}`)
+      isError = true
+      errorsList.push(token)
     } else {
       if (typeof ctxInfo === 'object') {
         outStr = ctxInfo
@@ -110,16 +133,64 @@ export function parseContext(context, isBoolToString = false) {
       }
     }
 
-    inStr = inStr.substring(j + 1, inStr.length)	// from second @
-    i = inStr.indexOf('@')
+    inStr = inStr.substring(secondIndexTag + 1, inStr.length) // from second @
+    firstIndexTag = inStr.indexOf('@')
   }
   if (typeof ctxInfo !== 'object') {
-    outStr = outStr + inStr	// add the rest of the string
+    outStr = outStr + inStr // add the rest of the string
   }
-  if (context.isSQL) {
-    valueSQL['query'] = outStr
-    valueSQL['value'] = ctxInfo
-    return valueSQL
+  if (isSQL) {
+    return {
+      query: outStr,
+      value: ctxInfo
+    }
   }
-  return outStr
-}	//	parseContext
+  return {
+    value: outStr,
+    isError,
+    errorsList
+  }
+} // parseContext
+
+/**
+ *  Get Preference.
+ *  <pre>
+ *      0)  Current Setting
+ *      1)  Window Preference
+ *      2)  Global Preference
+ *      3)  Login settings
+ *      4)  Accounting settings
+ *  </pre>
+ *  @param  ctx context
+ *  @param  AD_Window_ID window no
+ *  @param  context     Entity to search
+ *  @param  system      System level preferences (vs. user defined)
+ *  @return preference value
+ */
+export function getPreference(ctx, AD_Window_ID, context, system) {
+  if (ctx === null || context === null) {
+    console.warn('Require Context')
+  }
+
+  let retValue = null
+
+  if (system) {
+    //  System Preferences
+    // Login setting
+    retValue = ctx.getProperty('#' + context)
+    if (retValue == null) {
+      //  Accounting setting
+      retValue = ctx.getProperty('$' + context)
+    }
+  } else {
+    //  User Preferences
+    // Window Pref
+    retValue = ctx.getProperty('P' + AD_Window_ID + '|' + context)
+    if (retValue == null) {
+      //  Global Pref
+      retValue = ctx.getProperty('P|' + context)
+    }
+  }
+
+  return retValue == null ? '' : retValue
+} //  getPreference

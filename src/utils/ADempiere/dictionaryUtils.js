@@ -30,7 +30,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
       ...moreAttributes,
       columnName: fieldToGenerate.columnName,
       value: parsedDefaultValue
-    })
+    }).value
   }
   parsedDefaultValue = parsedValueComponent({
     fieldType: componentReference.type,
@@ -45,7 +45,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
       ...moreAttributes,
       columnName: fieldToGenerate.columnName,
       value: fieldToGenerate.defaultValueTo
-    })
+    }).value
   }
   parsedDefaultValueTo = parsedValueComponent({
     fieldType: componentReference.type,

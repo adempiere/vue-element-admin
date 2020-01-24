@@ -468,13 +468,6 @@ export const contextMixin = {
       } else if (action.type === 'process') {
         // run process associate with view (window or browser)
         this.showModal(action)
-        if (this.panelType === 'process' || this.panelType === 'browser' || this.panelType === 'report') {
-          this.$store.dispatch('resetPanelToNew', {
-            parentUuid: this.parentUuid,
-            containerUuid: this.containerUuid,
-            panelType: this.panelType
-          })
-        }
       } else if (action.type === 'dataAction') {
         if (action.action === 'undoModifyData' && Boolean(!this.getterDataLog) && this.getterWindowOldRoute) {
           this.$router.push({

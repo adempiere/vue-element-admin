@@ -513,7 +513,7 @@ const panel = {
               columnName,
               value: sqlStatement,
               isSQL: isSQL
-            })
+            }).value
             if (isSQL && String(sqlStatement) === '[object Object]') {
               sqlStatement = sqlStatement.query
             }
@@ -540,7 +540,8 @@ const panel = {
         parentUuid,
         containerUuid,
         dependentFieldsList: field.dependentFieldsList,
-        fieldsList: fieldList
+        fieldsList: fieldList,
+        isSendToServer
       })
 
       // the field has not changed, then the action is broken
@@ -688,11 +689,12 @@ const panel = {
         }
       }
     },
-    changeDependentFieldsList({ commit, getters }, {
+    changeDependentFieldsList({ commit, dispatch, getters }, {
       parentUuid,
       containerUuid,
       dependentFieldsList = [],
-      fieldsList = []
+      fieldsList = [],
+      isSendToServer
     }) {
       if (isEmptyValue(dependentFieldsList)) {
         // breaks if there are no field dependencies
@@ -745,7 +747,22 @@ const panel = {
             parentUuid,
             containerUuid,
             value: fieldDependent.defaultValue
-          })
+          }).value
+          if (isSendToServer && defaultValue !== fieldDependent.defaultValue) {
+            dispatch('getRecordBySQL', {
+              field: fieldDependent,
+              query: defaultValue
+            })
+              .then(response => {
+                dispatch('notifyFieldChange', {
+                  parentUuid,
+                  containerUuid,
+                  panelType: fieldDependent.panelType,
+                  columnName: fieldDependent.columnName,
+                  newValue: response.key
+                })
+              })
+          }
         }
         commit('changeFieldLogic', {
           field: fieldDependent,
@@ -1044,8 +1061,8 @@ const panel = {
               containerUuid: containerUuid,
               columnName: fieldItem.columnName,
               value: fieldItem.defaultValue,
-              isSQL: isSQL
-            })
+              isSQL
+            }).value
           }
 
           valueToReturn = parsedValueComponent({
@@ -1058,7 +1075,7 @@ const panel = {
 
           // add display column to default
           if (fieldItem.componentPath === 'FieldSelect' && fieldItem.value === valueToReturn) {
-            attributesObject['DisplayColumn_' + fieldItem.columnName] = fieldItem.displayColumn
+            attributesObject[`DisplayColumn_${fieldItem.columnName}`] = fieldItem.displayColumn
           }
 
           return {
