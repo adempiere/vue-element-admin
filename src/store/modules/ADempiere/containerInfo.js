@@ -1,5 +1,4 @@
 import { requestListRecordsLogs, requestListWorkflowsLogs, requestListRecordChats, requestListChatEntries } from '@/api/ADempiere/data'
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 const containerInfo = {
   state: {
@@ -30,7 +29,12 @@ const containerInfo = {
       const page_token = 0
       return requestListWorkflowsLogs({ tableName, recordId, page_size, page_token })
         .then(response => {
-          commit('addListWorkflow', response)
+          var workflowLog = {
+            recordCount: response.recordCount,
+            workflowLogsList: response.workflowLogsList,
+            nextPageToken: response.nextPageToken
+          }
+          commit('addListWorkflow', workflowLog)
         })
         .catch(error => {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
@@ -53,28 +57,39 @@ const containerInfo = {
           console.warn(`Error getting List Record Logs: ${error.message}. Code: ${error.code}.`)
         })
     },
-    listChatEntries({ commit, state }, params) {
+    listChatEntries({ commit, state, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const page_size = 0
       const page_token = 0
       return requestListRecordChats({ tableName, recordId, page_size, page_token })
         .then(response => {
-          console.log('requestListRecordChats response =>', response)
-          commit('addListChatEntries', response)
+          var listRecordChats = {
+            recordChatsList: response.recordChatsList,
+            recordCount: response.recordCount,
+            nextPageToken: response.nextPageToken
+          }
+          dispatch('listRecordChat', {
+            chatUuid: response.recordChatsList[0].chatUuid
+          })
+          commit('addListRecordChats', listRecordChats)
         })
         .catch(error => {
           console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
         })
     },
     listRecordChat({ commit, state }, params) {
-      const uuid = params.uuid
+      const uuid = params.chatUuid
       const page_size = 0
       const page_token = 0
       return requestListChatEntries({ uuid, page_size, page_token })
         .then(response => {
-          console.log('requestListChatEntries response =>', response)
-          commit('addListChatEntries', response)
+          var lisChat = {
+            chatEntriesList: response.chatEntriesList,
+            recordCount: response.recordCount,
+            nextPageToken: response.nextPageToken
+          }
+          commit('addListChatEntries', lisChat)
         })
         .catch(error => {
           console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
@@ -86,50 +101,10 @@ const containerInfo = {
       return state.listworkflowLog.workflowLogsList
     },
     getRecordLogs: (state) => {
-      const recordLogs = state.listRecordLogs.recorLogs
-      if (isEmptyValue(recordLogs)) {
-        var listRecord = [{
-          columnName: 'Compañía',
-          description: 'Compañía',
-          displayColumnName: 'Compañía',
-          eventType: 0,
-          eventTypeName: 'INSERT',
-          logDate: 0,
-          logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
-          newDisplayValue: '',
-          newValue: '',
-          oldDisplayValue: '',
-          oldValue: '',
-          recordId: 100000,
-          sessionUuid: '',
-          tableName: '',
-          transactionName: '',
-          userName: '',
-          userUuid: ''
-        },
-        {
-          columnName: 'Compañía',
-          description: 'Compañía',
-          displayColumnName: 'Compañía',
-          eventType: 0,
-          eventTypeName: 'INSERT',
-          logDate: 0,
-          logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
-          newDisplayValue: '',
-          newValue: '',
-          oldDisplayValue: '',
-          oldValue: '',
-          recordId: 100000,
-          sessionUuid: '',
-          tableName: '',
-          transactionName: '',
-          userName: '',
-          userUuid: ''
-        }]
-        return listRecord
-      } else {
-        return state.listRecordLogs
-      }
+      return state.listRecordLogs
+    },
+    getListRecordChats: (state) => {
+      return state.listRecordChats
     },
     getChatEntries: (state) => {
       return state.listChatEntries
