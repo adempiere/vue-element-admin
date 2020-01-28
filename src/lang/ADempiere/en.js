@@ -273,15 +273,7 @@ export default {
       notes: 'Notes',
       changeLog: 'Change Log',
       workflowLog: 'Workflow Log',
-      changeDetail: 'Detalle del cambio',
-      eventType: {
-        insert: 'Insert',
-        update: 'Update',
-        delete: 'Delete',
-        field: 'The Fiel',
-        newValue: 'New Value',
-        oldValue: 'Old Value'
-      }
+      changeDetail: 'Detalle del cambio'
     }
   },
   data: {
