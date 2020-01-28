@@ -271,6 +271,9 @@ export default {
     this.$store.dispatch('setWindowOldRoute', {
       path: from.path,
       fullPath: from.fullPath,
+      params: {
+        ...from.params
+      },
       query: {
         ...from.query
       }
@@ -279,7 +282,6 @@ export default {
   },
   computed: {
     defaultPorcentSplitPane() {
-      // isShowedRecordPanel ? (isShowedRecordNavigation ? 100 : 50) : (isShowedRecordNavigation ? 50 : -1)
       if (this.isShowedRecordPanel) {
         if (this.isShowedRecordNavigation) {
           return 100
