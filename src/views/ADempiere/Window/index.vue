@@ -211,9 +211,36 @@
                         >
                           <el-card
                             class="box-card"
-                            style="overflow: auto;height: 50vh;"
                           >
-                            {{ gettersrecorCount }}
+                            <el-timeline>
+                              <el-timeline-item
+                                v-for="(workflow,index) in gettersListWorkflow"
+                                :key="index"
+                                :timestamp="translateDate(workflow.logDate)"
+                                placement="top"
+                              >
+                                <el-card shadow="hover">
+                                  <div slot="header" class="clearfix">
+                                    <span> {{ workflow.workflowName }} </span>
+                                  </div>
+                                  <div>
+                                    <el-steps
+                                      :space="200"
+                                      :active="workflow.workflowState"
+                                      align-center
+                                      process-status="process"
+                                    >
+                                      <el-step
+                                        v-for="(nodeList, key) in workflow.workflowEventsList"
+                                        :key="key"
+                                        :title="nodeList.nodeName"
+                                        :description="$t('login.userName')+ '' + nodeList.userName"
+                                      />
+                                    </el-steps>
+                                  </div>
+                                </el-card>
+                              </el-timeline-item>
+                            </el-timeline>
                           </el-card>
                         </div>
                         <div
@@ -443,48 +470,6 @@ export default {
       }
     },
     getTypeLogs() {
-      // if (this.isEmptyValue(this.gettersListRecordLogs)) {
-      //   var listRecord = [{
-      //     columnName: 'Compañía',
-      //     description: 'Compañía',
-      //     displayColumnName: 'Compañía',
-      //     eventType: 0,
-      //     eventTypeName: 'INSERT',
-      //     logDate: 0,
-      //     logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
-      //     newDisplayValue: '',
-      //     newValue: '',
-      //     oldDisplayValue: '',
-      //     oldValue: '',
-      //     recordId: 100000,
-      //     sessionUuid: '',
-      //     tableName: '',
-      //     transactionName: '',
-      //     userName: '',
-      //     userUuid: ''
-      //   },
-      //   {
-      //     columnName: 'Compañía',
-      //     logId: 1245,
-      //     description: 'Compañía',
-      //     displayColumnName: 'Compañía',
-      //     eventType: 0,
-      //     eventTypeName: 'INSERT',
-      //     logDate: 0,
-      //     logUuid: 'e0c976cc-b49e-40fd-b52b-f2f5020436f6',
-      //     newDisplayValue: '',
-      //     newValue: '',
-      //     oldDisplayValue: '',
-      //     oldValue: '',
-      //     recordId: 100000,
-      //     sessionUuid: '',
-      //     tableName: '',
-      //     transactionName: '',
-      //     userName: '',
-      //     userUuid: ''
-      //   }]
-      //   return listRecord
-      // } else {
       const reducer = this.gettersListRecordLogs.reduce((reducer, item) => {
         if (!reducer.includes(item.logId)) {
           reducer.push(item.logId)

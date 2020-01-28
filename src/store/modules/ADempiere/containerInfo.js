@@ -1,15 +1,19 @@
-import { requestListRecordsLogs, requestListWorkflowsLogs, requestListRecordChats, requestListChatEntries } from '@/api/ADempiere/data'
+import { requestListRecordsLogs, requestListWorkflowsLogs, requestListWorkflows, requestListRecordChats, requestListChatEntries } from '@/api/ADempiere/data'
 
 const containerInfo = {
   state: {
     listworkflowLog: [],
     listRecordLogs: [],
     listRecordChats: [],
-    listChatEntries: []
+    listChatEntries: [],
+    ListWorkflows: []
   },
   mutations: {
     addListWorkflow(state, payload) {
       state.listworkflowLog = payload
+    },
+    addListWorkflows(state, payload) {
+      state.listworkflows = payload
     },
     addListRecordLogs(state, payload) {
       state.listRecordLogs = payload
@@ -22,12 +26,15 @@ const containerInfo = {
     }
   },
   actions: {
-    listWorkflowLogs({ commit, state }, params) {
+    listWorkflowLogs({ commit, state, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
-      const page_size = 0
-      const page_token = 0
-      return requestListWorkflowsLogs({ tableName, recordId, page_size, page_token })
+      const pageSize = 0
+      const pageToken = 0
+      dispatch('listWorkflows', {
+        tableName: tableName
+      })
+      return requestListWorkflowsLogs({ tableName, recordId, pageSize, pageToken })
         .then(response => {
           var workflowLog = {
             recordCount: response.recordCount,
@@ -40,12 +47,25 @@ const containerInfo = {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
         })
     },
+    listWorkflows({ commit, state }, params) {
+      const tableName = params.tableName
+      const pageSize = 0
+      const pageToken = 0
+      return requestListWorkflows({ tableName, pageSize, pageToken })
+        .then(response => {
+          console.log(response)
+          commit('addListWorkflows', response)
+        })
+        .catch(error => {
+          console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
+        })
+    },
     listRecordLogs({ commit, state }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
-      const page_size = 0
-      const page_token = 0
-      return requestListRecordsLogs({ tableName, recordId, page_size, page_token })
+      const pageSize = 0
+      const pageToken = 0
+      return requestListRecordsLogs({ tableName, recordId, pageSize, pageToken })
         .then(response => {
           var listRecord = {
             recordCount: response.recordCount,
@@ -60,9 +80,9 @@ const containerInfo = {
     listChatEntries({ commit, state, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
-      const page_size = 0
-      const page_token = 0
-      return requestListRecordChats({ tableName, recordId, page_size, page_token })
+      const pageSize = 0
+      const pageToken = 0
+      return requestListRecordChats({ tableName, recordId, pageSize, pageToken })
         .then(response => {
           var listRecordChats = {
             recordChatsList: response.recordChatsList,
@@ -80,9 +100,9 @@ const containerInfo = {
     },
     listRecordChat({ commit, state }, params) {
       const uuid = params.chatUuid
-      const page_size = 0
-      const page_token = 0
-      return requestListChatEntries({ uuid, page_size, page_token })
+      const pageSize = 0
+      const pageToken = 0
+      return requestListChatEntries({ uuid, pageSize, pageToken })
         .then(response => {
           var lisChat = {
             chatEntriesList: response.chatEntriesList,
