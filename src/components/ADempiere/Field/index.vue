@@ -15,43 +15,22 @@
     :xl="sizeFieldResponsive.xl"
     :class="classField"
   >
-    <!-- POPOVER FOR FIELD CONTEXT INFO -->
-    <el-popover
-      v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
-      ref="contextOptions"
-      placement="top"
-      width="300"
-      trigger="click"
-    >
-      <p
-        class="pre-formatted"
-        v-html="field.contextInfo.messageText.msgText"
-      />
-      <div>
-        <span class="custom-tittle-popover">
-          {{ field.name }}
-        </span>
-        <template v-if="!isEmptyValue(field.help)">
-          : {{ field.help }}
-        </template>
-      </div>
-      <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-        <el-button
-          :key="index"
-          type="text"
-          @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })"
-        >
-          {{ $t('table.ProcessActivity.zoomIn') }}
-        </el-button>
-      </template>
-    </el-popover>
     <el-form-item
       :required="isMandatory()"
     >
       <template slot="label">
-        <span v-popover:contextOptions>
+        <field-context-info
+          v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+          :name="field.name"
+          :field-value="field.value"
+          :help="field.help"
+          :context-info="field.contextInfo"
+          :reference="field.reference"
+          :column-name="field.columnName"
+        />
+        <template v-else>
           {{ isFieldOnly() }}
-        </span>
+        </template>
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
           :name="field.name"
@@ -99,11 +78,11 @@
 </template>
 
 <script>
+import FieldContextInfo from '@/components/ADempiere/Field/fieldContextInfo'
 import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
-import { showMessage } from '@/utils/ADempiere/notification'
 
 /**
  * This is the base component for linking the components according to the
@@ -112,6 +91,7 @@ import { showMessage } from '@/utils/ADempiere/notification'
 export default {
   name: 'Field',
   components: {
+    FieldContextInfo,
     FieldTranslated
   },
   props: {
@@ -250,9 +230,6 @@ export default {
         return true
       }
       return false
-    },
-    permissionRoutes() {
-      return this.$store.getters.permission_routes
     }
   },
   watch: {
@@ -265,7 +242,6 @@ export default {
     this.field = this.metadataField
   },
   methods: {
-    showMessage,
     isDisplayed() {
       if (this.isAdvancedQuery) {
         return this.field.isShowedFromUser
@@ -315,7 +291,7 @@ export default {
       return this.field.isMandatory || this.field.isMandatoryFromLogic
     },
     isFieldOnly() {
-      if (this.inTable || this.field.isFieldOnly || this.verifyIsFieldOnly(this.field.displayType)) {
+      if (this.inTable || this.field.isFieldOnly || this.verifyIsFieldOnly()) {
         return undefined
       }
       return this.field.name
@@ -323,12 +299,11 @@ export default {
     /**
      * TODO: Evaluate the current field with the only fields contained in the
      * constant FIELD_ONLY
-     * @param  {integer} id [identifier of the type of isDisplayed]
      * @return {boolean}
      */
-    verifyIsFieldOnly(type) {
+    verifyIsFieldOnly() {
       const field = FIELD_ONLY.find(itemField => {
-        if (type === itemField.id) {
+        if (this.field.displayType === itemField.id) {
           return true
         }
       })
@@ -337,28 +312,6 @@ export default {
     focus(columnName) {
       if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[columnName].activeFocus(columnName)
-      }
-    },
-    redirect({ window, columnName, value }) {
-      this.$store.dispatch('getWindowByUuid', {
-        routes: this.permissionRoutes,
-        windowUuid: window.uuid
-      })
-      const windowRoute = this.$store.getters.getWindowRoute(window.uuid)
-      if (windowRoute) {
-        this.$router.push({
-          name: windowRoute.name,
-          query: {
-            action: 'advancedQuery',
-            tabParent: 0,
-            [columnName]: value
-          }
-        })
-      } else {
-        this.showMessage({
-          type: 'error',
-          message: this.$t('notifications.noRoleAccess')
-        })
       }
     }
   }
