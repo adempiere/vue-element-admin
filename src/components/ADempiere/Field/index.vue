@@ -1,4 +1,3 @@
-
 <template>
   <!--
     this v-show is to indicate that if the field is not shown,
@@ -83,6 +82,8 @@ import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { showMessage } from '@/utils/ADempiere/notification'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
 /**
  * This is the base component for linking the components according to the
@@ -312,6 +313,30 @@ export default {
     focus(columnName) {
       if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[columnName].activeFocus(columnName)
+      }
+    },
+    redirect({ window, columnName, value }) {
+      const viewSearch = recursiveTreeSearch({
+        treeData: this.permissionRoutes,
+        attributeValue: window.uuid,
+        attributeName: 'meta',
+        secondAttribute: 'uuid',
+        attributeChilds: 'children'
+      })
+      if (viewSearch) {
+        this.$router.push({
+          name: viewSearch.name,
+          query: {
+            action: 'advancedQuery',
+            tabParent: 0,
+            [columnName]: value
+          }
+        })
+      } else {
+        this.showMessage({
+          type: 'error',
+          message: this.$t('notifications.noRoleAccess')
+        })
       }
     }
   }
