@@ -340,7 +340,7 @@ export const contextMixin = {
         return
       }
 
-      if (this.panelType === 'window') {
+      if (this.panelType === 'window' && !this.isEmptyValue(this.$route.params.tableName)) {
         this.$store.dispatch('getPrivateAccessFromServer', {
           tableName: this.$route.params.tableName,
           recordId: this.$route.params.recordId
@@ -567,7 +567,7 @@ export const contextMixin = {
         if (String(this.valuesPanelToShare).length) {
           shareLink += this.valuesPanelToShare
         }
-        if (this.$route.query.action && this.$route.query.action !== 'create-new' && this.$route.query.action !== 'reference' && this.$route.query.action !== 'advancedQuery') {
+        if (this.$route.query.action && this.$route.query.action !== 'create-new' && this.$route.query.action !== 'reference' && this.$route.query.action !== 'advancedQuery' && this.$route.query.action !== 'criteria') {
           shareLink = window.location.href
         }
       }
