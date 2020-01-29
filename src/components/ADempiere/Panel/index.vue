@@ -376,17 +376,20 @@ export default {
             fieldItem.isShowedFromUser = true
             fieldItem.value = parsedValueComponent({
               fieldType: fieldItem.componentPath,
-              value: route.query[fieldItem.columnName]
+              value: route.query[fieldItem.columnName],
+              referenceType: fieldItem.referenceType
             })
             if (String(route.query.isAdvancedQuery) === String(fieldItem.isAdvancedQuery)) {
               fieldItem.value = parsedValueComponent({
                 fieldType: fieldItem.componentPath,
-                value: route.query[fieldItem.columnName]
+                value: route.query[fieldItem.columnName],
+                referenceType: fieldItem.referenceType
               })
               if (fieldItem.isRange && this.$route.query[`${fieldItem.columnName}_To`]) {
                 fieldItem.valueTo = parsedValueComponent({
                   fieldType: fieldItem.componentPath,
-                  value: route.query[`${fieldItem.columnName}_To`]
+                  value: route.query[`${fieldItem.columnName}_To`],
+                  referenceType: fieldItem.referenceType
                 })
               }
             }
@@ -484,12 +487,26 @@ export default {
           .then(response => {
             if (response.length && !parameters.isNewRecord) {
               this.dataRecords = response[0]
-              if (this.$route.query.action === 'create-new') {
+              if (this.$route.query.action === 'criteria') {
                 this.$router.push({
                   name: this.$route.name,
                   query: {
-                    ...this.$route.query
+                    ...this.$route.query,
+                    action: this.dataRecordsq
+                  },
+                  params: {
+                    tableName: this.metadata.tableName,
+                    recordId: this.dataRecords[`${this.metadata.tableName}_ID`]
                   }
+                })
+                this.$store.dispatch('notifyPanelChange', {
+                  parentUuid: this.parentUuid,
+                  containerUuid: this.containerUuid,
+                  newValues: this.dataRecords,
+                  isSendToServer: false,
+                  isSendCallout: false,
+                  fieldList: this.fieldList,
+                  panelType: this.panelType
                 })
               } else if (this.$route.query.action === 'reference') {
                 this.$router.push({
