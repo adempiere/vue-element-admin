@@ -21,12 +21,14 @@
                             :icon="iconIsShowedRecordNavigation"
                             circle
                             style="margin-left: 10px;"
+                            class="el-button-window"
                             @click="handleChangeShowedRecordNavigation()"
                           />
                           <el-button
                             v-show="!isPanel"
                             :icon="iconIsShowedAside"
                             circle
+                            class="el-button-window"
                             @click="handleChangeShowedPanel()"
                           />
                         </div>
@@ -42,6 +44,7 @@
                             v-show="isPanel"
                             icon="el-icon-caret-left"
                             circle
+                            class="el-button-window"
                             @click="handleChangeShowedPanel()"
                           />
                         </div>
@@ -77,7 +80,7 @@
                           class="tab-window"
                         />
                         <div style="right: 0%;top: 40%;position: absolute;">
-                          <el-button v-show="!show" type="info" icon="el-icon-info" circle style="float: right;" @click="conteInfo" />
+                          <el-button v-show="!show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
@@ -92,6 +95,7 @@
                               icon="el-icon-caret-top"
                               :class="classIsMobile"
                               circle
+                              type="primary"
                               @click="handleChangeShowedTabChildren()"
                             />
                           </div>
@@ -108,6 +112,7 @@
                               :icon="iconIsShowedRecordNavigation"
                               class="open-navegation"
                               circle
+                              type="primary"
                               @click="handleChangeShowedRecordNavigation()"
                             />
                           </div>
@@ -124,6 +129,7 @@
                             <el-button
                               icon="el-icon-caret-bottom"
                               circle
+                              class="el-button-window"
                               @click="handleChangeShowedTabChildren()"
                             />
                           </div>
@@ -145,17 +151,15 @@
         <SplitArea :size="show ? 30 : 0">
           <el-main>
             <div style="top: 40%;position: absolute;">
-              <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" @click="conteInfo" />
+              <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
             <div id="example-1">
               <transition name="slide-fade">
                 <p v-if="show">
                   <el-card class="box-card">
-                    <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tabs v-model="activeInfo" @tab-click="handleClick">
                       <el-tab-pane
-                        :label="$t('window.containerInfo.changeLog')"
                         name="listRecordLogs"
-                        style="overflow: auto;max-height: 74vh;"
                       >
                         <span slot="label"><svg-icon icon-class="tree-table" /> {{ $t('window.containerInfo.changeLog') }} </span>
                         <div
@@ -165,32 +169,30 @@
                             v-for="(listLogs, index) in getTypeLogs"
                             :key="index"
                           >
-                            <el-timeline>
-                              <el-timeline-item
-                                v-for="(evenType, key) in listLogs.logs"
-                                :key="key"
-                                :timestamp="translateDate(evenType.logDate)"
-                                placement="top"
-                                :color="listLogs.eventType === 1 ? 'rgb(22, 130, 230)' : 'rgba(67, 147, 239, 1)'"
-                              >
-                                <el-card shadow="hover" @click.native="changeField(evenType)">
-                                  <div>
-                                    <span>{{ evenType.userName }}</span>
-                                    <el-dropdown style="float: right;">
-                                      <span class="el-dropdown-link" style="color: #1682e6" @click="showkey(key)">
-                                        {{ $t('window.containerInfo.changeDetail') }}
-                                      </span>
-                                    </el-dropdown>
-                                  </div>
-                                  <br>
-                                  <el-collapse-transition>
-                                    <div v-show="currentKey === key" :key="key" class="text item">
-                                      <span><p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
+                            <el-scrollbar wrap-class="scroll-window-log-change">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(evenType, key) in listLogs.logs"
+                                  :key="key"
+                                  :timestamp="translateDate(evenType.logDate)"
+                                  placement="top"
+                                  :color="listLogs.eventType === 1 ? 'rgb(22, 130, 230)' : 'rgba(67, 147, 239, 1)'"
+                                >
+                                  <el-card shadow="hover" @click.native="changeField(evenType)">
+                                    <div>
+                                      <span>{{ evenType.userName }}</span>
+                                      <el-link type="primary" style="float: right;" @click="showkey(key, index)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
                                     </div>
-                                  </el-collapse-transition>
-                                </el-card>
-                              </el-timeline-item>
-                            </el-timeline>
+                                    <br>
+                                    <el-collapse-transition>
+                                      <div v-show="(currentKey === key) && (typeAction === index)" :key="key" class="text item">
+                                        <span><p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
+                                      </div>
+                                    </el-collapse-transition>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
                           </el-card>
                         </div>
                         <div
@@ -212,35 +214,49 @@
                           <el-card
                             class="box-card"
                           >
-                            <el-timeline>
-                              <el-timeline-item
-                                v-for="(workflow,index) in gettersListWorkflow"
-                                :key="index"
-                                :timestamp="translateDate(workflow.logDate)"
-                                placement="top"
-                              >
-                                <el-card shadow="hover">
-                                  <div slot="header" class="clearfix">
-                                    <span> {{ workflow.workflowName }} </span>
-                                  </div>
-                                  <div>
-                                    <el-steps
-                                      :space="200"
-                                      :active="workflow.workflowState"
-                                      align-center
-                                      process-status="process"
-                                    >
-                                      <el-step
-                                        v-for="(nodeList, key) in workflow.workflowEventsList"
-                                        :key="key"
-                                        :title="nodeList.nodeName"
-                                        :description="$t('login.userName')+ '' + nodeList.userName"
-                                      />
-                                    </el-steps>
-                                  </div>
-                                </el-card>
-                              </el-timeline-item>
-                            </el-timeline>
+                            <el-scrollbar wrap-class="scroll-window-log-workflow">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(workflow,index) in gettersListWorkflow"
+                                  :key="index"
+                                  :timestamp="translateDate(workflow.logDate)"
+                                  placement="top"
+                                >
+                                  <el-card shadow="hover">
+                                    <div slot="header" class="clearfix">
+                                      <span> {{ workflow.workflowName }} </span>
+                                    </div>
+                                    <div>
+                                      <el-steps
+                                        :active="workflow.workflowEventsList.length"
+                                        align-center
+                                        finish-status="success"
+                                      >
+                                        <el-step
+                                          v-for="(nodeList, key) in workflow.workflowEventsList"
+                                          :key="key"
+                                        >
+                                          <span slot="title">
+                                            <el-popover
+                                              placement="top-start"
+                                              width="400"
+                                              trigger="hover"
+                                            >
+                                              <p><b><i> {{ $t('login.userName') }}:</i></b> {{ nodeList.userName }} </p>
+                                              <p v-if="!isEmptyValue(nodeList.textMessage)"><b><i> {{ $t('window.containerInfo.logWorkflow.message') }}:</i></b> {{ nodeList.textMessage }} </p>
+                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.responsible') }}:</i></b>  {{ nodeList.responsibleName }} </p>
+                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.workflowName') }}:</i></b>  {{ nodeList.workflowStateName }} </p>
+                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.timeElapsed') }}::</i></b>  {{ nodeList.timeElapsed }} </p>
+                                              <el-button slot="reference" type="text"> {{ nodeList.nodeName }} </el-button>
+                                            </el-popover>
+                                          </span>
+                                        </el-step>
+                                      </el-steps>
+                                    </div>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
                           </el-card>
                         </div>
                         <div
@@ -263,21 +279,23 @@
                             <div slot="header" class="clearfix">
                               <span>{{ $t('window.containerInfo.notes') }} {{ gettersLisRecordChats[0].description }} </span>
                             </div>
-                            <el-timeline>
-                              <el-timeline-item
-                                v-for="(chats, key) in gettersLischat"
-                                :key="key"
-                                :timestamp="translateDate(chats.logDate)"
-                                placement="top"
-                              >
-                                <el-card shadow="hover">
-                                  <div>
-                                    <span>{{ chats.userName }}</span>
-                                    <span>{{ chats.characterData }}</span>
-                                  </div>
-                                </el-card>
-                              </el-timeline-item>
-                            </el-timeline>
+                            <el-scrollbar wrap-class="scroll-window-log-chat">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(chats, key) in gettersLischat"
+                                  :key="key"
+                                  :timestamp="translateDate(chats.logDate)"
+                                  placement="top"
+                                >
+                                  <el-card shadow="hover">
+                                    <div>
+                                      <span>{{ chats.userName }}</span>
+                                      <span>{{ chats.characterData }}</span>
+                                    </div>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
                           </el-card>
                         </div>
                         <div
@@ -337,11 +355,11 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
-      activeName: 'listRecordLogs',
+      activeInfo: 'listRecordLogs',
       show: false,
+      typeAction: 0,
       isLoadingFromServer: false,
       listRecordNavigation: 0,
-      show3: false,
       currentKey: 100,
       isShowedTabChildren: true,
       isShowedRecordPanel: false,
@@ -472,21 +490,20 @@ export default {
       }
     },
     getTypeLogs() {
-      const reducer = this.gettersListRecordLogs.reduce((reducer, item) => {
-        if (!reducer.includes(item.logId)) {
-          reducer.push(item.logId)
+      const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
+        if (!groupLog.includes(item.eventType)) {
+          groupLog.push(item.eventType)
         }
-        return reducer
+        return groupLog
       }, [])
         .map(i => {
           // agrup for logId
           return {
-            logs: this.gettersListRecordLogs.filter(b => b.logId === i),
-            logId: i
+            logs: this.gettersListRecordLogs.filter(b => b.eventType === i),
+            eventType: i
           }
         })
-      return reducer
-      // }
+      return groupLog
     },
     gettersLischat() {
       return this.$store.getters.getChatEntries.chatEntriesList
@@ -518,13 +535,13 @@ export default {
     this.getWindow()
   },
   methods: {
-    showkey(key) {
-      if (key === this.currentKey) {
+    showkey(key, index) {
+      if (key === this.currentKey && index === this.typeAction) {
         this.currentKey = 1000
       } else {
         this.currentKey = key
+        this.typeAction = index
       }
-      this.show3 = !this.show3
     },
     changeField(log) {
       this.$store.dispatch('notifyPanelChange', {
@@ -773,7 +790,7 @@ export default {
     top: 2%;
     left: 1%;
   }
-  .el-button {
+  .el-button-window {
     cursor: pointer;
     background: #FFFFFF;
     border: 1px solid #DCDFE6;
@@ -801,6 +818,15 @@ export default {
 }
 </style>
 <style>
+  .scroll-window-log-change {
+    max-height: 45vh !important;
+  }
+  .scroll-window-log-workflow {
+    max-height: 68vh !important;
+  }
+  .scroll-window-log-chat {
+    max-height: 68vh !important;
+  }
   .el-card__header {
     background: rgba(245, 247, 250, 0.75);
     padding: 18px 20px;
