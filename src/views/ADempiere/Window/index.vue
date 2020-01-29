@@ -662,6 +662,9 @@ export default {
 </script>
 
 <style scoped>
+  .scroll {
+    max-height: 60vh;
+  }
   /* Enter and leave animations can use different */
   /* durations and timing functions.              */
   .slide-fade-enter-active {
