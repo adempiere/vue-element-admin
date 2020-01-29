@@ -186,7 +186,7 @@
                                     <br>
                                     <el-collapse-transition>
                                       <div v-show="(currentKey === key) && (typeAction === index)" :key="key" class="text item">
-                                        <span><p><b><i> {{ evenType.displayColumnName }}:  </i></b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
+                                        <span><p><b> {{ evenType.displayColumnName }}: </b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
                                       </div>
                                     </el-collapse-transition>
                                   </el-card>
@@ -242,11 +242,11 @@
                                               width="400"
                                               trigger="hover"
                                             >
-                                              <p><b><i> {{ $t('login.userName') }}:</i></b> {{ nodeList.userName }} </p>
-                                              <p v-if="!isEmptyValue(nodeList.textMessage)"><b><i> {{ $t('window.containerInfo.logWorkflow.message') }}:</i></b> {{ nodeList.textMessage }} </p>
-                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.responsible') }}:</i></b>  {{ nodeList.responsibleName }} </p>
-                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.workflowName') }}:</i></b>  {{ nodeList.workflowStateName }} </p>
-                                              <p><b><i> {{ $t('window.containerInfo.logWorkflow.timeElapsed') }}::</i></b>  {{ nodeList.timeElapsed }} </p>
+                                              <p><b> {{ $t('login.userName') }}:</b> {{ nodeList.userName }} </p>
+                                              <p v-if="!isEmptyValue(nodeList.textMessage)"><b> {{ $t('window.containerInfo.logWorkflow.message') }}:</b> {{ nodeList.textMessage }} </p>
+                                              <p><b> {{ $t('window.containerInfo.logWorkflow.responsible') }}:</b>  {{ nodeList.responsibleName }} </p>
+                                              <p><b> {{ $t('window.containerInfo.logWorkflow.workflowName') }}:</b>  {{ nodeList.workflowStateName }} </p>
+                                              <p><b> {{ $t('window.containerInfo.logWorkflow.timeElapsed') }}:</b>  {{ nodeList.timeElapsed }} </p>
                                               <el-button slot="reference" type="text"> {{ nodeList.nodeName }} </el-button>
                                             </el-popover>
                                           </span>
