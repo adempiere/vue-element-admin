@@ -165,35 +165,32 @@
                         <div
                           v-if="getIsChangeLog"
                         >
-                          <el-card
-                            v-for="(listLogs, index) in getTypeLogs"
-                            :key="index"
-                          >
-                            <el-scrollbar wrap-class="scroll-window-log-change">
-                              <el-timeline>
-                                <el-timeline-item
-                                  v-for="(evenType, key) in listLogs.logs"
-                                  :key="key"
-                                  :timestamp="translateDate(evenType.logDate)"
-                                  placement="top"
-                                  :color="listLogs.eventType === 1 ? 'rgb(22, 130, 230)' : 'rgba(67, 147, 239, 1)'"
-                                >
-                                  <el-card shadow="hover" @click.native="changeField(evenType)">
-                                    <div>
-                                      <span>{{ evenType.userName }}</span>
-                                      <el-link type="primary" style="float: right;" @click="showkey(key, index)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
+                          <el-scrollbar wrap-class="scroll-window-log-change">
+                            <el-timeline>
+                              <el-timeline-item
+                                v-for="(listLogs, index) in getTypeLogs"
+                                :key="index"
+                                placement="top"
+                                :timestamp="translateDate(listLogs.logs[0].logDate)"
+                                color="#008fd3"
+                              >
+                                <el-card shadow="hover" class="clearfix">
+                                  <div>
+                                    {{ listLogs.logs[0].userName }}
+                                    <el-link type="primary" style="float: right;" @click="showkey(index)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
+                                  </div>
+                                  <br>
+                                  <el-collapse-transition>
+                                    <div v-show="(currentKey === index)">
+                                      <span v-for="(list, key) in listLogs.logs" :key="key">
+                                        <p><b> {{ list.displayColumnName }} :</b> <strike> {{ list.oldDisplayValue }} </strike> {{ list.newDisplayValue }} </p>
+                                      </span>
                                     </div>
-                                    <br>
-                                    <el-collapse-transition>
-                                      <div v-show="(currentKey === key) && (typeAction === index)" :key="key" class="text item">
-                                        <span><p><b> {{ evenType.displayColumnName }}: </b> <strike>{{ evenType.oldDisplayValue }} </strike>     {{ evenType.newDisplayValue }}</p></span>
-                                      </div>
-                                    </el-collapse-transition>
-                                  </el-card>
-                                </el-timeline-item>
-                              </el-timeline>
-                            </el-scrollbar>
-                          </el-card>
+                                  </el-collapse-transition>
+                                </el-card>
+                              </el-timeline-item>
+                            </el-timeline>
+                          </el-scrollbar>
                         </div>
                         <div
                           v-else
@@ -491,16 +488,16 @@ export default {
     },
     getTypeLogs() {
       const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
-        if (!groupLog.includes(item.eventType)) {
-          groupLog.push(item.eventType)
+        if (!groupLog.includes(item.logId)) {
+          groupLog.push(item.logId)
         }
         return groupLog
       }, [])
-        .map(i => {
+        .map(log => {
           // agrup for logId
           return {
-            logs: this.gettersListRecordLogs.filter(b => b.eventType === i),
-            eventType: i
+            logs: this.gettersListRecordLogs.filter(change => change.logId === log),
+            logId: log
           }
         })
       return groupLog
@@ -822,7 +819,7 @@ export default {
 </style>
 <style>
   .scroll-window-log-change {
-    max-height: 45vh !important;
+    max-height: 74vh !important;
   }
   .scroll-window-log-workflow {
     max-height: 68vh !important;
