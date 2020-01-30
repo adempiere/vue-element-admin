@@ -54,7 +54,8 @@ export default {
   watch: {
     'fieldAttributes.operator'(newValue) {
       this.value = newValue
-      if (!this.isEmptyValue(this.fieldAttributes.value)) {
+      if (!this.isEmptyValue(this.fieldAttributes.value) ||
+        ['NULL', 'NOT_NULL'].includes(this.fieldAttributes.operator)) {
         this.handleChange(this.fieldAttributes.value)
       }
     }

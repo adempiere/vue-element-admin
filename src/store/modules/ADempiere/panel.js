@@ -218,7 +218,7 @@ const panel = {
             })
           })
             .catch(error => {
-              console.warn(`Error getting Advanced Query (changeFieldShowedFromUser): ${error.message}. Code: ${error.code}`)
+              console.warn(`Error getting Advanced Query (changeFieldShowedFromUser): ${error.message}. Code: ${error.code}.`)
             })
         }
       }
@@ -608,7 +608,7 @@ const panel = {
                     message: error.message,
                     type: 'error'
                   })
-                  console.warn(`Create Entity Error ${error.code}: ${error.message}`)
+                  console.warn(`Create Entity Error ${error.code}: ${error.message}.`)
                 })
             } else {
               dispatch('updateCurrentEntity', {
@@ -650,7 +650,9 @@ const panel = {
         }
       } else {
         if (panelType === 'table' || isAdvancedQuery) {
-          if (field.isShowedFromUser && (field.oldValue !== field.value || field.operator !== field.oldOperator)) {
+          if (field.isShowedFromUser && (field.oldValue !== field.value ||
+            ['NULL', 'NOT_NULL'].includes(field.operator) ||
+            field.operator !== field.oldOperator)) {
             // change action to advanced query on field value is changed in this panel
             if (router.currentRoute.query.action !== 'advancedQuery') {
               router.push({
@@ -693,7 +695,7 @@ const panel = {
                 }
               })
               .catch(error => {
-                console.warn(`Error getting Advanced Query (notifyFieldChange): ${error.message}. Code: ${error.code}`)
+                console.warn(`Error getting Advanced Query (notifyFieldChange): ${error.message}. Code: ${error.code}.`)
               })
           }
         }
@@ -1295,7 +1297,8 @@ const panel = {
                   return true
                 }
               } else {
-                if (!isEmptyValue(fieldItem.value)) {
+                if (!isEmptyValue(fieldItem.value) || (isAdvancedQuery &&
+                   ['NULL', 'NOT_NULL'].includes(fieldItem.operator))) {
                   return true
                 }
               }
