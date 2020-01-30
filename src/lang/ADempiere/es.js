@@ -287,7 +287,7 @@ export default {
     BETWEEN: 'Entre ">-<',
     NOT_NULL: 'Diferente de nulo',
     NULL: 'Es nulo',
-    IN: 'En la lista',
-    NOT_IN: 'Diferente de la lista'
+    IN: 'En',
+    NOT_IN: 'Diferente de en'
   }
 }

@@ -312,7 +312,7 @@ export default {
     BETWEEN: 'Between',
     NOT_NULL: 'Is not null',
     NULL: 'Is null',
-    IN: 'In list',
-    NOT_IN: 'Not in list'
+    IN: 'In',
+    NOT_IN: 'Not in'
   }
 }

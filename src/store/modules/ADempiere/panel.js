@@ -137,17 +137,18 @@ const panel = {
       groupField
     }) {
       const panel = getters.getPanel(containerUuid, isAdvancedQuery)
-      var newPanel = panel
-      var showsFieldsWithValue = false
-      var hiddenFieldsWithValue = false
-      var newFields = panel.fieldList.map(itemField => {
+      const newPanel = panel
+      let showsFieldsWithValue = false
+      let hiddenFieldsWithValue = false
+      newPanel.fieldList = panel.fieldList.map(itemField => {
         const isMandatory = itemField.isMandatory || itemField.isMandatoryFromLogic
         if (!isMandatory && fieldIsDisplayed(itemField)) {
           if (itemField.groupAssigned === groupField) {
             if (fieldsUser.length && fieldsUser.includes(itemField.columnName)) {
               // if it isShowedFromUser it is false, and it has some value, it means
               // that it is going to show, therefore the SmartBrowser must be searched
-              if (!isEmptyValue(itemField.value) && !itemField.isShowedFromUser) {
+              if ((!isEmptyValue(itemField.value) && !itemField.isShowedFromUser) ||
+                (isAdvancedQuery && ['NULL', 'NOT_NULL'].includes(itemField.operator))) {
                 showsFieldsWithValue = true
               }
               if (isAdvancedQuery) {
@@ -158,7 +159,8 @@ const panel = {
             }
             // if it isShowedFromUser it is true, and it has some value, it means
             // that it is going to hidden, therefore the SmartBrowser must be searched
-            if (!isEmptyValue(itemField.value) && itemField.isShowedFromUser) {
+            if ((!isEmptyValue(itemField.value) && itemField.isShowedFromUser) ||
+              (isAdvancedQuery && ['NULL', 'NOT_NULL'].includes(itemField.operator))) {
               hiddenFieldsWithValue = true
             }
             if (isAdvancedQuery) {
@@ -171,7 +173,8 @@ const panel = {
             if (fieldsUser.length && fieldsUser.includes(itemField.columnName)) {
               // if it isShowedFromUser it is false, and it has some value, it means
               // that it is going to show, therefore the SmartBrowser must be searched
-              if (!isEmptyValue(itemField.value) && !itemField.isShowedFromUser) {
+              if ((!isEmptyValue(itemField.value) && !itemField.isShowedFromUser) ||
+                (isAdvancedQuery && ['NULL', 'NOT_NULL'].includes(itemField.operator))) {
                 showsFieldsWithValue = true
               }
               if (isAdvancedQuery) {
@@ -180,7 +183,8 @@ const panel = {
               itemField.isShowedFromUser = true
               return itemField
             }
-            if (!isEmptyValue(itemField.value) && itemField.isShowedFromUser) {
+            if ((!isEmptyValue(itemField.value) && itemField.isShowedFromUser) ||
+              (isAdvancedQuery && ['NULL', 'NOT_NULL'].includes(itemField.operator))) {
               hiddenFieldsWithValue = true
             }
             if (isAdvancedQuery) {
@@ -191,29 +195,29 @@ const panel = {
         }
         return itemField
       })
-      panel.fieldList = newFields
       commit('changePanel', {
         containerUuid,
-        newPanel,
-        panel
+        panel,
+        newPanel
       })
+
       if (showsFieldsWithValue || hiddenFieldsWithValue) {
         // Updated record result
         if (panel.panelType === 'browser') {
           dispatch('getBrowserSearch', {
-            containerUuid: panel.uuid,
+            containerUuid,
             isClearSelection: true
           })
         } else if (panel.panelType === 'table' && panel.isAdvancedQuery) {
           dispatch('getObjectListFromCriteria', {
             parentUuid: panel.parentUuid,
-            containerUuid: panel.uuid,
+            containerUuid,
             tableName: panel.tableName,
             query: panel.query,
             whereClause: panel.whereClause,
             conditionsList: getters.getParametersToServer({
               containerUuid,
-              isAdvancedQuery: true,
+              isAdvancedQuery,
               isEvaluateMandatory: false
             })
           })
