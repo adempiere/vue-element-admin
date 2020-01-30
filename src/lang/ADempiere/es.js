@@ -276,18 +276,18 @@ export default {
   },
   operators: {
     operator: 'Operador de comparación',
-    EQUAL: 'Igual que "="',
-    NOT_EQUAL: 'Diferente que "<>"',
-    LIKE: 'Como "~"',
-    NOT_LIKE: 'Diferente de como "!~"',
+    EQUAL: 'Igual a "="',
+    NOT_EQUAL: 'Diferente a "<>"',
+    LIKE: 'Contiene "~"',
+    NOT_LIKE: 'No contiene "!~"',
     GREATER: 'Mayor que ">"',
     GREATER_EQUAL: 'Mayor o igual que ">="',
     LESS: 'Menor que "<"',
     LESS_EQUAL: 'Menor o igual que "<="',
-    BETWEEN: 'Entre ">-<',
-    NOT_NULL: 'Diferente de nulo',
-    NULL: 'Es nulo',
-    IN: 'En',
-    NOT_IN: 'Diferente de en'
+    BETWEEN: 'Entre ">-<"',
+    NULL: 'No tiene valor',
+    NOT_NULL: 'Tiene un valor',
+    IN: 'Incluye',
+    NOT_IN: 'No incluye'
   }
 }

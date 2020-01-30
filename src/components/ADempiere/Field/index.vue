@@ -6,7 +6,7 @@
   <el-col
     v-if="!inTable"
     v-show="isDisplayed()"
-    key="panel-template"
+    key="is-panel-template"
     :xs="sizeFieldResponsive.xs"
     :sm="sizeFieldResponsive.sm"
     :md="sizeFieldResponsive.md"
@@ -49,7 +49,7 @@
   <component
     :is="componentRender"
     v-else
-    key="table-template"
+    key="is-table-template"
     :class="classField"
     :metadata="fieldAttributes"
     :value-model="recordDataFields"
@@ -124,6 +124,9 @@ export default {
   computed: {
     // load the component that is indicated in the attributes of received property
     componentRender() {
+      if (this.isSelectCreated) {
+        return () => import(`@/components/ADempiere/Field/FieldSelectMultiple`)
+      }
       return () => import(`@/components/ADempiere/Field/${this.field.componentPath}`)
     },
     fieldAttributes() {
@@ -136,8 +139,14 @@ export default {
         required: this.isMandatory(),
         readonly: this.isReadOnly(),
         displayed: this.isDisplayed(),
-        disabled: !this.field.isActive
+        disabled: !this.field.isActive,
+        isSelectCreated: this.isSelectCreated
       }
+    },
+    isSelectCreated() {
+      return this.field.isAdvancedQuery &&
+        !['FieldYesNo', 'FieldSelect', 'FieldBinary'].includes(this.field.componentPath) &&
+        ['IN', 'NOT_IN'].includes(this.field.operator)
     },
     getWidth() {
       return this.$store.getters.getWidthLayout

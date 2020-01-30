@@ -9,6 +9,7 @@
     :class="classStyle"
     clearable
     :multiple="isSelectMultiple"
+    :allow-create="metadata.isSelectCreated"
     :collapse-tags="!isSelectMultiple"
     :disabled="isDisabled"
     @change="preHandleChange"
@@ -113,13 +114,19 @@ export default {
   watch: {
     isSelectMultiple(isMultiple) {
       if (isMultiple) {
-        let valueInArray = []
+        const valueInArray = []
         if (!this.isEmptyValue(this.value)) {
-          valueInArray = [
-            this.value
-          ]
+          valueInArray.push(this.value)
         }
         this.value = valueInArray
+      } else {
+        if (Array.isArray(this.value)) {
+          if (this.value.length) {
+            this.value = this.value[0]
+          } else {
+            this.value = undefined
+          }
+        }
       }
     },
     valueModel(value) {
@@ -258,12 +265,11 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
   .custom-field-select {
     width: 100%;
   }
-</style>
-<style lang="scss">
+
   .custom-field-select-multiple {
     overflow: auto;
     max-height: 100px;

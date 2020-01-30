@@ -473,8 +473,8 @@ const panel = {
      * @param {array}   withOutColumnNames
      */
     notifyFieldChange({ commit, dispatch, getters }, {
-      parentUuid, containerUuid, panelType = 'window', isAdvancedQuery = false, columnName,
-      newValue, valueTo, displayColumn,
+      parentUuid, containerUuid, panelType = 'window', isAdvancedQuery = false,
+      columnName, newValue, valueTo, displayColumn,
       isSendToServer = true, isSendCallout = true,
       isChangedOldValue = false, withOutColumnNames = []
     }) {
@@ -483,18 +483,20 @@ const panel = {
       // get field
       const field = fieldList.find(fieldItem => fieldItem.columnName === columnName)
 
-      newValue = parsedValueComponent({
-        fieldType: field.componentPath,
-        referenceType: field.referenceType,
-        value: newValue
-      })
-
-      if (field.isRange) {
-        valueTo = parsedValueComponent({
+      if (!(isAdvancedQuery && ['IN', 'NOT_IN'].includes(field.operator))) {
+        newValue = parsedValueComponent({
           fieldType: field.componentPath,
           referenceType: field.referenceType,
-          value: valueTo
+          value: newValue
         })
+
+        if (field.isRange) {
+          valueTo = parsedValueComponent({
+            fieldType: field.componentPath,
+            referenceType: field.referenceType,
+            value: valueTo
+          })
+        }
       }
 
       if (!(panelType === 'table' || isAdvancedQuery)) {
@@ -591,7 +593,7 @@ const panel = {
             })
           }
           if (field.panelType === 'window' && fieldIsDisplayed(field)) {
-            var uuid = getters.getUuid(containerUuid)
+            const uuid = getters.getUuid(containerUuid)
             if (isEmptyValue(uuid)) {
               dispatch('createNewEntity', {
                 parentUuid,
@@ -789,6 +791,9 @@ const panel = {
         })
       })
     },
+    /**
+     * @deprecated used changeFieldAttribure
+     */
     notifyFieldChangeDisplayColumn({ commit, getters }, {
       containerUuid,
       isAdvancedQuery,

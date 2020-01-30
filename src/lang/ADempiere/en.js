@@ -273,7 +273,7 @@ export default {
       notes: 'Notes',
       changeLog: 'Change Log',
       workflowLog: 'Workflow Log',
-      changeDetail: 'Detalle del cambio',
+      changeDetail: 'Change detail',
       logWorkflow: {
         message: 'Message',
         responsible: 'Responsible',
@@ -303,16 +303,16 @@ export default {
     operator: 'Comparison operator',
     EQUAL: 'Equal to "="',
     NOT_EQUAL: 'Not equal to "<>"',
-    LIKE: 'Like',
-    NOT_LIKE: 'Not like',
+    LIKE: 'Like "~"',
+    NOT_LIKE: 'Not like "!~"',
     GREATER: 'Greater than ">"',
     GREATER_EQUAL: 'Greater than equal to ">="',
     LESS: 'Less than "<"',
     LESS_EQUAL: 'Less than equal to "<="',
-    BETWEEN: 'Between',
+    BETWEEN: 'Between ">-<"',
     NOT_NULL: 'Is not null',
     NULL: 'Is null',
-    IN: 'In',
-    NOT_IN: 'Not in'
+    IN: 'Include',
+    NOT_IN: 'Not include'
   }
 }
