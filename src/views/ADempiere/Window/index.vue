@@ -5,7 +5,7 @@
   >
     <el-container style="height: 86vh;">
       <Split>
-        <SplitArea :size="!show ? 100 : 70" :min-size="100">
+        <SplitArea :size="!show ? 100 : 50" :min-size="100">
           <el-aside width="100%">
             <split-pane :min-percent="10" :default-percent="defaultPorcentSplitPane" split="vertical">
               <template>
@@ -148,7 +148,7 @@
             </split-pane>
           </el-aside>
         </SplitArea>
-        <SplitArea :size="show ? 30 : 0">
+        <SplitArea :size="show ? 50 : 0">
           <el-main>
             <div style="top: 40%;position: absolute;">
               <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
@@ -168,21 +168,21 @@
                           <el-scrollbar wrap-class="scroll-window-log-change">
                             <el-timeline>
                               <el-timeline-item
-                                v-for="(listLogs, index) in getTypeLogs"
-                                :key="index"
+                                v-for="(listLogs, key) in gettersListRecordLogs"
+                                :key="key"
+                                :timestamp="translateDate(listLogs.logDate)"
                                 placement="top"
-                                :timestamp="translateDate(listLogs.logs[0].logDate)"
                                 color="#008fd3"
                               >
                                 <el-card shadow="hover" class="clearfix">
                                   <div>
-                                    {{ listLogs.logs[0].userName }}
-                                    <el-link type="primary" style="float: right;" @click="showkey(index)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
+                                    {{ listLogs.userName }}
+                                    <el-link type="primary" style="float: right;" @click="showkey(key)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
                                   </div>
                                   <br>
                                   <el-collapse-transition>
-                                    <div v-show="(currentKey === index)">
-                                      <span v-for="(list, key) in listLogs.logs" :key="key">
+                                    <div v-show="(currentKey === key)">
+                                      <span v-for="(list, index) in listLogs.changeLogs" :key="index">
                                         <p><b> {{ list.displayColumnName }} :</b> <strike> {{ list.oldDisplayValue }} </strike> {{ list.newDisplayValue }} </p>
                                       </span>
                                     </div>
