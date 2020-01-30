@@ -43,6 +43,9 @@ const panel = {
     changeFieldList(state, payload) {
       payload.fieldList = payload.newFieldList
     },
+    changeField(state, payload) {
+      payload.field = payload.newField
+    },
     changeFieldValue(state, payload) {
       payload.field.oldValue = payload.field.value
       payload.field.value = payload.newValue
@@ -208,7 +211,7 @@ const panel = {
             tableName: panel.tableName,
             query: panel.query,
             whereClause: panel.whereClause,
-            conditions: getters.getParametersToServer({
+            conditionsList: getters.getParametersToServer({
               containerUuid,
               isAdvancedQuery: true,
               isEvaluateMandatory: false
@@ -472,9 +475,9 @@ const panel = {
       isChangedOldValue = false, withOutColumnNames = []
     }) {
       const panel = getters.getPanel(containerUuid, isAdvancedQuery)
-      var fieldList = panel.fieldList
+      const fieldList = panel.fieldList
       // get field
-      var field = fieldList.find(fieldItem => fieldItem.columnName === columnName)
+      const field = fieldList.find(fieldItem => fieldItem.columnName === columnName)
 
       newValue = parsedValueComponent({
         fieldType: field.componentPath,
@@ -647,7 +650,7 @@ const panel = {
         }
       } else {
         if (panelType === 'table' || isAdvancedQuery) {
-          if (field.isShowedFromUser && field.oldValue !== field.value) {
+          if (field.isShowedFromUser && (field.oldValue !== field.value || field.operator !== field.oldOperator)) {
             // change action to advanced query on field value is changed in this panel
             if (router.currentRoute.query.action !== 'advancedQuery') {
               router.push({
@@ -663,13 +666,20 @@ const panel = {
               tableName: panel.tableName,
               query: panel.query,
               whereClause: panel.whereClause,
-              conditions: getters.getParametersToServer({
+              conditionsList: getters.getParametersToServer({
                 containerUuid,
                 isAdvancedQuery: true,
                 isEvaluateMandatory: false
               })
             })
               .then(response => {
+                commit('changeField', {
+                  field,
+                  newField: {
+                    ...field,
+                    oldOperator: field.operator
+                  }
+                })
                 if (response && response.length) {
                   dispatch('notifyPanelChange', {
                     parentUuid,
@@ -841,6 +851,24 @@ const panel = {
       commit('changePanel', {
         panel: panel,
         newPanel: newPanel
+      })
+    },
+    changeFieldAttribure({ commit, getters }, {
+      containerUuid,
+      isAdvancedQuery,
+      columnName,
+      field,
+      attributeName,
+      attributeValue
+    }) {
+      if (isEmptyValue(field)) {
+        field = getters.getFieldFromColumnName({ containerUuid, isAdvancedQuery, columnName })
+      }
+      const newField = field
+      newField[attributeName] = attributeValue
+      commit('changeField', {
+        field,
+        newField
       })
     },
     dictionaryResetCache({ commit }) {
@@ -1231,10 +1259,10 @@ const panel = {
       if (fieldList.length <= 0) {
         fieldList = getters.getFieldsListFromPanel(containerUuid, isAdvancedQuery)
       }
-      var parametersRange = []
+      const parametersRange = []
 
       // filter fields
-      var parametersList = fieldList
+      let parametersList = fieldList
         .filter(fieldItem => {
           // columns to exclude
           if (withOutColumnNames.includes(fieldItem.columnName)) {
@@ -1256,7 +1284,7 @@ const panel = {
 
           // evaluate displayed fields
           if (isEvaluateDisplayed) {
-            var isDisplayed = fieldIsDisplayed(fieldItem) && (fieldItem.isShowedFromUser || isMandatory)
+            let isDisplayed = fieldIsDisplayed(fieldItem) && (fieldItem.isShowedFromUser || isMandatory)
             if (isAdvancedQuery) {
               isDisplayed = fieldItem.isShowedFromUser
             }
@@ -1280,8 +1308,8 @@ const panel = {
       // conever parameters
       parametersList = parametersList
         .map(parameterItem => {
-          var value = row ? row[parameterItem.columnName] : parameterItem.value
-          var valueTo = row ? row[`${parameterItem.columnName}_To`] : parameterItem.valueTo
+          let value = row ? row[parameterItem.columnName] : parameterItem.value
+          let valueTo = row ? row[`${parameterItem.columnName}_To`] : parameterItem.valueTo
           let values = []
           if (Array.isArray(value)) {
             values = value
@@ -1307,9 +1335,10 @@ const panel = {
 
           return {
             columnName: parameterItem.columnName,
-            value: value,
+            value,
             isRange: parameterItem.isRange,
-            values: values
+            values,
+            operator: isAdvancedQuery ? parameterItem.operator : undefined
           }
         })
 

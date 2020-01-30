@@ -18,22 +18,24 @@
       :required="isMandatory()"
     >
       <template slot="label">
-        <field-context-info
-          v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+        <field-operator-comparison
+          v-if="isAdvancedQuery && isDisplayed()"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
         />
-        <template v-else>
+        <field-context-info
+          v-else-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+          :field-attributes="fieldAttributes"
+          :field-value="field.value"
+        />
+        <span v-else>
           {{ isFieldOnly() }}
-        </template>
+        </span>
+
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
-          :name="field.name"
-          :help="field.help"
-          :container-uuid="containerUuid"
-          :column-name="field.columnName"
+          :field-attributes="fieldAttributes"
           :record-uuid="field.optionCRUD"
-          :table-name="field.tableName"
         />
       </template>
       <component
@@ -57,6 +59,7 @@
 <script>
 import FieldContextInfo from '@/components/ADempiere/Field/fieldContextInfo'
 import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
+import FieldOperatorComparison from '@/components/ADempiere/Field/fieldOperatorComparison'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
@@ -71,7 +74,8 @@ export default {
   name: 'Field',
   components: {
     FieldContextInfo,
-    FieldTranslated
+    FieldTranslated,
+    FieldOperatorComparison
   },
   props: {
     parentUuid: {
