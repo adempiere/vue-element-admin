@@ -20,15 +20,17 @@
       <template slot="label">
         <field-operator-comparison
           v-if="isAdvancedQuery && isDisplayed()"
+          key="is-field-operator-comparison"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
         />
         <field-context-info
           v-else-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+          key="is-field-context-info"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
         />
-        <span v-else>
+        <span v-else key="is-field-name">
           {{ isFieldOnly() }}
         </span>
 
@@ -145,7 +147,7 @@ export default {
     },
     isSelectCreated() {
       return this.field.isAdvancedQuery &&
-        !['FieldYesNo', 'FieldSelect', 'FieldBinary'].includes(this.field.componentPath) &&
+        !['FieldBinary', 'FieldDate', 'FieldSelect', 'FieldYesNo'].includes(this.field.componentPath) &&
         ['IN', 'NOT_IN'].includes(this.field.operator)
     },
     getWidth() {

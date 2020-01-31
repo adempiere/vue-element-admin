@@ -1255,7 +1255,7 @@ const panel = {
     },
     /**
      * Getter converter selection params with value format
-     * [{ columname: name key, value: value to send }]
+     * [{ columname: name key, value: value to send, operator }]
      */
     getParametersToServer: (state, getters) => ({
       containerUuid,
@@ -1264,7 +1264,6 @@ const panel = {
       withOutColumnNames = [],
       isEvaluateDisplayed = true,
       isEvaluateMandatory = true,
-      isConvertedDateToTimestamp = false,
       isAdvancedQuery = false
     }) => {
       if (fieldList.length <= 0) {
@@ -1321,22 +1320,26 @@ const panel = {
       parametersList = parametersList
         .map(parameterItem => {
           let value = row ? row[parameterItem.columnName] : parameterItem.value
-          let valueTo = row ? row[`${parameterItem.columnName}_To`] : parameterItem.valueTo
+          const valueTo = row ? row[`${parameterItem.columnName}_To`] : parameterItem.valueTo
           let values = []
-          if (Array.isArray(value)) {
-            values = value
+
+          if (isAdvancedQuery && ['IN', 'NOT_IN'].includes(parameterItem.operator)) {
+            if (Array.isArray(value)) {
+              values = value.map(itemValue => {
+                const isMandatory = !isAdvancedQuery && (parameterItem.isMandatory || parameterItem.isMandatoryFromLogic)
+                return parsedValueComponent({
+                  fieldType: parameterItem.componentPath,
+                  value: itemValue,
+                  referenceType: parameterItem.referenceType,
+                  isMandatory
+                })
+              })
+            } else {
+              values.push(value)
+            }
             value = undefined
           }
 
-          if (isConvertedDateToTimestamp) {
-            if (['FieldDate', 'FieldTime'].includes(parameterItem.componentPath) &&
-              Object.prototype.toString.call(value) === '[object Date]') {
-              value = value.getTime()
-              if (valueTo) {
-                valueTo = valueTo.getTime()
-              }
-            }
-          }
           // only to fields type Time, Datea and DateTime
           if (parameterItem.isRange && parameterItem.componentPath !== 'FieldNumber') {
             parametersRange.push({
