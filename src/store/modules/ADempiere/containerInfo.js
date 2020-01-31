@@ -6,7 +6,8 @@ const containerInfo = {
     listRecordLogs: [],
     listRecordChats: [],
     listChatEntries: [],
-    ListWorkflows: []
+    listWorkflows: [],
+    note: []
   },
   mutations: {
     addListWorkflow(state, payload) {
@@ -23,6 +24,9 @@ const containerInfo = {
     },
     addListChatEntries(state, payload) {
       state.listChatEntries = payload
+    },
+    addNote(state, payload) {
+      state.note = payload
     }
   },
   actions: {
@@ -32,8 +36,7 @@ const containerInfo = {
       const comment = params.comment
       return requestCreateChatEntry({ tableName, recordId, comment })
         .then(response => {
-          console.log('comentario', response)
-          commit('addListWorkflow', response)
+          commit('addNote', response)
         })
     },
     listWorkflowLogs({ commit, state, dispatch }, params) {

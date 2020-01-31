@@ -296,13 +296,18 @@
                           </el-card>
                         </div>
                         <div>
-                          <el-input
-                            v-model="chatNote"
-                            type="chatNote"
-                            :rows="2"
-                            placeholder="Please input"
-                            @keyup.enter.native="sendComment(chatNote)"
-                          />
+                          <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                              {{ $t('window.containerInfo.logWorkflow.addNote') }}
+                            </div>
+                            <el-input
+                              v-model="chatNote"
+                              type="chatNote"
+                              :rows="2"
+                              placeholder="Please input"
+                              @keyup.enter.native="sendComment(chatNote)"
+                            />
+                          </el-card>
                         </div>
                       </el-tab-pane>
                     </el-tabs>
@@ -540,6 +545,7 @@ export default {
         recordId: this.$route.params.recordId,
         comment: comment
       })
+      this.chatNote = ''
     },
     showkey(key, index) {
       if (key === this.currentKey && index === this.typeAction) {
@@ -834,7 +840,7 @@ export default {
     max-height: 68vh !important;
   }
   .scroll-window-log-chat {
-    max-height: 68vh !important;
+    max-height: 45vh !important;
   }
   .el-card__header {
     background: rgba(245, 247, 250, 0.75);
