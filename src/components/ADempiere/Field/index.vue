@@ -146,7 +146,7 @@ export default {
       }
     },
     isSelectCreated() {
-      return this.field.isAdvancedQuery &&
+      return this.isAdvancedQuery &&
         !['FieldBinary', 'FieldDate', 'FieldSelect', 'FieldYesNo'].includes(this.field.componentPath) &&
         ['IN', 'NOT_IN'].includes(this.field.operator)
     },
