@@ -84,7 +84,7 @@ class evaluator {
     if (logic === undefined) {
       return _defaultUndefined
     }
-    let expr = /^(['"@#$a-zA-Z0-9\-_\s]){0,}((<=|<|=|>=|>|!=|!|\^){1,2})([\s"'@#$a-zA-Z0-9\-_]){0,}$/i
+    let expr = /^(['"@#$a-zA-Z0-9\-_\s]){0,}((<>|<=|<|=|>=|>|!=|!|\^){1,2})([\s"'@#$a-zA-Z0-9\-_]){0,}$/i
     let st = expr.test(logic)
 
     if (!st) {
@@ -92,7 +92,7 @@ class evaluator {
       return _defaultUndefined
     }
 
-    expr = /(<=|<|=|>=|>|!=|!|\^){1,2}/i
+    expr = /(<>|<=|<|=|>=|>|!=|!|\^){1,2}/i
     st = logic.split(expr)
 
     // First Part (or column name)
@@ -182,20 +182,38 @@ class evaluator {
       return false
     }
 
+    let isValueLogic
     // TODO: Add '^' operand comparison
-    if (operand === '=') {
-      return value1 === value2
-    } else if (operand === '<') {
-      return value1 < value2
-    } else if (operand === '<=') {
-      return value1 <= value2
-    } else if (operand === '>') {
-      return value1 > value2
-    } else if (operand === '>=') {
-      return value1 >= value2
+    switch (operand) {
+      case '=':
+      case '==':
+        isValueLogic = value1 === value2
+        break
+
+      case '<':
+        isValueLogic = value1 < value2
+        break
+
+      case '<=':
+        isValueLogic = value1 <= value2
+        break
+
+      case '>':
+        isValueLogic = value1 > value2
+        break
+
+      case '>=':
+        isValueLogic = value1 >= value2
+        break
+
+      case '!':
+      case '!=':
+      case '<>':
+      default:
+        isValueLogic = value1 !== value2
+        break
     }
-    //  interpreted as not
-    return value1 !== value2
+    return isValueLogic
   }
 
   /**
