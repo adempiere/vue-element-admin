@@ -295,14 +295,15 @@
                             </el-scrollbar>
                           </el-card>
                         </div>
-                        <div
-                          v-else
-                          v-loading="true"
-                          :element-loading-text="$t('notifications.loading')"
-                          element-loading-spinner="el-icon-loading"
-                          element-loading-background="rgba(255, 255, 255, 0.8)"
-                          class="loading-window"
-                        />
+                        <div>
+                          <el-input
+                            v-model="chatNote"
+                            type="chatNote"
+                            :rows="2"
+                            placeholder="Please input"
+                            @keyup.enter.native="sendComment(chatNote)"
+                          />
+                        </div>
                       </el-tab-pane>
                     </el-tabs>
                   </el-card>
@@ -354,6 +355,7 @@ export default {
       isPanel: false,
       activeInfo: 'listRecordLogs',
       show: false,
+      chatNote: '',
       typeAction: 0,
       isLoadingFromServer: false,
       listRecordNavigation: 0,
@@ -532,6 +534,13 @@ export default {
     this.getWindow()
   },
   methods: {
+    sendComment(comment) {
+      this.$store.dispatch('createChatEntry', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId,
+        comment: comment
+      })
+    },
     showkey(key, index) {
       if (key === this.currentKey && index === this.typeAction) {
         this.currentKey = 1000

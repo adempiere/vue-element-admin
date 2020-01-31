@@ -1,4 +1,4 @@
-import { requestListRecordsLogs, requestListWorkflowsLogs, requestListWorkflows, requestListRecordChats, requestListChatEntries } from '@/api/ADempiere/data'
+import { requestListRecordsLogs, requestListWorkflowsLogs, requestListWorkflows, requestListRecordChats, requestListChatEntries, requestCreateChatEntry } from '@/api/ADempiere/data'
 
 const containerInfo = {
   state: {
@@ -26,6 +26,16 @@ const containerInfo = {
     }
   },
   actions: {
+    createChatEntry({ commit }, params) {
+      const tableName = params.tableName
+      const recordId = params.recordId
+      const comment = params.comment
+      return requestCreateChatEntry({ tableName, recordId, comment })
+        .then(response => {
+          console.log('comentario', response)
+          commit('addListWorkflow', response)
+        })
+    },
     listWorkflowLogs({ commit, state, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
