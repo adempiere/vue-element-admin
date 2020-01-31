@@ -475,23 +475,20 @@ export default {
     getIsChangeLog() {
       if (this.isEmptyValue(this.gettersListRecordLogs)) {
         return false
-      } else {
-        return true
       }
+      return true
     },
     getIsWorkflowLog() {
       if (this.isEmptyValue(this.gettersListWorkflow)) {
         return false
-      } else {
-        return true
       }
+      return true
     },
     getIsChat() {
-      if (this.isEmptyValue(this.gettersLischat)) {
+      if (this.isEmptyValue(this.gettersLisRecordChats)) {
         return false
-      } else {
-        return true
       }
+      return true
     },
     getTypeLogs() {
       const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
@@ -513,7 +510,7 @@ export default {
       return this.$store.getters.getChatEntries.chatEntriesList
     },
     gettersLisRecordChats() {
-      return this.$store.getters.getListRecordChats.recordChatsList
+      return this.$store.getters.getListRecordChats
     },
     gettersListWorkflow() {
       return this.$store.getters.getWorkflow
@@ -529,6 +526,12 @@ export default {
     }
   },
   watch: {
+    $route(value) {
+      this.$store.dispatch('listChatEntries', {
+        tableName: value.params.tableName,
+        recordId: value.params.recordId
+      })
+    },
     'this.$route.params'(newValue, oldValue) {
       if (!this.isEmptyValue(newValue)) {
         this.getIsRecordLocked()
@@ -581,17 +584,24 @@ export default {
       }
     },
     handleClick(tab, event) {
-      if (tab.name === 'listChatEntries') {
-        this.$store.dispatch(tab.name, {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      } else {
-        this.$store.dispatch(tab.name, {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      }
+      this.$store.dispatch(tab.name, {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+    },
+    refres() {
+      this.$store.dispatch('listWorkflowLogs', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+      this.$store.dispatch('listRecordLogs', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+      this.$store.dispatch('listChatEntries', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
     },
     // callback new size
     onDrag(size) {

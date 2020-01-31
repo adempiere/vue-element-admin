@@ -1,4 +1,5 @@
 import { requestListRecordsLogs, requestListWorkflowsLogs, requestListWorkflows, requestListRecordChats, requestListChatEntries, requestCreateChatEntry } from '@/api/ADempiere/data'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 const containerInfo = {
   state: {
@@ -30,12 +31,16 @@ const containerInfo = {
     }
   },
   actions: {
-    createChatEntry({ commit }, params) {
+    createChatEntry({ commit, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const comment = params.comment
       return requestCreateChatEntry({ tableName, recordId, comment })
         .then(response => {
+          dispatch('listChatEntries', {
+            tableName: params.tableName,
+            recordId: params.recordId
+          })
           commit('addNote', response)
         })
     },
@@ -96,7 +101,7 @@ const containerInfo = {
       const pageToken = 0
       return requestListRecordChats({ tableName, recordId, pageSize, pageToken })
         .then(response => {
-          var listRecordChats = {
+          var listRecord = {
             recordChatsList: response.recordChatsList,
             recordCount: response.recordCount,
             nextPageToken: response.nextPageToken
@@ -104,7 +109,11 @@ const containerInfo = {
           dispatch('listRecordChat', {
             chatUuid: response.recordChatsList[0].chatUuid
           })
-          commit('addListRecordChats', listRecordChats)
+          var chats = []
+          if (!isEmptyValue(listRecord.recordChatsList)) {
+            chats = listRecord.recordChatsList
+          }
+          commit('addListRecordChats', chats)
         })
         .catch(error => {
           console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
