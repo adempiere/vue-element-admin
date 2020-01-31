@@ -183,7 +183,7 @@
                                   <el-collapse-transition>
                                     <div v-show="(currentKey === key)">
                                       <span v-for="(list, index) in listLogs.changeLogs" :key="index">
-                                        <p><b> {{ list.displayColumnName }} :</b> <strike> {{ list.oldDisplayValue }} </strike> {{ list.newDisplayValue }} </p>
+                                        <p><b> {{ list.displayColumnName }} :</b> <strike> <el-link type="danger"> {{ list.oldDisplayValue }} </el-link> </strike> <el-link type="success"> {{ list.newDisplayValue }} </el-link> </p>
                                       </span>
                                     </div>
                                   </el-collapse-transition>
@@ -270,11 +270,11 @@
                       >
                         <span slot="label"><i class="el-icon-s-comment" /> {{ $t('window.containerInfo.notes') }} </span>
                         <div
-                          v-if="getIsChat"
+                          v-if="!gettersLisRecordChats.epale"
                         >
                           <el-card class="box-card">
                             <div slot="header" class="clearfix">
-                              <span>{{ $t('window.containerInfo.notes') }} {{ gettersLisRecordChats[0].description }} </span>
+                              <span>{{ $t('window.containerInfo.notes') }}</span>
                             </div>
                             <el-scrollbar wrap-class="scroll-window-log-chat">
                               <el-timeline>

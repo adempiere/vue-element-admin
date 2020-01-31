@@ -86,7 +86,8 @@ const containerInfo = {
         .then(response => {
           var listRecord = {
             recordCount: response.recordCount,
-            recorLogs: response.recordLogsList
+            recorLogs: response.recordLogsList,
+            epale: true
           }
           commit('addListRecordLogs', listRecord)
         })
@@ -104,16 +105,13 @@ const containerInfo = {
           var listRecord = {
             recordChatsList: response.recordChatsList,
             recordCount: response.recordCount,
+            epale: isEmptyValue(response.recordChatsList),
             nextPageToken: response.nextPageToken
           }
           dispatch('listRecordChat', {
             chatUuid: response.recordChatsList[0].chatUuid
           })
-          var chats = []
-          if (!isEmptyValue(listRecord.recordChatsList)) {
-            chats = listRecord.recordChatsList
-          }
-          commit('addListRecordChats', chats)
+          commit('addListRecordChats', listRecord)
         })
         .catch(error => {
           console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
