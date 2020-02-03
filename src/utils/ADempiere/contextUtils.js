@@ -210,14 +210,12 @@ export function getPreference({
 
   //        SYSTEM PREFERENCES
   // Login setting
-  if (!isEmptyValue(parentUuid)) {
-    // get # globals context only window
-    retValue = getContext({
-      columnName: '#' + columnName
-    })
-    if (!isEmptyValue(retValue)) {
-      return retValue
-    }
+  // get # globals context only window
+  retValue = getContext({
+    columnName: '#' + columnName
+  })
+  if (!isEmptyValue(retValue)) {
+    return retValue
   }
 
   //  Accounting setting
