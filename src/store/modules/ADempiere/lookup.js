@@ -37,7 +37,8 @@ const lookup = {
         parsedDirectQuery = parseContext({
           parentUuid,
           containerUuid,
-          value: directQuery
+          value: directQuery,
+          isBooleanToString: true
         }).value
       }
 
@@ -85,10 +86,11 @@ const lookup = {
         parsedQuery = parseContext({
           parentUuid,
           containerUuid,
-          value: query
+          value: query,
+          isBooleanToString: true
         }).value
       }
-
+      console.log(parsedQuery)
       return getLookupList({
         tableName,
         query: parsedQuery
@@ -127,7 +129,8 @@ const lookup = {
         parsedDirectQuery = parseContext({
           parentUuid,
           containerUuid,
-          value: parsedDirectQuery
+          value: parsedDirectQuery,
+          isBooleanToString: true
         }).value
       }
       const lookupItem = state.lookupItem.filter(itemLookup => {
@@ -142,7 +145,8 @@ const lookup = {
         parsedQuery = parseContext({
           parentUuid: parentUuid,
           containerUuid: containerUuid,
-          value: parsedQuery
+          value: parsedQuery,
+          isBooleanToString: true
         }).value
       }
       const lookupList = state.lookupList.filter(itemLookup => {
@@ -169,7 +173,8 @@ const lookup = {
         parsedDirectQuery = parseContext({
           parentUuid,
           containerUuid,
-          value: parsedDirectQuery
+          value: parsedDirectQuery,
+          isBooleanToString: true
         }).value
       }
       const lookupItem = state.lookupItem.find(itemLookup => {
@@ -195,7 +200,8 @@ const lookup = {
         parsedQuery = parseContext({
           parentUuid,
           containerUuid,
-          value: parsedQuery
+          value: parsedQuery,
+          isBooleanToString: true
         }).value
       }
       const lookupList = state.lookupList.find(itemLookup => {
