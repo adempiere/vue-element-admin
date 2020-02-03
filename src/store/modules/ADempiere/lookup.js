@@ -90,7 +90,6 @@ const lookup = {
           isBooleanToString: true
         }).value
       }
-      console.log(parsedQuery)
       return getLookupList({
         tableName,
         query: parsedQuery
