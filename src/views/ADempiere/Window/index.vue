@@ -167,7 +167,7 @@
                         >
                           <el-card class="box-card">
                             <div slot="header" class="clearfix">
-                              <span>{{ $t('window.containerInfo.notes') }} {{ gettersLisRecordChats }} </span>
+                              <span>{{ $t('window.containerInfo.notes') }}</span>
                             </div>
                             <el-scrollbar wrap-class="scroll-window-log-chat">
                               <el-timeline>
@@ -520,9 +520,9 @@ export default {
       }
       return listChat.reverse()
     },
-    gettersLisRecordChats() {
-      return this.$store.getters.getListRecordChats[0].description
-    },
+    // gettersLisRecordChats() {
+    //   return this.$store.getters.getListRecordChats[0].description
+    // },
     isNote() {
       return this.$store.getters.getIsNote
     },
@@ -565,10 +565,10 @@ export default {
         comment: comment
       })
       this.chatNote = ''
-      this.$store.dispatch('listChatEntries', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
+      // this.$store.dispatch('listChatEntries', {
+      //   tableName: this.$route.params.tableName,
+      //   recordId: this.$route.params.recordId
+      // })
     },
     showkey(key, index) {
       if (key === this.currentKey && index === this.typeAction) {

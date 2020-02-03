@@ -42,10 +42,14 @@ const containerInfo = {
       return requestCreateChatEntry({ tableName, recordId, comment })
         .then(response => {
           commit('isNote', true)
-          // dispatch('listRecordChat', {
-          //   chatUuid: response.recordChatsList
-          // })
+          dispatch('listChatEntries', {
+            tableName: tableName,
+            recordId: recordId
+          })
           commit('addNote', response)
+        })
+        .catch(error => {
+          console.warn(`Error getting epale error en guardar: ${error.message}. Code: ${error.code}.`)
         })
     },
     listWorkflowLogs({ commit, state, dispatch }, params) {
@@ -115,15 +119,9 @@ const containerInfo = {
             nextPageToken: response.nextPageToken
           }
           commit('isNote', !isEmptyValue(response.recordChatsList))
-          if (isEmptyValue(params.chatUuid)) {
-            dispatch('listRecordChat', {
-              chatUuid: response.recordChatsList[0].chatUuid
-            })
-          } else {
-            dispatch('listRecordChat', {
-              chatUuid: params.chatUuid
-            })
-          }
+          dispatch('listRecordChat', {
+            chatUuid: response.recordChatsList[0].chatUuid
+          })
           commit('addListRecordChats', listRecord)
         })
         .catch(error => {
