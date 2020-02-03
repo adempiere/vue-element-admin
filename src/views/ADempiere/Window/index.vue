@@ -72,7 +72,6 @@
                           :panel-type="panelType"
                           :is-insert-record="getterIsInsertRecord"
                         />
-                        {{ isNote }}
                       </el-header>
                       <el-main :style="styleMainIsShowedTabChildren">
                         <tab-parent
@@ -472,7 +471,16 @@ export default {
       return false
     },
     gettersListRecordLogs() {
-      return this.$store.getters.getRecordLogs.recorLogs
+      const changeLog = this.$store.getters.getRecordLogs.recorLogs
+      if (this.isEmptyValue(changeLog)) {
+        return changeLog
+      }
+      changeLog.sort((a, b) => {
+        var c = new Date(a.logDate)
+        var d = new Date(b.logDate)
+        return d - c
+      })
+      return changeLog
     },
     getIsChangeLog() {
       if (this.isEmptyValue(this.gettersListRecordLogs)) {
@@ -507,7 +515,6 @@ export default {
     },
     gettersLischat() {
       const listChat = this.$store.getters.getChatEntries.chatEntriesList
-      // listChat.reverse()
       if (this.isEmptyValue(listChat)) {
         return listChat
       }
