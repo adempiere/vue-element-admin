@@ -279,7 +279,7 @@ export default {
         responsible: 'Responsible',
         workflowName: 'Name of Workflow Status',
         timeElapsed: 'Time Elapsed',
-        addNote: 'Notas'
+        addNote: 'Add Note'
       }
     }
   },

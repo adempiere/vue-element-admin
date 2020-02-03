@@ -72,6 +72,7 @@
                           :panel-type="panelType"
                           :is-insert-record="getterIsInsertRecord"
                         />
+                        {{ isNote }}
                       </el-header>
                       <el-main :style="styleMainIsShowedTabChildren">
                         <tab-parent
@@ -159,6 +160,51 @@
                   <el-card class="box-card">
                     <el-tabs v-model="activeInfo" @tab-click="handleClick">
                       <el-tab-pane
+                        name="listChatEntries"
+                      >
+                        <span slot="label"><i class="el-icon-s-comment" /> {{ $t('window.containerInfo.notes') }} </span>
+                        <div
+                          v-if="getIsChat"
+                        >
+                          <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                              <span>{{ $t('window.containerInfo.notes') }} {{ gettersLisRecordChats }} </span>
+                            </div>
+                            <el-scrollbar wrap-class="scroll-window-log-chat">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(chats, key) in gettersLischat"
+                                  :key="key"
+                                  :timestamp="translateDate(chats.logDate)"
+                                  placement="top"
+                                >
+                                  <el-card shadow="hover">
+                                    <div>
+                                      <span>{{ chats.userName }}</span>
+                                      <span>{{ chats.characterData }}</span>
+                                    </div>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
+                          </el-card>
+                        </div>
+                        <div>
+                          <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                              {{ $t('window.containerInfo.logWorkflow.addNote') }}
+                            </div>
+                            <el-input
+                              v-model="chatNote"
+                              type="textarea"
+                              :rows="2"
+                              placeholder="Please input"
+                            />
+                            <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment(chatNote)" />
+                          </el-card>
+                        </div>
+                      </el-tab-pane>
+                      <el-tab-pane
                         name="listRecordLogs"
                       >
                         <span slot="label"><svg-icon icon-class="tree-table" /> {{ $t('window.containerInfo.changeLog') }} </span>
@@ -202,6 +248,7 @@
                         />
                       </el-tab-pane>
                       <el-tab-pane
+                        v-if="getIsWorkflowLog"
                         name="listWorkflowLogs"
                       >
                         <span slot="label"><i class="el-icon-s-help" /> {{ $t('window.containerInfo.workflowLog') }} </span>
@@ -265,51 +312,6 @@
                           class="loading-window"
                         />
                       </el-tab-pane>
-                      <el-tab-pane
-                        name="listChatEntries"
-                      >
-                        <span slot="label"><i class="el-icon-s-comment" /> {{ $t('window.containerInfo.notes') }} </span>
-                        <div
-                          v-if="!gettersLisRecordChats.epale"
-                        >
-                          <el-card class="box-card">
-                            <div slot="header" class="clearfix">
-                              <span>{{ $t('window.containerInfo.notes') }}</span>
-                            </div>
-                            <el-scrollbar wrap-class="scroll-window-log-chat">
-                              <el-timeline>
-                                <el-timeline-item
-                                  v-for="(chats, key) in gettersLischat"
-                                  :key="key"
-                                  :timestamp="translateDate(chats.logDate)"
-                                  placement="top"
-                                >
-                                  <el-card shadow="hover">
-                                    <div>
-                                      <span>{{ chats.userName }}</span>
-                                      <span>{{ chats.characterData }}</span>
-                                    </div>
-                                  </el-card>
-                                </el-timeline-item>
-                              </el-timeline>
-                            </el-scrollbar>
-                          </el-card>
-                        </div>
-                        <div>
-                          <el-card class="box-card">
-                            <div slot="header" class="clearfix">
-                              {{ $t('window.containerInfo.logWorkflow.addNote') }}
-                            </div>
-                            <el-input
-                              v-model="chatNote"
-                              type="chatNote"
-                              :rows="2"
-                              placeholder="Please input"
-                              @keyup.enter.native="sendComment(chatNote)"
-                            />
-                          </el-card>
-                        </div>
-                      </el-tab-pane>
                     </el-tabs>
                   </el-card>
                 </p>
@@ -358,7 +360,7 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
-      activeInfo: 'listRecordLogs',
+      activeInfo: 'listChatEntries',
       show: false,
       chatNote: '',
       typeAction: 0,
@@ -485,10 +487,7 @@ export default {
       return true
     },
     getIsChat() {
-      if (this.isEmptyValue(this.gettersLisRecordChats)) {
-        return false
-      }
-      return true
+      return this.$store.getters.getIsNote
     },
     getTypeLogs() {
       const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
@@ -507,10 +506,18 @@ export default {
       return groupLog
     },
     gettersLischat() {
-      return this.$store.getters.getChatEntries.chatEntriesList
+      const listChat = this.$store.getters.getChatEntries.chatEntriesList
+      // listChat.reverse()
+      if (this.isEmptyValue(listChat)) {
+        return listChat
+      }
+      return listChat.reverse()
     },
     gettersLisRecordChats() {
-      return this.$store.getters.getListRecordChats
+      return this.$store.getters.getListRecordChats[0].description
+    },
+    isNote() {
+      return this.$store.getters.getIsNote
     },
     gettersListWorkflow() {
       return this.$store.getters.getWorkflow
@@ -527,10 +534,9 @@ export default {
   },
   watch: {
     $route(value) {
-      this.$store.dispatch('listChatEntries', {
-        tableName: value.params.tableName,
-        recordId: value.params.recordId
-      })
+      if (this.show) {
+        this.refres(this.activeInfo)
+      }
     },
     'this.$route.params'(newValue, oldValue) {
       if (!this.isEmptyValue(newValue)) {
@@ -549,6 +555,12 @@ export default {
         comment: comment
       })
       this.chatNote = ''
+      const addNote = this.$store.getters.getAddNote
+      this.$store.dispatch('listChatEntries', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId,
+        chatUuid: addNote.chatEntryUuid
+      })
     },
     showkey(key, index) {
       if (key === this.currentKey && index === this.typeAction) {
@@ -571,17 +583,15 @@ export default {
     },
     conteInfo() {
       this.show = !this.show
+      this.$store.dispatch('listWorkflowLogs', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
       this.$store.dispatch('listChatEntries', {
         tableName: this.$route.params.tableName,
         recordId: this.$route.params.recordId
       })
       this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
-      if (this.show) {
-        this.$store.dispatch('listRecordLogs', {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId
-        })
-      }
     },
     handleClick(tab, event) {
       this.$store.dispatch(tab.name, {
@@ -589,16 +599,8 @@ export default {
         recordId: this.$route.params.recordId
       })
     },
-    refres() {
-      this.$store.dispatch('listWorkflowLogs', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
-      this.$store.dispatch('listRecordLogs', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
-      this.$store.dispatch('listChatEntries', {
+    refres(tabInfo) {
+      this.$store.dispatch(tabInfo, {
         tableName: this.$route.params.tableName,
         recordId: this.$route.params.recordId
       })
