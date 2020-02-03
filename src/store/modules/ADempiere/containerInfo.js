@@ -42,9 +42,9 @@ const containerInfo = {
       return requestCreateChatEntry({ tableName, recordId, comment })
         .then(response => {
           commit('isNote', true)
-          dispatch('listRecordChat', {
-            chatUuid: response.recordChatsList
-          })
+          // dispatch('listRecordChat', {
+          //   chatUuid: response.recordChatsList
+          // })
           commit('addNote', response)
         })
     },
@@ -68,6 +68,9 @@ const containerInfo = {
         .catch(error => {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
         })
+    },
+    isNote({ commit }, params) {
+      commit('isNote', params)
     },
     listWorkflows({ commit, state }, params) {
       const tableName = params.tableName

@@ -542,6 +542,9 @@ export default {
   watch: {
     $route(value) {
       if (this.show) {
+        if (value.query.action === 'create-new') {
+          this.$store.dispatch('isNote', false)
+        }
         this.refres(this.activeInfo)
       }
     },
@@ -562,11 +565,9 @@ export default {
         comment: comment
       })
       this.chatNote = ''
-      const addNote = this.$store.getters.getAddNote
       this.$store.dispatch('listChatEntries', {
         tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId,
-        chatUuid: addNote.chatEntryUuid
+        recordId: this.$route.params.recordId
       })
     },
     showkey(key, index) {
