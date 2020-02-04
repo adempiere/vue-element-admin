@@ -514,11 +514,7 @@ export default {
       return groupLog
     },
     gettersLischat() {
-      const listChat = this.$store.getters.getChatEntries.chatEntriesList
-      if (this.isEmptyValue(listChat)) {
-        return listChat
-      }
-      return listChat.reverse()
+      return this.$store.getters.getChatEntries.chatEntriesList
     },
     // gettersLisRecordChats() {
     //   return this.$store.getters.getListRecordChats[0].description

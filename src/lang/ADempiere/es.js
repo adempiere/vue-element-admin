@@ -246,7 +246,7 @@ export default {
     undoNew: 'Descartar Nuevo Registro',
     containerInfo: {
       notes: 'Notas',
-      changeLog: 'Histórico de Cambios',
+      changeLog: 'Actividad',
       workflowLog: 'Histórico de Flujo de Trabajo',
       changeDetail: 'Detalle del cambio',
       logWorkflow: {
