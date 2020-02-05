@@ -511,8 +511,8 @@ export function requestCreateChatEntry({ tableName, recordId, comment }) {
  * @param {number} pageSize
  * @param {string} pageToken
  */
-export function requestDocumentActionsList({ tableName, recordId, recordUuid, documentStatus, documentAction, pageSize, pageToken }) {
-  return Instance.call(this).requestDocumentActionsList({
+export function requestListDocumentActions({ tableName, recordId, recordUuid, documentStatus, documentAction, pageSize, pageToken }) {
+  return Instance.call(this).requestListDocumentActions({
     tableName,
     recordId,
     recordUuid,
