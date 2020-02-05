@@ -517,21 +517,17 @@ export default {
       return this.$store.getters.permission_routes
     },
     keyUp() {
-      var up
       if (this.currentTable < 1) {
         return this.currentTable
       }
-      up = this.currentTable - 1
-      return up
+      return this.currentTable - 1
     },
     keyDow() {
-      var maxDown, down
-      maxDown = this.getterDataRecords.length - 1
+      const maxDown = this.getterDataRecords.length - 1
       if (maxDown === this.currentTable) {
         return this.currentTable
       }
-      down = this.currentTable + 1
-      return down
+      return this.currentTable + 1
     }
   },
   watch: {
@@ -580,7 +576,8 @@ export default {
           this.currentTable = this.keyDow
           break
       }
-      this.getterDataRecords.forEach(this.logArrayElements)
+      this.handleRowClick(this.getterDataRecords[this.currentTable])
+      return this.setCurrent(this.getterDataRecords[this.currentTable])
     },
     sortTab(actionSequence) {
       // TODO: Refactor and remove redundant dispatchs
