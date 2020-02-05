@@ -109,7 +109,8 @@ export function parseContext({
       return {
         value: undefined,
         isError: true,
-        errorsList
+        errorsList,
+        isSQL
       }
     }
 
@@ -155,13 +156,15 @@ export function parseContext({
   if (isSQL) {
     return {
       query: outStr,
-      value: ctxInfo
+      value: ctxInfo,
+      isSQL
     }
   }
   return {
     value: outStr,
     isError,
-    errorsList
+    errorsList,
+    isSQL
   }
 } // parseContext
 
