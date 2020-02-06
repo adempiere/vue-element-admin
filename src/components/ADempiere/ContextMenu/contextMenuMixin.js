@@ -1,4 +1,4 @@
-import { showNotification } from '@/utils/ADempiere/notification'
+import { showNotification, showMessage } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink, recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
@@ -195,6 +195,7 @@ export const contextMixin = {
     this.getReferences()
   },
   methods: {
+    showMessage,
     showNotification,
     actionContextMenu(event) {
       switch (event.srcKey) {
@@ -225,27 +226,24 @@ export const contextMixin = {
               recordUuid: this.recordUuid
             })
           } else if (this.panelType === 'browser') {
-            this.$store.dispatch('getBrowserSearch', {
+            const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
               containerUuid: this.containerUuid,
-              isClearSelection: true
+              fieldsList: this.getterFieldList
             })
+            if (fieldsEmpty.length) {
+              this.showMessage({
+                message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+                type: 'info'
+              })
+            } else {
+              this.$store.dispatch('getBrowserSearch', {
+                containerUuid: this.containerUuid,
+                isClearSelection: true
+              })
+            }
           }
           break
       }
-      // this.$store.dispatch('resetPanelToNew', {
-      //   parentUuid: this.parentUuid,
-      //   containerUuid: this.containerUuid,
-      //   recordUuid: this.recordUuid,
-      //   panelType: 'window',
-      //   isNewRecord: true
-      // })
-      // this.$store.dispatch('deleteEntity', {
-      //   parentUuid: this.parentUuid,
-      //   containerUuid: this.containerUuid,
-      //   recordUuid: this.recordUuid,
-      //   panelType: 'window',
-      //   isNewRecord: false
-      // })
     },
     refreshData() {
       if (this.panelType === 'window') {
@@ -256,10 +254,21 @@ export const contextMixin = {
           recordUuid: this.recordUuid
         })
       } else if (this.panelType === 'browser') {
-        this.$store.dispatch('getBrowserSearch', {
+        const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid,
-          isClearSelection: true
+          fieldsList: this.getterFieldList
         })
+        if (fieldsEmpty.length) {
+          this.showMessage({
+            message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+            type: 'info'
+          })
+        } else {
+          this.$store.dispatch('getBrowserSearch', {
+            containerUuid: this.containerUuid,
+            isClearSelection: true
+          })
+        }
       }
     },
     getReferences() {

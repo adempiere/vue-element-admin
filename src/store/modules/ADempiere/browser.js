@@ -65,13 +65,18 @@ const browser = {
                 field.isShowedFromUser = true
               }
 
-              // Only isQueryCriteria fields, displayed in main panel
-              if (field.isQueryCriteria && !isEmptyValue(field.value) && String(field.value) !== '-1') {
-                field.isShowedFromUser = true
+              // Only isQueryCriteria fields with values, displayed in main panel
+              if (field.isQueryCriteria) {
+                if (isEmptyValue(field.value)) {
+                  // isMandatory params to showed search criteria
+                  if (field.isMandatory || field.isMandatoryFromLogic) {
+                    isMandatoryParams = true
+                  }
+                } else {
+                  field.isShowedFromUser = true
+                }
               }
 
-              // TODO: Evaluate if not change when iterate
-              isMandatoryParams = field.isMandatory
               return field
             })
             fieldsList = fieldsList.concat(fieldsRangeList)
@@ -81,7 +86,7 @@ const browser = {
               .filter(field => field.parentFieldsList && field.isActive)
               .forEach((field, index, list) => {
                 field.parentFieldsList.forEach(parentColumnName => {
-                  var parentField = list.find(parentField => {
+                  const parentField = list.find(parentField => {
                     return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
                   })
                   if (parentField) {
@@ -97,7 +102,6 @@ const browser = {
               fieldList: fieldsList,
               panelType: panelType,
               // app attributes
-              isMandatoryParams: isMandatoryParams,
               isShowedCriteria: Boolean(fieldsList.length && isMandatoryParams),
               isShowedTotals: true
             }
