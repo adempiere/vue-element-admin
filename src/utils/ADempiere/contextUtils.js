@@ -123,9 +123,10 @@ export function parseContext({
       columnName
     }) // get context
     if (isBooleanToString && typeof ctxInfo === 'boolean') {
-      ctxInfo = 'N'
       if (ctxInfo) {
         ctxInfo = 'Y'
+      } else {
+        ctxInfo = 'N'
       }
     }
 
