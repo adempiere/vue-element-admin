@@ -28,7 +28,7 @@
               />
             </div>
             <el-card
-              :shadow="isMobile ? 'never' : 'hover'"
+              :shadow="shadowGroup"
               :body-style="{ padding: '10px' }"
             >
               <el-row :gutter="gutterRow">
@@ -72,7 +72,7 @@
                   class="card"
                 >
                   <el-card
-                    :shadow="isMobile ? 'never' : 'hover'"
+                    :shadow="shadowGroup"
                     :body-style="{ padding: '10px' }"
                   >
                     <div slot="header" class="clearfix">
@@ -125,7 +125,7 @@
                   class="card"
                 >
                   <el-card
-                    :shadow="isMobile ? 'never' : 'hover'"
+                    :shadow="shadowGroup"
                     :body-style="{ padding: '10px' }"
                   >
                     <div slot="header" class="clearfix">
@@ -239,6 +239,12 @@ export default {
     }
   },
   computed: {
+    shadowGroup() {
+      if (this.isMobile) {
+        return 'never'
+      }
+      return 'hover'
+    },
     optionCRUD() {
       return this.isEmptyValue(this.uuidRecord) ? 'create-new' : this.uuidRecord
     },
@@ -251,12 +257,14 @@ export default {
       }
       return false
     },
+    getterPanel() {
+      return this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
+    },
     getterFieldList() {
-      const panel = this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
-      if (panel) {
-        return panel.fieldList
+      if (this.getterPanel) {
+        return this.getterPanel.fieldList
       }
-      return panel
+      return undefined
     },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
@@ -271,19 +279,8 @@ export default {
         record: []
       }
     },
-    getterTotalDataRecordCount() {
-      return this.getterDataStore.recordCount
-    },
     getterIsLoadedRecord() {
       return this.getterDataStore.isLoaded
-    },
-    getterRowData() {
-      if (this.isPanelWindow) {
-        if (!this.isEmptyValue(this.uuidRecord) && this.uuidRecord !== 'create-new') {
-          return this.$store.getters.getRowData(this.containerUuid, this.uuidRecord)
-        }
-      }
-      return false
     },
     classCards() {
       if (this.isMobile || this.fieldGroups.length < 2 || this.getterIsShowedRecordNavigation) {
@@ -415,7 +412,8 @@ export default {
               parameters.criteria[param] = route.params[param]
             }
           })
-        } else if (route.query.action && route.query.action !== 'create-new' && route.query.action !== 'reference' && route.query.action !== 'advancedQuery' && route.query.action !== 'criteria') {
+        } else if (!this.isEmptyValue(route.query.action) &&
+          !['create-new', 'reference', 'advancedQuery', 'criteria'].includes(route.query.action)) {
           parameters.isLoadAllRecords = false
           parameters.value = route.query.action
           parameters.tableName = this.metadata.tableName
@@ -616,16 +614,17 @@ export default {
       return groupsList
     },
     setTagsViewTitle(actionValue) {
-      if (actionValue === 'create-new' || actionValue === '') {
+      if (actionValue === 'create-new' || this.isEmptyValue(actionValue)) {
         this.tagTitle.action = this.$t('tagsView.newRecord')
       } else if (actionValue === 'advancedQuery') {
         this.tagTitle.action = this.$t('tagsView.advancedQuery')
       } else {
-        const field = this.fieldList.find(fieldItem => fieldItem.isIdentifier)
-        if (field) {
-          if (this.dataRecords[field.columnName]) {
-            this.tagTitle.action = this.dataRecords[field.columnName]
+        const { identifierColumns } = this.getterPanel
+        if (!this.isEmptyValue(identifierColumns)) {
+          if (this.dataRecords[identifierColumns[0]]) {
+            this.tagTitle.action = this.dataRecords[identifierColumns[0]]
           } else {
+            const field = this.fieldList.find(fieldItem => fieldItem.isIdentifier)
             this.tagTitle.action = field.value
           }
         } else {

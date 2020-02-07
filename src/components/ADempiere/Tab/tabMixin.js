@@ -76,7 +76,7 @@ export const tabMixin = {
     handleBeforeLeave(activeName) {
       const metadataTab = this.tabsList
         .filter(tab => !tab.isSortTab)
-        .find(tab => tab.index === parseInt(activeName))
+        .find(tab => tab.index === parseInt(activeName), 10)
       if (!this.isEmptyValue(metadataTab.whereClause) && metadataTab.whereClause.includes('@')) {
         metadataTab.whereClause = parseContext({
           parentUuid: metadataTab.parentUuid,

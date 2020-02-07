@@ -351,7 +351,7 @@ const panel = {
       withOutColumnNames = [],
       isSendCallout = true,
       isAdvancedQuery = false,
-      isPrivateAccess = true,
+      isPrivateAccess = false,
       fieldList = []
     }) {
       if (!fieldList.length) {
@@ -384,6 +384,8 @@ const panel = {
           isChangedOldValue: true // defines if set oldValue with newValue instead of current value
         })
       })
+
+      // show fields in query
       if (isShowedField && Object.keys(newValues).length) {
         // join column names without duplicating it
         fieldsShowed = Array.from(new Set([
@@ -405,11 +407,14 @@ const panel = {
         })
         if (isPrivateAccess) {
           const tableName = rootGetters.getTableNameFromTab(parentUuid, containerUuid)
-          dispatch('getPrivateAccessFromServer', {
-            tableName,
-            recordId: newValues[`${tableName}_ID`],
-            userUuid: rootGetters['user/getUserUuid']
-          })
+          // TODO: Add current id and new id to comparison
+          if (!isEmptyValue(newValues[`${tableName}_ID`])) {
+            dispatch('getPrivateAccessFromServer', {
+              tableName,
+              recordId: newValues[`${tableName}_ID`],
+              userUuid: rootGetters['user/getUserUuid']
+            })
+          }
         }
       }
     },

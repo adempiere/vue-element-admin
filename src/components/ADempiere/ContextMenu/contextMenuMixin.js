@@ -337,6 +337,7 @@ export const contextMixin = {
         return
       }
 
+      // TODO: Add store attribute to avoid making repeated requests
       if (this.panelType === 'window' && !this.isEmptyValue(this.$route.params.tableName)) {
         this.$store.dispatch('getPrivateAccessFromServer', {
           tableName: this.$route.params.tableName,
