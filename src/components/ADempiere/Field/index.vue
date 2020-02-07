@@ -33,7 +33,34 @@
         <span v-else key="is-field-name">
           {{ isFieldOnly() }}
         </span>
-
+        <el-popover
+          v-if="field.columnName === 'DocStatus'"
+          placement="right"
+          width="400"
+          trigger="click"
+        >
+          <el-select v-model="valueActionDocument" :placeholder="defaultDocumentActions">
+            <el-option
+              v-for="(item, key) in listDocumentActions"
+              :key="key"
+              :label="item.name"
+              :value="item.name"
+            />
+          </el-select>
+          <el-tag
+            v-if="isEmptyValue(valueActionDocument)"
+          >
+            {{ defaultDocumentActions }}
+          </el-tag>
+          <el-tag
+            v-else
+          >
+            {{ valueActionDocument }}
+          </el-tag>
+          <!-- {{ label }} -->
+          <!-- {{ labelDocumentActions }} -->
+          <el-button slot="reference" type="text" icon="el-icon-set-up" circle />
+        </el-popover>
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
           :field-attributes="fieldAttributes"
@@ -116,7 +143,9 @@ export default {
   },
   data() {
     return {
-      field: {}
+      field: {},
+      valueActionDocument: ''
+      // label: this.listDocumentActions.find(element => element.value === this.valueActionDocument)
     }
   },
   computed: {
@@ -233,6 +262,21 @@ export default {
         return true
       }
       return false
+    },
+    listDocumentActions() {
+      return this.$store.getters.getListDocumentActions.documentActionsList
+    },
+    defaultDocumentActions() {
+      console.log(this.$store.getters.getListDocumentActions)
+      return this.$store.getters.getListDocumentActions.defaultDocumentAction.name
+    // },
+    // labelDocumentActions() {
+    //   const found = this.listDocumentActions.find(element => {
+    //     console.log(element)
+    //     element.value === this.valueActionDocument
+    //   })
+    //   console.log(found)
+    //   return found
     }
   },
   watch: {

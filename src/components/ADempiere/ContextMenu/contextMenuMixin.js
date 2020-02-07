@@ -166,6 +166,9 @@ export const contextMixin = {
     },
     isPersonalLock() {
       return this.$store.getters['user/getIsPersonalLock']
+    },
+    listDocumentActions() {
+      return this.$store.getters.getListDocumentActions.documentActionsList
     }
   },
   watch: {
@@ -175,6 +178,7 @@ export const contextMixin = {
       if (this.panelType === 'window') {
         this.generateContextMenu()
         this.getReferences()
+        this.documentActions()
       }
     },
     isInsertRecord(newValue, oldValue) {
@@ -193,6 +197,7 @@ export const contextMixin = {
   },
   mounted() {
     this.getReferences()
+    this.documentActions()
   },
   methods: {
     showNotification,
@@ -232,20 +237,6 @@ export const contextMixin = {
           }
           break
       }
-      // this.$store.dispatch('resetPanelToNew', {
-      //   parentUuid: this.parentUuid,
-      //   containerUuid: this.containerUuid,
-      //   recordUuid: this.recordUuid,
-      //   panelType: 'window',
-      //   isNewRecord: true
-      // })
-      // this.$store.dispatch('deleteEntity', {
-      //   parentUuid: this.parentUuid,
-      //   containerUuid: this.containerUuid,
-      //   recordUuid: this.recordUuid,
-      //   panelType: 'window',
-      //   isNewRecord: false
-      // })
     },
     refreshData() {
       if (this.panelType === 'window') {
@@ -261,6 +252,12 @@ export const contextMixin = {
           isClearSelection: true
         })
       }
+    },
+    documentActions() {
+      this.$store.dispatch('listDocumentActionStatus', {
+        tableName: this.$route.params.tableName,
+        recordUuid: this.recordUuid
+      })
     },
     getReferences() {
       if (this.isReferecesContent) {
