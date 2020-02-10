@@ -249,6 +249,9 @@ const data = {
             // if there is a lookup option, assign the display column with the label
             if (option) {
               values[`DisplayColumn_${itemField.columnName}`] = option.label
+              if (isEmptyValue(option.label) && !itemField.isMandatory) {
+                values[itemField.columnName] = undefined
+              }
               return
             }
             if (linkColumnName === itemField.columnName) {
