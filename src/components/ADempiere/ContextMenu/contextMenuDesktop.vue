@@ -88,19 +88,6 @@
               </el-menu-item>
             </template>
           </el-submenu>
-          <el-submenu
-            v-if="panelType === 'window'"
-            index="documentAction"
-          >
-            <template slot="title">
-              Acción de Documento
-            </template>
-            <template v-for="(listAction, keyAction) in listDocumentActions">
-              <el-menu-item :key="keyAction">
-                ({{ listAction.name }}) {{ listAction.description }}
-              </el-menu-item>
-            </template>
-          </el-submenu>
           <el-menu-item v-show="$route.name === 'Report Viewer'" index="9" @click="redirect">
             {{ $t('components.contextMenuPrintFormatSetup') }}
           </el-menu-item>

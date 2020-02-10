@@ -127,6 +127,9 @@ const utils = {
     },
     setReportTypeToShareLink({ commit }, value) {
       commit('setReportTypeToShareLink', value)
+    },
+    setOrden({ commit }, params) {
+      commit('setOrden', params)
     }
   },
   getters: {
