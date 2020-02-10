@@ -88,7 +88,7 @@ const containerInfo = {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
         })
     },
-    listRecordLogs({ commit, state }, params) {
+    listRecordLogs({ commit }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const pageSize = 0

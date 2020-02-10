@@ -165,46 +165,7 @@
                           <i class="el-icon-s-comment" />
                           {{ $t('window.containerInfo.notes') }}
                         </span>
-                        <div
-                          v-if="getIsChat"
-                        >
-                          <el-card class="box-card">
-                            <div slot="header" class="clearfix">
-                              <span>{{ $t('window.containerInfo.notes') }}</span>
-                            </div>
-                            <el-scrollbar wrap-class="scroll-window-log-chat">
-                              <el-timeline>
-                                <el-timeline-item
-                                  v-for="(chats, key) in gettersLischat"
-                                  :key="key"
-                                  :timestamp="translateDate(chats.logDate)"
-                                  placement="top"
-                                >
-                                  <el-card shadow="hover">
-                                    <div>
-                                      <span>{{ chats.userName }}</span>
-                                      <span>{{ chats.characterData }}</span>
-                                    </div>
-                                  </el-card>
-                                </el-timeline-item>
-                              </el-timeline>
-                            </el-scrollbar>
-                          </el-card>
-                        </div>
-                        <div>
-                          <el-card class="box-card">
-                            <div slot="header" class="clearfix">
-                              {{ $t('window.containerInfo.logWorkflow.addNote') }}
-                            </div>
-                            <el-input
-                              v-model="chatNote"
-                              type="textarea"
-                              :rows="2"
-                              placeholder="Please input"
-                            />
-                            <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment(chatNote)" />
-                          </el-card>
-                        </div>
+                        <chat-entries />
                       </el-tab-pane>
                       <el-tab-pane
                         name="listRecordLogs"
@@ -213,50 +174,12 @@
                           <svg-icon icon-class="tree-table" />
                           {{ $t('window.containerInfo.changeLog') }}
                         </span>
-                        <div
-                          v-if="getIsChangeLog"
-                          key="change-log-loaded"
-                        >
-                          <el-scrollbar wrap-class="scroll-window-log-change">
-                            <el-timeline>
-                              <el-timeline-item
-                                v-for="(listLogs, key) in gettersListRecordLogs"
-                                :key="key"
-                                :timestamp="translateDate(listLogs.logDate)"
-                                placement="top"
-                                color="#008fd3"
-                              >
-                                <el-card shadow="hover" class="clearfix">
-                                  <div>
-                                    {{ listLogs.userName }}
-                                    <el-link type="primary" style="float: right;" @click="showkey(key)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
-                                  </div>
-                                  <br>
-                                  <el-collapse-transition>
-                                    <div v-show="(currentKey === key)">
-                                      <span v-for="(list, index) in listLogs.changeLogs" :key="index">
-                                        <p v-if="list.columnName === 'DocStatus'"><b> {{ list.displayColumnName }} :</b> <strike> <el-tag :type="tagStatus(list.oldValue)"> {{ list.oldDisplayValue }} </el-tag> </strike> <el-tag :type="tagStatus(list.newValue)"> {{ list.newDisplayValue }} </el-tag> </p>
-                                        <p v-else><b> {{ list.displayColumnName }} :</b> <strike> <el-link type="danger"> {{ list.oldDisplayValue }} </el-link> </strike> <el-link type="success"> {{ list.newDisplayValue }} </el-link> </p>
-                                      </span>
-                                    </div>
-                                  </el-collapse-transition>
-                                </el-card>
-                              </el-timeline-item>
-                            </el-timeline>
-                          </el-scrollbar>
+                        <div>
+                          <record-logs />
                         </div>
-                        <div
-                          v-else
-                          key="change-log-loading"
-                          v-loading="true"
-                          :element-loading-text="$t('notifications.loading')"
-                          element-loading-spinner="el-icon-loading"
-                          element-loading-background="rgba(255, 255, 255, 0.8)"
-                          class="loading-window"
-                        />
                       </el-tab-pane>
                       <el-tab-pane
-                        v-if="getIsWorkflowLog"
+                        v-if="isWorkflow"
                         name="listWorkflowLogs"
                       >
                         <span slot="label">
@@ -264,80 +187,10 @@
                           {{ $t('window.containerInfo.workflowLog') }}
                         </span>
                         <div
-                          v-if="getIsWorkflowLog"
                           key="workflow-log-loaded"
                         >
-                          <el-card
-                            class="box-card"
-                          >
-                            <el-scrollbar wrap-class="scroll-window-log-workflow">
-                              <el-timeline>
-                                <el-timeline-item
-                                  v-for="(workflow,index) in gettersListWorkflow"
-                                  :key="index"
-                                  :timestamp="translateDate(workflow.logDate)"
-                                  placement="top"
-                                >
-                                  <el-card shadow="hover">
-                                    <div slot="header" class="clearfix">
-                                      <span> {{ workflow.workflowName }} </span>
-                                    </div>
-                                    <div>
-                                      <el-steps
-                                        :active="workflow.workflowEventsList.length"
-                                        align-center
-                                        finish-status="success"
-                                      >
-                                        <el-step
-                                          v-for="(nodeList, key) in workflow.workflowEventsList"
-                                          :key="key"
-                                        >
-                                          <span slot="title">
-                                            <el-popover
-                                              placement="top-start"
-                                              width="400"
-                                              trigger="hover"
-                                            >
-                                              <p><b> {{ $t('login.userName') }}:</b> {{ nodeList.userName }} </p>
-                                              <p v-if="!isEmptyValue(nodeList.textMessage)">
-                                                <b> {{ $t('window.containerInfo.logWorkflow.message') }}:</b>
-                                                {{ nodeList.textMessage }}
-                                              </p>
-                                              <p>
-                                                <b> {{ $t('window.containerInfo.logWorkflow.responsible') }}:</b>
-                                                {{ nodeList.responsibleName }}
-                                              </p>
-                                              <p>
-                                                <b> {{ $t('window.containerInfo.logWorkflow.workflowName') }}:</b>
-                                                {{ nodeList.workflowStateName }}
-                                              </p>
-                                              <p>
-                                                <b> {{ $t('window.containerInfo.logWorkflow.timeElapsed') }}:</b>
-                                                {{ nodeList.timeElapsed }}
-                                              </p>
-                                              <el-button slot="reference" type="text">
-                                                {{ nodeList.nodeName }}
-                                              </el-button>
-                                            </el-popover>
-                                          </span>
-                                        </el-step>
-                                      </el-steps>
-                                    </div>
-                                  </el-card>
-                                </el-timeline-item>
-                              </el-timeline>
-                            </el-scrollbar>
-                          </el-card>
+                          <workflow-logs />
                         </div>
-                        <div
-                          v-else
-                          key="workflow-log-loading"
-                          v-loading="true"
-                          :element-loading-text="$t('notifications.loading')"
-                          element-loading-spinner="el-icon-loading"
-                          element-loading-background="rgba(255, 255, 255, 0.8)"
-                          class="loading-window"
-                        />
                       </el-tab-pane>
                     </el-tabs>
                   </el-card>
@@ -369,6 +222,10 @@ import ContextMenu from '@/components/ADempiere/ContextMenu'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import DataTable from '@/components/ADempiere/DataTable'
 import splitPane from 'vue-splitpane'
+// Container Info
+import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
+import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
+import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
 
 export default {
   name: 'WindowView',
@@ -378,7 +235,10 @@ export default {
     ContextMenu,
     DataTable,
     splitPane,
-    ModalDialog
+    ModalDialog,
+    ChatEntries,
+    RecordLogs,
+    WorkflowLogs
   },
   data() {
     return {
@@ -482,7 +342,6 @@ export default {
       }
       return 100
     },
-    //
     getterWindow() {
       return this.$store.getters.getWindow(this.windowUuid)
     },
@@ -502,69 +361,14 @@ export default {
       }
       return false
     },
-    gettersListRecordLogs() {
-      const changeLog = this.$store.getters.getRecordLogs.recorLogs
-      if (this.isEmptyValue(changeLog)) {
-        return changeLog
-      }
-      changeLog.sort((a, b) => {
-        var c = new Date(a.logDate)
-        var d = new Date(b.logDate)
-        return d - c
-      })
-      return changeLog
-    },
-    getIsChangeLog() {
-      if (this.isEmptyValue(this.gettersListRecordLogs)) {
-        return false
-      }
-      return true
-    },
-    getIsWorkflowLog() {
-      if (this.isEmptyValue(this.gettersListWorkflow)) {
-        return false
-      }
-      return true
-    },
-    getIsChat() {
-      return this.$store.getters.getIsNote
-    },
-    getTypeLogs() {
-      const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
-        if (!groupLog.includes(item.logId)) {
-          groupLog.push(item.logId)
-        }
-        return groupLog
-      }, [])
-        .map(log => {
-          // agrup for logId
-          return {
-            logs: this.gettersListRecordLogs.filter(change => change.logId === log),
-            logId: log
-          }
-        })
-      return groupLog
-    },
-    gettersLischat() {
-      return this.$store.getters.getChatEntries.chatEntriesList
-    },
-    // gettersLisRecordChats() {
-    //   return this.$store.getters.getListRecordChats[0].description
-    // },
-    isNote() {
-      return this.$store.getters.getIsNote
-    },
-    gettersListWorkflow() {
-      return this.$store.getters.getWorkflow
-    },
-    gettersrecorCount() {
-      return 1
-    },
-    language() {
-      return this.$store.getters.language
-    },
     getterShowContainerInfo() {
       return this.$store.getters.getShowContainerInfo
+    },
+    isWorkflow() {
+      if (this.isEmptyValue(this.$store.getters.getWorkflow)) {
+        return false
+      }
+      return true
     }
   },
   watch: {
@@ -586,37 +390,6 @@ export default {
     this.getWindow()
   },
   methods: {
-    sendComment(comment) {
-      this.$store.dispatch('createChatEntry', {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId,
-        comment: comment
-      })
-      this.chatNote = ''
-      // this.$store.dispatch('listChatEntries', {
-      //   tableName: this.$route.params.tableName,
-      //   recordId: this.$route.params.recordId
-      // })
-    },
-    showkey(key, index) {
-      if (key === this.currentKey && index === this.typeAction) {
-        this.currentKey = 1000
-      } else {
-        this.currentKey = key
-        this.typeAction = index
-      }
-    },
-    changeField(log) {
-      this.$store.dispatch('notifyPanelChange', {
-        newValues: log.oldDisplayValue,
-        isSendToServer: false,
-        isSendCallout: false,
-        isPrivateAccess: false
-      })
-    },
-    translateDate(value) {
-      return this.$d(new Date(value), 'long', this.language)
-    },
     conteInfo() {
       this.show = !this.show
       this.$store.dispatch('listWorkflowLogs', {
