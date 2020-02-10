@@ -348,6 +348,10 @@ export const contextMixin = {
           })
       }
       this.actions = this.metadataMenu.actions
+      var processAction = this.actions.find(
+        item => item.name === 'Procesar Orden'
+      )
+      this.$store.dispatch('setOrden', processAction)
 
       if (this.actions && this.actions.length) {
         this.actions.forEach(itemAction => {

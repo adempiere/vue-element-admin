@@ -14,7 +14,8 @@ const utils = {
     isShowedTabChildren: false,
     recordTable: 0,
     selectionProcess: [],
-    isContainerInfo: false
+    isContainerInfo: false,
+    processOrden: {}
   },
   mutations: {
     setWidth(state, width) {
@@ -55,6 +56,9 @@ const utils = {
     },
     setReportTypeToShareLink(state, payload) {
       state.reportType = payload
+    },
+    setOrden(state, payload) {
+      state.processOrden = payload
     }
   },
   actions: {
@@ -105,6 +109,9 @@ const utils = {
     },
     setReportTypeToShareLink({ commit }, value) {
       commit('setReportTypeToShareLink', value)
+    },
+    setOrden({ commit }, params) {
+      commit('setOrden', params)
     }
   },
   getters: {
@@ -159,6 +166,9 @@ const utils = {
     },
     getReportType: (state) => {
       return state.reportType
+    },
+    getOrden: (state) => {
+      return state.processOrden
     }
   }
 }

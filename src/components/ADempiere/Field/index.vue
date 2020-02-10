@@ -34,31 +34,36 @@
           {{ isFieldOnly() }}
         </span>
         <el-popover
-          v-if="field.columnName === 'DocStatus'"
+          v-if="field.columnName === 'DocStatus' && (!isEmptyValue(listDocumentActions))"
           placement="right"
           width="400"
           trigger="click"
         >
-          <el-select v-model="valueActionDocument" :placeholder="defaultDocumentActions">
+          <el-select
+            v-model="valueActionDocument"
+            :placeholder="defaultDocumentActions.name"
+            @change="documentActionChange"
+          >
             <el-option
               v-for="(item, key) in listDocumentActions"
               :key="key"
               :label="item.name"
-              :value="item.name"
+              :value="item.value"
             />
           </el-select>
           <el-tag
             v-if="isEmptyValue(valueActionDocument)"
+            :type="tagStatus(field.value)"
           >
-            {{ defaultDocumentActions }}
+            {{ field.displayColumn }}
           </el-tag>
           <el-tag
             v-else
+            :type="tagStatus(valueActionDocument)"
           >
-            {{ valueActionDocument }}
+            {{ labelDocumentActions }}
           </el-tag>
           <!-- {{ label }} -->
-          <!-- {{ labelDocumentActions }} -->
           <el-button slot="reference" type="text" icon="el-icon-set-up" circle />
         </el-popover>
         <field-translated
@@ -149,7 +154,6 @@ export default {
     return {
       field: {},
       valueActionDocument: ''
-      // label: this.listDocumentActions.find(element => element.value === this.valueActionDocument)
     }
   },
   computed: {
@@ -271,19 +275,22 @@ export default {
       return this.$store.getters.getListDocumentActions.documentActionsList
     },
     defaultDocumentActions() {
-      console.log(this.$store.getters.getListDocumentActions)
-      return this.$store.getters.getListDocumentActions.defaultDocumentAction.name
-    // },
-    // labelDocumentActions() {
-    //   const found = this.listDocumentActions.find(element => {
-    //     console.log(element)
-    //     element.value === this.valueActionDocument
-    //   })
-    //   console.log(found)
-    //   return found
+      return this.$store.getters.getListDocumentActions.defaultDocumentAction
+    },
+    labelDocumentActions() {
+      const found = this.listDocumentActions.find(element => {
+        if (element.value === this.valueActionDocument) {
+          return element
+        }
+      })
+      if (this.isEmptyValue(found)) {
+        return this.valueActionDocument
+      }
+      return found.name
     }
   },
   watch: {
+
     metadataField(value) {
       this.field = value
     }
@@ -294,6 +301,28 @@ export default {
   },
   methods: {
     showMessage,
+    documentActionChange(value) {
+      var actionProcess = this.$store.getters.getOrden
+      // var actionProcess = this.$store.getters.getProcess(uuid)
+      this.$store.dispatch('startProcess', {
+        action: {
+          uuid: actionProcess.uuid,
+          id: actionProcess.id,
+          name: actionProcess.name
+        }, // process metadata
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId,
+        recordUuid: this.$route.query.action,
+        parametersList: [{
+          columnName: 'DocStatus',
+          value: this.valueActionDocument
+        }],
+        isActionDocument: true,
+        parentUuid: this.parentUuid,
+        panelType: this.panelType,
+        containerUuid: this.containerUuid// determinate if get table name and record id (window) or selection (browser)
+      })
+    },
     isDisplayed() {
       if (this.isAdvancedQuery) {
         return this.field.isShowedFromUser
