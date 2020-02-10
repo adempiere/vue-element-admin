@@ -296,14 +296,6 @@ export default {
         this.generatePanel(this.metadata.fieldList)
       }
     },
-    // used if the first load contains a uuid
-    isLoadRecord(value) {
-      // TODO: Validate UUID value
-      if (value && this.isPanelWindow && this.uuidRecord !== 'create-new' &&
-        !this.isEmptyValue(this.uuidRecord)) {
-        this.setTagsViewTitle(this.uuidRecord)
-      }
-    },
     '$route.query.action'(newValue, oldValue) {
       // used in field, if uuid record or different create-new, field is read only
       this.uuidRecord = newValue
@@ -558,7 +550,6 @@ export default {
                 }
               })
             }
-            this.setFocus()
           })
       }
     },
@@ -643,7 +634,7 @@ export default {
     },
     changePanelRecord(uuidRecord) {
       if (!['create-new', 'reference', 'advancedQuery', 'criteria'].includes(uuidRecord)) {
-        const recordSelected = this.$store.getters.getDataRecordsList(this.containerUuid).find(record => record.UUID === uuidRecord)
+        const recordSelected = this.getterDataStore.record.find(record => record.UUID === uuidRecord)
         if (recordSelected) {
           this.dataRecords = recordSelected
           this.$store.dispatch('notifyPanelChange', {

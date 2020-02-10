@@ -9,7 +9,7 @@
         :name="String(key)"
         lazy
         :disabled="Boolean(key > 0 && isCreateNew)"
-        :style="isShowedDetail ? { height: '100%', overflow: 'hidden' } : { height: '75vh', overflow: 'auto' }"
+        :style="tabParentStyle"
       >
         <main-panel
           :parent-uuid="windowUuid"
@@ -36,12 +36,24 @@ export default {
   mixins: [tabMixin],
   computed: {
     // if tabs children is showed or closed
-    isShowedDetail() {
+    isShowedTabsChildren() {
       const window = this.$store.getters.getWindow(this.windowUuid)
       if (window) {
-        return window.isShowedDetail
+        return window.isShowedTabsChildren
       }
       return undefined
+    },
+    tabParentStyle() {
+      if (this.isShowedTabsChildren) {
+        return {
+          height: '100%',
+          overflow: 'hidden'
+        }
+      }
+      return {
+        height: '75vh',
+        overflow: 'auto'
+      }
     }
   },
   watch: {

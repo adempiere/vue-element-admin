@@ -1,7 +1,6 @@
 <template>
   <el-tabs v-model="currentTabChild" type="border-card" @tab-click="handleClick">
     <template v-for="(tabAttributes, key) in getTabsList">
-      <!-- TODO: Add support to tabs isSortTab (sequence) -->
       <el-tab-pane
         :key="key"
         :label="tabAttributes.name"

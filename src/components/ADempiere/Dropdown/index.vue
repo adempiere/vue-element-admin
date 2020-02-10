@@ -80,11 +80,11 @@ export default {
       if (item.meta && item.meta.type === 'window') {
         this.$router.push({
           name: item.name,
-          query: {
-            tabParent: 0
-          },
           params: {
             childs: item.children
+          },
+          query: {
+            tabParent: 0
           }
         })
       } else {

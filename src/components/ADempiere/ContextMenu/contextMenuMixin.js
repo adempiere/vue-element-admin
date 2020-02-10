@@ -449,12 +449,6 @@ export const contextMixin = {
             .catch(error => {
               console.warn(error)
             })
-          if (this.panelType === 'process') {
-            // TODO: Verify use
-            this.$store.dispatch('deleteRecordContainer', {
-              viewUuid: this.$route
-            })
-          }
         } else {
           this.showNotification({
             type: 'warning',

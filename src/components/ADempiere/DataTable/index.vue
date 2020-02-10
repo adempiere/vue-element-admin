@@ -304,6 +304,7 @@ export default {
   },
   data() {
     const activeName = []
+    // TODO: Manage attribute with vuex store in window module
     if (this.isParent && this.$route.query.action && this.$route.query.action === 'advancedQuery') {
       activeName.push('1')
     }
@@ -676,7 +677,7 @@ export default {
     },
     isReadOnlyCell(row, field) {
       // TODO: Add support to its type fields
-      if (field.componentPath === 'FieldImage' || field.componentPath === 'FieldBinary') {
+      if (['FieldImage', 'FieldBinary'].includes(field.componentPath)) {
         return true
       }
 
@@ -701,11 +702,13 @@ export default {
         parentUuid: this.parentUuid,
         containerUuid: this.containerUuid
       })
-      this.$store.dispatch('setRecordSelection', {
-        parentUuid: this.parentUuid,
-        containerUuid: this.containerUuid,
-        panelType: this.panelType
-      })
+        .then(() => {
+          this.$store.dispatch('setRecordSelection', {
+            parentUuid: this.parentUuid,
+            containerUuid: this.containerUuid,
+            panelType: this.panelType
+          })
+        })
     },
     callOffNewRecord() {
       this.getterDataRecords.shift()
