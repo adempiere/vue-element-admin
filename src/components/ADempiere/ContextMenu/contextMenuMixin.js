@@ -218,30 +218,7 @@ export const contextMixin = {
           })
           break
         case 'f5':
-          if (this.panelType === 'window') {
-            this.$store.dispatch('getDataListTab', {
-              parentUuid: this.parentUuid,
-              containerUuid: this.containerUuid,
-              isRefreshPanel: true,
-              recordUuid: this.recordUuid
-            })
-          } else if (this.panelType === 'browser') {
-            const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
-              containerUuid: this.containerUuid,
-              fieldsList: this.getterFieldList
-            })
-            if (fieldsEmpty.length) {
-              this.showMessage({
-                message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
-                type: 'info'
-              })
-            } else {
-              this.$store.dispatch('getBrowserSearch', {
-                containerUuid: this.containerUuid,
-                isClearSelection: true
-              })
-            }
-          }
+          this.refreshData()
           break
       }
     },
@@ -273,7 +250,7 @@ export const contextMixin = {
     },
     getReferences() {
       if (this.isReferecesContent) {
-        var references = this.getterReferences
+        const references = this.getterReferences
         if (references && references.length) {
           this.references = references
           this.isReferencesLoaded = true
@@ -292,7 +269,7 @@ export const contextMixin = {
               }
             })
             .catch(error => {
-              console.warn('References Load Error ' + error.code + ': ' + error.message)
+              console.warn(`References Load Error ${error.code}: ${error.message}`)
             })
         }
       } else {
