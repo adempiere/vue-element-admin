@@ -1,6 +1,6 @@
 <template>
   <el-tabs v-model="currentTabChild" type="border-card" @tab-click="handleClick">
-    <template v-for="(tabAttributes, key) in getTabsList">
+    <template v-for="(tabAttributes, key) in tabsList">
       <el-tab-pane
         :key="key"
         :label="tabAttributes.name"
@@ -72,6 +72,18 @@ export default {
             ...this.$route.params
           }
         })
+      }
+    },
+    // Refrest the records of the TabChildren
+    getDataSelection(value) {
+      if (!value.isLoaded && this.getterIsLoadContextParent && this.getterIsLoadRecordParent) {
+        this.getDataTable()
+      }
+    },
+    // Load parent tab context
+    getterIsLoadContextParent(value) {
+      if (value && !this.getDataSelection.isLoaded && this.getterIsLoadRecordParent) {
+        this.getDataTable()
       }
     }
   },

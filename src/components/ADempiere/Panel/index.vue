@@ -40,7 +40,8 @@
                     :container-uuid="containerUuid"
                     :metadata-field="{
                       ...fieldAttributes,
-                      optionCRUD
+                      optionCRUD,
+                      recordUuid: uuidRecord
                     }"
                     :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                     :panel-type="panelType"
@@ -98,7 +99,8 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD
+                            optionCRUD,
+                            recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
@@ -150,7 +152,8 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD
+                            optionCRUD,
+                            recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
@@ -306,7 +309,7 @@ export default {
     },
     isLoadPanel(value) {
       if (value) {
-        this.readParameters(this.$route)
+        this.readParameters()
       }
     }
   },
@@ -353,7 +356,7 @@ export default {
     /**
      * TODO: Delete route parameters after reading them
      */
-    readParameters(route) {
+    readParameters() {
       var parameters = {
         isLoadAllRecords: true,
         isReference: false,
@@ -361,6 +364,7 @@ export default {
         isWindow: true,
         criteria: {}
       }
+      const route = this.$route
       if (this.isPanelWindow) {
         // TODO: use action notifyPanelChange with isShowedField in true
         this.getterFieldList.forEach(fieldItem => {
@@ -448,7 +452,7 @@ export default {
             fieldList: this.fieldList,
             panelType: this.panelType
           })
-        } else if (this.panelType === 'process' || this.panelType === 'browser') {
+        } else if (['process', 'browser'].includes(this.panelType)) {
           if (!this.isEmptyValue(route.query)) {
             this.$store.dispatch('notifyPanelChange', {
               containerUuid: this.containerUuid,
@@ -485,9 +489,10 @@ export default {
                   name: this.$route.name,
                   query: {
                     ...this.$route.query,
-                    action: this.dataRecordsq
+                    action: this.dataRecords
                   },
                   params: {
+                    ...this.$route.params,
                     tableName: this.metadata.tableName,
                     recordId: this.dataRecords[`${this.metadata.tableName}_ID`]
                   }
@@ -646,11 +651,13 @@ export default {
             fieldList: this.fieldList,
             panelType: this.panelType
           }).then(() => {
-            // delete records tabs children when change record uuid
-            this.$store.dispatch('deleteRecordContainer', {
-              viewUuid: this.parentUuid,
-              withOut: [this.containerUuid]
-            })
+            if (this.getterPanel.isTabsChildren) {
+              // delete records tabs children when change record uuid
+              this.$store.dispatch('deleteRecordContainer', {
+                viewUuid: this.parentUuid,
+                withOut: [this.containerUuid]
+              })
+            }
           })
         }
       }

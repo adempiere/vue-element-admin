@@ -285,57 +285,62 @@ const panel = {
       parentUuid,
       containerUuid,
       panelType = 'window',
-      isNewRecord = false,
-      fieldList = []
+      isNewRecord = false
     }) {
-      const defaultAttributes = getters.getParsedDefaultValues({
-        parentUuid,
-        containerUuid
-      })
-      if (panelType === 'window' && isNewRecord) {
-        // redirect to create new record
-        const oldRoute = router.app._route
-        router.push({
-          name: oldRoute.name,
-          params: {
-            ...oldRoute.params
-          },
-          query: {
-            ...oldRoute.query,
-            action: 'create-new'
-          }
-        })
-        showMessage({
-          message: language.t('data.createNewRecord'),
-          type: 'info'
+      return new Promise(resolve => {
+        const panel = getters.getPanel(containerUuid)
+        const defaultAttributes = getters.getParsedDefaultValues({
+          parentUuid,
+          containerUuid,
+          fieldsList: panel.fieldList
         })
 
-        if (!fieldList.length) {
-          fieldList = getters.getFieldsListFromPanel(containerUuid)
-        }
-        fieldList.forEach(fieldToBlanck => {
-          commit('changeFieldValueToNull', {
-            field: fieldToBlanck,
-            value: undefined
+        if (panelType === 'window' && isNewRecord) {
+          // redirect to create new record
+          const oldRoute = router.app._route
+          router.push({
+            name: oldRoute.name,
+            params: {
+              ...oldRoute.params
+            },
+            query: {
+              ...oldRoute.query,
+              action: 'create-new'
+            }
           })
-        })
+          showMessage({
+            message: language.t('data.createNewRecord'),
+            type: 'info'
+          })
 
-        // delete records tabs children when change record uuid
-        dispatch('deleteRecordContainer', {
-          viewUuid: parentUuid,
-          withOut: [containerUuid],
-          isNew: true
+          panel.fieldList.forEach(fieldToBlanck => {
+            commit('changeFieldValueToNull', {
+              field: fieldToBlanck,
+              value: undefined
+            })
+          })
+
+          if (panel.isTabsChildren) {
+            // delete records tabs children when change record uuid
+            dispatch('deleteRecordContainer', {
+              viewUuid: parentUuid,
+              withOut: [containerUuid],
+              isNew: true
+            })
+          }
+        }
+        dispatch('notifyPanelChange', {
+          parentUuid,
+          containerUuid,
+          panelType,
+          fieldList: panel.fieldList,
+          newValues: defaultAttributes,
+          isSendToServer: false,
+          // if isNewRecord active callouts, if window is closed no send callout
+          isSendCallout: isNewRecord,
+          isPrivateAccess: false
         })
-      }
-      dispatch('notifyPanelChange', {
-        parentUuid,
-        containerUuid,
-        panelType,
-        newValues: defaultAttributes,
-        isSendToServer: false,
-        // if isNewRecord active callouts, if window is closed no send callout
-        isSendCallout: isNewRecord,
-        isPrivateAccess: false
+        resolve(defaultAttributes)
       })
     },
     /**
@@ -1047,14 +1052,14 @@ const panel = {
       parentUuid,
       containerUuid,
       isGetServer = true,
-      fieldList = []
+      fieldsList = []
     }) => {
-      if (!fieldList.length) {
-        fieldList = getters.getFieldsListFromPanel(containerUuid)
+      if (!fieldsList.length) {
+        fieldsList = getters.getFieldsListFromPanel(containerUuid)
       }
-      var attributesObject = {}
+      const attributesObject = {}
 
-      fieldList
+      fieldsList
         .map(fieldItem => {
           let isSQL = false
           let valueToReturn = fieldItem.parsedDefaultValue

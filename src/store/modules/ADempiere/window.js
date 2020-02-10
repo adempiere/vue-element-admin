@@ -300,6 +300,7 @@ const window = {
             fieldsList.push(field)
           }
 
+          const window = getters.getWindow(parentUuid)
           //  Panel for save on store
           const panel = {
             ...getters.getTab(parentUuid, containerUuid),
@@ -308,7 +309,8 @@ const window = {
             fieldList: fieldsList,
             panelType,
             // app attributes
-            isShowedTotals: false
+            isShowedTotals: false,
+            isTabsChildren: Boolean(window.tabsListChildren.length)
           }
 
           dispatch('addPanel', panel)
