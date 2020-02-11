@@ -130,7 +130,7 @@ export const contextMixin = {
         }
       })
     },
-    isDesabledExportRecord() {
+    isDisabledExportRecord() {
       if (this.panelType === 'browser') {
         return this.getDataSelection.length < 1
       }
@@ -191,6 +191,14 @@ export const contextMixin = {
     getterDataLog(newValue, oldValue) {
       if (this.panelType === 'window' && newValue !== oldValue) {
         this.generateContextMenu()
+      }
+    },
+    isDisabledExportRecord(isDisabled) {
+      if (isDisabled) {
+        this.$nextTick(() => {
+          // close childs items in exportRecord menu
+          this.$refs.contextMenu.close('exportRecord')
+        })
       }
     }
   },

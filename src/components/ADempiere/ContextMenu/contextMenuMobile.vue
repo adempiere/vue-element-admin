@@ -2,6 +2,7 @@
   <div class="container-submenu-mobile container-context-menu">
     <right-menu>
       <el-menu
+        ref="contextMenu"
         v-shortkey="{ f2: ['f2'], f3: ['f3'], f5: ['f5'], f3:['ctrl', 'd'] }"
         :default-active="activeMenu"
         :router="false"
@@ -68,7 +69,7 @@
               </el-menu-item>
               <el-submenu
                 v-if="['browser', 'window'].includes(panelType)"
-                :disabled="isDesabledExportRecord"
+                :disabled="isDisabledExportRecord"
                 index="exportRecord"
               >
                 <template slot="title">
