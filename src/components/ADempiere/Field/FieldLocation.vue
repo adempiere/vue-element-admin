@@ -47,12 +47,14 @@ export default {
               .then(response => {
                 country.children = response.map(item => {
                   return {
-                    label: item.Description,
+                    label: item.Name,
                     value: item.C_Region_ID,
                     country: country.value
                   }
                 })
               })
+          } else {
+            delete country.children
           }
         })
         this.options = this.options.concat(countryMap)
