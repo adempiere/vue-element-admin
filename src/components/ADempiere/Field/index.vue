@@ -1,4 +1,3 @@
-
 <template>
   <!--
     this v-show is to indicate that if the field is not shown,
@@ -7,7 +6,7 @@
   <el-col
     v-if="!inTable"
     v-show="isDisplayed()"
-    key="panel-template"
+    key="is-panel-template"
     :xs="sizeFieldResponsive.xs"
     :sm="sizeFieldResponsive.sm"
     :md="sizeFieldResponsive.md"
@@ -15,42 +14,36 @@
     :xl="sizeFieldResponsive.xl"
     :class="classField"
   >
-    <!-- POPOVER FOR FIELD CONTEXT INFO -->
-    <el-popover
-      v-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
-      ref="contextOptions"
-      placement="top"
-      :title="isFieldOnly()"
-      width="300"
-      trigger="click"
-    >
-      <p v-if="field.contextInfo && field.contextInfo.isActive" class="pre-formatted" v-html="field.contextInfo.messageText.msgText" />
-      <template v-if="field.reference.zoomWindowList.length">
-        <div class="el-popover__title"> {{ $t('table.ProcessActivity.zoomIn') }}</div>
-        <template v-for="(zoomItem, index) in field.reference.zoomWindowList">
-          <el-button :key="index" type="text" @click="redirect({ window: zoomItem, columnName: field.columnName, value: field.value })">{{ zoomItem.name }}</el-button>
-        </template>
-      </template>
-    </el-popover>
     <el-form-item
-      v-popover:contextOptions
-      :label="isFieldOnly()"
       :required="isMandatory()"
     >
+      <template slot="label">
+        <field-operator-comparison
+          v-if="isAdvancedQuery && isDisplayed()"
+          key="is-field-operator-comparison"
+          :field-attributes="fieldAttributes"
+          :field-value="field.value"
+        />
+        <field-context-info
+          v-else-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+          key="is-field-context-info"
+          :field-attributes="fieldAttributes"
+          :field-value="field.value"
+        />
+        <span v-else key="is-field-name">
+          {{ isFieldOnly() }}
+        </span>
+
+        <field-translated
+          v-if="field.isTranslated && !isAdvancedQuery"
+          :field-attributes="fieldAttributes"
+          :record-uuid="field.recordUuid"
+        />
+      </template>
       <component
         :is="componentRender"
         :ref="field.columnName"
-        :metadata="{
-          ...field,
-          panelType: panelType,
-          inTable: inTable,
-          isAdvancedQuery: isAdvancedQuery,
-          // DOM properties
-          required: isMandatory(),
-          readonly: isReadOnly(),
-          displayed: isDisplayed(),
-          disabled: !field.isActive
-        }"
+        :metadata="fieldAttributes"
         :value-model="recordDataFields"
       />
     </el-form-item>
@@ -58,32 +51,34 @@
   <component
     :is="componentRender"
     v-else
-    key="table-template"
+    key="is-table-template"
     :class="classField"
-    :metadata="{
-      ...field,
-      panelType: panelType,
-      inTable: inTable,
-      // DOM properties
-      required: isMandatory(),
-      readonly: isReadOnly(),
-      disabled: !field.isActive
-    }"
+    :metadata="fieldAttributes"
     :value-model="recordDataFields"
   />
 </template>
 
 <script>
+import FieldContextInfo from '@/components/ADempiere/Field/fieldContextInfo'
+import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
+import FieldOperatorComparison from '@/components/ADempiere/Field/fieldOperatorComparison'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { showMessage } from '@/utils/ADempiere/notification'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
 /**
  * This is the base component for linking the components according to the
  * reference (or type of visualization) of each field
  */
 export default {
-  name: 'Field',
+  name: 'FieldDefinition',
+  components: {
+    FieldContextInfo,
+    FieldTranslated,
+    FieldOperatorComparison
+  },
   props: {
     parentUuid: {
       type: String,
@@ -92,10 +87,6 @@ export default {
     containerUuid: {
       type: String,
       default: ''
-    },
-    metadataUuid: {
-      type: String,
-      default: undefined
     },
     panelType: {
       type: String,
@@ -131,7 +122,29 @@ export default {
   computed: {
     // load the component that is indicated in the attributes of received property
     componentRender() {
+      if (this.isSelectCreated) {
+        return () => import(`@/components/ADempiere/Field/FieldSelectMultiple`)
+      }
       return () => import(`@/components/ADempiere/Field/${this.field.componentPath}`)
+    },
+    fieldAttributes() {
+      return {
+        ...this.field,
+        panelType: this.panelType,
+        inTable: this.inTable,
+        isAdvancedQuery: this.isAdvancedQuery,
+        // DOM properties
+        required: this.isMandatory(),
+        readonly: this.isReadOnly(),
+        displayed: this.isDisplayed(),
+        disabled: !this.field.isActive,
+        isSelectCreated: this.isSelectCreated
+      }
+    },
+    isSelectCreated() {
+      return this.isAdvancedQuery &&
+        !['FieldBinary', 'FieldDate', 'FieldSelect', 'FieldYesNo'].includes(this.field.componentPath) &&
+        ['IN', 'NOT_IN'].includes(this.field.operator)
     },
     getWidth() {
       return this.$store.getters.getWidthLayout
@@ -154,7 +167,7 @@ export default {
       }
 
       const sizeField = this.field.sizeFieldFromType.size
-      var newSizes = {}
+      const newSizes = {}
 
       // in table set max width, used by browser result and tab children of window
       if (this.inTable) {
@@ -220,9 +233,6 @@ export default {
         return true
       }
       return false
-    },
-    permissionRoutes() {
-      return this.$store.getters.permission_routes
     }
   },
   watch: {
@@ -235,6 +245,7 @@ export default {
     this.field = this.metadataField
   },
   methods: {
+    showMessage,
     isDisplayed() {
       if (this.isAdvancedQuery) {
         return this.field.isShowedFromUser
@@ -262,11 +273,15 @@ export default {
           return true
         }
 
+        // TODO: Evaluate record uuid without route.action
         // edit mode is diferent to create new
-        const editMode = (!this.inTable && this.field.optionCRUD !== 'create-new') || (this.inTable && !this.isEmptyValue(this.field.recordUuid))
-        return (!this.field.isUpdateable && editMode) || (isUpdateableAllFields || this.field.isReadOnlyFromForm)
-      }
-      if (this.panelType === 'browser') {
+        let isWithRecord = this.field.recordUuid !== 'create-new'
+        if (this.inTable) {
+          isWithRecord = !this.isEmptyValue(this.field.recordUuid)
+        }
+
+        return (!this.field.isUpdateable && isWithRecord) || (isUpdateableAllFields || this.field.isReadOnlyFromForm)
+      } else if (this.panelType === 'browser') {
         if (this.inTable) {
           // browser result
           return this.field.isReadOnly
@@ -284,7 +299,7 @@ export default {
       return this.field.isMandatory || this.field.isMandatoryFromLogic
     },
     isFieldOnly() {
-      if (this.inTable || this.field.isFieldOnly || this.verifyIsFieldOnly(this.field.displayType)) {
+      if (this.inTable || this.field.isFieldOnly || this.verifyIsFieldOnly()) {
         return undefined
       }
       return this.field.name
@@ -292,12 +307,11 @@ export default {
     /**
      * TODO: Evaluate the current field with the only fields contained in the
      * constant FIELD_ONLY
-     * @param  {integer} id [identifier of the type of isDisplayed]
      * @return {boolean}
      */
-    verifyIsFieldOnly(type) {
+    verifyIsFieldOnly() {
       const field = FIELD_ONLY.find(itemField => {
-        if (type === itemField.id) {
+        if (this.field.displayType === itemField.id) {
           return true
         }
       })
@@ -309,15 +323,39 @@ export default {
       }
     },
     redirect({ window, columnName, value }) {
-      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: window.uuid })
-      var windowRoute = this.$store.getters.getWindowRoute(window.uuid)
-      this.$router.push({ name: windowRoute.name, query: { action: 'advancedQuery', tabParent: 0, [columnName]: value }})
+      const viewSearch = recursiveTreeSearch({
+        treeData: this.permissionRoutes,
+        attributeValue: window.uuid,
+        attributeName: 'meta',
+        secondAttribute: 'uuid',
+        attributeChilds: 'children'
+      })
+      if (viewSearch) {
+        this.$router.push({
+          name: viewSearch.name,
+          query: {
+            action: 'advancedQuery',
+            tabParent: 0,
+            [columnName]: value
+          }
+        })
+      } else {
+        this.showMessage({
+          type: 'error',
+          message: this.$t('notifications.noRoleAccess')
+        })
+      }
     }
   }
 }
 </script>
 
 <style lang="scss">
+  .custom-tittle-popover {
+    font-size: 14px;
+    font-weight: bold;
+    float: left;
+  }
   /**
    * Separation between elements (item) of the form
    */
@@ -326,6 +364,13 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
   }
+  /**
+   * Reduce the spacing between the form element and its label
+   */
+  .el-form--label-top .el-form-item__label {
+    padding-bottom: 0px !important;
+  }
+
   .in-table {
     margin-bottom: 0px !important;
     margin-left: 0px;

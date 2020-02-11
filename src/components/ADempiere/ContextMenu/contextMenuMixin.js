@@ -1,6 +1,6 @@
-import { showNotification } from '@/utils/ADempiere/notification'
+import { showNotification, showMessage } from '@/utils/ADempiere/notification'
 import Item from './items'
-import { convertFieldListToShareLink } from '@/utils/ADempiere/valueUtils'
+import { convertFieldListToShareLink, recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
 import ROUTES from '@/utils/ADempiere/zoomWindow'
 
@@ -54,7 +54,7 @@ export const contextMixin = {
       downloads: this.$store.getters.getProcessResult.url,
       metadataMenu: {},
       recordUuid: this.$route.query.action,
-      isReferencesLoaded: false,
+      isLoadedReferences: false,
       exportDefault: 'xls',
       ROUTES
     }
@@ -71,12 +71,6 @@ export const contextMixin = {
     getDataSelection() {
       return this.$store.getters.getDataRecordSelection(this.containerUuid)
     },
-    relations() {
-      if (this.$route.params.menuParentUuid !== undefined) {
-        return this.$store.getters.getRelations(this.$route.params.menuParentUuid)
-      }
-      return this.$store.getters.getRelations(this.menuParentUuid)
-    },
     getterContextMenu() {
       return this.$store.getters.getContextMenu(this.containerUuid)
     },
@@ -92,6 +86,14 @@ export const contextMixin = {
       }
       return []
     },
+    relationsList() {
+      let menuUuid = this.$route.params.menuParentUuid
+      if (this.isEmptyValue(menuUuid)) {
+        menuUuid = this.menuParentUuid
+      }
+      const relations = this.$store.getters.getRelations(menuUuid)
+      return relations.children
+    },
     permissionRoutes() {
       return this.$store.getters.permission_routes
     },
@@ -106,7 +108,7 @@ export const contextMixin = {
       return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
     },
     getterFieldListHeader() {
-      var header = this.getterFieldList.filter(fieldItem => {
+      const header = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem.name
@@ -117,7 +119,7 @@ export const contextMixin = {
       })
     },
     getterFieldListValue() {
-      var value = this.getterFieldList.filter(fieldItem => {
+      const value = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem
@@ -135,12 +137,11 @@ export const contextMixin = {
       return this.$store.getters.getDataRecordAndSelection(this.containerUuid).record
     },
     getDataRecord() {
-      var record = this.getterDataRecordsAll.filter(fieldItem => {
+      return this.getterDataRecordsAll.filter(fieldItem => {
         if (this.recordUuid === fieldItem.UUID) {
           return fieldItem
         }
       })
-      return record
     },
     getterDataLog() {
       if (this.panelType === 'window') {
@@ -162,6 +163,9 @@ export const contextMixin = {
     },
     metadataReport() {
       return this.$store.getters.getCachedReport(this.$route.params.instanceUuid)
+    },
+    isPersonalLock() {
+      return this.$store.getters['user/getIsPersonalLock']
     }
   },
   watch: {
@@ -191,7 +195,33 @@ export const contextMixin = {
     this.getReferences()
   },
   methods: {
+    showMessage,
     showNotification,
+    actionContextMenu(event) {
+      switch (event.srcKey) {
+        case 'f2':
+          this.$store.dispatch('resetPanelToNew', {
+            parentUuid: this.parentUuid,
+            containerUuid: this.containerUuid,
+            recordUuid: this.recordUuid,
+            panelType: 'window',
+            isNewRecord: true
+          })
+          break
+        case 'f3':
+          this.$store.dispatch('deleteEntity', {
+            parentUuid: this.parentUuid,
+            containerUuid: this.containerUuid,
+            recordUuid: this.recordUuid,
+            panelType: 'window',
+            isNewRecord: false
+          })
+          break
+        case 'f5':
+          this.refreshData()
+          break
+      }
+    },
     refreshData() {
       if (this.panelType === 'window') {
         this.$store.dispatch('getDataListTab', {
@@ -201,39 +231,49 @@ export const contextMixin = {
           recordUuid: this.recordUuid
         })
       } else if (this.panelType === 'browser') {
-        this.$store.dispatch('getBrowserSearch', {
+        const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid,
-          isClearSelection: true
+          fieldsList: this.getterFieldList
         })
+        if (fieldsEmpty.length) {
+          this.showMessage({
+            message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+            type: 'info'
+          })
+        } else {
+          this.$store.dispatch('getBrowserSearch', {
+            containerUuid: this.containerUuid,
+            isClearSelection: true
+          })
+        }
       }
     },
     getReferences() {
       if (this.isReferecesContent) {
-        var references = this.getterReferences
+        const references = this.getterReferences
         if (references && references.length) {
           this.references = references
-          this.isReferencesLoaded = true
+          this.isLoadedReferences = true
         } else {
+          this.isLoadedReferences = false
           this.$store.dispatch('getReferencesListFromServer', {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid
           })
             .then(() => {
-              this.references = this.$store.getters.getReferencesList(this.parentUuid, this.recordUuid)
-              if (this.references.referencesList.length) {
-                this.isReferencesLoaded = true
-              } else {
-                this.isReferencesLoaded = false
-              }
+              this.references = this.getterReferences
             })
             .catch(error => {
-              console.warn('References Load Error ' + error.code + ': ' + error.message)
+              console.warn(`References Load Error ${error.code}: ${error.message}.`)
+            })
+            .finally(() => {
+              this.isLoadedReferences = true
             })
         }
       } else {
         this.references = []
-        this.isReferencesLoaded = false
+        this.isLoadedReferences = false
       }
     },
     typeFormat(key) {
@@ -274,43 +314,48 @@ export const contextMixin = {
     },
     generateContextMenu() {
       this.metadataMenu = this.getterContextMenu
-      if (this.panelType === 'window') {
+
+      // the function is broken avoiding that an error is generated when closing
+      // session being in a window, since the store of vuex is cleaned, being
+      // this.metadataMenu with value undefined
+      if (this.isEmptyValue(this.metadataMenu)) {
+        return
+      }
+
+      // TODO: Add store attribute to avoid making repeated requests
+      if (this.panelType === 'window' && !this.isEmptyValue(this.$route.params.tableName)) {
         this.$store.dispatch('getPrivateAccessFromServer', {
           tableName: this.$route.params.tableName,
           recordId: this.$route.params.recordId
         })
-          .then(response => {
-            this.$nextTick(() => {
-              this.validatePrivateAccess(response)
-            })
+          .then(privateAccessResponse => {
+            if (!this.isEmptyValue(privateAccessResponse)) {
+              this.$nextTick(() => {
+                this.validatePrivateAccess(privateAccessResponse)
+              })
+            }
           })
       }
       this.actions = this.metadataMenu.actions
 
       if (this.actions && this.actions.length) {
         this.actions.forEach(itemAction => {
-          // if no exists set prop with value
-          itemAction.disabled = false
-          if (this.$route.name !== 'Report Viewer' && itemAction.action === 'changeParameters') {
-            itemAction.disabled = true
-          }
           if (this.$route.meta.type === 'report' && itemAction.action === 'startProcess') {
             itemAction.reportExportType = 'html'
           }
-          if (this.$route.meta.type === 'process' && itemAction.type === 'summary') {
+
+          // if no exists set prop with value
+          itemAction.disabled = false
+          if ((this.$route.name !== 'Report Viewer' && itemAction.action === 'changeParameters') ||
+             (this.$route.meta.type === 'process' && itemAction.type === 'summary')) {
             itemAction.disabled = true
           }
 
           if (this.$route.meta.type === 'window') {
-            if (this.recordUuid === 'create-new') {
+            if (this.recordUuid === 'create-new' || !this.isInsertRecord) {
               itemAction.disabled = true
-            } else {
-              if (this.isInsertRecord) {
-                itemAction.disabled = false
-              } else {
-                itemAction.disabled = true
-              }
             }
+            // rollback
             if (itemAction.action === 'undoModifyData') {
               itemAction.disabled = Boolean(!this.getterDataLog && !this.getterWindowOldRoute)
             }
@@ -321,6 +366,21 @@ export const contextMixin = {
     showModal(action) {
       // TODO: Refactor and remove redundant dispatchs
       if (action.type === 'process') {
+        // Add context from view open in process to opening
+        if (action.parentUuidAssociated || action.containerUuidAssociated) {
+          const contextValues = this.$store.getters.getContextView({
+            parentUuid: action.parentUuidAssociated,
+            containerUuid: action.containerUuidAssociated
+          })
+          if (!this.isEmptyValue(contextValues)) {
+            this.$store.dispatch('setMultipleContextView', {
+              containerUuid: action.uuid,
+              values: contextValues
+            })
+          }
+        }
+
+        // open modal dialog with metadata
         this.$store.dispatch('setShowDialog', {
           type: action.type,
           action: {
@@ -335,7 +395,7 @@ export const contextMixin = {
         // run process or report
         const fieldNotReady = this.$store.getters.isNotReadyForSubmit(this.$route.meta.uuid)
         if (!fieldNotReady) {
-          var containerParams = this.$route.meta.uuid
+          let containerParams = this.$route.meta.uuid
           if (this.lastParameter !== undefined) {
             containerParams = this.lastParameter
           }
@@ -352,7 +412,7 @@ export const contextMixin = {
               href: window.location.href
             })
           }
-          var reportFormat = action.reportExportType
+          let reportFormat = action.reportExportType
           if (this.isEmptyValue(reportFormat)) {
             if (!this.isEmptyValue(this.$route.query.reportType)) {
               reportFormat = this.$route.query.reportType
@@ -368,18 +428,12 @@ export const contextMixin = {
             containerUuid: containerParams, // EVALUATE IF IS action.uuid
             panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
             reportFormat: reportFormat, // this.$route.query.reportType ? this.$route.query.reportType : action.reportExportType,
-            menuParentUuid: parentMenu, // to load relations in context menu (report view)
+            menuParentUuid: parentMenu, // to load relationsList in context menu (report view)
             routeToDelete: this.$route
           })
             .catch(error => {
               console.warn(error)
             })
-          if (this.panelType === 'process') {
-            // TODO: Verify use
-            this.$store.dispatch('deleteRecordContainer', {
-              viewUuid: this.$route
-            })
-          }
         } else {
           this.showNotification({
             type: 'warning',
@@ -391,13 +445,6 @@ export const contextMixin = {
       } else if (action.type === 'process') {
         // run process associate with view (window or browser)
         this.showModal(action)
-        if (this.panelType === 'process' || this.panelType === 'browser' || this.panelType === 'report') {
-          this.$store.dispatch('resetPanelToNew', {
-            parentUuid: this.parentUuid,
-            containerUuid: this.containerUuid,
-            panelType: this.panelType
-          })
-        }
       } else if (action.type === 'dataAction') {
         if (action.action === 'undoModifyData' && Boolean(!this.getterDataLog) && this.getterWindowOldRoute) {
           this.$router.push({
@@ -423,19 +470,26 @@ export const contextMixin = {
             })
         }
       } else if (action.type === 'reference') {
-        this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: action.windowUuid })
         if (action.windowUuid && action.recordUuid) {
-          var windowRoute = this.$store.getters.getWindowRoute(action.windowUuid)
-          this.$router.push({
-            name: windowRoute.name,
-            query: {
-              action: action.type,
-              referenceUuid: action.uuid,
-              recordUuid: action.recordUuid,
-              windowUuid: this.parentUuid,
-              tabParent: 0
-            }
+          const viewSearch = recursiveTreeSearch({
+            treeData: this.permissionRoutes,
+            attributeValue: action.windowUuid,
+            attributeName: 'meta',
+            secondAttribute: 'uuid',
+            attributeChilds: 'children'
           })
+          if (viewSearch) {
+            this.$router.push({
+              name: viewSearch.name,
+              query: {
+                action: action.type,
+                referenceUuid: action.uuid,
+                recordUuid: action.recordUuid,
+                windowUuid: this.parentUuid,
+                tabParent: 0
+              }
+            })
+          }
         }
       } else if (action.type === 'updateReport') {
         var updateReportParams = {
@@ -450,15 +504,24 @@ export const contextMixin = {
           reportType: this.$store.getters.getReportType,
           option: action.option
         }
+        if (this.isEmptyValue(updateReportParams.instanceUuid)) {
+          updateReportParams.instanceUuid = this.$route.params.instanceUuid
+        }
+        if (this.isEmptyValue(updateReportParams.processId)) {
+          updateReportParams.processId = this.$route.params.processId
+        }
         this.$store.dispatch('getReportOutputFromServer', updateReportParams)
           .then(response => {
             if (!response.isError) {
-              var link = {
+              let link = {
                 href: undefined,
                 download: undefined
               }
 
-              const blob = new Blob([response.outputStream], { type: response.mimeType })
+              const blob = new Blob(
+                [response.outputStream],
+                { type: response.mimeType }
+              )
               link = document.createElement('a')
               link.href = window.URL.createObjectURL(blob)
               link.download = response.fileName
@@ -467,15 +530,18 @@ export const contextMixin = {
               }
               response.url = link.href
             }
-            this.$store.dispatch('finishProcess', { processOutput: response, routeToDelete: this.$route })
+            this.$store.dispatch('finishProcess', {
+              processOutput: response,
+              routeToDelete: this.$route
+            })
           })
       }
     },
     setShareLink() {
-      var shareLink = this.panelType === 'window' || window.location.href.includes('?') ? `${window.location.href}&` : `${window.location.href}?`
+      let shareLink = this.panelType === 'window' || window.location.href.includes('?') ? `${window.location.href}&` : `${window.location.href}?`
       if (this.$route.name === 'Report Viewer') {
-        var processParameters = convertFieldListToShareLink(this.processParametersExecuted)
-        var reportFormat = this.$store.getters.getReportType
+        const processParameters = convertFieldListToShareLink(this.processParametersExecuted)
+        const reportFormat = this.$store.getters.getReportType
         shareLink = this.$store.getters.getTempShareLink
         if (String(processParameters).length) {
           shareLink += '?' + processParameters
@@ -485,7 +551,7 @@ export const contextMixin = {
         if (String(this.valuesPanelToShare).length) {
           shareLink += this.valuesPanelToShare
         }
-        if (this.$route.query.action && this.$route.query.action !== 'create-new' && this.$route.query.action !== 'reference' && this.$route.query.action !== 'advancedQuery') {
+        if (this.$route.query.action && this.$route.query.action !== 'create-new' && this.$route.query.action !== 'reference' && this.$route.query.action !== 'advancedQuery' && this.$route.query.action !== 'criteria') {
           shareLink = window.location.href
         }
       }
@@ -494,20 +560,17 @@ export const contextMixin = {
       }
     },
     fallbackCopyTextToClipboard(text) {
-      var textArea = document.createElement('textarea')
+      const textArea = document.createElement('textarea')
       textArea.value = text
       document.body.appendChild(textArea)
       textArea.focus()
       textArea.select()
       try {
-        var successful = document.execCommand('copy')
-        if (successful) {
-          var message = this.$t('notifications.copySuccessful')
-          this.clipboardMessage(message)
+        if (document.execCommand('copy')) {
+          this.clipboardMessage(this.$t('notifications.copySuccessful'))
         }
       } catch (err) {
-        message = this.$t('notifications.copyUnsuccessful')
-        this.clipboardMessage(message)
+        this.clipboardMessage(this.$t('notifications.copyUnsuccessful'))
       }
       document.body.removeChild(textArea)
     },
@@ -518,12 +581,10 @@ export const contextMixin = {
       }
       navigator.clipboard.writeText(text)
         .then(() => {
-          var message = this.$t('notifications.copySuccessful')
-          this.clipboardMessage(message)
+          this.clipboardMessage(this.$t('notifications.copySuccessful'))
         })
         .catch(() => {
-          var message = this.$t('notifications.copyUnsuccessful')
-          this.clipboardMessage(message)
+          this.clipboardMessage(this.$t('notifications.copyUnsuccessful'))
         })
       navigator.clipboard.writeText(text)
     },
@@ -543,17 +604,43 @@ export const contextMixin = {
         }
       })
     },
-    validatePrivateAccess(response) {
-      if (response.isLocked) {
-        this.actions.find(item => item.action === 'unlockRecord').hidden = false
-        this.actions.find(item => item.action === 'unlockRecord').tableName = response.tableName
-        this.actions.find(item => item.action === 'unlockRecord').recordId = response.recordId
-        this.actions.find(item => item.action === 'lockRecord').hidden = true
-      } else {
-        this.actions.find(item => item.action === 'lockRecord').hidden = false
-        this.actions.find(item => item.action === 'lockRecord').tableName = response.tableName
-        this.actions.find(item => item.action === 'lockRecord').recordId = response.recordId
-        this.actions.find(item => item.action === 'unlockRecord').hidden = true
+    validatePrivateAccess({ isLocked, tableName, recordId }) {
+      if (this.isPersonalLock) {
+        if (isLocked) {
+          this.actions = this.actions.map(actionItem => {
+            if (actionItem.action === 'unlockRecord') {
+              return {
+                ...actionItem,
+                hidden: false,
+                tableName,
+                recordId
+              }
+            } else if (actionItem.action === 'lockRecord') {
+              return {
+                ...actionItem,
+                hidden: true
+              }
+            }
+            return actionItem
+          })
+        } else {
+          this.actions = this.actions.map(actionItem => {
+            if (actionItem.action === 'lockRecord') {
+              return {
+                ...actionItem,
+                hidden: false,
+                tableName,
+                recordId
+              }
+            } else if (actionItem.action === 'unlockRecord') {
+              return {
+                ...actionItem,
+                hidden: true
+              }
+            }
+            return actionItem
+          })
+        }
       }
     }
   }

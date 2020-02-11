@@ -1,6 +1,8 @@
 // Default store for handle dashboard refresh and other functionalities
 import { requestLisDashboards, getRecentItems } from '@/api/ADempiere/data'
 import { convertAction } from '@/utils/ADempiere/dictionaryUtils'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { getCurrentRole } from '@/utils/auth'
 
 const dashboard = {
   state: {
@@ -22,9 +24,14 @@ const dashboard = {
     refreshDashboard({ commit }, parameters) {
       commit('notifyDashboardRefresh', parameters)
     },
-    listDashboard({ commit }, roleUuid) {
-      return new Promise((resolve, reject) => {
-        requestLisDashboards(roleUuid)
+    listDashboard({ commit, rootGetters }, roleUuid) {
+      if (isEmptyValue(roleUuid)) {
+        roleUuid = rootGetters.getRoleUuid
+      } else if (isEmptyValue(roleUuid)) {
+        roleUuid = getCurrentRole()
+      }
+      return new Promise(resolve => {
+        requestLisDashboards({ roleUuid })
           .then(dashboardResponse => {
             const roleDashboards = {
               roleUuid: roleUuid,
@@ -34,13 +41,13 @@ const dashboard = {
             resolve(roleDashboards)
           })
           .catch(error => {
-            reject(error)
+            console.warn(`Error getting List Dashboards: ${error.message}. Code: ${error.code}.`)
           })
       })
     },
     getRecentItemsFromServer({ commit }) {
-      return new Promise((resolve, reject) => {
-        getRecentItems()
+      return new Promise(resolve => {
+        getRecentItems({ pageToken: undefined, pageSize: undefined })
           .then(recentItemsResponse => {
             const recentItems = recentItemsResponse.recentItemsList.map(item => {
               const actionConverted = convertAction(item.action)
@@ -55,8 +62,7 @@ const dashboard = {
             resolve(recentItems)
           })
           .catch(error => {
-            console.warn(`Error gettin recent items: ${error.message}. Code: ${error.code}`)
-            reject(error)
+            console.warn(`Error getting recent items: ${error.message}. Code: ${error.code}.`)
           })
       })
     }

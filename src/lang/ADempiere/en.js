@@ -1,6 +1,8 @@
 export default {
+  language: 'Language',
   route: {
     dashboard: 'Dashboard',
+    calendar: 'Calendar',
     documentation: 'Documentation',
     guide: 'Guide',
     forgotPassword: 'Forgot Password?',
@@ -8,7 +10,7 @@ export default {
     page401: '401',
     page404: '404',
     profile: 'Profile',
-    ProcessActivity: 'Process Activity',
+    ProcessActivity: 'Process Logs',
     Role: 'Role',
     ReportViewer: 'Report Viewer'
   },
@@ -27,7 +29,7 @@ export default {
     errorSearch: 'The search has not been completed',
     // process
     processing: 'Processing',
-    processExecuted: 'Executed, see process activity',
+    processExecuted: 'Executed, see process logs',
     processError: 'Was not executed',
     //
     emptyValues: 'Parameter(s) empty value',
@@ -42,12 +44,13 @@ export default {
     updateSuccessfully: 'Successfully made changes',
     invalidEmailFormat: 'Invalid email format',
     recordLocked: 'This record has been locked',
-    recordUnlocked: 'This record has been unlocked'
+    recordUnlocked: 'This record has been unlocked',
+    noRoleAccess: 'With your current role and settings, you cannot view this information.'
   },
   navbar: {
     badge: {
       Notifications: 'Notifications',
-      link: 'go to ProccesActivity'
+      link: 'Go to Procces Logs'
     },
     dashboard: 'Dashboard',
     github: 'Github',
@@ -119,6 +122,7 @@ export default {
     contextMenuRelations: 'Relations',
     contextMenuActions: 'Actions',
     contextMenuReferences: 'References',
+    withOutReferences: 'Without references for record',
     RunProcess: 'Run',
     ChangeParameters: 'Change Parameters',
     RunProcessAs: 'Run As',
@@ -192,6 +196,7 @@ export default {
       selected: 'Selected',
       deleteSelection: 'Delete Selected Records',
       advancedQuery: 'Advanced Query',
+      exportZip: 'Export Zip',
       showOnlyMandatoryColumns: 'Show Only Mandatory Columns',
       showAllAvailableColumns: 'Show All Available Columns',
       exportRecordTable: 'Export Selected Records',
@@ -264,7 +269,20 @@ export default {
   window: {
     newRecord: 'New Record',
     deleteRecord: 'Delete Record',
-    undoNew: 'Undo New Record'
+    undoNew: 'Undo New Record',
+    containerInfo: {
+      notes: 'Notes',
+      changeLog: 'ACtivity',
+      workflowLog: 'Workflow Log',
+      changeDetail: 'Change detail',
+      logWorkflow: {
+        message: 'Message',
+        responsible: 'Responsible',
+        workflowName: 'Name of Workflow Status',
+        timeElapsed: 'Time Elapsed',
+        addNote: 'Add Note'
+      }
+    }
   },
   data: {
     emtpyTableName: 'Error: Table Name is not defined',
@@ -282,5 +300,21 @@ export default {
   sequence: {
     available: 'Available',
     sequence: 'Sequence'
+  },
+  operators: {
+    operator: 'Comparison operator',
+    EQUAL: 'Equal to "="',
+    NOT_EQUAL: 'Not equal to "<>"',
+    LIKE: 'Like "~"',
+    NOT_LIKE: 'Not like "!~"',
+    GREATER: 'Greater than ">"',
+    GREATER_EQUAL: 'Greater than equal to ">="',
+    LESS: 'Less than "<"',
+    LESS_EQUAL: 'Less than equal to "<="',
+    BETWEEN: 'Between ">-<"',
+    NOT_NULL: 'Is not null',
+    NULL: 'Is null',
+    IN: 'Include',
+    NOT_IN: 'Not include'
   }
 }

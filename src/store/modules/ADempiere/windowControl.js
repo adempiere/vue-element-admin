@@ -9,7 +9,6 @@ const windowControl = {
   state: {
     inCreate: [],
     references: [],
-    windowRoute: {},
     windowOldRoute: {
       path: '',
       fullPath: '',
@@ -39,9 +38,6 @@ const windowControl = {
         return true
       })
     },
-    addWindowRoute(state, payload) {
-      state.windowRoute = payload
-    },
     setDataLog(state, payload) {
       state.dataLog = payload
     },
@@ -59,15 +55,15 @@ const windowControl = {
     }
   },
   actions: {
-    undoPanelToNew({ dispatch, rootGetters }, parameters) {
+    undoPanelToNew({ dispatch, rootGetters }, { containerUuid }) {
       const oldAttributes = rootGetters.getColumnNamesAndValues({
-        containerUuid: parameters.containerUuid,
+        containerUuid,
         propertyName: 'oldValue',
         isObjectReturn: true,
         isAddDisplayColumn: true
       })
       dispatch('notifyPanelChange', {
-        containerUuid: parameters.containerUuid,
+        containerUuid,
         newValues: oldAttributes
       })
     },
@@ -86,7 +82,7 @@ const windowControl = {
 
         const { tableName, fieldList } = rootGetters.getPanel(containerUuid)
         // delete key from attributes
-        const finalAttributes = rootGetters.getColumnNamesAndValues({
+        const attributesList = rootGetters.getColumnNamesAndValues({
           containerUuid,
           propertyName: 'value',
           isEvaluateValues: true,
@@ -96,15 +92,15 @@ const windowControl = {
         commit('addInCreate', {
           containerUuid,
           tableName,
-          attributesList: finalAttributes
+          attributesList
         })
         createEntity({
           tableName,
-          attributesList: finalAttributes
+          attributesList
         })
           .then(createEntityResponse => {
             const newValues = createEntityResponse.values
-            finalAttributes.forEach(element => {
+            attributesList.forEach(element => {
               if (element.columnName.includes('DisplayColumn')) {
                 newValues[element.columnName] = element.value
               }
@@ -142,6 +138,9 @@ const windowControl = {
             const oldRoute = router.app._route
             router.push({
               name: oldRoute.name,
+              params: {
+                ...oldRoute.params
+              },
               query: {
                 ...oldRoute.query,
                 action: createEntityResponse.uuid
@@ -161,14 +160,14 @@ const windowControl = {
               message: error.message,
               type: 'error'
             })
-            console.warn(`Create Entity error: ${error.message}`)
+            console.warn(`Create Entity error: ${error.message}.`)
             reject(error)
           })
           .finally(() => {
             commit('deleteInCreate', {
               containerUuid,
               tableName,
-              attributesList: finalAttributes
+              attributesList
             })
           })
       })
@@ -221,6 +220,9 @@ const windowControl = {
             const oldRoute = router.app._route
             router.push({
               name: oldRoute.name,
+              params: {
+                ...oldRoute.params
+              },
               query: {
                 ...oldRoute.query,
                 action: createEntityResponse.recordUuid
@@ -275,7 +277,12 @@ const windowControl = {
         }
         return true
       })
-
+      // if (rootGetters.getShowContainerInfo) {
+      //   dispatch('listRecordLogs', {
+      //     tableName: panel.tableName,
+      //     recordId
+      //   })
+      // }
       return updateEntity({
         tableName: panel.tableName,
         recordUuid,
@@ -283,7 +290,6 @@ const windowControl = {
       })
         .then(updateEntityResponse => {
           const newValues = updateEntityResponse.values
-
           // set data log to undo action
           // TODO: Verify performance with tableName_ID
           let recordId = updateEntityResponse.id
@@ -309,7 +315,12 @@ const windowControl = {
             recordUuid,
             eventType: 'UPDATE'
           })
-
+          // if (containerInfo) {
+          dispatch('listRecordLogs', {
+            tableName: panel.tableName,
+            recordId
+          })
+          // }
           return newValues
         })
         .catch(error => {
@@ -376,7 +387,7 @@ const windowControl = {
         parentUuid,
         containerUuid,
         tableName: tab.tableName,
-        recordUuid: recordUuid
+        recordUuid
       })
         .then(response => {
           // update panel
@@ -398,7 +409,7 @@ const windowControl = {
         })
     },
     deleteEntity({ dispatch, rootGetters }, parameters) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         const panel = rootGetters.getPanel(parameters.containerUuid)
 
         deleteEntity({
@@ -406,8 +417,6 @@ const windowControl = {
           recordUuid: parameters.recordUuid
         })
           .then(responseDeleteEntity => {
-            const oldRoute = router.app._route
-
             // refresh record list
             dispatch('getDataListTab', {
               parentUuid: parameters.parentUuid,
@@ -423,9 +432,13 @@ const windowControl = {
                     isNewRecord: true
                   })
                 } else {
+                  const oldRoute = router.app._route
                   // else display first record of table in panel
                   router.push({
                     name: oldRoute.name,
+                    params: {
+                      ...oldRoute.params
+                    },
                     query: {
                       ...oldRoute.query,
                       action: responseDataList[0].UUID
@@ -455,8 +468,7 @@ const windowControl = {
               message: language.t('data.deleteRecordError'),
               type: 'error'
             })
-            console.warn(`Delete Entity - Error ${error.message}, Code: ${error.code}`)
-            reject(error)
+            console.warn(`Delete Entity - Error ${error.message}, Code: ${error.code}.`)
           })
       })
     },
@@ -496,6 +508,9 @@ const windowControl = {
               if (record.UUID === oldRoute.query.action) {
                 router.push({
                   name: oldRoute.name,
+                  params: {
+                    ...oldRoute.params
+                  },
                   query: {
                     ...oldRoute.query,
                     action: 'create-new'
@@ -538,16 +553,22 @@ const windowControl = {
             message: error.message,
             type: 'error'
           })
-          console.warn(`Rollback Entity error: ${error.message}`)
+          console.warn(`Rollback Entity error: ${error.message}. Code: ${error.code}.`)
         })
     },
-    setDataLog({ commit }, parameters) {
+    setDataLog({ commit }, {
+      containerUuid,
+      tableName,
+      recordId,
+      recordUuid,
+      eventType
+    }) {
       commit('setDataLog', {
-        containerUuid: parameters.containerUuid,
-        tableName: parameters.tableName,
-        recordId: parameters.recordId,
-        recordUuid: parameters.recordUuid,
-        eventType: parameters.eventType
+        containerUuid,
+        tableName,
+        recordId,
+        recordUuid,
+        eventType
       })
     },
     /**
@@ -571,24 +592,26 @@ const windowControl = {
       let parsedQuery = tab.query
       if (!isEmptyValue(parsedQuery) && parsedQuery.includes('@')) {
         parsedQuery = parseContext({
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
-          value: tab.query
-        }, true)
+          parentUuid,
+          containerUuid,
+          value: tab.query,
+          isBooleanToString: true
+        }).value
       }
 
       let parsedWhereClause = tab.whereClause
       if (!isEmptyValue(parsedWhereClause) && parsedWhereClause.includes('@')) {
         parsedWhereClause = parseContext({
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
-          value: tab.whereClause
-        }, true)
+          parentUuid,
+          containerUuid,
+          value: tab.whereClause,
+          isBooleanToString: true
+        }).value
       }
 
       if (isReference) {
         if (!isEmptyValue(parsedWhereClause)) {
-          parsedWhereClause += ' AND ' + referenceWhereClause
+          parsedWhereClause += ` AND ${referenceWhereClause}`
         } else {
           parsedWhereClause += referenceWhereClause
         }
@@ -596,31 +619,31 @@ const windowControl = {
 
       if (!isEmptyValue(criteria)) {
         if (!isEmptyValue(parsedWhereClause)) {
-          parsedWhereClause += ' AND ' + criteria.whereClause
+          parsedWhereClause += ` AND ${criteria.whereClause}`
         } else {
           parsedWhereClause += criteria.whereClause
         }
       }
 
-      const conditions = []
-      if (tab.isParentTab && !isEmptyValue(tab.tableName) && !isEmptyValue(value)) {
-        conditions.push({
-          columnName: columnName,
-          value: value
+      const conditionsList = []
+      // TODO: evaluate if overwrite values to conditions
+      if (!isLoadAllRecords && tab.isParentTab && !isEmptyValue(tab.tableName) && !isEmptyValue(value)) {
+        conditionsList.push({
+          columnName,
+          value
         })
       }
       return dispatch('getObjectListFromCriteria', {
         parentUuid: tab.parentUuid,
-        containerUuid: containerUuid,
+        containerUuid,
         tableName: tab.tableName,
         query: parsedQuery,
         whereClause: parsedWhereClause,
         orderByClause: tab.orderByClause,
-        // TODO: evaluate if overwrite values to conditions
-        conditions: isLoadAllRecords ? [] : conditions,
+        conditionsList,
         isParentTab: tab.isParentTab,
-        isAddRecord: isAddRecord,
-        isShowNotification: isShowNotification
+        isAddRecord,
+        isShowNotification
       })
         .then(response => {
           if (isRefreshPanel && !isEmptyValue(recordUuid) && recordUuid !== 'create-new') {
@@ -629,15 +652,15 @@ const windowControl = {
               // update fields with values obtained from the server
               dispatch('notifyPanelChange', {
                 parentUuid: tab.parentUuid,
-                containerUuid: containerUuid,
-                newValues: newValues,
+                containerUuid,
+                newValues,
                 isSendToServer: false
               })
             } else {
               // this record is missing (Deleted or the query does not include it)
               dispatch('resetPanelToNew', {
                 parentUuid: tab.parentUuid,
-                containerUuid: containerUuid
+                containerUuid
               })
             }
           }
@@ -669,11 +692,11 @@ const windowControl = {
 
           if (isAddRecord) {
             dispatch('setPageNumber', {
-              parentUuid: parentUuid,
-              containerUuid: containerUuid,
+              parentUuid,
+              containerUuid,
               pageNumber: nextPage,
               panelType: 'window',
-              isAddRecord: isAddRecord,
+              isAddRecord,
               isShowNotification: false
             })
           }
@@ -725,7 +748,7 @@ const windowControl = {
               ...referenceResponse,
               windowUuid: parentUuid,
               recordUuid,
-              referencesList: referencesList
+              referencesList
             }
             commit('addReferencesList', references)
             resolve(referenceResponse)
@@ -733,15 +756,6 @@ const windowControl = {
           .catch(error => {
             reject(error)
           })
-      })
-    },
-    getWindowByUuid({ dispatch, commit }, parameters) {
-      parameters.routes.forEach((routeItem) => {
-        if (routeItem.meta && routeItem.meta.uuid === parameters.windowUuid) {
-          commit('addWindowRoute', routeItem)
-        } else if (routeItem.meta && routeItem.meta.childs && routeItem.meta.childs.length > 0) {
-          dispatch('getWindowByUuid', { routes: routeItem.meta.childs, windowUuid: parameters.windowUuid })
-        }
       })
     },
     setWindowOldRoute({ commit }, oldPath = { path: '', fullPath: '', query: {}}) {
@@ -785,7 +799,7 @@ const windowControl = {
         commit('setTotalRequest', countRequest)
 
         updateEntity({
-          tableName: tableName,
+          tableName,
           recordUuid: itemData.UUID,
           attributesList: valuesToSend
         })
@@ -812,15 +826,15 @@ const windowControl = {
               commit('setTotalResponse', 0)
 
               dispatch('setRecordSelection', {
-                parentUuid: parentUuid,
-                containerUuid: containerUuid,
+                parentUuid,
+                containerUuid,
                 isLoaded: false
               })
               dispatch('setTabSequenceRecord', [])
 
               // refresh record list in table source
               dispatch('getDataListTab', {
-                parentUuid: parentUuid,
+                parentUuid,
                 containerUuid: tabAssociatedUuid
               })
             }
@@ -838,11 +852,6 @@ const windowControl = {
     getReferencesInfo: (state, getters) => (windowUuid, recordUuid, referenceUuid) => {
       const references = getters.getReferencesList(windowUuid, recordUuid)
       return references.referencesList.find(item => item.uuid === referenceUuid)
-    },
-    getWindowRoute: (state) => (windowUuid) => {
-      if (state.windowRoute && state.windowRoute.meta && state.windowRoute.meta.uuid === windowUuid) {
-        return state.windowRoute
-      }
     },
     getTabSequenceRecord: (state) => {
       return state.tabSequenceRecord

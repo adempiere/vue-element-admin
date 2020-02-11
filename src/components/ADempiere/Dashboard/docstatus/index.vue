@@ -1,45 +1,43 @@
 <template>
-  <el-collapse v-model="activeDocuments" accordion>
-    <el-collapse-item name="documents">
-      <template slot="title">
-        <i class="el-icon-document" style="margin-right: 4px;margin-left: 10px;" />
-        {{ $t('profile.PendingDocuments') }}
-      </template>
-      <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
-        <div class="recent-items">
-          <el-table :data="search.length ? filterResult(search) : documents" max-height="455" @row-click="handleClick">
-            <el-table-column
-              prop="recordCount"
-              width="60"
+  <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+    <div class="recent-items">
+      <el-table :data="search.length ? filterResult(search) : documents" max-height="455" @row-click="handleClick">
+        <el-table-column
+          prop="recordCount"
+          width="60"
+        />
+        <el-table-column>
+          <template slot="header" slot-scope="scope">
+            <el-input
+              v-model="search"
+              size="mini"
+              :metadata="scope"
+              :placeholder="$t('table.dataTable.search')"
             />
-            <el-table-column>
-              <template slot="header" slot-scope="scope">
-                <el-input
-                  v-model="search"
-                  size="mini"
-                  :metadata="scope"
-                  :placeholder="$t('table.dataTable.search')"
-                />
-              </template>
-              <template slot-scope="{row}">
-                <span>{{ row.name }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-card>
-    </el-collapse-item>
-  </el-collapse>
+          </template>
+          <template slot-scope="{row}">
+            <span>{{ row.name }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </el-card>
 </template>
 
 <script>
 import { getPendingDocumentsFromServer } from '@/api/ADempiere/data'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
 export default {
   name: 'PendingDocuments',
+  props: {
+    metadata: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
-      activeDocuments: 'documents',
       documents: [],
       search: ''
     }
@@ -60,7 +58,7 @@ export default {
     getPendingDocuments() {
       const userUuid = this.$store.getters['user/getUserUuid']
       const roleUuid = this.$store.getters.getRoleUuid
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         getPendingDocumentsFromServer({ userUuid, roleUuid })
           .then(response => {
             const documentsList = response.pendingDocumentsList.map(documentItem => {
@@ -86,17 +84,24 @@ export default {
       })
     },
     handleClick(row) {
-      this.$store.dispatch('getWindowByUuid', { routes: this.permissionRoutes, windowUuid: row.windowUuid })
-      var windowRoute = this.$store.getters.getWindowRoute(row.windowUuid)
-      this.$router.push({
-        name: windowRoute.name,
-        params: {
-          ...row.criteria
-        },
-        query: {
-          action: 'criteria'
-        }
+      const viewSearch = recursiveTreeSearch({
+        treeData: this.permissionRoutes,
+        attributeValue: row.windowUuid,
+        attributeName: 'meta',
+        secondAttribute: 'uuid',
+        attributeChilds: 'children'
       })
+      if (viewSearch) {
+        this.$router.push({
+          name: viewSearch.name,
+          params: {
+            ...row.criteria
+          },
+          query: {
+            action: 'criteria'
+          }
+        })
+      }
       // conditions for the registration amount (operador: row.criteria.whereClause)
     },
     filterResult(search) {

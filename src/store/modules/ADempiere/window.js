@@ -2,7 +2,8 @@ import {
   getWindow as getWindowMetadata,
   getTab as getTabMetadata
 } from '@/api/ADempiere/dictionary'
-import { showMessage } from '@/utils/ADempiere'
+import { showMessage } from '@/utils/ADempiere/notification'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
 import router from '@/router'
 import { generateField, getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
@@ -21,11 +22,8 @@ const window = {
       state.window = []
       state.windowIndex = 0
     },
-    changeShowedDetailWindow(state, payload) {
-      payload.window.isShowedDetail = payload.changeShowedDetail
-    },
-    changeShowedRecordWindow(state, payload) {
-      payload.window.isShowedRecordNavigation = payload.isShowedRecordNavigation
+    changeWindow(state, payload) {
+      payload.window = payload.newWindow
     },
     setCurrentTab(state, payload) {
       payload.window.currentTabUuid = payload.tabUuid
@@ -75,16 +73,16 @@ const window = {
               ...tabItem,
               containerUuid: tabItem.uuid,
               parentUuid: windowUuid,
-              windowUuid: windowUuid,
+              windowUuid,
               tabGroup: tabItem.fieldGroup,
-              firstTabUuid: firstTabUuid,
+              firstTabUuid,
               // relations
               isParentTab: Boolean(firstTab === tabItem.tableName),
               // app properties
               isAssociatedTabSequence: false, // show modal with order tab
               isShowedRecordNavigation: !(tabItem.isSingleRow),
               isLoadFieldList: false,
-              index: index
+              index
             }
             delete tab.processesList
 
@@ -179,7 +177,10 @@ const window = {
                   description: processItem.description,
                   help: processItem.help,
                   isReport: processItem.isReport,
-                  isDirectPrint: processItem.isDirectPrint
+                  isDirectPrint: processItem.isDirectPrint,
+                  containerUuidAssociated: tabItem.uuid,
+                  parentUuidAssociated: windowUuid,
+                  panelTypeAssociated: 'window'
                 }
               })
               actions = actions.concat(processList)
@@ -194,9 +195,9 @@ const window = {
 
             if (tab.isParentTab) {
               parentTabs.push(tab)
-            } else {
-              childrenTabs.push(tab)
+              return tab
             }
+            childrenTabs.push(tab)
             return tab
           })
 
@@ -206,16 +207,18 @@ const window = {
             tabsListParent: parentTabs,
             tabsListChildren: childrenTabs,
             // app attributes
-            isShowedDetail: Boolean(childrenTabs.length),
             currentTabUuid: parentTabs[0].uuid
           }
 
           const newWindow = {
             ...responseWindow,
             ...tabProperties,
+            firstTabUuid,
+            windowIndex: state.windowIndex + 1,
+            // App properties
+            isShowedTabsChildren: Boolean(childrenTabs.length),
             isShowedRecordNavigation: undefined,
-            firstTabUuid: firstTabUuid,
-            windowIndex: state.windowIndex + 1
+            isShowedAdvancedQuery: false
           }
           commit('addWindow', newWindow)
           return newWindow
@@ -227,7 +230,7 @@ const window = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
-          console.warn(`Dictionary Window (State Window) - Error ${error.code}: ${error.message}`)
+          console.warn(`Dictionary Window (State Window) - Error ${error.code}: ${error.message}.`)
         })
     },
     getTabAndFieldFromServer({ dispatch, getters }, {
@@ -239,14 +242,14 @@ const window = {
       return getTabMetadata(containerUuid)
         .then(tabResponse => {
           const additionalAttributes = {
-            parentUuid: parentUuid,
-            containerUuid: containerUuid,
+            parentUuid,
+            containerUuid,
             isShowedFromUser: true,
-            panelType: panelType,
+            panelType,
             tableName: tabResponse.tableName,
             //
             isReadOnlyFromForm: false,
-            isAdvancedQuery: isAdvancedQuery
+            isAdvancedQuery
           }
 
           let fieldUuidsequence = 0
@@ -268,19 +271,21 @@ const window = {
             return fieldItem
           })
 
-          //  Get dependent fields
-          fieldsList
-            .filter(field => field.parentFieldsList && field.isActive)
-            .forEach((field, index, list) => {
-              field.parentFieldsList.forEach(parentColumnName => {
-                var parentField = list.find(parentField => {
-                  return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+          if (!isAdvancedQuery) {
+            //  Get dependent fields
+            fieldsList
+              .filter(field => field.parentFieldsList && field.isActive)
+              .forEach((field, index, list) => {
+                field.parentFieldsList.forEach(parentColumnName => {
+                  const parentField = list.find(parentField => {
+                    return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                  })
+                  if (parentField) {
+                    parentField.dependentFieldsList.push(field.columnName)
+                  }
                 })
-                if (parentField) {
-                  parentField.dependentFieldsList.push(field.columnName)
-                }
               })
-            })
+          }
 
           if (!fieldsList.find(field => field.columnName === 'UUID')) {
             const attributesOverwrite = {
@@ -288,28 +293,30 @@ const window = {
               sequence: (fieldUuidsequence + 10),
               name: 'UUID',
               columnName: 'UUID',
-              isAdvancedQuery: isAdvancedQuery,
+              isAdvancedQuery,
               componentPath: 'FieldText'
             }
             const field = getFieldTemplate(attributesOverwrite)
             fieldsList.push(field)
           }
 
+          const window = getters.getWindow(parentUuid)
           //  Panel for save on store
           const panel = {
             ...getters.getTab(parentUuid, containerUuid),
-            isAdvancedQuery: isAdvancedQuery,
+            isAdvancedQuery,
             fieldLinkColumnName: fieldLinkColumnName,
             fieldList: fieldsList,
-            panelType: panelType,
+            panelType,
             // app attributes
-            isShowedTotals: false
+            isShowedTotals: false,
+            isTabsChildren: Boolean(window.tabsListChildren.length)
           }
 
           dispatch('addPanel', panel)
           dispatch('setTabIsLoadField', {
-            parentUuid: parentUuid,
-            containerUuid: containerUuid
+            parentUuid,
+            containerUuid
           })
           return panel
         })
@@ -318,31 +325,23 @@ const window = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
-          console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}`)
+          console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`)
         })
     },
-    changeShowedDetailWindow({ commit, state }, {
-      containerUuid,
-      isShowedDetail = true
-    }) {
-      const window = state.window.find(itemWindow => {
-        return itemWindow.uuid === containerUuid
-      })
-      commit('changeShowedDetailWindow', {
-        window: window,
-        changeShowedDetail: isShowedDetail
-      })
-    },
-    changeShowedRecordWindow({ commit, state }, {
+    changeWindowAttribute({ commit, getters }, {
       parentUuid,
-      isShowedRecordNavigation = true
+      window,
+      attributeName,
+      attributeValue
     }) {
-      const window = state.window.find(itemWindow => {
-        return itemWindow.uuid === parentUuid
-      })
-      commit('changeShowedRecordWindow', {
-        window: window,
-        isShowedRecordNavigation: isShowedRecordNavigation
+      if (isEmptyValue(window)) {
+        window = getters.getWindow(parentUuid)
+      }
+      const newWindow = window
+      newWindow[attributeName] = attributeValue
+      commit('changeWindow', {
+        window,
+        newWindow
       })
     },
     /**

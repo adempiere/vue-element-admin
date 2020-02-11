@@ -1,22 +1,16 @@
 import { convertValueFromGRPC } from '@/api/ADempiere/data'
 
-// Decode a HTML text
-export function decodeHtml(text) {
-  var processMetadata = document.createElement('div')
-  processMetadata.innerHTML = text
-  return processMetadata.childNodes[0].nodeValue
-}
-
 /**
  * Checks if value is empty. Deep-checks arrays and objects
- * Note: isEmpty([]) == true, isEmpty({}) == true, isEmpty([{0:false},"",0]) == true, isEmpty({0:1}) == false
+ * Note: isEmpty([]) == true, isEmpty({}) == true,
+ * isEmpty([{0: false}, "", 0]) == true, isEmpty({0: 1}) == false
  * @param   {boolean|array|object|number|string} value
  * @returns {boolean}
  */
 export function isEmptyValue(value) {
   if (value === undefined || value == null) {
     return true
-  } else if (value === -1 || value === '-1') {
+  } else if (value === -1 || String(value).trim() === '-1') {
     return true
   } else if (typeof value === 'string') {
     return Boolean(!value.trim().length)
@@ -114,28 +108,30 @@ export function clientDateTime(date = null, type = '') {
  * @param {object} objectToConvert, object to convert
  * @param {string} nameKey, name from key in pairs
  * @param {string} nameValue, name from value in pairs
- * @returns {array} [ { nameKe: key, nameValue: value } ]
+ * @returns {array} [ { nameKey: key, nameValue: value } ]
  */
 export function convertObjectToArrayPairs(objectToConvert, nameKey = 'columnName', nameValue = 'value') {
-  var result = Object.keys(objectToConvert).map(key => {
-    var returnPairs = {}
+  return Object.keys(objectToConvert).map(key => {
+    const returnPairs = {}
     returnPairs[nameKey] = key
     returnPairs[nameValue] = objectToConvert[key]
     return returnPairs
   })
-
-  return result
 }
 
 /**
  * Convert array pairs of object to simple object { key:value }
- * @param {object} objectToConvert, object to convert
+ * @param {array} arrayToConvert, object to convert
  * @param {string} nameKey, name from key in pairs
  * @param {string} nameValue, name from value in pairs
  */
-export function convertArrayPairsToObject(arrayToConver, nameKey = 'columnName', nameValue = 'value') {
-  var result = {}
-  arrayToConver.forEach(element => {
+export function convertArrayPairsToObject({
+  arrayToConvert,
+  nameKey = 'columnName',
+  nameValue = 'value'
+}) {
+  const result = {}
+  arrayToConvert.forEach(element => {
     result[element[nameKey]] = element[nameValue]
   })
 
@@ -178,7 +174,7 @@ export function convertMapToArrayPairs({
 }
 
 export function convertHasMapToObject(hasMapToConvert) {
-  var result = {}
+  const result = {}
   hasMapToConvert.forEach((value, key) => {
     result[key] = value
   })
@@ -209,13 +205,87 @@ export function convertFieldListToShareLink(fieldList) {
 
   return attributesListLink.slice(0, -1)
 }
+/**
+ * Find element in an array recursively
+ * @param {object|array} treeData
+ * @param {string} attributeName, key to get value, default id
+ * @param {mixed}  attributeValue, value to compare with search
+ * @param {string} attributeChilds, childs list into element
+ */
+export const recursiveTreeSearch = ({
+  treeData,
+  attributeValue,
+  attributeName = 'id',
+  secondAttribute = false,
+  attributeChilds = 'childsList',
+  isParent = false
+}) => {
+  if (Array.isArray(treeData)) {
+    let index = 0
+    const length = treeData.length
+    while (index < length) {
+      let value = treeData[index]
+      if (!isEmptyValue(value) && value.hasOwnProperty(attributeName)) {
+        value = value[attributeName]
+      }
+      if (!isEmptyValue(value) && secondAttribute && value.hasOwnProperty(secondAttribute)) {
+        value = value[secondAttribute]
+      }
+
+      // compare item to search
+      if (value === attributeValue) {
+        return treeData[index]
+      }
+
+      if (treeData[index] && treeData[index][attributeChilds]) {
+        const found = recursiveTreeSearch({
+          treeData: treeData[index][attributeChilds],
+          attributeValue,
+          attributeName,
+          secondAttribute,
+          attributeChilds,
+          isParent
+        })
+        if (found) {
+          return found
+        }
+      }
+      index++
+    }
+  } else {
+    let value = treeData
+    if (!isEmptyValue(value) && value.hasOwnProperty(attributeName)) {
+      value = value[attributeName]
+    }
+    if (!isEmptyValue(value) && secondAttribute && value.hasOwnProperty(secondAttribute)) {
+      value = value[secondAttribute]
+    }
+
+    // compare item to search
+    if (value === attributeValue) {
+      return treeData
+    }
+
+    const found = recursiveTreeSearch({
+      treeData: treeData[attributeChilds],
+      attributeValue,
+      attributeName,
+      secondAttribute,
+      attributeChilds
+    })
+    return found
+  }
+}
 
 /**
  *
  * @param {*} param0
  */
 export function parsedValueComponent({ fieldType, value, referenceType, isMandatory = false }) {
-  if (value === undefined || value === null) {
+  if ((value === undefined || value === null) && !isMandatory) {
+    if (fieldType === 'FieldYesNo') {
+      return Boolean(value)
+    }
     return undefined
   }
   var returnValue
@@ -223,7 +293,7 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
   switch (fieldType) {
     // data type Number
     case 'FieldNumber':
-      if (String(value).trim() === '') {
+      if (String(value).trim() === '' || value === undefined || value === null) {
         returnValue = undefined
         if (isMandatory) {
           returnValue = 0
@@ -255,7 +325,7 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
       if (typeof value === 'object' && value.hasOwnProperty('query')) {
         returnValue = value
       }
-      returnValue = String(value)
+      returnValue = value ? String(value) : undefined
       break
 
     // data type Date
@@ -267,7 +337,7 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
       if (!isNaN(value)) {
         value = Number(value)
       }
-      if (typeof value === 'number') {
+      if (typeof value === 'number' || typeof value === 'string') {
         value = new Date(value)
       }
       if (typeof value === 'object' && value.hasOwnProperty('query')) {
@@ -293,4 +363,50 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
       break
   }
   return returnValue
+}
+/**
+ * add a tab depending on the status of the document
+ * @param {string} tag, document status key
+ */
+export function tagStatus(tag) {
+  let type
+  switch (tag) {
+    case 'VO':
+      type = 'danger'
+      break
+    case 'AP':
+      type = 'success'
+      break
+    case 'DR':
+      type = 'info'
+      break
+    case 'CL':
+      type = 'primary'
+      break
+    case 'CO':
+      type = 'success'
+      break
+    case '??':
+      type = 'info'
+      break
+    case 'IP':
+      type = 'warning'
+      break
+    case 'WC':
+      type = 'warning'
+      break
+    case 'WP':
+      type = 'warning'
+      break
+    case 'NA':
+      type = 'danger'
+      break
+    case 'IN':
+      type = 'danger'
+      break
+    case 'RE':
+      type = 'danger'
+      break
+  }
+  return type
 }

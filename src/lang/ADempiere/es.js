@@ -1,14 +1,16 @@
 export default {
+  language: 'Idioma',
   route: {
     dashboard: 'Panel de control',
     documentation: 'Documentación',
+    calendar: 'Calendario',
     forgotPassword: '¿Olvidó su Contraseña?',
     userEnrollment: 'Registrarse',
     guide: 'Guía',
     page401: '401',
     page404: '404',
     profile: 'Perfil',
-    ProcessActivity: 'Actividad de Procesos',
+    ProcessActivity: 'Histórico Procesos',
     Role: 'Rol',
     ReportViewer: 'Visor de Reportes'
   },
@@ -27,7 +29,7 @@ export default {
     errorSearch: 'La búsqueda no se ha completado.',
     // process
     processing: 'Procesando',
-    processExecuted: 'Ejecutado, ver actividad de proceso',
+    processExecuted: 'Ejecutado, ver histórico de procesos',
     processError: 'No fue ejecutado',
     //
     emptyValues: 'Parametro(s) con valores vacios',
@@ -42,12 +44,13 @@ export default {
     updateSuccessfully: 'Cambios realizados exitosamente',
     invalidEmailFormat: 'Formato de correo electronico invalido',
     recordLocked: 'Este registro ha sido bloqueado',
-    recordUnlocked: 'Este registro ha sido desbloqueado'
+    recordUnlocked: 'Este registro ha sido desbloqueado',
+    noRoleAccess: 'Con su rol y configuración actuales, no puede ver esta información.'
   },
   navbar: {
     badge: {
       Notifications: 'Notificaciones',
-      link: 'ir a actividad de proceso'
+      link: 'Ir a Histórico de Procesos'
     },
     logOut: 'Salir',
     dashboard: 'Panel de control',
@@ -119,6 +122,7 @@ export default {
     contextMenuRelations: 'Relaciones',
     contextMenuActions: 'Acciones',
     contextMenuReferences: 'Referencias',
+    withOutReferences: 'Sin referencias para el registro',
     contextMenuDownload: 'Descargar',
     contextMenuShareLink: 'Compartir Link',
     contextMenuRefresh: 'Actualizar',
@@ -192,6 +196,7 @@ export default {
       selected: 'Seleccionados',
       deleteSelection: 'Eliminar Registros Seleccionados',
       advancedQuery: 'Consulta Avanzada',
+      exportZip: 'Exportar Zip',
       showOnlyMandatoryColumns: 'Mostrar Solo Columnas Obligatorias',
       showAllAvailableColumns: 'Mostrar Todas Columnas Disponibles',
       exportRecordTable: 'Exportar Registros Seleccionados',
@@ -239,7 +244,20 @@ export default {
   window: {
     newRecord: 'Nuevo Registro',
     deleteRecord: 'Eliminar Registro',
-    undoNew: 'Descartar Nuevo Registro'
+    undoNew: 'Descartar Nuevo Registro',
+    containerInfo: {
+      notes: 'Notas',
+      changeLog: 'Actividad',
+      workflowLog: 'Histórico de Flujo de Trabajo',
+      changeDetail: 'Detalle del cambio',
+      logWorkflow: {
+        message: 'Mensaje',
+        responsible: 'Responsable',
+        workflowName: 'Nombre de estado del flujo de trabajo',
+        timeElapsed: 'Tiempo transcurrido',
+        addNote: 'Agregar Nota'
+      }
+    }
   },
   data: {
     emtpyTableName: 'Error: El nombre de la tabla no esta definida',
@@ -257,5 +275,21 @@ export default {
   sequence: {
     available: 'Disponibles',
     sequence: 'Secuencia'
+  },
+  operators: {
+    operator: 'Operador de comparación',
+    EQUAL: 'Igual a "="',
+    NOT_EQUAL: 'Diferente a "<>"',
+    LIKE: 'Contiene "~"',
+    NOT_LIKE: 'No contiene "!~"',
+    GREATER: 'Mayor que ">"',
+    GREATER_EQUAL: 'Mayor o igual que ">="',
+    LESS: 'Menor que "<"',
+    LESS_EQUAL: 'Menor o igual que "<="',
+    BETWEEN: 'Entre ">-<"',
+    NULL: 'No tiene valor',
+    NOT_NULL: 'Tiene un valor',
+    IN: 'Incluye',
+    NOT_IN: 'No incluye'
   }
 }

@@ -16,7 +16,7 @@
           :to="{ name: tag.name, path: tag.path, query: tag.query, fullPath: tag.fullPath, params: tag.params }"
           tag="span"
           class="tags-view-item"
-          @click.middle.native="closeSelectedTag(tag)"
+          @click.middle.native="!isAffix(tag) ? closeSelectedTag(tag) : ''"
           @contextmenu.prevent.native="openMenu(tag,$event)"
         >
           <div class="tag-title">{{ generateTitle(tag.title) }}</div>
@@ -32,11 +32,11 @@
           :to="{ name: tag.name, path: tag.path, query: tag.query, fullPath: tag.fullPath, params: tag.params }"
           tag="span"
           class="tags-view-item"
-          @click.middle.native="closeSelectedTag(tag)"
+          @click.middle.native="!isAffix(tag) ? closeSelectedTag(tag) : ''"
           @contextmenu.prevent.native="openMenu(tag,$event)"
         >
           <div class="tag-title">{{ generateTitle(tag.title) }}</div>
-          <div v-if="!tag.meta.affix" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)" />
+          <div v-if="!isAffix(tag)" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)" />
         </router-link>
       </template>
     </scroll-pane>
@@ -44,7 +44,7 @@
       <li @click="refreshSelectedTag(selectedTag)">
         {{ $t('tagsView.refresh') }}
       </li>
-      <li v-if="!(selectedTag.meta&&selectedTag.meta.affix)" @click="closeSelectedTag(selectedTag)">
+      <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)">
         {{
           $t('tagsView.close') }}
       </li>
@@ -107,14 +107,16 @@ export default {
     generateTitle, // generateTitle by vue-i18n
     isActive(route) {
       if (route.name === 'Report Viewer') {
-        if (route.params.processId === this.$route.params.processId && route.params.tableName === this.$route.params.tableName) {
-          return route.params.processId === this.$route.params.processId
-        } else {
-          return route.path === this.$route.path
+        const isSameProcess = route.params.processId === this.$route.params.processId
+        if (isSameProcess && route.params.tableName === this.$route.params.tableName) {
+          return isSameProcess
         }
-      } else {
-        return route.name === this.$route.name
+        return route.path === this.$route.path
       }
+      return route.name === this.$route.name
+    },
+    isAffix(tag) {
+      return tag.meta && tag.meta.affix
     },
     filterAffixTags(routes, basePath = '/') {
       let tags = []
@@ -187,25 +189,32 @@ export default {
       })
     },
     closeSelectedTag(view) {
-      if (view.meta && view.meta.uuid && view.meta.type) {
-        this.$store.dispatch('resetPanelToNew', {
-          parentUuid: view.meta.type !== 'window' ? undefined : view.meta.uuid,
-          containerUuid: view.meta.type === 'window' ? view.meta.tabUuid : view.meta.uuid,
-          panelType: view.meta.type,
-          isNewRecord: false
-        })
-        if (view.meta.type === 'window' || view.meta.type === 'browser') {
-          this.$store.dispatch('deleteRecordContainer', {
-            viewUuid: view.meta.uuid
-          })
-          if (view.meta.type === 'window') {
-            this.$store.dispatch('setWindowOldRoute')
-          }
-        }
-      }
       this.$store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {
         if (this.isActive(view)) {
           this.toLastView(visitedViews, view)
+        }
+      }).finally(() => {
+        if (view.meta && view.meta.uuid && view.meta.type) {
+          let parentUuid
+          let containerUuid = view.meta.uuid
+          if (view.meta.type === 'window') {
+            parentUuid = view.meta.uuid
+            containerUuid = view.meta.tabUuid
+            this.$store.dispatch('setWindowOldRoute')
+          }
+
+          this.$store.dispatch('resetPanelToNew', {
+            parentUuid,
+            containerUuid,
+            panelType: view.meta.type,
+            isNewRecord: false
+          })
+
+          if (['window', 'browser'].includes(view.meta.type)) {
+            this.$store.dispatch('deleteRecordContainer', {
+              viewUuid: view.meta.uuid
+            })
+          }
         }
       })
     },

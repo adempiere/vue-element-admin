@@ -23,7 +23,11 @@ export const fieldMixin = {
   },
   computed: {
     getterValue() {
-      const field = this.$store.getters.getFieldFromColumnName(this.metadata.containerUuid, this.metadata.columnName)
+      const field = this.$store.getters.getFieldFromColumnName({
+        containerUuid: this.metadata.containerUuid,
+        columnName: this.metadata.columnName,
+        isAdvancedQuery: this.metadata.isAdvancedQuery
+      })
       if (field) {
         return field.value
       }
@@ -53,17 +57,35 @@ export const fieldMixin = {
      * @param {string} label, or displayColumn to show in select
      */
     handleChange(value, valueTo = undefined, label = undefined) {
+      let newValue = value
+      let isSendCallout = true
+      let isSendToServer = true
+      let isChangedOldValue = false
+      if (value === 'NotSend') {
+        newValue = this.value
+        if (this.componentPath === 'FieldYesNo') {
+          isChangedOldValue = true
+          newValue = Boolean(newValue)
+        }
+        isSendToServer = false
+        isSendCallout = false
+      }
+      if (this.metadata.isAdvancedQuery) {
+        isSendCallout = false
+      }
+
       const sendParameters = {
         parentUuid: this.metadata.parentUuid,
         containerUuid: this.metadata.containerUuid,
         field: this.metadata,
         panelType: this.metadata.panelType,
         columnName: this.metadata.columnName,
-        newValue: value === 'NotSend' ? this.value : value,
-        valueTo: valueTo,
+        newValue,
+        valueTo,
         isAdvancedQuery: this.metadata.isAdvancedQuery,
-        isSendToServer: !(value === 'NotSend' || this.metadata.isAdvancedQuery),
-        isSendCallout: !(value === 'NotSend' || this.metadata.isAdvancedQuery)
+        isSendToServer,
+        isSendCallout,
+        isChangedOldValue
       }
 
       if (this.metadata.inTable) {
@@ -76,8 +98,7 @@ export const fieldMixin = {
       } else {
         this.$store.dispatch('notifyFieldChange', {
           ...sendParameters,
-          displayColumn: label,
-          isChangedOldValue: this.metadata.componentPath === 'FieldYesNo' && Boolean(value === 'NotSend')
+          displayColumn: label
         })
       }
     }

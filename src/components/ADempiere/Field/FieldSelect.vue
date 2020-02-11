@@ -6,8 +6,11 @@
     :placeholder="metadata.help"
     :loading="isLoading"
     value-key="key"
-    class="select-base"
+    :class="classStyle"
     clearable
+    :multiple="isSelectMultiple"
+    :allow-create="metadata.isSelectCreated"
+    :collapse-tags="!isSelectMultiple"
     :disabled="isDisabled"
     @change="preHandleChange"
     @visible-change="getDataLookupList"
@@ -49,7 +52,7 @@ export default {
       blanckOption: {
         // label with '' value is assumed to be undefined non-existent
         label: ' ',
-        key: undefined
+        key: undefined || -1
       }
     }
   },
@@ -59,6 +62,16 @@ export default {
     },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
+    },
+    isSelectMultiple() {
+      return ['IN', 'NOT_IN'].includes(this.metadata.operator) && this.metadata.isAdvancedQuery
+    },
+    classStyle() {
+      let styleClass = 'custom-field-select'
+      if (this.isSelectMultiple) {
+        styleClass += ' custom-field-select-multiple'
+      }
+      return styleClass
     },
     getterLookupItem() {
       if (this.isEmptyValue(this.metadata.reference.directQuery)) {
@@ -99,6 +112,23 @@ export default {
     }
   },
   watch: {
+    isSelectMultiple(isMultiple) {
+      if (isMultiple) {
+        const valueInArray = []
+        if (!this.isEmptyValue(this.value)) {
+          valueInArray.push(this.value)
+        }
+        this.value = valueInArray
+      } else {
+        if (Array.isArray(this.value)) {
+          if (this.value.length) {
+            this.value = this.value[0]
+          } else {
+            this.value = undefined
+          }
+        }
+      }
+    },
     valueModel(value) {
       if (this.metadata.inTable) {
         this.value = value
@@ -106,38 +136,47 @@ export default {
     },
     'metadata.value'(value) {
       if (!this.metadata.inTable) {
+        if (this.metadata.displayed) {
+          if (!this.options.some(option => option.key === value)) {
+            this.value = value
+            this.getDataLookupItem()
+          }
+        }
         this.value = value
       }
     },
     'metadata.displayColumn'(value) {
-      if (!this.isEmptyValue(this.value)) {
-        // console.log('display wacth')
-        if (!this.isEmptyValue(value)) {
-          // verify if exists to add
-          if (!this.findLabel(this.value)) {
-            this.options.push({
-              key: this.value,
-              label: value
-            })
+      if (this.metadata.displayed) {
+        if (!this.isEmptyValue(this.value)) {
+          if (!this.isEmptyValue(value)) {
+            // verify if exists to add
+            if (!this.findLabel(this.value)) {
+              this.options.push({
+                key: this.value,
+                label: value
+              })
+            }
           }
         }
       }
     }
   },
   beforeMount() {
-    this.options = this.getterLookupAll
-    if (!this.isEmptyValue(this.value) && this.metadata.panelType !== 'table') {
-      if (!this.findLabel(this.value)) {
-        if (!this.isEmptyValue(this.metadata.displayColumn)) {
-        // verify if exists to add
-          this.options.push({
-            key: this.value,
-            label: this.metadata.displayColumn
-          })
-        } else {
-          if (!this.isPanelWindow || (this.isPanelWindow &&
-            (this.isEmptyValue(this.metadata.optionCRUD) || this.metadata.optionCRUD === 'create-new'))) {
-            this.getDataLookupItem()
+    if (this.metadata.displayed) {
+      this.options = this.getterLookupAll
+      if (!this.isEmptyValue(this.value) && this.metadata.panelType !== 'table') {
+        if (!this.findLabel(this.value)) {
+          if (!this.isEmptyValue(this.metadata.displayColumn)) {
+          // verify if exists to add
+            this.options.push({
+              key: this.value,
+              label: this.metadata.displayColumn
+            })
+          } else {
+            if (!this.isPanelWindow || (this.isPanelWindow &&
+              (this.isEmptyValue(this.metadata.optionCRUD) || this.metadata.optionCRUD === 'create-new'))) {
+              this.getDataLookupItem()
+            }
           }
         }
       }
@@ -156,7 +195,8 @@ export default {
       return selected
     },
     async getDataLookupItem() {
-      if (this.isEmptyValue(this.metadata.reference.directQuery)) {
+      if (this.isEmptyValue(this.metadata.reference.directQuery) ||
+        (this.metadata.isAdvancedQuery && this.isSelectMultiple)) {
         return
       }
       this.isLoading = true
@@ -169,10 +209,12 @@ export default {
       })
         .then(responseLookupItem => {
           if (this.isPanelWindow) {
-            this.$store.dispatch('notifyFieldChangeDisplayColumn', {
+            this.$store.dispatch('changeFieldAttribure', {
               containerUuid: this.metadata.containerUuid,
+              isAdvancedQuery: this.metadata.isAdvancedQuery,
               columnName: this.metadata.columnName,
-              displayColumn: responseLookupItem.label
+              attributeName: 'displayColumn',
+              attributeValue: responseLookupItem.label
             })
           }
           this.options = this.getterLookupAll
@@ -230,8 +272,16 @@ export default {
 }
 </script>
 
-<style scoped>
-  .select-base {
+<style lang="scss">
+  .custom-field-select {
     width: 100%;
+  }
+
+  .custom-field-select-multiple {
+    overflow: auto;
+    max-height: 100px;
+    .el-select__tags {
+      max-height: 100px;
+    }
   }
 </style>

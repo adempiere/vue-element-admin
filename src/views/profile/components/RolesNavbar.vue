@@ -18,18 +18,14 @@
 </template>
 
 <script>
-import { getLanguage } from '@/lang'
 import { showMessage } from '@/utils/ADempiere/notification'
-import { resetRouter } from '@/router'
 
 export default {
   name: 'RolesNavbar',
   data() {
     return {
       value: '',
-      options: [],
-      languageList: [],
-      language: getLanguage()
+      options: []
     }
   },
   computed: {
@@ -38,17 +34,6 @@ export default {
     },
     getRolesList() {
       return this.$store.getters['user/getRoles']
-    },
-    languageCookie() {
-      return getLanguage()
-    },
-    getterLanguageList() {
-      return this.$store.getters.getLanguageList.map(language => {
-        return {
-          value: language.languageIso,
-          label: language.languageName
-        }
-      })
     },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
@@ -68,55 +53,21 @@ export default {
   },
   methods: {
     showMessage,
-    resetRouter,
     handleChange(valueSelected) {
       this.$message({
         message: this.$t('notifications.loading'),
         iconClass: 'el-icon-loading'
       })
-      this.$store.dispatch('user/changeRoles', valueSelected)
+      this.$store.dispatch('user/changeRoles', {
+        roleUuid: valueSelected
+      })
         .then(response => {
-          this.showMessage({
-            message: this.$t('notifications.successChangeRole'),
-            type: 'success'
-          })
-          this.$store.dispatch('permission/generateRoutes')
-            .then(response => {
-              this.resetRouter()
-              response.forEach((element) => {
-                this.$router.resolve(element)
-              })
-              this.$router.addRoutes(response)
-            })
-          this.$store.dispatch('getRecentItemsFromServer')
+          this.$store.dispatch('listDashboard', response.uuid)
         })
       this.$router.push({ path: '/' })
     },
-    changeLanguage(languageValue) {
-      this.language = languageValue
-    },
-    getLanguageList(open) {
-      if (open) {
-        if (this.getterLanguageList.length) {
-          this.languageList = this.getterLanguageList
-        } else {
-          this.getLanguageData()
-        }
-      }
-    },
     getLanguageData() {
       this.$store.dispatch('getLanguagesFromServer')
-        .then(response => {
-          this.languageList = response.map(language => {
-            return {
-              value: language.languageIso,
-              label: language.languageName
-            }
-          })
-        })
-        .catch(error => {
-          console.warn('Error getting language list:', error.message + '. Code: ', error.code)
-        })
     }
   }
 }

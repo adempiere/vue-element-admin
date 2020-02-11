@@ -1,5 +1,7 @@
-import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
+import { supportedTypes, exportFileFromJson, exportFileZip } from '@/utils/ADempiere/exportUtil'
 import { showNotification } from '@/utils/ADempiere/notification'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
+import { FIELDS_QUANTITY } from '@/components/ADempiere/Field/references'
 
 export const menuTableMixin = {
   props: {
@@ -23,11 +25,9 @@ export const menuTableMixin = {
       type: Boolean,
       default: false
     },
-    isProcessMenu: {
+    processMenu: {
       type: Array,
-      default: function() {
-        return []
-      }
+      default: () => []
     },
     isPanelWindow: {
       type: Boolean,
@@ -37,31 +37,19 @@ export const menuTableMixin = {
       type: Boolean,
       default: false
     },
-    isPanel: {
-      type: Object,
-      default: () => {}
-    },
-    isDataRecord: {
+    panelMetadata: {
       type: Object,
       default: () => {}
     }
   },
   data() {
     return {
-      option: supportedTypes,
-      typoFormatExport: [],
+      supportedTypes,
       menuTable: '1',
-      isCollapse: true,
-      visible: false
+      isCollapse: true
     }
   },
   computed: {
-    isProcessTable() {
-      if (this.isProcessMenu) {
-        return true
-      }
-      return false
-    },
     classTableMenu() {
       if (this.isMobile) {
         return 'menu-table-mobile'
@@ -75,7 +63,7 @@ export const menuTableMixin = {
     },
     getterNewRecords() {
       if (this.isPanelWindow && !this.isParent) {
-        var newRecordTable = this.getterDataRecordsAndSelection.record.filter(recordItem => {
+        const newRecordTable = this.getterDataRecordsAndSelection.record.filter(recordItem => {
           return recordItem.isNew
         })
         return newRecordTable.length
@@ -85,10 +73,13 @@ export const menuTableMixin = {
     getDataSelection() {
       return this.getterDataRecordsAndSelection.selection
     },
+    getDataAllRecord() {
+      return this.getterDataRecordsAndSelection.record
+    },
     fieldList() {
-      if (this.isPanel && this.isPanel.fieldList) {
+      if (this.panelMetadata && this.panelMetadata.fieldList) {
         return this.sortFields(
-          this.isPanel.fieldList,
+          this.panelMetadata.fieldList,
           this.panelType !== 'browser' ? 'seqNoGrid' : 'sequence'
         )
       }
@@ -116,7 +107,7 @@ export const menuTableMixin = {
       if (this.$route.query.action === 'create-new') {
         return true
       }
-      if (!this.isPanel.isInsertRecord) {
+      if (!this.panelMetadata.isInsertRecord) {
         return true
       }
       if (this.isReadOnlyParent) {
@@ -127,11 +118,17 @@ export const menuTableMixin = {
       }
       return false
     },
+    isFieldsQuantity() {
+      const fieldsQuantity = this.getterFieldList.filter(fieldItem => {
+        return FIELDS_QUANTITY.includes(fieldItem.referenceType)
+      }).length
+      return !fieldsQuantity
+    },
     getterFieldList() {
       return this.$store.getters.getFieldsListFromPanel(this.containerUuid)
     },
     getterFieldListHeader() {
-      var header = this.getterFieldList.filter(fieldItem => {
+      const header = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem.name
@@ -142,7 +139,7 @@ export const menuTableMixin = {
       })
     },
     getterFieldListValue() {
-      var value = this.getterFieldList.filter(fieldItem => {
+      const value = this.getterFieldList.filter(fieldItem => {
         const isDisplayed = fieldItem.isDisplayed || fieldItem.isDisplayedFromLogic
         if (fieldItem.isActive && isDisplayed && !fieldItem.isKey) {
           return fieldItem
@@ -151,16 +148,12 @@ export const menuTableMixin = {
       return value.map(fieldItem => {
         if (fieldItem.componentPath === 'FieldSelect') {
           return 'DisplayColumn_' + fieldItem.columnName
-        } else {
-          return fieldItem.columnName
         }
+        return fieldItem.columnName
       })
     },
-    gettersRecordContextMenu() {
-      var record = []
-      var recordTable = this.isOption
-      record.push(recordTable)
-      return record
+    permissionRoutes() {
+      return this.$store.getters.permission_routes
     }
   },
   methods: {
@@ -173,29 +166,28 @@ export const menuTableMixin = {
         isShowedTabChildren: false
       })
     },
-    showModal(process) {
-      var processData
-      processData = this.$store.getters.getProcess(process.uuid)
+    showModalTable(process) {
+      const processData = this.$store.getters.getProcess(process.uuid)
       if (!this.isOption) {
         this.$store.dispatch('setProcessSelect', {
           selection: this.getDataSelection,
           processTablaSelection: true,
-          tableName: this.isPanel.keyColumn
+          tableName: this.panelMetadata.keyColumn
         })
       } else {
-        var selection = this.isOption
+        let valueProcess
+        const selection = this.isOption
         for (const element in selection) {
-          if (element === this.isPanel.keyColumn) {
+          if (element === this.panelMetadata.keyColumn) {
             valueProcess = selection[element]
           }
         }
         this.$store.dispatch('setProcessTable', {
           valueRecord: valueProcess,
-          tableName: this.isPanel.keyColumn,
+          tableName: this.panelMetadata.keyColumn,
           processTable: true
         })
       }
-      var valueProcess
       if (processData === undefined) {
         this.$store.dispatch('getProcessFromServer', {
           containerUuid: process.uuid,
@@ -208,24 +200,20 @@ export const menuTableMixin = {
               record: this.getDataSelection
             })
           }).catch(error => {
-            console.warn('ContextMenu: Dictionary Process (State) - Error ' + error.code + ': ' + error.message)
+            console.warn(`ContextMenu: Dictionary Process (State) - Error ${error.code}: ${error.message}.`)
           })
       } else {
-        this.$store.dispatch('setShowDialog', { type: process.type, action: processData })
+        this.$store.dispatch('setShowDialog', {
+          type: process.type,
+          action: processData
+        })
       }
     },
-    tableProcess(process) {
-      // if (!this.isOption) {
-      //   if (this.getDataSelection.length <= 1) {
-      //     this.showModal(process)
-      //   }
-      // } else {
-      //   this.showModal(process)
-      // }
-      this.showModal(process)
-    },
     showTotals() {
-      this.$store.dispatch('showedTotals', this.containerUuid)
+      this.$store.dispatch('changePanelAttributesBoolean', {
+        containerUuid: this.containerUuid,
+        attributeName: 'isShowedTotals'
+      })
     },
     showOnlyMandatoryColumns() {
       this.$store.dispatch('showOnlyMandatoryColumns', {
@@ -257,21 +245,21 @@ export const menuTableMixin = {
           isEdit: true,
           isSendServer: false
         })
-      } else {
-        const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({ containerUuid: this.containerUuid })
-        this.$message({
-          message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
-          type: 'info'
-        })
+        return
       }
+      const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
+        containerUuid: this.containerUuid
+      })
+      this.$message({
+        message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+        type: 'info'
+      })
     },
-    optionalPanel() {
-      this.showTableSearch = false
-      this.isOptional = !this.isOptional
-    },
-    fixedPanel() {
-      this.showTableSearch = false
-      this.isFixed = !this.isFixed
+    showOptionalColums() {
+      this.$store.dispatch('changePanelAttributesBoolean', {
+        containerUuid: this.containerUuid,
+        attributeName: 'isShowedTableOptionalColumns'
+      })
     },
     typeFormat(key, keyPath) {
       Object.keys(supportedTypes).forEach(type => {
@@ -282,25 +270,67 @@ export const menuTableMixin = {
       this.closeMenu()
     },
     exporRecordTable(key) {
-      const Header = this.getterFieldListHeader
+      const header = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      var list
-      if (!this.isOption) {
-        list = this.getDataSelection
-      } else {
-        list = this.gettersRecordContextMenu
+      let list = this.getDataSelection
+      if (this.isOption) {
+        list = this.gettersRecrdContextMenu
       }
 
       const data = this.formatJson(filterVal, list)
       exportFileFromJson({
-        header: Header,
+        header,
         data,
         filename: '',
         exportType: key
       })
     },
+    exporZipRecordTable() {
+      const header = this.getterFieldListHeader
+      const filterVal = this.getterFieldListValue
+      let list = this.getDataSelection
+      if (this.getDataSelection.length <= 0) {
+        list = this.getDataAllRecord
+      }
+      const data = this.formatJson(filterVal, list)
+      exportFileZip({
+        header,
+        data,
+        title: this.$route.meta.title,
+        exportType: 'zip'
+      })
+    },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => v[j]))
+      return jsonData.map(rowData => filterVal.map(j => rowData[j]))
+    },
+    zoomRecord() {
+      const browserMetadata = this.$store.getters.getBrowser(this.$route.meta.uuid)
+      const { elementName } = browserMetadata.fieldList.find(field => field.columnName === browserMetadata.keyColumn)
+      const records = []
+      this.getDataSelection.forEach(record => {
+        if (isNaN(record[browserMetadata.keyColumn])) {
+          records.push(record[browserMetadata.keyColumn])
+        } else {
+          records.push(Number(record[browserMetadata.keyColumn]))
+        }
+      })
+
+      const viewSearch = recursiveTreeSearch({
+        treeData: this.permissionRoutes,
+        attributeValue: browserMetadata.window.uuid,
+        attributeName: 'meta',
+        secondAttribute: 'uuid',
+        attributeChilds: 'children'
+      })
+      if (viewSearch) {
+        this.$router.push({
+          name: viewSearch.name,
+          query: {
+            action: 'advancedQuery',
+            [elementName]: records
+          }
+        })
+      }
     }
   }
 }

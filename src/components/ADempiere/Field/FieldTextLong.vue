@@ -1,5 +1,5 @@
 <template>
-  <div :id="id" />
+  <div :id="id" :class="classDisable" />
 </template>
 
 <script>
@@ -26,12 +26,18 @@ export default {
   },
   data() {
     return {
-      mode: 'markdown', // or wysiwyg
+      mode: 'markdown', // 'markdown' or 'wysiwyg'
       height: '200px',
       editor: null
     }
   },
   computed: {
+    classDisable() {
+      if (this.isDisabled) {
+        return 'isdisable'
+      }
+      return ''
+    },
     language() {
       // https://github.com/nhnent/tui.editor/tree/master/src/js/langs
       if (this.isEmptyValue(getLanguage())) {
@@ -43,7 +49,8 @@ export default {
       const options = {
         previewStyle: 'vertical',
         useCommandShortcut: true,
-        usageStatistics: false
+        usageStatistics: false, // send hostname to google analytics
+        hideModeSwitch: this.isDisabled
       }
       options.initialEditType = this.mode
       options.height = this.height
@@ -52,26 +59,28 @@ export default {
     }
   },
   watch: {
-    valueModel(value) {
+    valueModel(value, oldValue) {
       if (this.metadata.inTable) {
         if (this.isEmptyValue(value)) {
           value = ''
         }
         this.value = String(value)
-        this.editor.setValue(value)
       }
     },
-    'metadata.value'(value) {
+    'metadata.value'(value, oldValue) {
       if (!this.metadata.inTable) {
         if (this.isEmptyValue(value)) {
           value = ''
         }
         this.value = String(value)
-        this.editor.setValue(value)
       }
     },
     value(newValue, oldValue) {
-      if (newValue !== oldValue && newValue !== this.editor.getValue()) {
+      if (this.isDisabled) {
+        // not changed value
+        this.value = oldValue
+        this.editor.setValue(oldValue)
+      } else {
         this.editor.setValue(newValue)
       }
     },
@@ -81,6 +90,11 @@ export default {
     },
     height(heightValue) {
       this.editor.height(heightValue)
+    },
+    isDisabled(value) {
+      this.classDisable
+      this.destroyEditor()
+      this.initEditor()
     }
   },
   mounted() {
@@ -98,15 +112,42 @@ export default {
       if (!this.isEmptyValue(this.value)) {
         this.editor.setValue(this.value)
       }
+      this.setEvents()
+    },
+    setEvents() {
+      if (this.isDisabled) {
+        this.removeEventSendValues()
+        this.addReanOnlyChanges()
+      } else {
+        this.addEventSendValues()
+        this.removeReadOnlyChanges()
+      }
+    },
+    addEventSendValues() {
+      // with change event send multiple request to server
       this.editor.on('blur', () => {
-        this.preHandleChange(this.editor.getValue())
+        if (!this.isDisabled) {
+          this.preHandleChange(this.editor.getValue())
+        }
       })
+    },
+    addReanOnlyChanges() {
+      this.editor.on('change', () => {
+        this.editor.setValue(this.value)
+      })
+    },
+    removeEventSendValues() {
+      this.editor.off('blur')
+    },
+    removeReadOnlyChanges() {
+      this.editor.off('change')
     },
     destroyEditor() {
       if (!this.editor) {
         return
       }
-      this.editor.off('change')
+      this.removeEventSendValues()
+      this.removeReadOnlyChanges()
       this.editor.remove()
     },
     setHtml(value) {
@@ -118,3 +159,8 @@ export default {
   }
 }
 </script>
+<style>
+  .isdisable {
+    background: #F5F7FA;
+  }
+</style>

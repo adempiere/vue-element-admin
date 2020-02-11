@@ -26,12 +26,14 @@ const process = {
       containerUuid,
       routeToDelete
     }) {
-      var printFormatsAvailable
-      dispatch('requestPrintFormats', { processUuid: containerUuid })
+      let printFormatsAvailable
+      dispatch('requestPrintFormats', {
+        processUuid: containerUuid
+      })
         .then(response => {
           printFormatsAvailable = response
         })
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         getProcessMetadata(containerUuid)
           .then(responseProcess => {
             responseProcess.printFormatsAvailable = printFormatsAvailable
@@ -43,22 +45,23 @@ const process = {
 
             //  Add process menu
             dispatch('setContextMenu', {
-              containerUuid: processDefinition.uuid,
+              containerUuid,
               relations: [],
-              actions: actions,
+              actions,
               references: []
             })
             resolve(processDefinition)
           })
           .catch(error => {
-            router.push({ path: '/dashboard' })
+            router.push({
+              path: '/dashboard'
+            })
             dispatch('tagsView/delView', routeToDelete)
             showMessage({
               message: language.t('login.unexpectedError'),
               type: 'error'
             })
-            console.warn(`Dictionary Process (State) - Error ${error.message}`)
-            reject(error)
+            console.warn(`Dictionary Process - Error ${error.message}.`)
           })
       })
     },

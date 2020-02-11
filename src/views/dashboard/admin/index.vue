@@ -2,7 +2,7 @@
   <div class="dashboard-editor-container">
     <el-row :gutter="8">
       <template v-for="(dashboardAttributes, index) in dashboardList">
-        <el-col :key="index" :xs="{ span: 24 }" :sm="{ span: 24 }" :md="{ span: 24 }" :lg="{ span: 12 }" :xl="{ span: 12 }" style="padding-right:8px;margin-bottom:30px;">
+        <el-col :key="index" :xs="{ span: 24 }" :sm="{ span: 24 }" :md="{ span: 24 }" :lg="{ span: 12 }" :xl="{ span: 12 }" style="padding-right:8px;margin-bottom:2px;">
           <dashboard :metadata="dashboardAttributes" />
         </el-col>
       </template>
@@ -28,6 +28,14 @@ export default {
   computed: {
     getterDashboard() {
       return this.$store.getters.getDashboardByRole(this.roleUuid)
+    },
+    getterRol() {
+      return this.$store.getters.getRoleUuid
+    }
+  },
+  watch: {
+    getterRol(value) {
+      this.getDashboardListFromServer()
     }
   },
   mounted() {
@@ -35,14 +43,11 @@ export default {
   },
   methods: {
     getDashboardListFromServer() {
-      if (this.getterDashboard) {
-        this.dashboardList = this.getterDashboard.dashboardList
-      } else {
-        this.$store.dispatch('listDashboard', this.roleUuid)
-          .then(response => {
-            this.dashboardList = response.dashboardsList
-          })
-      }
+      this.$store.dispatch('listDashboard')
+        .then(response => {
+          this.dashboardList = response.dashboardsList
+          this.$forceUpdate()
+        })
     }
   }
 }

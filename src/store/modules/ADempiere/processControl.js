@@ -1,6 +1,6 @@
 import {
   runProcess,
-  requestProcessActivity
+  requestListProcessesLogs
 } from '@/api/ADempiere/data'
 import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
@@ -157,7 +157,10 @@ const processControl = {
               } else {
                 tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
                 tableName = tab.tableName
-                const field = rootGetters.getFieldFromColumnName(params.containerUuid, tableName + '_ID')
+                const field = rootGetters.getFieldFromColumnName({
+                  containerUuid: params.containerUuid,
+                  columnName: `${tableName}_ID`
+                })
                 recordId = field.value
               }
             }
@@ -449,7 +452,7 @@ const processControl = {
                 if (reportType !== 'pdf' && reportType !== 'html') {
                   link.click()
                 }
-
+                const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                 // Report views List to context menu
                 const reportViewList = {
                   name: language.t('views.reportView'),
@@ -472,7 +475,6 @@ const processControl = {
                       reportViewList.childs = responseReportView
                       if (reportViewList.childs.length) {
                         // Get contextMenu metadata and concat print report views with contextMenu actions
-                        const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                         contextMenuMetadata.actions.push(reportViewList)
                       }
                     })
@@ -500,10 +502,14 @@ const processControl = {
                       printFormatList.childs = printFormarResponse
                       if (printFormatList.childs.length) {
                         // Get contextMenu metadata and concat print Format List with contextMenu actions
-                        const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                         contextMenuMetadata.actions.push(printFormatList)
                       }
                     })
+                } else {
+                  var index = contextMenuMetadata.actions.findIndex(action => action.option === 'printFormat')
+                  if (index !== -1) {
+                    contextMenuMetadata.actions[index] = printFormatList
+                  }
                 }
 
                 // Drill Tables to context menu
@@ -529,7 +535,6 @@ const processControl = {
                         drillTablesList.childs = drillTablesResponse
                         if (drillTablesList.childs.length) {
                           // Get contextMenu metadata and concat print Format List with contextMenu actions
-                          const contextMenuMetadata = rootGetters.getContextMenu(processResult.processUuid)
                           contextMenuMetadata.actions.push(drillTablesList)
                         }
                       })
@@ -553,7 +558,7 @@ const processControl = {
                 message: error.message,
                 isProcessing: false
               })
-              console.warn(`Error running the process ${error.message}. Code: ${error.code}`)
+              console.warn(`Error running the process ${error.message}. Code: ${error.code}.`)
               reject(error)
             })
             .finally(() => {
@@ -597,7 +602,7 @@ const processControl = {
       })
     },
     // Supported to process selection
-    SelectionProcess({ commit, state, dispatch, getters, rootGetters }, params) {
+    selectionProcess({ commit, state, dispatch, getters, rootGetters }, params) {
       // get info metadata process
       const processDefinition = rootGetters.getProcess(params.action.uuid)
       var reportType = 'pdf'
@@ -785,7 +790,7 @@ const processControl = {
                   message: error.message,
                   isProcessing: false
                 })
-                console.warn(`Error running the process ${error}`)
+                console.warn(`Error running the process ${error}.`)
               })
           }
         })
@@ -794,26 +799,26 @@ const processControl = {
     /**
      * TODO: Add date time in which the process/report was executed
      */
-    getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }) {
+    getSessionProcessFromServer({ commit, dispatch, getters, rootGetters }, parameters) {
       // process Activity
-      return requestProcessActivity()
+      const { pageToken, pageSize } = parameters
+      return requestListProcessesLogs({ pageToken, pageSize })
         .then(processActivityResponse => {
-          const responseList = processActivityResponse.responsesList.map(businessProcessItem => {
-            const processMetadata = rootGetters.getProcess(businessProcessItem.uuid)
+          const responseList = processActivityResponse.processLogsList.map(processLogItem => {
+            const processMetadata = rootGetters.getProcess(processLogItem.uuid)
             // if no exists metadata process in store and no request progess
-            if (processMetadata === undefined && getters.getInRequestMetadata(businessProcessItem.uuid) === undefined) {
-              commit('addInRequestMetadata', businessProcessItem.uuid)
+            if (processMetadata === undefined && getters.getInRequestMetadata(processLogItem.uuid) === undefined) {
+              commit('addInRequestMetadata', processLogItem.uuid)
               dispatch('getProcessFromServer', {
-                containerUuid: businessProcessItem.uuid
+                containerUuid: processLogItem.uuid
               })
                 .finally(() => {
-                  commit('deleteInRequestMetadata', businessProcessItem.uuid)
+                  commit('deleteInRequestMetadata', processLogItem.uuid)
                 })
             }
-
             const process = {
-              ...businessProcessItem,
-              processUuid: businessProcessItem.uuid
+              ...processLogItem,
+              processUuid: processLogItem.uuid
             }
             return process
           })
@@ -832,7 +837,7 @@ const processControl = {
             message: error.message,
             type: 'error'
           })
-          console.warn(`Error getting process activity: ${error.message}. Code: ${error.code}`)
+          console.warn(`Error getting process activity: ${error.message}. Code: ${error.code}.`)
         })
     },
     /**

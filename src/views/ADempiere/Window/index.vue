@@ -4,139 +4,349 @@
     key="window-loaded"
   >
     <el-container style="height: 86vh;">
-      <el-main>
-        <split-pane :min-percent="10" :default-percent="defaultPorcentSplitPane" split="vertical">
-          <template>
-            <!-- this slot is 'paneL' (with 'L' in uppercase) do not change -->
-            <div slot="paneL" class="left-container">
-              <el-aside v-show="isShowedRecordNavigation" width="100%">
-                <div class="small-4 columns">
-                  <div class="w">
-                    <div class="open-left" />
-                    <div class="open-datatable-aside">
-                      <el-button
-                        v-show="!isPanel"
-                        :icon="iconIsShowedRecordNavigation"
-                        circle
-                        style="margin-left: 10px;"
-                        @click="handleChangeShowedRecordNavigation()"
-                      />
-                      <el-button
-                        v-show="!isPanel"
-                        :icon="iconIsShowedAside"
-                        circle
-                        @click="handleChangeShowedPanel()"
-                      />
-                    </div>
-                    <data-table
-                      :parent-uuid="windowUuid"
-                      :container-uuid="windowMetadata.currentTab.uuid"
-                      :table-name="windowMetadata.currentTab.tableName"
-                      :is-showed-panel-record="true"
-                      :is-parent="true"
-                    />
-                    <div class="close-datatable">
-                      <el-button
-                        v-show="isPanel"
-                        icon="el-icon-caret-left"
-                        circle
-                        @click="handleChangeShowedPanel()"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <i
-                  v-if="isMobile"
-                  class="el-icon-close"
-                  style="position: fixed;padding-top: 15px; color: #000000;font-size: 121%;font-weight: 615!important;padding-left: 9px;"
-                  @click="handleChangeShowedRecordNavigation()"
-                />
-              </el-aside>
-            </div>
-          </template>
-          <template slot="paneR">
-            <el-container style="height: 86vh;">
-              <Split direction="vertical" @onDrag="onDrag">
-                <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
-                  <el-header style="height: 39px;">
-                    <context-menu
-                      v-show="!isShowedRecordPanel"
-                      :menu-parent-uuid="$route.meta.parentUuid"
-                      :parent-uuid="windowUuid"
-                      :container-uuid="windowMetadata.currentTabUuid"
-                      :panel-type="panelType"
-                      :is-insert-record="getterIsInsertRecord"
-                    />
-                  </el-header>
-                  <!-- das -->
-                  <el-main :style="styleMainIsShowedTabChildren">
-                    <tab-parent
-                      :window-uuid="windowUuid"
-                      :tabs-list="windowMetadata.tabsListParent"
-                      class="tab-window"
-                    />
-                    <div class="small-4 columns">
-                      <div class="wrapper">
-                        <div
-                          v-show="windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
-                          class="open-detail"
-                        />
-                        <el-button
-                          v-if="windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length &&
-                            (isMobile && !isShowedRecordNavigation || !isMobile)"
-                          v-show="!isShowedTabChildren"
-                          icon="el-icon-caret-top"
-                          :class="classIsMobile"
-                          circle
-                          @click="handleChangeShowedTabChildren()"
-                        />
-                      </div>
-                    </div>
-                    <modal-dialog
-                      :parent-uuid="windowUuid"
-                      :container-uuid="windowMetadata.currentTabUuid"
-                    />
+      <Split>
+        <SplitArea :size="show ? 50 : 100" :min-size="100">
+          <el-aside width="100%">
+            <split-pane :min-percent="10" :default-percent="defaultPorcentSplitPane" split="vertical">
+              <template>
+                <!-- this slot is 'paneL' (with 'L' in uppercase) do not change -->
+                <div slot="paneL" class="left-container">
+                  <el-aside v-show="isShowedRecordNavigation" width="100%">
                     <div class="small-4 columns">
                       <div class="w">
                         <div class="open-left" />
-                        <el-button
-                          v-show="!isShowedRecordNavigation"
-                          :icon="iconIsShowedRecordNavigation"
-                          class="open-navegation"
-                          circle
-                          @click="handleChangeShowedRecordNavigation()"
+                        <div class="open-datatable-aside">
+                          <el-button
+                            v-show="!isPanel"
+                            :icon="iconShowedRecordNavigation"
+                            circle
+                            style="margin-left: 10px;"
+                            class="el-button-window"
+                            @click="handleChangeShowedRecordNavigation(isShowedRecordNavigation)"
+                          />
+                          <el-button
+                            v-show="!isPanel"
+                            :icon="iconIsShowedAside"
+                            circle
+                            class="el-button-window"
+                            @click="handleChangeShowedPanel()"
+                          />
+                        </div>
+                        <data-table
+                          :parent-uuid="windowUuid"
+                          :container-uuid="windowMetadata.currentTab.uuid"
+                          :table-name="windowMetadata.currentTab.tableName"
+                          :is-showed-panel-record="true"
+                          :is-parent="true"
                         />
+                        <div class="close-datatable">
+                          <el-button
+                            v-show="isPanel"
+                            icon="el-icon-caret-left"
+                            circle
+                            class="el-button-window"
+                            @click="handleChangeShowedPanel()"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </el-main>
-                </SplitArea>
-                <SplitArea v-show="isShowedTabChildren" :size="50">
-                  <el-header
-                    v-if="isShowedTabChildren && windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
-                    style="height: auto; padding-right: 35px !important;padding-bottom: 33px;"
-                  >
-                    <div class="w-33">
-                      <div class="center">
-                        <el-button
-                          icon="el-icon-caret-bottom"
-                          circle
-                          @click="handleChangeShowedTabChildren()"
-                        />
-                      </div>
-                    </div>
-                    <tab-children
-                      :window-uuid="windowUuid"
-                      :tabs-list="windowMetadata.tabsListChildren"
-                      :first-tab-uuid="windowMetadata.firstTabUuid"
-                      :style="{ 'height': getHeightPanelBottom + 'vh' }"
+                    <i
+                      v-if="isMobile"
+                      class="el-icon-close"
+                      style="position: fixed; padding-top: 15px; color: #000000; font-size: 121%; font-weight: 615 !important; padding-left: 9px;"
+                      @click="handleChangeShowedRecordNavigation(isShowedRecordNavigation)"
                     />
-                  </el-header>
-                </SplitArea>
-              </Split>
-            </el-container>
-          </template>
-        </split-pane>
-      </el-main>
+                  </el-aside>
+                </div>
+              </template>
+              <template slot="paneR">
+                <el-container style="height: 86vh;">
+                  <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(isShowedRecordNavigation)">
+                    <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
+                      <el-header style="height: 39px;">
+                        <context-menu
+                          v-show="!isShowedRecordPanel"
+                          :menu-parent-uuid="$route.meta.parentUuid"
+                          :parent-uuid="windowUuid"
+                          :container-uuid="windowMetadata.currentTabUuid"
+                          :panel-type="panelType"
+                          :is-insert-record="getterIsInsertRecord"
+                        />
+                      </el-header>
+                      <el-main :style="styleMainTab">
+                        <tab-parent
+                          :window-uuid="windowUuid"
+                          :tabs-list="windowMetadata.tabsListParent"
+                          class="tab-window"
+                        />
+                        <div style="right: 0%; top: 40%; position: absolute;">
+                          <el-button v-show="!show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                        </div>
+                        <div class="small-4 columns">
+                          <div class="wrapper">
+                            <div
+                              v-show="windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
+                              class="open-detail"
+                            />
+                            <el-button
+                              v-if="windowMetadata.tabsListChildren.length &&
+                                (isMobile && !isShowedRecordNavigation || !isMobile)"
+                              v-show="!isShowedTabsChildren"
+                              icon="el-icon-caret-top"
+                              :class="classIsMobile"
+                              circle
+                              type="primary"
+                              @click="handleChangeShowedTabChildren()"
+                            />
+                          </div>
+                        </div>
+                        <modal-dialog
+                          :parent-uuid="windowUuid"
+                          :container-uuid="windowMetadata.currentTabUuid"
+                        />
+                        <div class="small-4 columns">
+                          <div class="w">
+                            <div class="open-left" />
+                            <el-button
+                              v-show="!isShowedRecordNavigation"
+                              :icon="iconShowedRecordNavigation"
+                              class="open-navegation"
+                              circle
+                              type="primary"
+                              @click="handleChangeShowedRecordNavigation(isShowedRecordNavigation)"
+                            />
+                          </div>
+                        </div>
+                      </el-main>
+                    </SplitArea>
+                    <SplitArea v-show="isShowedTabsChildren" :size="50">
+                      <el-header
+                        v-if="isShowedTabsChildren && windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
+                        style="height: auto; padding-right: 35px !important; padding-bottom: 33px;"
+                      >
+                        <div class="w-33">
+                          <div class="center">
+                            <el-button
+                              icon="el-icon-caret-bottom"
+                              circle
+                              class="el-button-window"
+                              @click="handleChangeShowedTabChildren()"
+                            />
+                          </div>
+                        </div>
+                        <tab-children
+                          :window-uuid="windowUuid"
+                          :tabs-list="windowMetadata.tabsListChildren"
+                          :first-tab-uuid="windowMetadata.firstTabUuid"
+                          :style="{ 'height': getHeightPanelBottom + 'vh' }"
+                        />
+                      </el-header>
+                    </SplitArea>
+                  </Split>
+                </el-container>
+              </template>
+            </split-pane>
+          </el-aside>
+        </SplitArea>
+        <SplitArea :size="show ? 50 : 0">
+          <el-main>
+            <div style="top: 40%; position: absolute;">
+              <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+            </div>
+            <div id="example-1">
+              <transition name="slide-fade">
+                <p v-if="show">
+                  <el-card class="box-card">
+                    <el-tabs v-model="activeInfo" @tab-click="handleClick">
+                      <el-tab-pane
+                        name="listChatEntries"
+                      >
+                        <span slot="label">
+                          <i class="el-icon-s-comment" />
+                          {{ $t('window.containerInfo.notes') }}
+                        </span>
+                        <div
+                          v-if="getIsChat"
+                        >
+                          <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                              <span>{{ $t('window.containerInfo.notes') }}</span>
+                            </div>
+                            <el-scrollbar wrap-class="scroll-window-log-chat">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(chats, key) in gettersLischat"
+                                  :key="key"
+                                  :timestamp="translateDate(chats.logDate)"
+                                  placement="top"
+                                >
+                                  <el-card shadow="hover">
+                                    <div>
+                                      <span>{{ chats.userName }}</span>
+                                      <span>{{ chats.characterData }}</span>
+                                    </div>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
+                          </el-card>
+                        </div>
+                        <div>
+                          <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                              {{ $t('window.containerInfo.logWorkflow.addNote') }}
+                            </div>
+                            <el-input
+                              v-model="chatNote"
+                              type="textarea"
+                              :rows="2"
+                              placeholder="Please input"
+                            />
+                            <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment(chatNote)" />
+                          </el-card>
+                        </div>
+                      </el-tab-pane>
+                      <el-tab-pane
+                        name="listRecordLogs"
+                      >
+                        <span slot="label">
+                          <svg-icon icon-class="tree-table" />
+                          {{ $t('window.containerInfo.changeLog') }}
+                        </span>
+                        <div
+                          v-if="getIsChangeLog"
+                          key="change-log-loaded"
+                        >
+                          <el-scrollbar wrap-class="scroll-window-log-change">
+                            <el-timeline>
+                              <el-timeline-item
+                                v-for="(listLogs, key) in gettersListRecordLogs"
+                                :key="key"
+                                :timestamp="translateDate(listLogs.logDate)"
+                                placement="top"
+                                color="#008fd3"
+                              >
+                                <el-card shadow="hover" class="clearfix">
+                                  <div>
+                                    {{ listLogs.userName }}
+                                    <el-link type="primary" style="float: right;" @click="showkey(key)"> {{ $t('window.containerInfo.changeDetail') }} </el-link>
+                                  </div>
+                                  <br>
+                                  <el-collapse-transition>
+                                    <div v-show="(currentKey === key)">
+                                      <span v-for="(list, index) in listLogs.changeLogs" :key="index">
+                                        <p v-if="list.columnName === 'DocStatus'"><b> {{ list.displayColumnName }} :</b> <strike> <el-tag :type="tagStatus(list.oldValue)"> {{ list.oldDisplayValue }} </el-tag> </strike> <el-tag :type="tagStatus(list.newValue)"> {{ list.newDisplayValue }} </el-tag> </p>
+                                        <p v-else><b> {{ list.displayColumnName }} :</b> <strike> <el-link type="danger"> {{ list.oldDisplayValue }} </el-link> </strike> <el-link type="success"> {{ list.newDisplayValue }} </el-link> </p>
+                                      </span>
+                                    </div>
+                                  </el-collapse-transition>
+                                </el-card>
+                              </el-timeline-item>
+                            </el-timeline>
+                          </el-scrollbar>
+                        </div>
+                        <div
+                          v-else
+                          key="change-log-loading"
+                          v-loading="true"
+                          :element-loading-text="$t('notifications.loading')"
+                          element-loading-spinner="el-icon-loading"
+                          element-loading-background="rgba(255, 255, 255, 0.8)"
+                          class="loading-window"
+                        />
+                      </el-tab-pane>
+                      <el-tab-pane
+                        v-if="getIsWorkflowLog"
+                        name="listWorkflowLogs"
+                      >
+                        <span slot="label">
+                          <i class="el-icon-s-help" />
+                          {{ $t('window.containerInfo.workflowLog') }}
+                        </span>
+                        <div
+                          v-if="getIsWorkflowLog"
+                          key="workflow-log-loaded"
+                        >
+                          <el-card
+                            class="box-card"
+                          >
+                            <el-scrollbar wrap-class="scroll-window-log-workflow">
+                              <el-timeline>
+                                <el-timeline-item
+                                  v-for="(workflow,index) in gettersListWorkflow"
+                                  :key="index"
+                                  :timestamp="translateDate(workflow.logDate)"
+                                  placement="top"
+                                >
+                                  <el-card shadow="hover">
+                                    <div slot="header" class="clearfix">
+                                      <span> {{ workflow.workflowName }} </span>
+                                    </div>
+                                    <div>
+                                      <el-steps
+                                        :active="workflow.workflowEventsList.length"
+                                        align-center
+                                        finish-status="success"
+                                      >
+                                        <el-step
+                                          v-for="(nodeList, key) in workflow.workflowEventsList"
+                                          :key="key"
+                                        >
+                                          <span slot="title">
+                                            <el-popover
+                                              placement="top-start"
+                                              width="400"
+                                              trigger="hover"
+                                            >
+                                              <p><b> {{ $t('login.userName') }}:</b> {{ nodeList.userName }} </p>
+                                              <p v-if="!isEmptyValue(nodeList.textMessage)">
+                                                <b> {{ $t('window.containerInfo.logWorkflow.message') }}:</b>
+                                                {{ nodeList.textMessage }}
+                                              </p>
+                                              <p>
+                                                <b> {{ $t('window.containerInfo.logWorkflow.responsible') }}:</b>
+                                                {{ nodeList.responsibleName }}
+                                              </p>
+                                              <p>
+                                                <b> {{ $t('window.containerInfo.logWorkflow.workflowName') }}:</b>
+                                                {{ nodeList.workflowStateName }}
+                                              </p>
+                                              <p>
+                                                <b> {{ $t('window.containerInfo.logWorkflow.timeElapsed') }}:</b>
+                                                {{ nodeList.timeElapsed }}
+                                              </p>
+                                              <el-button slot="reference" type="text">
+                                                {{ nodeList.nodeName }}
+                                              </el-button>
+                                            </el-popover>
+                                          </span>
+                                        </el-step>
+                                      </el-steps>
+                                    </div>
+                                  </el-card>
+                                </el-timeline-item>
+                              </el-timeline>
+                            </el-scrollbar>
+                          </el-card>
+                        </div>
+                        <div
+                          v-else
+                          key="workflow-log-loading"
+                          v-loading="true"
+                          :element-loading-text="$t('notifications.loading')"
+                          element-loading-spinner="el-icon-loading"
+                          element-loading-background="rgba(255, 255, 255, 0.8)"
+                          class="loading-window"
+                        />
+                      </el-tab-pane>
+                    </el-tabs>
+                  </el-card>
+                </p>
+              </transition>
+            </div>
+          </el-main>
+        </SplitArea>
+      </Split>
     </el-container>
   </div>
   <div
@@ -177,17 +387,23 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
+      activeInfo: 'listChatEntries',
+      show: false,
+      chatNote: '',
+      typeAction: 0,
       isLoadingFromServer: false,
-      listRecordNavigation: 0,
-      isShowedTabChildren: true,
-      isShowedRecordPanel: false,
-      isShowedRecordNavigation: this.$route.query.action === 'advancedQuery'
+      currentKey: 100,
+      // TODO: Manage attribute with store
+      isShowedRecordPanel: false
     }
   },
   beforeRouteUpdate(to, from, next) {
     this.$store.dispatch('setWindowOldRoute', {
       path: from.path,
       fullPath: from.fullPath,
+      params: {
+        ...from.params
+      },
       query: {
         ...from.query
       }
@@ -196,7 +412,6 @@ export default {
   },
   computed: {
     defaultPorcentSplitPane() {
-      // isShowedRecordPanel ? (isShowedRecordNavigation ? 100 : 50) : (isShowedRecordNavigation ? 50 : -1)
       if (this.isShowedRecordPanel) {
         if (this.isShowedRecordNavigation) {
           return 100
@@ -218,51 +433,58 @@ export default {
     classIsMobile() {
       if (this.isMobile) {
         return 'open-table-detail-mobile'
-      } else {
-        return 'open-table-detail'
       }
+      return 'open-table-detail'
     },
-    getterIsShowedRecordNavigation() {
-      return this.$store.getters.getIsShowedRecordNavigation(this.windowUuid)
-    },
-    iconIsShowedRecordNavigation() {
+    iconShowedRecordNavigation() {
       if (this.isShowedRecordNavigation) {
         return 'el-icon-caret-left'
-      } else {
-        return 'el-icon-caret-right'
       }
+      return 'el-icon-caret-right'
     },
     iconIsShowedAside() {
       if (this.isShowedRecordPanel) {
         return 'el-icon-caret-left'
-      } else {
-        return 'el-icon-caret-right'
       }
+      return 'el-icon-caret-right'
     },
-    styleMainIsShowedTabChildren() {
-      if (this.isShowedTabChildren) {
-        return { height: 'initial', overflow: 'auto' }
-      } else {
-        return { height: 'initial', overflow: 'hidden' }
+    styleMainTab() {
+      if (this.isShowedTabsChildren) {
+        return {
+          height: 'initial',
+          overflow: 'auto'
+        }
+      }
+      return {
+        height: 'initial',
+        overflow: 'hidden'
       }
     },
     splitAreaStyle() {
-      if (this.isShowedTabChildren) {
-        return { overflow: 'auto' }
-      } else {
-        return { overflow: 'hidden' }
+      if (this.isShowedTabsChildren) {
+        return {
+          overflow: 'auto'
+        }
+      }
+      return {
+        overflow: 'hidden'
       }
     },
     sizeAreaStyle() {
-      if (this.isShowedTabChildren) {
+      if (this.isShowedTabsChildren) {
         return 50
-      } else {
-        return 100
       }
+      return 100
     },
     //
     getterWindow() {
       return this.$store.getters.getWindow(this.windowUuid)
+    },
+    isShowedTabsChildren() {
+      return this.getterWindow.isShowedTabsChildren
+    },
+    isShowedRecordNavigation() {
+      return this.$store.getters.getIsShowedRecordNavigation(this.windowUuid)
     },
     getHeightPanelTop() {
       return this.$store.getters.getSplitHeightTop
@@ -279,9 +501,81 @@ export default {
         return tab.isInsertRecord
       }
       return false
+    },
+    gettersListRecordLogs() {
+      const changeLog = this.$store.getters.getRecordLogs.recorLogs
+      if (this.isEmptyValue(changeLog)) {
+        return changeLog
+      }
+      changeLog.sort((a, b) => {
+        const c = new Date(a.logDate)
+        const d = new Date(b.logDate)
+        return d - c
+      })
+      return changeLog
+    },
+    getIsChangeLog() {
+      if (this.isEmptyValue(this.gettersListRecordLogs)) {
+        return false
+      }
+      return true
+    },
+    getIsWorkflowLog() {
+      if (this.isEmptyValue(this.gettersListWorkflow)) {
+        return false
+      }
+      return true
+    },
+    getIsChat() {
+      return this.$store.getters.getIsNote
+    },
+    getTypeLogs() {
+      const groupLog = this.gettersListRecordLogs.reduce((groupLog, item) => {
+        if (!groupLog.includes(item.logId)) {
+          groupLog.push(item.logId)
+        }
+        return groupLog
+      }, [])
+        .map(log => {
+          // agrup for logId
+          return {
+            logs: this.gettersListRecordLogs.filter(change => change.logId === log),
+            logId: log
+          }
+        })
+      return groupLog
+    },
+    gettersLischat() {
+      return this.$store.getters.getChatEntries.chatEntriesList
+    },
+    // gettersLisRecordChats() {
+    //   return this.$store.getters.getListRecordChats[0].description
+    // },
+    isNote() {
+      return this.$store.getters.getIsNote
+    },
+    gettersListWorkflow() {
+      return this.$store.getters.getWorkflow
+    },
+    gettersrecorCount() {
+      return 1
+    },
+    language() {
+      return this.$store.getters.language
+    },
+    getterShowContainerInfo() {
+      return this.$store.getters.getShowContainerInfo
     }
   },
   watch: {
+    $route(value) {
+      if (this.show) {
+        if (value.query.action === 'create-new') {
+          this.$store.dispatch('isNote', false)
+        }
+        this.refres(this.activeInfo)
+      }
+    },
     'this.$route.params'(newValue, oldValue) {
       if (!this.isEmptyValue(newValue)) {
         this.getIsRecordLocked()
@@ -292,15 +586,68 @@ export default {
     this.getWindow()
   },
   methods: {
+    sendComment(comment) {
+      this.$store.dispatch('createChatEntry', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId,
+        comment: comment
+      })
+      this.chatNote = ''
+      // this.$store.dispatch('listChatEntries', {
+      //   tableName: this.$route.params.tableName,
+      //   recordId: this.$route.params.recordId
+      // })
+    },
+    showkey(key, index) {
+      if (key === this.currentKey && index === this.typeAction) {
+        this.currentKey = 1000
+      } else {
+        this.currentKey = key
+        this.typeAction = index
+      }
+    },
+    changeField(log) {
+      this.$store.dispatch('notifyPanelChange', {
+        newValues: log.oldDisplayValue,
+        isSendToServer: false,
+        isSendCallout: false,
+        isPrivateAccess: false
+      })
+    },
+    translateDate(value) {
+      return this.$d(new Date(value), 'long', this.language)
+    },
+    conteInfo() {
+      this.show = !this.show
+      this.$store.dispatch('listWorkflowLogs', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+      this.$store.dispatch('listChatEntries', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+      this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
+    },
+    handleClick(tab, event) {
+      this.$store.dispatch(tab.name, {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+    },
+    refres(tabInfo) {
+      this.$store.dispatch(tabInfo, {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+    },
     // callback new size
     onDrag(size) {
-      var bottomPanel = size[1]
-      var topPanel = size[0]
       this.$store.dispatch('setSplitHeightTop', {
-        splitHeightTop: topPanel
+        splitHeightTop: size[0]
       })
       this.$store.dispatch('setSplitHeight', {
-        splitHeight: bottomPanel
+        splitHeight: size[1]
       })
     },
     // get window from vuex store or server
@@ -308,58 +655,50 @@ export default {
       if (this.getterWindow) {
         this.generateWindow()
         this.isLoadingFromServer = true
-      } else {
-        this.$store.dispatch('getWindowFromServer', {
-          windowUuid: this.windowUuid,
-          routeToDelete: this.$route
-        })
-          .then(response => {
-            this.generateWindow()
-            this.isLoadingFromServer = true
-          })
-          .finally(() => {
-            this.isLoaded = true
-          })
+        return
       }
+      this.$store.dispatch('getWindowFromServer', {
+        windowUuid: this.windowUuid,
+        routeToDelete: this.$route
+      })
+        .then(response => {
+          this.generateWindow()
+          this.isLoadingFromServer = true
+        })
     },
     generateWindow() {
       this.windowMetadata = this.getterWindow
-      if (this.getterIsShowedRecordNavigation === undefined) {
-        this.listRecordNavigation = this.getterRecordList
-        if (this.windowMetadata.windowType === 'Q' || this.windowMetadata.windowType === 'M' && this.listRecordNavigation >= 10) {
-          this.isShowedRecordNavigation = true
-        } else if (this.windowMetadata.windowType === 'T') {
-          this.isShowedRecordNavigation = false
-        }
-      } else {
-        this.isShowedRecordNavigation = this.getterIsShowedRecordNavigation
-      }
 
-      this.isShowedTabChildren = this.windowMetadata.isShowedDetail
+      let isShowRecords = this.isShowedRecordNavigation
+      if (isShowRecords === undefined) {
+        if (['M', 'Q'].includes(this.windowMetadata.windowType) && this.getterRecordList >= 10) {
+          isShowRecords = true
+        } else if (this.windowMetadata.windowType === 'T') {
+          isShowRecords = false
+        } else if (this.$route.query.action === 'advancedQuery') {
+          isShowRecords = true
+        }
+      }
+      this.handleChangeShowedRecordNavigation(!isShowRecords)
+
       this.isLoaded = true
-      this.changeShowedRecordNavigation()
     },
     handleChangeShowedRecordNavigation(value) {
-      this.isShowedRecordNavigation = !this.isShowedRecordNavigation
-      this.changeShowedRecordNavigation()
+      this.$store.dispatch('changeWindowAttribute', {
+        parentUuid: this.windowUuid, // act as parentUuid
+        attributeName: 'isShowedRecordNavigation',
+        attributeValue: !value
+      })
     },
     handleChangeShowedPanel(value) {
       this.isPanel = !this.isPanel
       this.isShowedRecordPanel = !this.isShowedRecordPanel
     },
-    changeShowedRecordNavigation() {
-      this.$store.dispatch('changeShowedRecordWindow', {
-        parentUuid: this.windowUuid,
-        containerUuid: this.windowMetadata.currentTab.uuid, // act as parentUuid
-        isShowedRecordNavigation: this.isShowedRecordNavigation
-      })
-    },
     handleChangeShowedTabChildren() {
-      this.isShowedTabChildren = !this.isShowedTabChildren
-      this.$store.dispatch('changeShowedDetail', {
-        panelType: this.panelType,
-        containerUuid: this.windowUuid, // act as parentUuid
-        isShowedDetail: this.isShowedTabChildren
+      this.$store.dispatch('changeWindowAttribute', {
+        parentUuid: this.windowUuid, // act as parentUuid
+        attributeName: 'isShowedTabsChildren',
+        attributeValue: !this.isShowedTabsChildren
       })
     },
     getIsRecordLocked() {
@@ -373,6 +712,22 @@ export default {
 </script>
 
 <style scoped>
+  .scroll {
+    max-height: 60vh;
+  }
+  /* Enter and leave animations can use different */
+  /* durations and timing functions.              */
+  .slide-fade-enter-active {
+    transition: all .2s ease;
+  }
+  .slide-fade-leave-active {
+    transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  }
+  .slide-fade-enter, .slide-fade-leave-to
+  /* .slide-fade-leave-active below version 2.1.8 */ {
+    transform: translateX(10px);
+    opacity: 0;
+  }
   .el-tabs__content {
     overflow: hidden;
     position: relative;
@@ -488,7 +843,7 @@ export default {
     top: 2%;
     left: 1%;
   }
-  .el-button {
+  .el-button-window {
     cursor: pointer;
     background: #FFFFFF;
     border: 1px solid #DCDFE6;
@@ -516,6 +871,15 @@ export default {
 }
 </style>
 <style>
+  .scroll-window-log-change {
+    max-height: 74vh !important;
+  }
+  .scroll-window-log-workflow {
+    max-height: 68vh !important;
+  }
+  .scroll-window-log-chat {
+    max-height: 45vh !important;
+  }
   .el-card__header {
     background: rgba(245, 247, 250, 0.75);
     padding: 18px 20px;
@@ -577,7 +941,7 @@ export default {
 .splitter-pane-resizer.vertical {
     width: 11px;
     height: 100%;
-    background: gray!important;
+    background: gray !important;
     margin-left: -5px;
     border-left: 5px solid hsla(0,0%,100%,0);
     border-right: 5px solid hsla(0,0%,100%,0);

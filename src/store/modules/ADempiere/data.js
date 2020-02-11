@@ -47,7 +47,7 @@ const data = {
     notifyCellTableChange: (state, payload) => {
       payload.row[payload.columnName] = payload.value
       if (payload.displayColumn !== undefined) {
-        const key = 'DisplayColumn_' + payload.columnName
+        const key = `DisplayColumn_${payload.columnName}`
         payload.row[key] = payload.displayColumn
       }
     },
@@ -55,7 +55,7 @@ const data = {
       if (payload.row !== undefined) {
         payload.row[payload.columnName] = payload.value
         if (payload.displayColumn !== undefined) {
-          const key = 'DisplayColumn_' + payload.columnName
+          const key = `DisplayColumn_${payload.columnName}`
           payload.row[key] = payload.displayColumn
         }
       }
@@ -106,15 +106,15 @@ const data = {
       // refresh list table with data from server
       if (panelType === 'window') {
         dispatch('getDataListTab', {
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
-          isAddRecord: isAddRecord,
-          isShowNotification: isShowNotification
+          parentUuid,
+          containerUuid,
+          isAddRecord,
+          isShowNotification
         })
       } else if (panelType === 'browser') {
         if (!rootGetters.isNotReadyForSubmit(containerUuid)) {
           dispatch('getBrowserSearch', {
-            containerUuid: containerUuid,
+            containerUuid,
             isClearSelection: true
           })
         }
@@ -142,17 +142,17 @@ const data = {
       if (isPanelValues) {
         // add row with values used from record in panel
         values = rootGetters.getColumnNamesAndValues({
-          containerUuid: containerUuid,
+          containerUuid,
           propertyName: 'value',
           isObjectReturn: true,
           isAddDisplayColumn: true,
-          fieldList: fieldList
+          fieldList
         })
       } else {
         values = rootGetters.getParsedDefaultValues({
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
-          fieldList: fieldList
+          parentUuid,
+          containerUuid,
+          fieldList
         })
       }
       values.isNew = isNew
@@ -170,8 +170,8 @@ const data = {
       // get context value if link column exists and does not exist in row
       if (!isEmptyValue(linkColumnName)) {
         valueLink = rootGetters.getContext({
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
+          parentUuid,
+          containerUuid,
           columnName: linkColumnName
         })
       }
@@ -188,13 +188,16 @@ const data = {
             var valueGetDisplayColumn = values[itemField.columnName]
             if (String(values[itemField.columnName]) === '[object Object]' && itemField.componentPath === 'FieldSelect') {
               values[itemField.columnName] = ' '
-              values['DisplayColumn_' + itemField.columnName] = ' '
+              values[`DisplayColumn_${itemField.columnName}`] = ' '
             } else if (String(values[itemField.columnName]) === '[object Object]' && itemField.componentPath === 'FieldNumber') {
               values[itemField.columnName] = 0
             }
             // overwrite value with column link
             if (!isEmptyValue(linkColumnName) && linkColumnName === itemField.columnName) {
               valueGetDisplayColumn = valueLink
+              if (isEmptyValue(values[itemField.columnName])) {
+                values[itemField.columnName] = valueGetDisplayColumn
+              }
             }
 
             // break this itineration if is empty
@@ -209,21 +212,24 @@ const data = {
                 valueGetDisplayColumn = parseInt(valueGetDisplayColumn, 10)
               }
             }
-            if (!isEmptyValue(valueGetDisplayColumn) && String(valueGetDisplayColumn) === '[object Object]') {
+            if (!isEmptyValue(valueGetDisplayColumn) && String(valueGetDisplayColumn) === '[object Object]' && valueGetDisplayColumn.isSQL) {
               // get value from direct Query
-              dispatch('getRecordBySQL', { query: valueGetDisplayColumn.query, field: itemField })
+              dispatch('getRecordBySQL', {
+                query: valueGetDisplayColumn.query,
+                field: itemField
+              })
                 .then(defaultValue => {
                   if (itemField.componentPath === 'FieldSelect') {
                     values[itemField.columnName] = defaultValue.key
-                    values['DisplayColumn_' + itemField.columnName] = defaultValue.label
+                    values[`DisplayColumn_${itemField.columnName}`] = defaultValue.label
                   } else {
                     values[itemField.columnName] = defaultValue.key
                     dispatch('notifyRowTableChange', {
-                      parentUuid: parentUuid,
-                      containerUuid: containerUuid,
-                      isNew: isNew,
-                      isEdit: isEdit,
-                      values: values
+                      parentUuid,
+                      containerUuid,
+                      isNew,
+                      isEdit,
+                      row: values
                     })
                   }
                 })
@@ -231,8 +237,8 @@ const data = {
             }
             // get label (DisplayColumn) from vuex store
             const options = rootGetters.getLookupAll({
-              parentUuid: parentUuid,
-              containerUuid: containerUuid,
+              parentUuid,
+              containerUuid,
               tableName: itemField.reference.tableName,
               query: itemField.reference.query,
               directQuery: itemField.reference.directQuery,
@@ -242,32 +248,35 @@ const data = {
             const option = options.find(itemOption => itemOption.key === valueGetDisplayColumn)
             // if there is a lookup option, assign the display column with the label
             if (option) {
-              values['DisplayColumn_' + itemField.columnName] = option.label
+              values[`DisplayColumn_${itemField.columnName}`] = option.label
+              if (isEmptyValue(option.label) && !itemField.isMandatory) {
+                values[itemField.columnName] = undefined
+              }
               return
             }
             if (linkColumnName === itemField.columnName) {
               // get context value if link column exists and does not exist in row
               const nameParent = rootGetters.getContext({
-                parentUuid: parentUuid,
-                containerUuid: containerUuid,
+                parentUuid,
+                containerUuid,
                 columnName: 'Name'
               })
               if (nameParent) {
-                values['DisplayColumn_' + itemField.columnName] = nameParent
+                values[`DisplayColumn_${itemField.columnName}`] = nameParent
                 return
               }
             }
             // get from server
             dispatch('getLookupItemFromServer', {
-              parentUuid: parentUuid,
-              containerUuid: containerUuid,
+              parentUuid,
+              containerUuid,
               tableName: itemField.reference.tableName,
               directQuery: itemField.reference.directQuery,
               value: valueGetDisplayColumn
             })
               .then(responseLookup => {
                 dispatch('addDisplayColumn', {
-                  containerUuid: containerUuid,
+                  containerUuid,
                   columnName: itemField.columnName,
                   displayColumn: responseLookup.label
                 })
@@ -282,7 +291,7 @@ const data = {
 
       const dataStore = getters.getDataRecordsList(containerUuid)
       commit('addNewRow', {
-        values: values,
+        values,
         data: dataStore
       })
     },
@@ -293,8 +302,8 @@ const data = {
 
       commit('addDisplayColumn', {
         row: rowRecord,
-        displayColumn: displayColumn,
-        columnName: 'DisplayColumn_' + columnName
+        displayColumn,
+        columnName: `DisplayColumn_${columnName}`
       })
     },
     /**
@@ -335,20 +344,20 @@ const data = {
       })
 
       const newDataStore = {
-        parentUuid: parentUuid,
-        containerUuid: containerUuid,
-        record: record,
-        selection: selection,
-        pageNumber: pageNumber,
-        recordCount: recordCount,
-        nextPageToken: nextPageToken,
-        originalNextPageToken: originalNextPageToken,
-        panelType: panelType,
-        isLoaded: isLoaded,
+        parentUuid,
+        containerUuid,
+        record,
+        selection,
+        pageNumber,
+        recordCount,
+        nextPageToken,
+        originalNextPageToken,
+        panelType,
+        isLoaded,
         isLoadedContext: false,
-        query: query,
-        whereClause: whereClause,
-        orderByClause: orderByClause
+        query,
+        whereClause,
+        orderByClause
       }
 
       if (dataStore) {
@@ -356,8 +365,8 @@ const data = {
           newDataStore.record = dataStore.record.concat(newDataStore.record)
         }
         commit('setRecordSelection', {
-          dataStore: dataStore,
-          newDataStore: newDataStore
+          dataStore,
+          newDataStore
         })
       } else {
         commit('addRecordSelection', newDataStore)
@@ -447,12 +456,12 @@ const data = {
      * @param {string} query, criteria to search record data
      * @param {string} whereClause, criteria to search record data
      * @param {string} orderByClause, criteria to search record data
-     * @param {array}  conditions, conditions to criteria
+     * @param {array}  conditionsList, conditions list to criteria
      */
     getObjectListFromCriteria({ commit, dispatch, getters, rootGetters }, parameters) {
       const {
         parentUuid, containerUuid,
-        tableName, query, whereClause, orderByClause, conditions = [],
+        tableName, query, whereClause, orderByClause, conditionsList = [],
         isShowNotification = true, isParentTab = true, isAddRecord = false
       } = parameters
       if (isShowNotification) {
@@ -478,9 +487,9 @@ const data = {
       }
 
       commit('addInGetting', {
-        containerUuid: containerUuid,
-        tableName: tableName,
-        conditions: conditions
+        containerUuid,
+        tableName,
+        conditionsList
       })
 
       // gets the default value of the fields (including whether it is empty or undefined)
@@ -493,9 +502,9 @@ const data = {
         tableName,
         query,
         whereClause,
-        conditions,
+        conditionsList,
         orderByClause,
-        nextPageToken
+        pageToken: nextPageToken
       })
         .then(dataResponse => {
           const recordsList = dataResponse.recordsList.map(itemRecord => {
@@ -560,8 +569,8 @@ const data = {
           // Set default registry values so that the table does not say loading,
           // there was already a response from the server
           dispatch('setRecordSelection', {
-            parentUuid: parentUuid,
-            containerUuid: containerUuid
+            parentUuid,
+            containerUuid
           })
 
           if (isShowNotification) {
@@ -571,7 +580,7 @@ const data = {
               type: 'error'
             })
           }
-          console.warn(`Error Get Object List ${error.message}. Code: ${error.code}`)
+          console.warn(`Error Get Object List ${error.message}. Code: ${error.code}.`)
         })
         .finally(() => {
           commit('deleteInGetting', {
@@ -580,8 +589,10 @@ const data = {
           })
         })
     },
-    getRecordBySQL({ dispatch }, parameters) {
-      const { query, field } = parameters
+    getRecordBySQL({ dispatch }, {
+      query,
+      field
+    }) {
       // TODO: Change to promise all
       return new Promise((resolve, reject) => {
         getDefaultValueFromServer(query)
@@ -624,12 +635,12 @@ const data = {
     notifyRowTableChange({ commit, getters, rootGetters }, objectParams) {
       const { parentUuid, containerUuid, isEdit = true } = objectParams
       var currentValues = {}
-      if (objectParams.hasOwnProperty('values')) {
-        currentValues = objectParams.values
+      if (objectParams.hasOwnProperty('row')) {
+        currentValues = objectParams.row
       } else {
         currentValues = rootGetters.getColumnNamesAndValues({
-          parentUuid: parentUuid,
-          containerUuid: containerUuid,
+          parentUuid,
+          containerUuid,
           propertyName: 'value',
           isObjectReturn: true,
           isAddDisplayColumn: true
@@ -641,13 +652,13 @@ const data = {
       var newRow = {
         ...currentValues,
         // ...objectParams.row,
-        isEdit: isEdit
+        isEdit
       }
 
       commit('notifyRowTableChange', {
         isNew: objectParams.isNew,
-        newRow: newRow,
-        row: row
+        newRow,
+        row
       })
     },
     notifyCellTableChange({ commit, state, dispatch, rootGetters }, parameters) {
@@ -761,7 +772,7 @@ const data = {
           return contextInfoResponse
         })
         .catch(error => {
-          console.warn(`Error ${error.code} getting context info value for field ${error.message}`)
+          console.warn(`Error ${error.code} getting context info value for field ${error.message}.`)
         })
     },
     getPrivateAccessFromServer({ rootGetters }, {
@@ -778,7 +789,7 @@ const data = {
         userUuid
       })
         .then(privateAccessResponse => {
-          if (isEmptyValue(privateAccessResponse.recordId)) {
+          if (isEmptyValue(privateAccessResponse.recordId) || privateAccessResponse.recordId !== recordId) {
             return {
               isLocked: false,
               tableName,
@@ -792,7 +803,7 @@ const data = {
           }
         })
         .catch(error => {
-          console.warn(`Error get private access: ${error.message}. Code: ${error.code}:`)
+          console.warn(`Error get private access: ${error.message}. Code: ${error.code}.`)
         })
     },
     lockRecord({ rootGetters }, {
@@ -829,7 +840,7 @@ const data = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
-          console.warn(`Error lock private access: ${error.message}. Code: ${error.code}:`)
+          console.warn(`Error lock private access: ${error.message}. Code: ${error.code}.`)
         })
     },
     unlockRecord({ rootGetters }, {
@@ -866,7 +877,7 @@ const data = {
             message: language.t('login.unexpectedError'),
             type: 'error'
           })
-          console.warn(`Error unlock private access: ${error.message}. Code: ${error.code}:`)
+          console.warn(`Error unlock private access: ${error.message}. Code: ${error.code}.`)
         })
     }
   },
@@ -882,7 +893,7 @@ const data = {
       return state.recordSelection.find(itemRecord => {
         return itemRecord.containerUuid === containerUuid
       }) || {
-        containerUuid: containerUuid,
+        containerUuid,
         record: [],
         recordCount: 0,
         selection: [],

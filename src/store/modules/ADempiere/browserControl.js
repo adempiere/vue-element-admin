@@ -37,16 +37,18 @@ const browserControl = {
       if (!isEmptyValue(parsedQuery) && parsedQuery.includes('@')) {
         parsedQuery = parseContext({
           containerUuid,
-          value: parsedQuery
-        }, true)
+          value: parsedQuery,
+          isBooleanToString: true
+        }).value
       }
 
       let parsedWhereClause = browser.whereClause
       if (!isEmptyValue(parsedWhereClause) && parsedWhereClause.includes('@')) {
         parsedWhereClause = parseContext({
           containerUuid,
-          value: parsedWhereClause
-        }, true)
+          value: parsedWhereClause,
+          isBooleanToString: true
+        }).value
       }
 
       let nextPageToken
@@ -114,7 +116,7 @@ const browserControl = {
             summary: error.message,
             type: 'error'
           })
-          console.warn(`Error getting browser search: ${error.message}. Code: ${error.code}`)
+          console.warn(`Error getting browser search: ${error.message}. Code: ${error.code}.`)
         })
     }
   }

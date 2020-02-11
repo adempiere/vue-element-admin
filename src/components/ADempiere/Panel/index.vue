@@ -28,7 +28,7 @@
               />
             </div>
             <el-card
-              :shadow="isMobile ? 'never' : 'hover'"
+              :shadow="shadowGroup"
               :body-style="{ padding: '10px' }"
             >
               <el-row :gutter="gutterRow">
@@ -40,7 +40,8 @@
                     :container-uuid="containerUuid"
                     :metadata-field="{
                       ...fieldAttributes,
-                      optionCRUD: optionCRUD
+                      optionCRUD,
+                      recordUuid: uuidRecord
                     }"
                     :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                     :panel-type="panelType"
@@ -53,9 +54,10 @@
           </div>
         </div>
       </template>
-      <div :class="cards()">
+      <div :class="classCards">
         <draggable
           v-if="!isMobile"
+          key="draggable-loaded"
           :list="fieldGroups"
           v-bind="$attrs"
           :set-data="setData"
@@ -71,7 +73,7 @@
                   class="card"
                 >
                   <el-card
-                    :shadow="isMobile ? 'never' : 'hover'"
+                    :shadow="shadowGroup"
                     :body-style="{ padding: '10px' }"
                   >
                     <div slot="header" class="clearfix">
@@ -97,7 +99,8 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD: optionCRUD
+                            optionCRUD,
+                            recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
@@ -124,7 +127,7 @@
                   class="card"
                 >
                   <el-card
-                    :shadow="isMobile ? 'never' : 'hover'"
+                    :shadow="shadowGroup"
                     :body-style="{ padding: '10px' }"
                   >
                     <div slot="header" class="clearfix">
@@ -149,7 +152,8 @@
                           :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
-                            optionCRUD: optionCRUD
+                            optionCRUD,
+                            recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                           :panel-type="panelType"
@@ -238,6 +242,12 @@ export default {
     }
   },
   computed: {
+    shadowGroup() {
+      if (this.isMobile) {
+        return 'never'
+      }
+      return 'hover'
+    },
     optionCRUD() {
       return this.isEmptyValue(this.uuidRecord) ? 'create-new' : this.uuidRecord
     },
@@ -250,12 +260,14 @@ export default {
       }
       return false
     },
+    getterPanel() {
+      return this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
+    },
     getterFieldList() {
-      const panel = this.$store.getters.getPanel(this.containerUuid, this.isAdvancedQuery)
-      if (panel) {
-        return panel.fieldList
+      if (this.getterPanel) {
+        return this.getterPanel.fieldList
       }
-      return panel
+      return undefined
     },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
@@ -270,32 +282,21 @@ export default {
         record: []
       }
     },
-    getterTotalDataRecordCount() {
-      return this.getterDataStore.recordCount
-    },
     getterIsLoadedRecord() {
       return this.getterDataStore.isLoaded
     },
-    getterRowData() {
-      if (this.isPanelWindow) {
-        if (!this.isEmptyValue(this.uuidRecord) && this.uuidRecord !== 'create-new') {
-          return this.$store.getters.getRowData(this.containerUuid, this.uuidRecord)
-        }
+    classCards() {
+      if (this.isMobile || this.fieldGroups.length < 2 || this.getterIsShowedRecordNavigation) {
+        return 'cards-not-group'
       }
-      return false
+      return 'cards-in-group'
     }
   },
   watch: {
     // used only panel modal (process associated in browser or window)
     containerUuid() {
-      this.generatePanel(this.metadata.fieldList)
-    },
-    // used if the first load contains a uuid
-    isLoadRecord(value) {
-      // TODO: Validate UUID value
-      if (value && this.isPanelWindow && this.uuidRecord !== 'create-new' &&
-        !this.isEmptyValue(this.uuidRecord)) {
-        this.setTagsViewTitle(this.uuidRecord)
+      if (['report', 'process'].includes(this.panelType)) {
+        this.generatePanel(this.metadata.fieldList)
       }
     },
     '$route.query.action'(newValue, oldValue) {
@@ -308,7 +309,7 @@ export default {
     },
     isLoadPanel(value) {
       if (value) {
-        this.readParameters(this.$route)
+        this.readParameters()
       }
     }
   },
@@ -317,12 +318,6 @@ export default {
     this.getPanel()
   },
   methods: {
-    cards() {
-      if (this.isMobile || this.fieldGroups.length < 2 || this.getterIsShowedRecordNavigation) {
-        return 'cards-not-group'
-      }
-      return 'cards-in-group'
-    },
     /**
      * Get the tab object with all its attributes as well as the fields it contains
      */
@@ -339,7 +334,7 @@ export default {
         }).then(() => {
           this.generatePanel(this.getterFieldList)
         }).catch(error => {
-          console.warn(`Field Load Error ${error.code}: ${error.message}`)
+          console.warn(`Field Load Error: ${error.message}. Code: ${error.code}.`)
         })
       }
     },
@@ -349,7 +344,7 @@ export default {
       if (fieldsList.length) {
         this.fieldGroups = this.sortAndGroup(fieldsList)
       }
-      var firstGroup
+      let firstGroup
       if (this.fieldGroups[0] && this.fieldGroups[0].groupFinal === '') {
         firstGroup = this.fieldGroups[0]
         this.fieldGroups.shift()
@@ -361,7 +356,7 @@ export default {
     /**
      * TODO: Delete route parameters after reading them
      */
-    readParameters(route) {
+    readParameters() {
       var parameters = {
         isLoadAllRecords: true,
         isReference: false,
@@ -369,6 +364,7 @@ export default {
         isWindow: true,
         criteria: {}
       }
+      const route = this.$route
       if (this.isPanelWindow) {
         // TODO: use action notifyPanelChange with isShowedField in true
         this.getterFieldList.forEach(fieldItem => {
@@ -376,17 +372,20 @@ export default {
             fieldItem.isShowedFromUser = true
             fieldItem.value = parsedValueComponent({
               fieldType: fieldItem.componentPath,
-              value: route.query[fieldItem.columnName]
+              value: route.query[fieldItem.columnName],
+              referenceType: fieldItem.referenceType
             })
             if (String(route.query.isAdvancedQuery) === String(fieldItem.isAdvancedQuery)) {
               fieldItem.value = parsedValueComponent({
                 fieldType: fieldItem.componentPath,
-                value: route.query[fieldItem.columnName]
+                value: route.query[fieldItem.columnName],
+                referenceType: fieldItem.referenceType
               })
               if (fieldItem.isRange && this.$route.query[`${fieldItem.columnName}_To`]) {
                 fieldItem.valueTo = parsedValueComponent({
                   fieldType: fieldItem.componentPath,
-                  value: route.query[`${fieldItem.columnName}_To`]
+                  value: route.query[`${fieldItem.columnName}_To`],
+                  referenceType: fieldItem.referenceType
                 })
               }
             }
@@ -395,6 +394,7 @@ export default {
 
         if (route.query.action && route.query.action === 'reference') {
           const referenceInfo = this.$store.getters.getReferencesInfo(route.query.windowUuid, route.query.recordUuid, route.query.referenceUuid)
+          route.params.isReadParameters = true
           parameters.isLoadAllRecords = false
           parameters.isReference = true
           parameters.referenceUuid = referenceInfo.uuid
@@ -408,11 +408,13 @@ export default {
               parameters.criteria[param] = route.params[param]
             }
           })
-        } else if (route.query.action && route.query.action !== 'create-new' && route.query.action !== 'reference' && route.query.action !== 'advancedQuery' && route.query.action !== 'criteria') {
+        } else if (!this.isEmptyValue(route.query.action) &&
+          !['create-new', 'reference', 'advancedQuery', 'criteria'].includes(route.query.action)) {
           parameters.isLoadAllRecords = false
           parameters.value = route.query.action
           parameters.tableName = this.metadata.tableName
           parameters.columnName = 'UUID'
+          route.params.isReadParameters = true
         }
         // Only call get data if panel type is window
         if (!route.params.hasOwnProperty('isReadParameters') || route.params.isReadParameters) {
@@ -450,7 +452,7 @@ export default {
             fieldList: this.fieldList,
             panelType: this.panelType
           })
-        } else if (this.panelType === 'process' || this.panelType === 'browser') {
+        } else if (['process', 'browser'].includes(this.panelType)) {
           if (!this.isEmptyValue(route.query)) {
             this.$store.dispatch('notifyPanelChange', {
               containerUuid: this.containerUuid,
@@ -482,12 +484,27 @@ export default {
           .then(response => {
             if (response.length && !parameters.isNewRecord) {
               this.dataRecords = response[0]
-              if (this.$route.query.action === 'create-new') {
+              if (this.$route.query.action === 'criteria') {
                 this.$router.push({
                   name: this.$route.name,
                   query: {
-                    ...this.$route.query
+                    ...this.$route.query,
+                    action: this.dataRecords
+                  },
+                  params: {
+                    ...this.$route.params,
+                    tableName: this.metadata.tableName,
+                    recordId: this.dataRecords[`${this.metadata.tableName}_ID`]
                   }
+                })
+                this.$store.dispatch('notifyPanelChange', {
+                  parentUuid: this.parentUuid,
+                  containerUuid: this.containerUuid,
+                  newValues: this.dataRecords,
+                  isSendToServer: false,
+                  isSendCallout: false,
+                  fieldList: this.fieldList,
+                  panelType: this.panelType
                 })
               } else if (this.$route.query.action === 'reference') {
                 this.$router.push({
@@ -538,38 +555,37 @@ export default {
                 }
               })
             }
-            this.setFocus()
           })
       }
     },
     /**
      * Group the arrangement into groups of columns that they contain, it must
      * be grouped after having the order
-     * @param {array} array
-     * @return {array} res
+     * @param {array} fieldsList
+     * @return {array} groupsList
      */
-    sortAndGroup(arr) {
-      if (arr === undefined) {
+    sortAndGroup(fieldsList) {
+      if (this.isEmptyValue(fieldsList)) {
         return
       }
-      let res = [{
+      let groupsList = [{
         groupFinal: '',
-        metadataFields: arr
+        metadataFields: fieldsList
       }]
 
       // reduce, create array with number groupAssigned element comun
       if (this.isPanelWindow) {
-        res = arr
-          .reduce((res, currentValue) => {
-            if (!res.includes(currentValue.groupAssigned)) {
-              res.push(currentValue.groupAssigned)
+        groupsList = fieldsList
+          .reduce((groupsList, currentValue) => {
+            if (!groupsList.includes(currentValue.groupAssigned)) {
+              groupsList.push(currentValue.groupAssigned)
             }
-            return res
+            return groupsList
           }, [])
           .map(itemGroup => {
             return {
               groupFinal: itemGroup,
-              metadataFields: arr.filter(itemField => {
+              metadataFields: fieldsList.filter(itemField => {
                 return itemField.groupAssigned === itemGroup
               })
             }
@@ -577,38 +593,34 @@ export default {
       }
 
       // count and add the field numbers according to your group
-      Object.keys(res).forEach(key => {
-        let count = 0
-        const typeG = res[key].metadataFields[0].typeGroupAssigned
-        res[key].numberFields = res[key].metadataFields.length
-        res[key].typeGroup = typeG
-        res[key].numberFields = res[key].metadataFields.length
+      groupsList.forEach(groupFields => {
+        const typeG = groupFields.metadataFields[0].typeGroupAssigned
+        groupFields.typeGroup = typeG
 
-        res[key].metadataFields.forEach((element, index) => {
-          if (element.isDisplayed) {
-            count++
-          }
+        const fieldsDisplayed = groupFields.metadataFields.filter(field => {
+          return fieldIsDisplayed(field)
         })
 
-        if ((this.groupTab.groupType === 'T' && this.groupTab.groupName === res[key].groupFinal) ||
-          (this.groupTab.groupType !== 'T' && res[key].typeGroup !== 'T')) {
+        if ((this.groupTab.groupType === 'T' && this.groupTab.groupName === groupFields.groupFinal) ||
+          (this.groupTab.groupType !== 'T' && groupFields.typeGroup !== 'T')) {
           this.groupsView = this.groupsView + 1
         }
-        res[key].activeFields = count
+        groupFields.activeFields = fieldsDisplayed.length
       })
-      return res
+      return groupsList
     },
     setTagsViewTitle(actionValue) {
-      if (actionValue === 'create-new' || actionValue === '') {
+      if (actionValue === 'create-new' || this.isEmptyValue(actionValue)) {
         this.tagTitle.action = this.$t('tagsView.newRecord')
       } else if (actionValue === 'advancedQuery') {
         this.tagTitle.action = this.$t('tagsView.advancedQuery')
       } else {
-        var field = this.fieldList.find(fieldItem => fieldItem.isIdentifier)
-        if (field) {
-          if (this.dataRecords[field.columnName]) {
-            this.tagTitle.action = this.dataRecords[field.columnName]
+        const { identifierColumns } = this.getterPanel
+        if (!this.isEmptyValue(identifierColumns)) {
+          if (this.dataRecords[identifierColumns[0]]) {
+            this.tagTitle.action = this.dataRecords[identifierColumns[0]]
           } else {
+            const field = this.fieldList.find(fieldItem => fieldItem.isIdentifier)
             this.tagTitle.action = field.value
           }
         } else {
@@ -616,7 +628,7 @@ export default {
         }
       }
       if (this.isPanelWindow) {
-        var tempRoute = Object.assign({}, this.$route, { title: `${this.tagTitle.base} - ${this.tagTitle.action}` })
+        const tempRoute = Object.assign({}, this.$route, { title: `${this.tagTitle.base} - ${this.tagTitle.action}` })
         this.$store.dispatch('tagsView/updateVisitedView', tempRoute)
       }
     },
@@ -626,8 +638,8 @@ export default {
       dataTransfer.setData('Text', '')
     },
     changePanelRecord(uuidRecord) {
-      if (uuidRecord !== 'create-new' && uuidRecord !== 'reference' && uuidRecord !== 'advancedQuery' && uuidRecord !== 'criteria') {
-        var recordSelected = this.$store.getters.getDataRecordsList(this.containerUuid).find(record => record.UUID === uuidRecord)
+      if (!['create-new', 'reference', 'advancedQuery', 'criteria'].includes(uuidRecord)) {
+        const recordSelected = this.getterDataStore.record.find(record => record.UUID === uuidRecord)
         if (recordSelected) {
           this.dataRecords = recordSelected
           this.$store.dispatch('notifyPanelChange', {
@@ -639,11 +651,13 @@ export default {
             fieldList: this.fieldList,
             panelType: this.panelType
           }).then(() => {
-            // delete records tabs children when change record uuid
-            this.$store.dispatch('deleteRecordContainer', {
-              viewUuid: this.parentUuid,
-              withOut: [this.containerUuid]
-            })
+            if (this.getterPanel.isTabsChildren) {
+              // delete records tabs children when change record uuid
+              this.$store.dispatch('deleteRecordContainer', {
+                viewUuid: this.parentUuid,
+                withOut: [this.containerUuid]
+              })
+            }
           })
         }
       }

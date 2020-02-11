@@ -1,5 +1,5 @@
+import Vue from 'vue'
 
-import { requestLanguages } from '@/api/ADempiere'
 const utils = {
   state: {
     width: 0,
@@ -12,10 +12,20 @@ const utils = {
     reportType: '',
     isShowedTable: false,
     recordUuidTable: 0,
-    languageList: [],
     isShowedTabChildren: false,
     recordTable: 0,
-    selectionProcess: []
+    selectionProcess: [],
+    isContainerInfo: false,
+    openRoute: {
+      path: '',
+      name: '',
+      route: {},
+      params: {},
+      definedParameters: {},
+      query: {},
+      isReaded: false,
+      isLoaded: false
+    }
   },
   mutations: {
     setWidth(state, width) {
@@ -32,6 +42,9 @@ const utils = {
     },
     showMenuTable(state, isShowedTable) {
       state.isShowedTable = isShowedTable
+    },
+    showContainerInfo(state, isContainerInfo) {
+      state.isContainerInfo = isContainerInfo
     },
     showMenuTabChildren(state, isShowedTabChildren) {
       state.isShowedTabChildren = isShowedTabChildren
@@ -54,8 +67,15 @@ const utils = {
     setReportTypeToShareLink(state, payload) {
       state.reportType = payload
     },
-    setLanguageList(state, payload) {
-      state.languageList = payload
+    setOpenRoute(state, payload) {
+      state.openRoute = {
+        ...state.openRoute,
+        ...payload
+      }
+    },
+    setReadRoute(state, payload) {
+      Vue.set(state.openRoute, 'definedParameters', payload.parameters)
+      Vue.set(state.openRoute, 'isLoaded', true)
     }
   },
   actions: {
@@ -70,6 +90,9 @@ const utils = {
     },
     showMenuTable({ commit }, isShowedTable) {
       commit('showMenuTable', isShowedTable)
+    },
+    showContainerInfo({ commit, state }, isContainerInfo) {
+      commit('showContainerInfo', isContainerInfo)
     },
     showMenuTabChildren({ commit }, isShowedTabChildren) {
       commit('showMenuTabChildren', isShowedTabChildren)
@@ -86,12 +109,13 @@ const utils = {
     setProcessSelect({ commit }, params) {
       commit('setProcessSelecetion', params)
     },
-    changeShowedDetail({ dispatch }, params) {
-      if (params.panelType === 'window') {
-        dispatch('changeShowedDetailWindow', params)
-      } else if (params.panelType === 'browser') {
-        dispatch('changeShowedCriteriaBrowser', params)
-      }
+    setOpenRoute({ commit }, routeParameters) {
+      commit('setOpenRoute', {
+        ...routeParameters
+      })
+    },
+    setReadRoute({ commit }, parameters) {
+      commit('setReadRoute', parameters)
     },
     setTempShareLink({ commit }, parameters) {
       if (!parameters.href.includes(String(parameters.processId))) {
@@ -103,18 +127,6 @@ const utils = {
     },
     setReportTypeToShareLink({ commit }, value) {
       commit('setReportTypeToShareLink', value)
-    },
-    getLanguagesFromServer({ commit }) {
-      return new Promise((resolve, reject) => {
-        requestLanguages()
-          .then(languageResponse => {
-            commit('setLanguageList', languageResponse.languagesList)
-            resolve(languageResponse.languagesList)
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
     }
   },
   getters: {
@@ -143,6 +155,10 @@ const utils = {
       const menu = state.isShowedTable.isShowedTable
       return menu
     },
+    getShowContainerInfo: (state) => {
+      const showInfo = state.isContainerInfo
+      return showInfo
+    },
     getShowContextMenuTabChildren: (state) => {
       const menu = state.isShowedTabChildren.isShowedTabChildren
       return menu
@@ -166,16 +182,11 @@ const utils = {
     getReportType: (state) => {
       return state.reportType
     },
-    getLanguageList: (state) => {
-      return state.languageList
+    getIsLoadedOpenRoute: (state) => {
+      return state.openRoute.isLoaded
     },
-    getLanguageByParameter: (state) => (parameter) => {
-      var list = state.languageList
-      list.forEach(language => {
-        if (language.hasOwnProperty(parameter)) {
-          return language
-        }
-      })
+    getIsReadedOpenRoute: (state) => {
+      return state.openRoute.isReaded
     }
   }
 }

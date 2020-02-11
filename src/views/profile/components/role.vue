@@ -30,7 +30,7 @@
     </el-form-item>
     <el-form-item :label="$t('profile.changeLanguage')">
       <el-select
-        v-model="language"
+        v-model="currentLanguage"
         :filterable="true"
         value-key="key"
         :placeholder="$t('profile.changeLanguagePlaceholder')"
@@ -38,10 +38,10 @@
         @change="changeLanguage"
       >
         <el-option
-          v-for="item in languageList"
+          v-for="item in getterLanguageList"
           :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          :label="item.languageName"
+          :value="item.languageISO"
         />
       </el-select>
     </el-form-item>
@@ -51,7 +51,6 @@
 <script>
 import { getLanguage } from '@/lang'
 import { showMessage } from '@/utils/ADempiere'
-import { resetRouter } from '@/router'
 
 export default {
   name: 'ProfileRole',
@@ -59,8 +58,7 @@ export default {
     return {
       valueRol: '',
       options: [],
-      languageList: [],
-      language: getLanguage()
+      currentLanguage: getLanguage()
     }
   },
   computed: {
@@ -70,16 +68,8 @@ export default {
     getRolesList() {
       return this.$store.getters['user/getRoles']
     },
-    languageCookie() {
-      return getLanguage()
-    },
     getterLanguageList() {
-      return this.$store.getters.getLanguageList.map(language => {
-        return {
-          value: language.languageIso,
-          label: language.languageName
-        }
-      })
+      return this.$store.getters.getLanguagesList
     },
     isMobile() {
       return this.$store.state.app.device === 'mobile'
@@ -99,54 +89,28 @@ export default {
   },
   methods: {
     showMessage,
-    resetRouter,
     handleChange(valueSelected) {
       this.$message({
         message: this.$t('notifications.loading'),
         iconClass: 'el-icon-loading'
       })
-      this.$store.dispatch('user/changeRoles', valueSelected)
-        .then(response => {
-          this.showMessage({
-            message: this.$t('notifications.successChangeRole'),
-            type: 'success'
-          })
-          this.$store.dispatch('permission/generateRoutes')
-            .then(response => {
-              this.resetRouter()
-              response.forEach(element => {
-                this.$router.resolve(element)
-              })
-              this.$router.addRoutes(response)
-            })
-          this.$store.dispatch('getRecentItemsFromServer')
-        })
+      this.$store.dispatch('user/changeRoles', {
+        roleUuid: valueSelected,
+        isCloseAllViews: false
+      })
     },
     changeLanguage(languageValue) {
-      this.language = languageValue
+      this.currentLanguage = languageValue
     },
     getLanguageList(open) {
       if (open) {
-        if (this.getterLanguageList.length) {
-          this.languageList = this.getterLanguageList
-        } else {
-          this.getLanguageData()
-        }
+        this.getLanguageData()
       }
     },
     getLanguageData() {
-      this.$store.dispatch('getLanguagesFromServer')
-        .then(response => {
-          this.languageList = response.map(language => {
-            return {
-              value: language.languageIso,
-              label: language.languageName
-            }
-          })
-        })
-        .catch(error => {
-          console.warn('Error getting language list:', error.message + '. Code: ', error.code)
-        })
+      if (this.isEmptyValue(this.getterLanguageList)) {
+        this.$store.dispatch('getLanguagesFromServer')
+      }
     }
   }
 }
