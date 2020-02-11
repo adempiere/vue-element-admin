@@ -54,7 +54,7 @@ export const contextMixin = {
       downloads: this.$store.getters.getProcessResult.url,
       metadataMenu: {},
       recordUuid: this.$route.query.action,
-      isReferencesLoaded: false,
+      isLoadedReferences: false,
       exportDefault: 'xls',
       ROUTES
     }
@@ -253,28 +253,27 @@ export const contextMixin = {
         const references = this.getterReferences
         if (references && references.length) {
           this.references = references
-          this.isReferencesLoaded = true
+          this.isLoadedReferences = true
         } else {
+          this.isLoadedReferences = false
           this.$store.dispatch('getReferencesListFromServer', {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid
           })
             .then(() => {
-              this.references = this.$store.getters.getReferencesList(this.parentUuid, this.recordUuid)
-              if (this.references.referencesList.length) {
-                this.isReferencesLoaded = true
-              } else {
-                this.isReferencesLoaded = false
-              }
+              this.references = this.getterReferences
             })
             .catch(error => {
-              console.warn(`References Load Error ${error.code}: ${error.message}`)
+              console.warn(`References Load Error ${error.code}: ${error.message}.`)
+            })
+            .finally(() => {
+              this.isLoadedReferences = true
             })
         }
       } else {
         this.references = []
-        this.isReferencesLoaded = false
+        this.isLoadedReferences = false
       }
     },
     typeFormat(key) {
@@ -323,6 +322,7 @@ export const contextMixin = {
         return
       }
 
+      // TODO: Add store attribute to avoid making repeated requests
       if (this.panelType === 'window' && !this.isEmptyValue(this.$route.params.tableName)) {
         this.$store.dispatch('getPrivateAccessFromServer', {
           tableName: this.$route.params.tableName,
@@ -434,12 +434,6 @@ export const contextMixin = {
             .catch(error => {
               console.warn(error)
             })
-          if (this.panelType === 'process') {
-            // TODO: Verify use
-            this.$store.dispatch('deleteRecordContainer', {
-              viewUuid: this.$route
-            })
-          }
         } else {
           this.showNotification({
             type: 'warning',

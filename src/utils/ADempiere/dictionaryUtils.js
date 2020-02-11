@@ -157,7 +157,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
     return item.type === field.componentPath
   })
   if (field.sizeFieldFromType === undefined) {
-    console.warn(`Field size no found: ${field.name} type: ${field.componentPath}`)
+    console.warn(`Field size no found: ${field.name} type: ${field.componentPath}.`)
     field.sizeFieldFromType = {
       type: field.componentPath,
       size: DEFAULT_SIZE
