@@ -112,14 +112,14 @@ const processControl = {
     startProcess({ commit, state, dispatch, getters, rootGetters }, params) {
       return new Promise((resolve, reject) => {
         // TODO: Add support to evaluate params to send
-        const samePocessInExecution = getters.getInExecution(params.containerUuid)
+        // const samePocessInExecution = getters.getInExecution(params.containerUuid)
         // exists some call to executed process with container uuid
-        if (samePocessInExecution && !params.isProcessTableSelection) {
-          return reject({
-            error: 0,
-            message: `In this process (${samePocessInExecution.name}) there is already an execution in progress.`
-          })
-        }
+        // if (samePocessInExecution && !params.isProcessTableSelection) {
+        //   return reject({
+        //     error: 0,
+        //     message: `In this process (${samePocessInExecution.name}) there is already an execution in progress.`
+        //   })
+        // }
 
         // additional attributes to send server, selection to browser, or table name and record id to window
         let selection = []
@@ -462,6 +462,8 @@ const processControl = {
             recordId
           })
             .then(runProcessResponse => {
+              console.log(runProcessResponse, params)
+
               const { instanceUuid, output } = runProcessResponse
               let logList = []
               if (runProcessResponse.logsList) {
@@ -581,6 +583,12 @@ const processControl = {
                 output
               })
               dispatch('setReportTypeToShareLink', processResult.output.reportType)
+              dispatch('getDataListTab', {
+                parentUuid: params.parentUuid,
+                containerUuid: params.containerUuid,
+                isRefreshPanel: true,
+                recordUuid: params.recordUuid
+              })
               resolve(processResult)
             })
             .catch(error => {

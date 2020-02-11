@@ -344,6 +344,7 @@ export default {
         panelType: this.panelType,
         containerUuid: this.containerUuid// determinate if get table name and record id (window) or selection (browser)
       })
+      this.valueActionDocument = ''
     },
     isDisplayed() {
       if (this.isAdvancedQuery) {
