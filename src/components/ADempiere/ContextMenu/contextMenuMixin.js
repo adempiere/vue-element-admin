@@ -180,11 +180,6 @@ export const contextMixin = {
         this.getReferences()
       }
     },
-    $route(value) {
-      if (this.panelType === 'window') {
-        this.documentActions(value.query.action)
-      }
-    },
     isInsertRecord(newValue, oldValue) {
       if (this.panelType === 'window' && newValue !== oldValue) {
         this.generateContextMenu()
@@ -201,18 +196,9 @@ export const contextMixin = {
   },
   mounted() {
     this.getReferences()
-    if (this.panelType === 'window') {
-      this.documentActions()
-    }
   },
   methods: {
     showNotification,
-    documentActions(uuid) {
-      this.$store.dispatch('listDocumentActionStatus', {
-        tableName: 'C_Order',
-        recordUuid: this.isEmptyValue(uuid) ? this.$route.query.action : uuid
-      })
-    },
     actionContextMenu(event) {
       switch (event.srcKey) {
         case 'f2':

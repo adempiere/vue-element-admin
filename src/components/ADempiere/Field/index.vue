@@ -64,7 +64,7 @@
           </el-tag>
           <p v-if="isEmptyValue(valueActionDocument)"> {{ field.description }} </p>
           <p v-else> {{ descriptionDocumentActions }} </p>
-          <el-button slot="reference" type="text" icon="el-icon-set-up" />
+          <el-button slot="reference" type="text" icon="el-icon-set-up" @click="listActionDocument" />
         </el-popover>
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
@@ -311,9 +311,21 @@ export default {
   },
   methods: {
     showMessage,
+    listActionDocument() {
+      this.$store.dispatch('listDocumentActionStatus', {
+        tableName: 'C_Order',
+        recordUuid: this.$route.query.action
+      })
+    },
     documentActionChange(value) {
       var actionProcess = this.$store.getters.getOrden
-      // var actionProcess = this.$store.getters.getProcess(uuid)
+      this.$store.dispatch('notifyFieldChange', {
+        parentUuid: this.parentUuid,
+        containerUuid: this.containerUuid,
+        columnName: 'DocAction',
+        isSendToServer: true,
+        newValue: value
+      })
       this.$store.dispatch('startProcess', {
         action: {
           uuid: actionProcess.uuid,
