@@ -1,10 +1,10 @@
-/* eslint-disable no-mixed-spaces-and-tabs */
 <template>
   <el-cascader
     :ref="metadata.columnName"
     v-model="value"
     :placeholder="metadata.help"
     :options="options"
+    :props="{ expandTrigger: 'hover' }"
     :readonly="Boolean(metadata.readonly)"
     :disabled="isDisabled"
     filterable
@@ -34,7 +34,8 @@ export default {
           return {
             label: item.Name,
             value: item.C_Country_ID,
-            hasRegion: item.HasRegion
+            hasRegion: item.HasRegion,
+            children: []
           }
         })
         countryMap.forEach(country => {
@@ -46,7 +47,7 @@ export default {
               .then(response => {
                 country.children = response.map(item => {
                   return {
-                    label: item.Name,
+                    label: item.Description,
                     value: item.C_Region_ID,
                     country: country.value
                   }
