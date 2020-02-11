@@ -276,7 +276,7 @@ const processControl = {
                 uuid: processDefinition.uuid,
                 id: processDefinition.id,
                 reportType: reportType,
-                parameters: finalParameters,
+                parameters: isEmptyValue(finalParameters) ? params.parametersList : finalParameters,
                 selection: selection,
                 tableName: windowSelectionProcess.tableName,
                 recordId: selection[windowSelectionProcess.tableName]
@@ -456,7 +456,7 @@ const processControl = {
             uuid: processDefinition.uuid,
             id: processDefinition.id,
             reportType,
-            parameters: params.parametersList,
+            parameters: isEmptyValue(finalParameters) ? params.parametersList : finalParameters,
             selection,
             tableName,
             recordId

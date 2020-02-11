@@ -197,10 +197,18 @@ export const contextMixin = {
   },
   mounted() {
     this.getReferences()
-    this.documentActions()
+    if (this.panelType === 'window') {
+      this.documentActions()
+    }
   },
   methods: {
     showNotification,
+    documentActions() {
+      this.$store.dispatch('listDocumentActionStatus', {
+        tableName: 'C_Order',
+        recordUuid: this.$route.query.action
+      })
+    },
     actionContextMenu(event) {
       switch (event.srcKey) {
         case 'f2':
@@ -252,12 +260,6 @@ export const contextMixin = {
           isClearSelection: true
         })
       }
-    },
-    documentActions() {
-      this.$store.dispatch('listDocumentActionStatus', {
-        tableName: this.$route.params.tableName,
-        recordUuid: this.recordUuid
-      })
     },
     getReferences() {
       if (this.isReferecesContent) {
@@ -348,10 +350,14 @@ export const contextMixin = {
           })
       }
       this.actions = this.metadataMenu.actions
-      var processAction = this.actions.find(
-        item => item.name === 'Procesar Orden'
-      )
-      this.$store.dispatch('setOrden', processAction)
+      if (this.panelType === 'window') {
+        var processAction = this.actions.find(item => {
+          if (item.name === 'Procesar Orden' || (item.name === 'Process Order')) {
+            return item
+          }
+        })
+        this.$store.dispatch('setOrden', processAction)
+      }
 
       if (this.actions && this.actions.length) {
         this.actions.forEach(itemAction => {

@@ -44,7 +44,6 @@ const contextMenu = {
       const pageToken = ''
       requestListDocumentActions({ tableName, recordId, recordUuid, documentStatus, documentAction, pageSize, pageToken })
         .then(response => {
-          console.log(response)
           var documentAction = {
             defaultDocumentAction: response.defaultDocumentAction,
             documentActionsList: response.documentActionsList

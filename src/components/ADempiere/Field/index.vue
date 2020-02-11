@@ -34,14 +34,13 @@
           {{ isFieldOnly() }}
         </span>
         <el-popover
-          v-if="field.columnName === 'DocStatus' && (!isEmptyValue(listDocumentActions))"
+          v-if="(field.columnName === 'DocStatus') && (!isEmptyValue(processOrdenUuid))"
           placement="right"
           width="400"
           trigger="click"
         >
           <el-select
             v-model="valueActionDocument"
-            :placeholder="defaultDocumentActions.name"
             @change="documentActionChange"
           >
             <el-option
@@ -63,8 +62,9 @@
           >
             {{ labelDocumentActions }}
           </el-tag>
-          <!-- {{ label }} -->
-          <el-button slot="reference" type="text" icon="el-icon-set-up" circle />
+          <p v-if="isEmptyValue(valueActionDocument)"> {{ field.description }} </p>
+          <p v-else> {{ descriptionDocumentActions }} </p>
+          <el-button slot="reference" type="text" icon="el-icon-set-up" />
         </el-popover>
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
@@ -283,6 +283,20 @@ export default {
         return this.valueActionDocument
       }
       return found.name
+    },
+    descriptionDocumentActions() {
+      const found = this.listDocumentActions.find(element => {
+        if (element.value === this.valueActionDocument) {
+          return element
+        }
+      })
+      if (this.isEmptyValue(found)) {
+        return this.valueActionDocument
+      }
+      return found.description
+    },
+    processOrdenUuid() {
+      return this.$store.getters.getOrden
     }
   },
   watch: {
