@@ -130,6 +130,12 @@ export const contextMixin = {
         }
       })
     },
+    isDesabledExportRecord() {
+      if (this.panelType === 'browser') {
+        return this.getDataSelection.length < 1
+      }
+      return false
+    },
     getterDataRecordsAll() {
       return this.$store.getters.getDataRecordAndSelection(this.containerUuid)
     },

@@ -68,7 +68,7 @@
               </el-menu-item>
               <el-submenu
                 v-if="['browser', 'window'].includes(panelType)"
-                :disabled="panelType === 'browser' && getDataSelection.length < 1"
+                :disabled="isDesabledExportRecord"
                 index="exportRecord"
               >
                 <template slot="title">

@@ -29,7 +29,7 @@
         <template v-for="(action, index) in actions">
           <el-submenu v-if="action.childs" :key="index" :index="action.name" :disabled="action.disabled">
             <template slot="title">
-              {{ key }}{{ action.name }}
+              {{ action.name }}
             </template>
             <el-scrollbar wrap-class="scroll-child">
               <el-menu-item
@@ -61,7 +61,7 @@
         </el-menu-item>
         <el-submenu
           v-if="['browser', 'window'].includes(panelType)"
-          :disabled="panelType === 'browser' && getDataSelection.length < 1"
+          :disabled="isDesabledExportRecord"
           index="exportRecord"
           @click.native="exportRecord('xlsx')"
         >
