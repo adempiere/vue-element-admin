@@ -17,6 +17,7 @@ const utils = {
     selectionProcess: [],
     isContainerInfo: false,
     documentAction: [],
+    chatText: '',
     openRoute: {
       path: '',
       name: '',
@@ -58,6 +59,9 @@ const utils = {
     },
     setOrden(state, payload) {
       state.documentAction = payload
+    },
+    setChatText(state, payload) {
+      state.chatText = payload
     },
     setProcessSelecetion(state, selectionProcess) {
       state.selectionProcess = selectionProcess
@@ -112,6 +116,10 @@ const utils = {
     },
     setProcessSelect({ commit }, params) {
       commit('setProcessSelecetion', params)
+    },
+    setchatText({ commit }, params) {
+      console.log(params)
+      commit('setChatText', params)
     },
     setOpenRoute({ commit }, routeParameters) {
       commit('setOpenRoute', {
@@ -197,6 +205,9 @@ const utils = {
     },
     getOrden: (state) => {
       return state.documentAction
+    },
+    getChatTextLong: (state) => {
+      return state.chatText
     }
   }
 }

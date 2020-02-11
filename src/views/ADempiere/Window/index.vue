@@ -196,13 +196,16 @@
                             <div slot="header" class="clearfix">
                               {{ $t('window.containerInfo.logWorkflow.addNote') }}
                             </div>
-                            <el-input
+                            <chat-text-long
+                              v-model="chatNote"
+                            />
+                            <!-- <el-input
                               v-model="chatNote"
                               type="textarea"
                               :rows="2"
                               placeholder="Please input"
-                            />
-                            <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment(chatNote)" />
+                            /> -->
+                            <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment()" />
                           </el-card>
                         </div>
                       </el-tab-pane>
@@ -366,6 +369,7 @@ import TabChildren from '@/components/ADempiere/Tab/tabChildren'
 // When supporting the processes, smart browser and reports,
 // the submenu and sticky must be placed in the layout
 import ContextMenu from '@/components/ADempiere/ContextMenu'
+import chatTextLong from '@/components/ADempiere/Field/chatTextLong'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import DataTable from '@/components/ADempiere/DataTable'
 import splitPane from 'vue-splitpane'
@@ -378,7 +382,8 @@ export default {
     ContextMenu,
     DataTable,
     splitPane,
-    ModalDialog
+    ModalDialog,
+    chatTextLong
   },
   data() {
     return {
@@ -586,17 +591,18 @@ export default {
     this.getWindow()
   },
   methods: {
-    sendComment(comment) {
+    sendComment() {
+      var chatTextLong = this.$store.getters.getChatTextLong
       this.$store.dispatch('createChatEntry', {
         tableName: this.$route.params.tableName,
         recordId: this.$route.params.recordId,
-        comment: comment
+        comment: chatTextLong
       })
-      this.chatNote = ''
-      // this.$store.dispatch('listChatEntries', {
-      //   tableName: this.$route.params.tableName,
-      //   recordId: this.$route.params.recordId
-      // })
+      this.$store.dispatch('listChatEntries', {
+        tableName: this.$route.params.tableName,
+        recordId: this.$route.params.recordId
+      })
+      this.$store.dispatch('setchatText', '')
     },
     showkey(key, index) {
       if (key === this.currentKey && index === this.typeAction) {
@@ -878,7 +884,7 @@ export default {
     max-height: 68vh !important;
   }
   .scroll-window-log-chat {
-    max-height: 45vh !important;
+    max-height: 20vh !important;
   }
   .el-card__header {
     background: rgba(245, 247, 250, 0.75);
