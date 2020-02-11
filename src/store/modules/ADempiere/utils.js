@@ -16,6 +16,7 @@ const utils = {
     recordTable: 0,
     selectionProcess: [],
     isContainerInfo: false,
+    documentAction: [],
     openRoute: {
       path: '',
       name: '',
@@ -54,6 +55,9 @@ const utils = {
     },
     setProcessTable(state, recordTable) {
       state.recordTable = recordTable
+    },
+    setOrden(state, payload) {
+      state.documentAction = payload
     },
     setProcessSelecetion(state, selectionProcess) {
       state.selectionProcess = selectionProcess
@@ -127,6 +131,9 @@ const utils = {
     },
     setReportTypeToShareLink({ commit }, value) {
       commit('setReportTypeToShareLink', value)
+    },
+    setOrden({ commit }, params) {
+      commit('setOrden', params)
     }
   },
   getters: {
@@ -187,6 +194,9 @@ const utils = {
     },
     getIsReadedOpenRoute: (state) => {
       return state.openRoute.isReaded
+    },
+    getOrden: (state) => {
+      return state.documentAction
     }
   }
 }
