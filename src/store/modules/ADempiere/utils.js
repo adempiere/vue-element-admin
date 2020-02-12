@@ -18,6 +18,7 @@ const utils = {
     isContainerInfo: false,
     documentAction: [],
     chatText: '',
+    markDown: false,
     openRoute: {
       path: '',
       name: '',
@@ -62,6 +63,9 @@ const utils = {
     },
     setChatText(state, payload) {
       state.chatText = payload
+    },
+    setMarkDown(state, payload) {
+      state.markDown = payload
     },
     setProcessSelecetion(state, selectionProcess) {
       state.selectionProcess = selectionProcess
@@ -118,8 +122,10 @@ const utils = {
       commit('setProcessSelecetion', params)
     },
     setchatText({ commit }, params) {
-      console.log(params)
       commit('setChatText', params)
+    },
+    setMarkDown({ commit }, send) {
+      commit('setMarkDown', send)
     },
     setOpenRoute({ commit }, routeParameters) {
       commit('setOpenRoute', {
@@ -208,6 +214,9 @@ const utils = {
     },
     getChatTextLong: (state) => {
       return state.chatText
+    },
+    getMarkDown: (state) => {
+      return state.markDown
     }
   }
 }

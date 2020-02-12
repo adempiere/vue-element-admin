@@ -462,8 +462,6 @@ const processControl = {
             recordId
           })
             .then(runProcessResponse => {
-              console.log(runProcessResponse, params)
-
               const { instanceUuid, output } = runProcessResponse
               let logList = []
               if (runProcessResponse.logsList) {

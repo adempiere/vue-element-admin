@@ -38,6 +38,9 @@ export default {
       }
       return ''
     },
+    clean() {
+      return this.$store.getters.getMarkDown
+    },
     language() {
       // https://github.com/nhnent/tui.editor/tree/master/src/js/langs
       if (this.isEmptyValue(getLanguage())) {
@@ -65,6 +68,11 @@ export default {
           value = ''
         }
         this.value = String(value)
+      }
+    },
+    clean(value) {
+      if (value) {
+        this.editor.setValue('')
       }
     },
     'metadata.value'(value, oldValue) {
@@ -129,10 +137,16 @@ export default {
       })
     },
     preHandleChange(value) {
-      this.$store.dispatch('setchatText', value)
-        .then(() => {
-          this.editor.setValue('')
-        })
+      var comment = this.editor.getHtml(value)
+      if (this.clean) {
+        this.$store.dispatch('setchatText', comment)
+          .then((responseComment) => {
+            this.$store.dispatch('setMarkDown', false)
+            this.$store.dispatch('setchatText', '')
+          })
+      } else {
+        this.$store.dispatch('setchatText', comment)
+      }
     },
     addReanOnlyChanges() {
       this.editor.on('change', () => {
