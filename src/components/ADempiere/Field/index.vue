@@ -35,9 +35,10 @@
         </span>
         <el-popover
           v-if="(field.columnName === 'DocStatus') && (!isEmptyValue(processOrdenUuid))"
+          v-model="visible"
           placement="right"
           width="400"
-          trigger="click"
+          trigger="manual"
         >
           <el-select
             v-model="valueActionDocument"
@@ -149,6 +150,7 @@ export default {
   data() {
     return {
       field: {},
+      visible: false,
       valueActionDocument: ''
     }
   },
@@ -312,6 +314,7 @@ export default {
   methods: {
     showMessage,
     listActionDocument() {
+      this.visible = true
       this.$store.dispatch('listDocumentActionStatus', {
         tableName: 'C_Order',
         recordUuid: this.$route.query.action
@@ -323,27 +326,39 @@ export default {
         parentUuid: this.parentUuid,
         containerUuid: this.containerUuid,
         columnName: 'DocAction',
+        displayColumn: this.labelDocumentActions,
         isSendToServer: true,
         newValue: value
       })
-      this.$store.dispatch('startProcess', {
-        action: {
-          uuid: actionProcess.uuid,
-          id: actionProcess.id,
-          name: actionProcess.name
-        }, // process metadata
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId,
-        recordUuid: this.$route.query.action,
-        parametersList: [{
-          columnName: 'DocStatus',
-          value: this.valueActionDocument
-        }],
-        isActionDocument: true,
-        parentUuid: this.parentUuid,
-        panelType: this.panelType,
-        containerUuid: this.containerUuid// determinate if get table name and record id (window) or selection (browser)
-      })
+        .then((response) => {
+          this.$store.dispatch('startProcess', {
+            action: {
+              uuid: actionProcess.uuid,
+              id: actionProcess.id,
+              name: actionProcess.name
+            }, // process metadata
+            tableName: this.$route.params.tableName,
+            recordId: this.$route.params.recordId,
+            recordUuid: this.$route.query.action,
+            parametersList: [{
+              columnName: 'DocStatus',
+              value: this.valueActionDocument
+            }],
+            isActionDocument: true,
+            parentUuid: this.parentUuid,
+            panelType: this.panelType,
+            containerUuid: this.containerUuid// determinate if get table name and record id (window) or selection (browser)
+          })
+            .then((response) => {
+              this.$store.dispatch('getDataListTab', {
+                parentUuid: this.parentUuid,
+                containerUuid: this.containerUuid,
+                isRefreshPanel: true,
+                recordUuid: this.$route.query.action
+              })
+              this.visible = false
+            })
+        })
       this.valueActionDocument = ''
     },
     isDisplayed() {
