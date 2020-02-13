@@ -59,7 +59,7 @@ const containerInfo = {
     isNote({ commit }, params) {
       commit('isNote', params)
     },
-    listChatEntries({ commit, state, dispatch }, params) {
+    listChatEntries({ commit, state }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const pageSize = 0
@@ -85,7 +85,11 @@ const containerInfo = {
                   chatAll = listlogsChat.concat(chatUpgrade)
                   commit('addListChat', response.chatEntriesList)
                 }
-                commit('addListChatEntries', chatAll)
+                if (isEmptyValue(listlogsChat)) {
+                  commit('addListChatEntries', chatAll)
+                } else {
+                  commit('addListChatEntries', listlogsChat)
+                }
               })
               .catch(error => {
                 console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
