@@ -18,7 +18,7 @@
             <!-- <field-text-long /> -->
             <el-card shadow="hover">
               <div>
-                <div v-html="chats.characterData" />
+                <div v-markdown="chats.characterData" />
               </div>
             </el-card>
           </el-timeline-item>
@@ -32,7 +32,7 @@
       <chat-text-long
         v-model="chatNote"
       />
-      <el-button icon="el-icon-circle-check" type="text" style="float: right" @click="sendComment(chatNote)" />
+      <el-button icon="el-icon-success" style="background: #008fd3; float: right" type="primary" circle @click="sendComment(chatNote)" />
     </el-card>
   </div>
 </template>

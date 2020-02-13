@@ -70,6 +70,7 @@
     "showdown": "1.9.0",
     "sortablejs": "1.10.1",
     "tui-editor": "1.4.10",
+    "v-markdown": "^1.0.2",
     "vue": "2.6.10",
     "vue-count-to": "1.0.13",
     "vue-i18n": "7.3.2",
