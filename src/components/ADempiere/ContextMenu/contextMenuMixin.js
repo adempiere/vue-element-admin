@@ -1,4 +1,4 @@
-import { showNotification } from '@/utils/ADempiere/notification'
+import { showNotification, showMessage } from '@/utils/ADempiere/notification'
 import Item from './items'
 import { convertFieldListToShareLink, recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 import { supportedTypes, exportFileFromJson } from '@/utils/ADempiere/exportUtil'
@@ -43,12 +43,16 @@ export const contextMixin = {
     isInsertRecord: {
       type: Boolean,
       default: undefined
+    },
+    defaultFromatExport: {
+      type: String,
+      default: 'xlsx'
     }
   },
   data() {
     return {
       actions: [],
-      option: supportedTypes,
+      supportedTypes: supportedTypes,
       references: [],
       file: this.$store.getters.getProcessResult.download,
       downloads: this.$store.getters.getProcessResult.url,
@@ -67,9 +71,6 @@ export const contextMixin = {
         return meta.activeMenu
       }
       return path
-    },
-    getDataSelection() {
-      return this.$store.getters.getDataRecordSelection(this.containerUuid)
     },
     getterContextMenu() {
       return this.$store.getters.getContextMenu(this.containerUuid)
@@ -133,11 +134,20 @@ export const contextMixin = {
         }
       })
     },
+    isDisabledExportRecord() {
+      if (this.panelType === 'browser') {
+        return this.getDataSelection.length < 1
+      }
+      return false
+    },
     getterDataRecordsAll() {
-      return this.$store.getters.getDataRecordAndSelection(this.containerUuid).record
+      return this.$store.getters.getDataRecordAndSelection(this.containerUuid)
+    },
+    getDataSelection() {
+      return this.getterDataRecordsAll.selection
     },
     getDataRecord() {
-      return this.getterDataRecordsAll.filter(fieldItem => {
+      return this.getterDataRecordsAll.record.filter(fieldItem => {
         if (this.recordUuid === fieldItem.UUID) {
           return fieldItem
         }
@@ -169,6 +179,9 @@ export const contextMixin = {
     },
     listDocumentActions() {
       return this.$store.getters.getListDocumentActions.documentActionsList
+    },
+    isManageDataRecords() {
+      return ['browser', 'window'].includes(this.panelType)
     }
   },
   watch: {
@@ -189,6 +202,14 @@ export const contextMixin = {
       if (this.panelType === 'window' && newValue !== oldValue) {
         this.generateContextMenu()
       }
+    },
+    isDisabledExportRecord(isDisabled) {
+      if (isDisabled) {
+        this.$nextTick(() => {
+          // close childs items in exportRecord menu
+          this.$refs.contextMenu.close('exportRecord')
+        })
+      }
     }
   },
   created() {
@@ -198,6 +219,7 @@ export const contextMixin = {
     this.getReferences()
   },
   methods: {
+    showMessage,
     showNotification,
     actionContextMenu(event) {
       switch (event.srcKey) {
@@ -214,25 +236,11 @@ export const contextMixin = {
           this.$store.dispatch('deleteEntity', {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
-            recordUuid: this.recordUuid,
-            panelType: 'window',
-            isNewRecord: false
+            recordUuid: this.recordUuid
           })
           break
         case 'f5':
-          if (this.panelType === 'window') {
-            this.$store.dispatch('getDataListTab', {
-              parentUuid: this.parentUuid,
-              containerUuid: this.containerUuid,
-              isRefreshPanel: true,
-              recordUuid: this.recordUuid
-            })
-          } else if (this.panelType === 'browser') {
-            this.$store.dispatch('getBrowserSearch', {
-              containerUuid: this.containerUuid,
-              isClearSelection: true
-            })
-          }
+          this.refreshData()
           break
       }
     },
@@ -245,10 +253,21 @@ export const contextMixin = {
           recordUuid: this.recordUuid
         })
       } else if (this.panelType === 'browser') {
-        this.$store.dispatch('getBrowserSearch', {
+        const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid,
-          isClearSelection: true
+          fieldsList: this.getterFieldList
         })
+        if (fieldsEmpty.length) {
+          this.showMessage({
+            message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+            type: 'info'
+          })
+        } else {
+          this.$store.dispatch('getBrowserSearch', {
+            containerUuid: this.containerUuid,
+            isClearSelection: true
+          })
+        }
       }
     },
     getReferences() {
@@ -279,37 +298,22 @@ export const contextMixin = {
         this.isLoadedReferences = false
       }
     },
-    typeFormat(key) {
-      Object.keys(supportedTypes).forEach(type => {
-        if (type === key && (this.panelType === 'window')) {
-          this.exporWindow(key)
-        } else if (type === key && (this.panelType === 'browser')) {
-          this.exporBrowser(key)
-        }
-      })
-    },
-    exporBrowser(key) {
+    exportRecord(fotmatToExport) {
       const tHeader = this.getterFieldListHeader
       const filterVal = this.getterFieldListValue
-      const list = this.getDataSelection
+      let list = []
+      if (this.panelType === 'window') {
+        list = this.getDataRecord
+      } else if (this.panelType === 'browser') {
+        // TODO: Check usage as the selection is exported with the table menu
+        list = this.getDataSelection
+      }
       const data = this.formatJson(filterVal, list)
       exportFileFromJson({
         header: tHeader,
         data,
         filename: '',
-        exportType: key
-      })
-    },
-    exporWindow(key) {
-      const tHeader = this.getterFieldListHeader
-      const filterVal = this.getterFieldListValue
-      const list = this.getDataRecord
-      const data = this.formatJson(filterVal, list)
-      exportFileFromJson({
-        header: tHeader,
-        data,
-        filename: '',
-        exportType: key
+        exportType: fotmatToExport
       })
     },
     formatJson(filterVal, jsonData) {
@@ -423,18 +427,20 @@ export const contextMixin = {
               href: window.location.href
             })
           }
+
           let reportFormat = action.reportExportType
           if (this.isEmptyValue(reportFormat)) {
-            if (!this.isEmptyValue(this.$route.query.reportType)) {
-              reportFormat = this.$route.query.reportType
-            } else if (!this.isEmptyValue(this.$route.meta.reportFormat)) {
+            reportFormat = this.$route.query.reportType
+            if (this.isEmptyValue(reportFormat)) {
               reportFormat = this.$route.meta.reportFormat
-            } else {
-              reportFormat = 'html'
+              if (this.isEmptyValue(reportFormat)) {
+                reportFormat = 'html'
+              }
             }
           }
+
           this.$store.dispatch(action.action, {
-            action: action,
+            action,
             parentUuid: this.containerUuid,
             containerUuid: containerParams, // EVALUATE IF IS action.uuid
             panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)

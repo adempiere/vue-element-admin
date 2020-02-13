@@ -22,7 +22,7 @@
           </el-collapse>
           <div>
             <div v-if="!isMobile">
-              <table-menu
+              <table-main-menu
                 :container-uuid="containerUuid"
                 :parent-uuid="parentUuid"
                 :panel-type="panelType"
@@ -120,14 +120,14 @@
           </div>
         </el-header>
         <el-main style="padding: 0px !important; overflow: hidden;">
-          <context-menu
+          <table-context-menu
             v-show="isParent ? getShowContextMenuTable : getShowContextMenuTabChildren"
-            :style="{ left: left + 'px', top: top + 'px' }"
-            class="contextmenu"
+            :style="{ left: leftContextualMenu + 'px', top: topContextualMenu + 'px' }"
+            class="contextual-menu"
             :container-uuid="containerUuid"
             :parent-uuid="parentUuid"
             :panel-type="panelType"
-            :is-option="isOption"
+            :current-row="currentRowMenu"
             :is-panel-window="isPanelWindow"
             :process-menu="getterContextMenu"
             :is-mobile="isMobile"
@@ -245,8 +245,8 @@ import FieldDefinition from '@/components/ADempiere/Field'
 import Sortable from 'sortablejs'
 import FilterColumns from '@/components/ADempiere/DataTable/filterColumns'
 import FixedColumns from '@/components/ADempiere/DataTable/fixedColumns'
-import ContextMenu from '@/components/ADempiere/DataTable/menu/contextMenu'
-import TableMenu from '@/components/ADempiere/DataTable/menu'
+import TableContextMenu from '@/components/ADempiere/DataTable/menu/tableContextMenu'
+import TableMainMenu from '@/components/ADempiere/DataTable/menu'
 import IconElement from '@/components/ADempiere/IconElement'
 import { formatDate } from '@/filters/ADempiere'
 import MainPanel from '@/components/ADempiere/Panel'
@@ -261,10 +261,10 @@ export default {
     FieldDefinition,
     FilterColumns,
     FixedColumns,
-    ContextMenu,
     IconElement,
     MainPanel,
-    TableMenu
+    TableContextMenu,
+    TableMainMenu
   },
   props: {
     parentUuid: {
@@ -307,9 +307,9 @@ export default {
       activeName.push('1')
     }
     return {
-      top: 0,
-      left: 0,
-      isOption: {},
+      topContextualMenu: 0,
+      leftContextualMenu: 0,
+      currentRowMenu: {},
       currentRow: null,
       currentTable: 0,
       visible: this.getShowContextMenuTable,
@@ -573,18 +573,22 @@ export default {
       const maxLeft = offsetWidth - menuMinWidth // left boundary
       const left = event.clientX - offsetLeft + 15 // 15: margin right
 
-      this.left = left
+      this.leftContextualMenu = left
       if (left > maxLeft) {
-        this.left = maxLeft
+        this.leftContextualMenu = maxLeft
       }
 
-      this.top = event.clientY - event.screenY
-      if (this.isParent) {
-        this.top = event.clientY - 100
+      const offsetTop = this.$el.getBoundingClientRect().top
+      let top = event.clientY - offsetTop
+      if (this.panelType === 'browser' && this.getterPanel.isShowedCriteria) {
+        top = event.clientY - 200
       }
+      this.topContextualMenu = top
 
-      this.isOption = row
+      this.currentRowMenu = row
       this.visible = true
+
+      // TODO: Verify use
       this.$store.dispatch('showMenuTable', {
         isShowedTable: this.isParent
       })
@@ -1005,7 +1009,7 @@ export default {
 </script>
 
 <style lang="scss">
- .contextmenu {
+ .contextual-menu {
     margin: 0;
     background: #fff;
     z-index: 3000;
