@@ -35,10 +35,9 @@
         </span>
         <el-popover
           v-if="(field.columnName === 'DocStatus') && (!isEmptyValue(processOrdenUuid))"
-          v-model="visible"
           placement="right"
           width="400"
-          trigger="manual"
+          trigger="click"
         >
           <el-select
             v-model="valueActionDocument"
@@ -302,7 +301,6 @@ export default {
     }
   },
   watch: {
-
     metadataField(value) {
       this.field = value
     }
@@ -314,7 +312,6 @@ export default {
   methods: {
     showMessage,
     listActionDocument() {
-      this.visible = true
       this.$store.dispatch('listDocumentActionStatus', {
         tableName: 'C_Order',
         recordUuid: this.$route.query.action
@@ -356,7 +353,6 @@ export default {
                 isRefreshPanel: true,
                 recordUuid: this.$route.query.action
               })
-              this.visible = false
             })
         })
       this.valueActionDocument = ''
