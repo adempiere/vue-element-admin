@@ -447,7 +447,7 @@ export default {
             containerUuid: this.containerUuid,
             isAdvancedQuery: route.query.action === 'advancedQuery',
             newValues: this.dataRecords,
-            isSendToServer: false,
+            isSendToServer: true,
             isSendCallout: false,
             fieldList: this.fieldList,
             panelType: this.panelType
