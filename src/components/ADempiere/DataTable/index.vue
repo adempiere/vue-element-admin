@@ -149,6 +149,7 @@
             element-loading-spinner="el-icon-loading"
             cell-class-name="datatable-max-cell-height"
             :show-summary="getterPanel.isShowedTotals"
+            :row-class-name="tableRowClassName"
             :summary-method="getSummaries"
             @row-click="handleRowClick"
             @row-dblclick="handleRowDblClick"
@@ -715,6 +716,12 @@ export default {
     callOffNewRecord() {
       this.getterDataRecords.shift()
     },
+    tableRowClassName({ row, rowIndex }) {
+      if (row.isNew) {
+        return 'warning-row'
+      }
+      return ''
+    },
     addNewRow() {
       if (this.getterNewRecords <= 0) {
         this.$store.dispatch('addNewRow', {
@@ -724,6 +731,7 @@ export default {
           isEdit: true,
           isSendServer: false
         })
+        this.setFocus(this.fieldList)
       } else {
         const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid
@@ -740,6 +748,24 @@ export default {
       this.$nextTick(() => {
         this.setSort()
       })
+    },
+    setFocus(fieldChildren) {
+      let isFocusEnabled = false
+      fieldChildren.forEach(fieldItem => {
+        if (!isFocusEnabled) {
+          if (this.isFocusable(fieldItem) && !this.$refs.hasOwnProperty(fieldItem.columnName)) {
+            this.$refs[fieldItem.columnName][0].focus(fieldItem.columnName)
+            isFocusEnabled = true
+          }
+        }
+        return
+      })
+    },
+    isFocusable(field) {
+      if (fieldIsDisplayed(field) && !field.isReadOnly && field.isUpdateable) {
+        return true
+      }
+      return false
     },
     setSort() {
       if (!this.isMobile) {
@@ -1042,6 +1068,13 @@ export default {
   }
 </style>
 <style>
+  .el-table .warning-row {
+    background: oldlace;
+  }
+
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
   .el-table > .cell {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
