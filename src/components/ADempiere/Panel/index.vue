@@ -489,7 +489,7 @@ export default {
                   name: this.$route.name,
                   query: {
                     ...this.$route.query,
-                    action: this.dataRecords
+                    action: this.dataRecords.UUID
                   },
                   params: {
                     ...this.$route.params,
