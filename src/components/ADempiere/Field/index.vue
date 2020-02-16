@@ -62,10 +62,10 @@
 </template>
 
 <script>
-import FieldContextInfo from '@/components/ADempiere/Field/fieldContextInfo'
-import FieldTranslated from '@/components/ADempiere/Field/fieldTranslated'
-import FieldOperatorComparison from '@/components/ADempiere/Field/fieldOperatorComparison'
+import FieldContextInfo from '@/components/ADempiere/Field/fieldPopovers/fieldContextInfo'
 import FieldDocumentStatus from '@/components/ADempiere/Field/fieldPopovers/fieldDocumentStatus'
+import FieldOperatorComparison from '@/components/ADempiere/Field/fieldPopovers/fieldOperatorComparison'
+import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
@@ -244,7 +244,6 @@ export default {
     }
   },
   watch: {
-
     metadataField(value) {
       this.field = value
     }
@@ -263,8 +262,12 @@ export default {
     },
     isReadOnly() {
       if (this.isAdvancedQuery) {
+        if (['NULL', 'NOT_NULL'].includes(this.field.operator)) {
+          return true
+        }
         return false
       }
+
       if (!this.field.isActive) {
         return true
       }
