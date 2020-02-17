@@ -95,7 +95,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
     ...moreAttributes,
     // displayed attributes
     componentPath: componentReference.type,
-    isSupport: componentReference.support,
+    isSupported: componentReference.isSupported,
     referenceType,
     displayColumn: undefined, // link to value from selects and table
     // value attributes
@@ -116,6 +116,7 @@ export function generateField(fieldToGenerate, moreAttributes, typeRange = false
     isShowedFromUser,
     isShowedTableFromUser: fieldToGenerate.isDisplayed,
     isFixedTableColumn: false,
+    valueType: componentReference.valueType, // value type to convert with gGRPC
     // Advanced query
     operator: 'EQUAL', // current operator
     oldOperator: undefined, // old operator

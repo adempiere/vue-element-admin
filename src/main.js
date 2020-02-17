@@ -15,6 +15,8 @@ import VueSplit from 'vue-split-panel'
  */
 import VMarkdown from 'v-markdown/src'
 
+import VueShortkey from 'vue-shortkey'
+
 import '@/styles/index.scss' // global css
 
 import App from './App'
@@ -42,6 +44,7 @@ if (process.env.NODE_ENV === 'production') {
   mockXHR()
 }
 Vue.use(VMarkdown)
+Vue.use(VueShortkey)
 Vue.use(VueSplit)
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
@@ -59,8 +62,6 @@ Object.keys(globalMethods).forEach(key => {
 })
 
 Vue.config.productionTip = false
-
-Vue.use(require('vue-shortkey'))
 
 new Vue({
   el: '#app',

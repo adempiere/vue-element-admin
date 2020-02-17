@@ -1073,13 +1073,15 @@ const panel = {
             attributesObject[`${fieldItem.columnName}_To`] = fieldItem.valueTo
             rangeColumnsList.push({
               columnName: `${fieldItem.columnName}_To`,
-              value: fieldItem.valueTo
+              value: fieldItem.valueTo,
+              valueType: fieldItem.valueType
             })
           }
 
           return {
             columnName: fieldItem.columnName,
-            value: valueToReturn
+            value: valueToReturn,
+            valueType: fieldItem.valueType
           }
         })
 
@@ -1303,13 +1305,15 @@ const panel = {
           if (parameterItem.isRange && parameterItem.componentPath !== 'FieldNumber') {
             parametersRange.push({
               columnName: `${parameterItem.columnName}_To`,
-              value: valueTo
+              value: valueTo,
+              valueType: parameterItem.valueType
             })
           }
 
           return {
             columnName: parameterItem.columnName,
             value,
+            valueType: parameterItem.valueType,
             isRange: parameterItem.isRange,
             values,
             operator: isAdvancedQuery ? parameterItem.operator : undefined

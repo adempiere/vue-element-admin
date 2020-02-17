@@ -18,6 +18,9 @@
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 import { FIELDS_FLOATS } from '@/components/ADempiere/Field/references'
 
+/**
+ * TODO: Add change switch decimal point (.) or decimal comma (,)
+ */
 export default {
   name: 'FieldNumber',
   mixins: [fieldMixin],
