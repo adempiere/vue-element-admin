@@ -7,6 +7,13 @@ import 'normalize.css/normalize.css' // a modern alternative to CSS resets
 import Element from 'element-ui'
 import './styles/element-variables.scss'
 import VueSplit from 'vue-split-panel'
+/**
+ * TODO: Waiting for PR to:
+ * https://github.com/vue-extend/v-markdown/pull/4
+ * To change:
+ * import VMarkdown from 'v-markdown'
+ */
+import VMarkdown from 'v-markdown/src'
 
 import '@/styles/index.scss' // global css
 
@@ -34,6 +41,7 @@ import { mockXHR } from '../mock'
 if (process.env.NODE_ENV === 'production') {
   mockXHR()
 }
+Vue.use(VMarkdown)
 Vue.use(VueSplit)
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
