@@ -633,14 +633,14 @@ const panel = {
                   }
                 })
                 if (response && response.length) {
-                  dispatch('notifyPanelChange', {
-                    parentUuid,
-                    containerUuid,
-                    isAdvancedQuery: false,
-                    newValues: response[0],
-                    isSendToServer: false,
-                    isSendCallout: true,
-                    panelType: 'window'
+                  const currentRoute = router.app.$route
+                  router.push({
+                    name: currentRoute.name,
+                    query: {
+                      action: response[0].UUID,
+                      tabParent: currentRoute.query.tabParent,
+                      tabChild: currentRoute.query.tabChild
+                    }
                   })
                 }
               })
