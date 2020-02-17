@@ -25,7 +25,7 @@
           :field-value="field.value"
         />
         <field-context-info
-          v-else-if="(field.contextInfo && field.contextInfo.isActive) || field.reference.zoomWindowList.length"
+          v-else-if="isContextInfo"
           key="is-field-context-info"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
@@ -33,10 +33,12 @@
         <span v-else key="is-field-name">
           {{ isFieldOnly() }}
         </span>
+
         <field-document-status
-          v-if="(field.columnName === 'DocStatus') && (!isEmptyValue(processOrderUuid))"
+          v-if="isDocuemntStatus"
           :field="fieldAttributes"
         />
+
         <field-translated
           v-if="field.isTranslated && !isAdvancedQuery"
           :field-attributes="fieldAttributes"
@@ -69,8 +71,6 @@ import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTra
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
-import { showMessage } from '@/utils/ADempiere/notification'
-import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
 /**
  * This is the base component for linking the components according to the
@@ -81,8 +81,8 @@ export default {
   components: {
     FieldContextInfo,
     FieldDocumentStatus,
-    FieldTranslated,
-    FieldOperatorComparison
+    FieldOperatorComparison,
+    FieldTranslated
   },
   props: {
     parentUuid: {
@@ -241,6 +241,20 @@ export default {
     },
     processOrderUuid() {
       return this.$store.getters.getOrders
+    },
+    isDocuemntStatus() {
+      if (this.panelType === 'window') {
+        if (this.field.columnName === 'DocStatus' && !this.isEmptyValue(this.processOrderUuid)) {
+          return true
+        }
+      }
+      return false
+    },
+    isContextInfo() {
+      if (!this.isAdvancedQuery) {
+        return (this.field.contextInfo && this.field.contextInfo.isActive) || this.field.reference.zoomWindowList.length
+      }
+      return false
     }
   },
   watch: {
@@ -253,7 +267,6 @@ export default {
     this.field = this.metadataField
   },
   methods: {
-    showMessage,
     isDisplayed() {
       if (this.isAdvancedQuery) {
         return this.field.isShowedFromUser
@@ -332,30 +345,6 @@ export default {
     focus(columnName) {
       if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[columnName].activeFocus(columnName)
-      }
-    },
-    redirect({ window, columnName, value }) {
-      const viewSearch = recursiveTreeSearch({
-        treeData: this.permissionRoutes,
-        attributeValue: window.uuid,
-        attributeName: 'meta',
-        secondAttribute: 'uuid',
-        attributeChilds: 'children'
-      })
-      if (viewSearch) {
-        this.$router.push({
-          name: viewSearch.name,
-          query: {
-            action: 'advancedQuery',
-            tabParent: 0,
-            [columnName]: value
-          }
-        })
-      } else {
-        this.showMessage({
-          type: 'error',
-          message: this.$t('notifications.noRoleAccess')
-        })
       }
     }
   }

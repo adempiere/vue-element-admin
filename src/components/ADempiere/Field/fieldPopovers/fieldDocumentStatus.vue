@@ -4,11 +4,12 @@
     placement="right"
     width="400"
     trigger="click"
-    @show="listActionDocument"
+    :disabled="withoutRecord"
   >
     <el-select
       v-model="valueActionDocument"
       @change="documentActionChange"
+      @visible-change="listActionDocument"
     >
       <el-option
         v-for="(item, key) in listDocumentActions"
@@ -54,11 +55,19 @@ export default {
     }
   },
   computed: {
-    listDocumentActions() {
-      return this.$store.getters.getListDocumentActions.documentActionsList
+    withoutRecord() {
+      // TODO: Validate with record attribute
+      if (this.isEmptyValue(this.$route.query.action) ||
+      ['create-new', 'reference', 'advancedQuery', 'criteria'].includes(this.$route.query.action)) {
+        return true
+      }
+      return false
     },
-    defaultDocumentActions() {
-      return this.$store.getters.getListDocumentActions.defaultDocumentAction
+    documentActions() {
+      return this.$store.getters.getListDocumentActions
+    },
+    listDocumentActions() {
+      return this.documentActions.documentActionsList
     },
     labelDocumentActions() {
       const found = this.listDocumentActions.find(element => {
@@ -87,14 +96,17 @@ export default {
     }
   },
   methods: {
-    listActionDocument() {
-      this.$store.dispatch('listDocumentActionStatus', {
-        tableName: 'C_Order',
-        recordUuid: this.$route.query.action
-      })
+    listActionDocument(isShowList) {
+      if (isShowList) {
+        if (!this.withoutRecord && this.$route.query.action !== this.documentActions.recordUuid) {
+          this.$store.dispatch('listDocumentActionStatus', {
+            recordUuid: this.$route.query.action,
+            recordId: this.$route.params.recordId
+          })
+        }
+      }
     },
     documentActionChange(value) {
-      var actionProcess = this.$store.getters.getOrders
       this.$store.dispatch('notifyFieldChange', {
         parentUuid: this.parentUuid,
         containerUuid: this.containerUuid,
@@ -102,6 +114,8 @@ export default {
         isSendToServer: true,
         newValue: value
       })
+
+      const actionProcess = this.$store.getters.getOrders
       this.$store.dispatch('startProcess', {
         action: {
           uuid: actionProcess.uuid,
