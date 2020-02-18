@@ -315,6 +315,7 @@ export default {
   },
   created() {
     // get fields with uuid
+    this.$store.dispatch('listWorkflows', this.metadata.tableName)
     this.getPanel()
   },
   methods: {

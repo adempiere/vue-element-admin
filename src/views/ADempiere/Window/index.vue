@@ -72,6 +72,7 @@
                           :panel-type="panelType"
                           :is-insert-record="getterIsInsertRecord"
                         />
+                        <workflow-line />
                       </el-header>
                       <el-main :style="styleMainTab">
                         <tab-parent
@@ -232,6 +233,8 @@ import splitPane from 'vue-splitpane'
 import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
 import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
+// Workflow
+import WorkflowLine from '@/components/ADempiere/WorkflowLine'
 
 export default {
   name: 'WindowView',
@@ -244,7 +247,8 @@ export default {
     ModalDialog,
     ChatEntries,
     RecordLogs,
-    WorkflowLogs
+    WorkflowLogs,
+    WorkflowLine
   },
   data() {
     return {
@@ -685,6 +689,17 @@ export default {
 }
 </style>
 <style>
+  .el-steps--simple {
+    /* padding: 13px 8%; */
+    padding-top: 10px;
+    padding-bottom: 0px;
+    padding-left: 0%;
+    padding-right: 30px;
+    border-radius: 4px;
+    background: #F5F7FA;
+    overflow-x: auto;
+    max-width: 100%;
+  }
   .scroll-window-log-change {
     max-height: 74vh !important;
   }
