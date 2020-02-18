@@ -10,6 +10,7 @@
     :disabled="isDisabled"
     :maxlength="maxLength"
     :show-password="Boolean(metadata.isEncrypted)"
+    :autofocus="inTable"
     @change="preHandleChange"
   />
 </template>
@@ -21,6 +22,10 @@ export default {
   name: 'FieldText',
   mixins: [fieldMixin],
   props: {
+    inTable: {
+      type: Boolean,
+      default: false
+    },
     pattern: {
       type: String,
       default: undefined

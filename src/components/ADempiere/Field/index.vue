@@ -87,6 +87,7 @@
     :class="classField"
     :metadata="fieldAttributes"
     :value-model="recordDataFields"
+    :in-table="true"
   />
 </template>
 
