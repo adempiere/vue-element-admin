@@ -763,12 +763,6 @@ export default {
         this.setSort()
       })
     },
-    isFocusable(field) {
-      if (fieldIsDisplayed(field) && !field.isReadOnly && field.isUpdateable) {
-        return true
-      }
-      return false
-    },
     setSort() {
       if (!this.isMobile) {
         const el = this.$refs.multipleTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]
