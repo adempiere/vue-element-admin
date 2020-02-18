@@ -87,7 +87,6 @@
     :class="classField"
     :metadata="fieldAttributes"
     :value-model="recordDataFields"
-    :in-table="true"
   />
 </template>
 
@@ -418,9 +417,9 @@ export default {
       })
       return Boolean(field)
     },
-    focus(columnName) {
+    focusField() {
       if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
-        this.$refs[columnName].activeFocus(columnName)
+        this.$refs[this.field.columnName].activeFocus()
       }
     },
     redirect({ window, columnName, value }) {
