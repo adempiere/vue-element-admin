@@ -149,7 +149,6 @@ const containerInfo = {
             recordCount: response.recordCount,
             workflowsList: response.workflowsList
           }
-          console.log(nodeWorflow)
           commit('addListWorkflows', nodeWorflow)
         })
         .catch(error => {
@@ -162,7 +161,6 @@ const containerInfo = {
       return state.listworkflowLog.workflowLogsList
     },
     getNodeWorkflow: (state) => {
-      console.log(state)
       return state.listWorkflows
     },
     getRecordLogs: (state) => {
