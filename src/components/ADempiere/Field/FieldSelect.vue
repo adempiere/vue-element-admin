@@ -142,7 +142,7 @@ export default {
           if (!this.options.some(option => option.key === value)) {
             this.options.push({
               key: value,
-              label: this.findLabel(value)
+              label: this.isEmptyValue(this.findLabel(value)) ? ' ' : this.findLabel(value)
             })
             this.value = value
           }
