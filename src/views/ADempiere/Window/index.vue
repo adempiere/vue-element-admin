@@ -698,7 +698,7 @@ export default {
     border-radius: 4px;
     background: #F5F7FA;
     overflow-x: auto;
-    max-width: 100%;
+    max-width: 80%;
   }
   .scroll-window-log-change {
     max-height: 74vh !important;
