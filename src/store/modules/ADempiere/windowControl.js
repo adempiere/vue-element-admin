@@ -190,25 +190,31 @@ const windowControl = {
       const columnsToDontSend = ['BinaryData', 'isSendServer', 'isEdit']
 
       // attributes or fields
-      let finalAttributes = convertObjectToArrayPairs(row)
-      finalAttributes = finalAttributes.filter(itemAttribute => {
-        if (isEmptyValue(itemAttribute.value)) {
-          return false
-        }
+      const fieldsList = getters.getFieldsListFromPanel(containerUuid)
+      const attributesList = []
+      fieldsList.forEach(itemAttribute => {
         if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
           return false
         }
-        return true
+        if (isEmptyValue(row[itemAttribute.columnName])) {
+          return false
+        }
+
+        attributesList.push({
+          value: row[itemAttribute.columnName],
+          columnName: itemAttribute.columnName,
+          valueType: itemAttribute.valueType
+        })
       })
 
       commit('addInCreate', {
         containerUuid,
         tableName,
-        attributesList: finalAttributes
+        attributesList
       })
       return createEntity({
         tableName,
-        attributesList: finalAttributes
+        attributesList
       })
         .then(createEntityResponse => {
           showMessage({
@@ -245,7 +251,7 @@ const windowControl = {
           commit('deleteInCreate', {
             containerUuid,
             tableName,
-            attributesList: finalAttributes
+            attributesList
           })
         })
     },

@@ -593,6 +593,7 @@ const panel = {
             callout: field.callout,
             value: newValue,
             oldValue: field.oldValue,
+            valueType: field.valueType,
             withOutColumnNames
           })
         }

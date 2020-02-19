@@ -13,7 +13,8 @@ const callOutControl = {
       inTable = false,
       row,
       value,
-      oldValue
+      oldValue,
+      valueType
     }) {
       const window = rootGetters.getWindow(parentUuid)
       let attributesList = []
