@@ -1065,7 +1065,7 @@ export default {
 </style>
 <style>
   .el-table .warning-row {
-    background: oldlace;
+    background: rgba(104, 245, 203, 0.712);
   }
 
   .el-table .success-row {
