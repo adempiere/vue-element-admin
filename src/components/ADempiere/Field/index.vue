@@ -71,6 +71,10 @@
           :field-attributes="fieldAttributes"
           :record-uuid="field.recordUuid"
         />
+        <field-calc
+          v-if="!isAdvancedQuery && isNumeric"
+          :field-attributes="fieldAttributes"
+        />
       </template>
       <component
         :is="componentRender"
@@ -94,6 +98,7 @@
 import FieldContextInfo from '@/components/ADempiere/Field/fieldPopovers/fieldContextInfo'
 import FieldOperatorComparison from '@/components/ADempiere/Field/fieldPopovers/fieldOperatorComparison'
 import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTranslated'
+import FieldCalc from '@/components/ADempiere/Field/fieldPopovers/fieldCalc'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
@@ -109,7 +114,8 @@ export default {
   components: {
     FieldContextInfo,
     FieldOperatorComparison,
-    FieldTranslated
+    FieldTranslated,
+    FieldCalc
   },
   props: {
     parentUuid: {
@@ -297,6 +303,9 @@ export default {
     },
     processOrdenUuid() {
       return this.$store.getters.getOrden
+    },
+    isNumeric() {
+      return this.field.componentPath === 'FieldNumber'
     }
   },
   watch: {
