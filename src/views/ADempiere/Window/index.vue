@@ -64,15 +64,21 @@
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
                       <el-header style="height: 39px;">
-                        <context-menu
-                          v-show="!isShowedRecordPanel"
-                          :menu-parent-uuid="$route.meta.parentUuid"
-                          :parent-uuid="windowUuid"
-                          :container-uuid="windowMetadata.currentTabUuid"
-                          :panel-type="panelType"
-                          :is-insert-record="getterIsInsertRecord"
-                        />
-                        <workflow-line />
+                        <el-container>
+                          <el-aside width="100%" style="width: 78vw;overflow: hidden;">
+                            <workflow-line />
+                          </el-aside>
+                          <el-main>
+                            <context-menu
+                              v-show="!isShowedRecordPanel"
+                              :menu-parent-uuid="$route.meta.parentUuid"
+                              :parent-uuid="windowUuid"
+                              :container-uuid="windowMetadata.currentTabUuid"
+                              :panel-type="panelType"
+                              :is-insert-record="getterIsInsertRecord"
+                            />
+                          </el-main>
+                        </el-container>
                       </el-header>
                       <el-main :style="styleMainTab">
                         <tab-parent
