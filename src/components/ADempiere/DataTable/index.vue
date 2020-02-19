@@ -731,7 +731,7 @@ export default {
           isEdit: true,
           isSendServer: false
         })
-        document.getElementById(this.$refs.multipleTable.$refs.bodyWrapper.scrollTop = 0)
+        this.$refs.multipleTable.$refs.bodyWrapper.scrollTop = 0
       } else {
         const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid
