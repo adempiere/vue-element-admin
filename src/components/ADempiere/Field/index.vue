@@ -5,7 +5,7 @@
     <el-col></el-col> container-->
   <el-col
     v-if="!inTable"
-    v-show="isDisplayed()"
+    v-show="isDisplayed"
     key="is-panel-template"
     :xs="sizeFieldResponsive.xs"
     :sm="sizeFieldResponsive.sm"
@@ -19,7 +19,7 @@
     >
       <template slot="label">
         <field-operator-comparison
-          v-if="isAdvancedQuery && isDisplayed()"
+          v-if="isAdvancedQuery && isDisplayed"
           key="is-field-operator-comparison"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
@@ -96,7 +96,7 @@ import FieldOperatorComparison from '@/components/ADempiere/Field/fieldPopovers/
 import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTranslated'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
-import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
 import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
@@ -169,10 +169,16 @@ export default {
         // DOM properties
         required: this.isMandatory(),
         readonly: this.isReadOnly(),
-        displayed: this.isDisplayed(),
+        displayed: this.isDisplayed,
         disabled: !this.field.isActive,
         isSelectCreated: this.isSelectCreated
       }
+    },
+    isDisplayed() {
+      if (this.isAdvancedQuery) {
+        return this.field.isShowedFromUser
+      }
+      return fieldIsDisplayed(this.field) && (this.isMandatory() || this.field.isShowedFromUser || this.inTable)
     },
     isSelectCreated() {
       return this.isAdvancedQuery &&
@@ -195,7 +201,7 @@ export default {
       return false
     },
     sizeFieldResponsive() {
-      if (!this.isDisplayed()) {
+      if (!this.isDisplayed) {
         return DEFAULT_SIZE
       }
 
@@ -345,12 +351,6 @@ export default {
       })
       this.valueActionDocument = ''
     },
-    isDisplayed() {
-      if (this.isAdvancedQuery) {
-        return this.field.isShowedFromUser
-      }
-      return fieldIsDisplayed(this.field) && (this.isMandatory() || this.field.isShowedFromUser || this.inTable)
-    },
     isReadOnly() {
       if (this.isAdvancedQuery) {
         if (['NULL', 'NOT_NULL'].includes(this.field.operator)) {
@@ -421,7 +421,7 @@ export default {
       return Boolean(field)
     },
     focus(columnName) {
-      if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
+      if (this.isDisplayed && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[columnName].activeFocus(columnName)
       }
     },
