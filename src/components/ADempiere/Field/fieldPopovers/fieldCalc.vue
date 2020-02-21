@@ -4,6 +4,7 @@
       <i class="el-icon-monitor el-icon--right" />
     </el-button>
     <el-dropdown-menu slot="dropdown">
+      <el-input v-model="calcValue" />
       <el-table
         :data="tableData"
         style="width: 100%"
@@ -63,10 +64,6 @@
             <el-button type="text" :disabled="isDisabled(row, column)">{{ row.row5.value }}</el-button>
           </template>
         </el-table-column>
-        <el-input
-          slot="append"
-          v-model="calcValue"
-        />
       </el-table>
     </el-dropdown-menu>
   </el-dropdown>
