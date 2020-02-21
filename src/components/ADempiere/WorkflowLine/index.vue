@@ -38,13 +38,13 @@ export default {
   }
   .el-steps--simple {
     /* padding: 13px 8%; */
-    padding-top: 10px;
+    padding-top: 0px;
     padding-bottom: 0px;
     padding-left: 0%;
-    padding-right: 30px;
+    padding-right: 0px;
     border-radius: 4px;
     background: #F5F7FA;
     overflow-x: auto;
-    max-width: 80%;
+    max-width: 100%;
   }
 </style>
