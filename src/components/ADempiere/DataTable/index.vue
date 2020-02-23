@@ -446,8 +446,6 @@ export default {
     },
     fieldList() {
       if (this.getterPanel && this.getterPanel.fieldList) {
-        // TODO: Change to destructuring and add isParent attribure to change
-        // orderBy sequence value to seqNoGrid value if isParent is false
         return this.sortFields(
           this.getterPanel.fieldList,
           this.panelType !== 'browser' ? 'seqNoGrid' : 'sequence'
