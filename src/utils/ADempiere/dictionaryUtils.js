@@ -447,8 +447,6 @@ export function assignedGroup(fieldList, assignedGroup) {
     return fieldList
   }
 
-  // TODO: Change to destructuring and add isParent attribure to change orderBy
-  // sequence value to seqNoGrid value if isParent is false
   fieldList = sortFields(fieldList, 'sequence', 'asc', fieldList[0].panelType)
 
   let firstChangeGroup = false
@@ -499,8 +497,6 @@ export function assignedGroup(fieldList, assignedGroup) {
  * @param {string} orderBy
  * @param {string} type
  * @param {string} panelType
- * TODO: Change to destructuring and add isParent attribure to change orderBy
- * sequence value to seqNoGrid value if isParent is false
  * @returns {array}
  */
 export function sortFields(arr, orderBy = 'sequence', type = 'asc', panelType = 'window') {
