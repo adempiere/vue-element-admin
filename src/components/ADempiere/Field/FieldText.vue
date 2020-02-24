@@ -10,7 +10,7 @@
     :disabled="isDisabled"
     :maxlength="maxLength"
     :show-password="Boolean(metadata.isEncrypted)"
-    :autofocus="inTable"
+    :autofocus="metadata.inTable"
     @change="preHandleChange"
   />
 </template>

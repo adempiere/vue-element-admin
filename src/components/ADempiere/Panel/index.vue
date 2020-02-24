@@ -448,7 +448,7 @@ export default {
             containerUuid: this.containerUuid,
             isAdvancedQuery: route.query.action === 'advancedQuery',
             newValues: this.dataRecords,
-            isSendToServer: false,
+            isSendToServer: true,
             isSendCallout: false,
             fieldList: this.fieldList,
             panelType: this.panelType
@@ -490,7 +490,7 @@ export default {
                   name: this.$route.name,
                   query: {
                     ...this.$route.query,
-                    action: this.dataRecords
+                    action: this.dataRecords.UUID
                   },
                   params: {
                     ...this.$route.params,
@@ -665,23 +665,21 @@ export default {
       this.setTagsViewTitle(uuidRecord)
       this.setFocus()
     },
-    setFocus() {
-      let isFocusEnabled = false
-      this.getterFieldList.forEach(fieldItem => {
-        if (!isFocusEnabled) {
-          if (this.isFocusable(fieldItem) && this.$refs.hasOwnProperty(fieldItem.columnName)) {
-            this.$refs[fieldItem.columnName][0].focus(fieldItem.columnName)
-            isFocusEnabled = true
+    async setFocus() {
+      return new Promise(resolve => {
+        const fieldFocus = this.getterFieldList.find(itemField => {
+          if (this.$refs.hasOwnProperty(itemField.columnName)) {
+            if (fieldIsDisplayed(itemField) && !itemField.isReadOnly && itemField.isUpdateable) {
+              return true
+            }
           }
+        })
+        if (fieldFocus) {
+          this.$refs[fieldFocus.columnName][0].focusField()
         }
+        resolve()
         return
       })
-    },
-    isFocusable(field) {
-      if (fieldIsDisplayed(field) && !field.isReadOnly && field.isUpdateable) {
-        return true
-      }
-      return false
     }
   }
 }

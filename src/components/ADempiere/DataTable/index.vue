@@ -731,7 +731,8 @@ export default {
           isEdit: true,
           isSendServer: false
         })
-        this.setFocus(this.fieldList)
+        this.$refs.multipleTable.$refs.bodyWrapper.scrollTop = 0
+        // this.setFocus()
       } else {
         const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid
@@ -742,30 +743,26 @@ export default {
         })
       }
     },
+    async setFocus() {
+      return new Promise(resolve => {
+        const fieldFocus = this.fieldList.find(itemField => {
+          if (this.$refs.hasOwnProperty(itemField.columnName)) {
+            if (fieldIsDisplayed(itemField) && !itemField.isReadOnly && itemField.isUpdateable) {
+              return true
+            }
+          }
+        })
+        this.$refs[fieldFocus.columnName][0].focusField()
+        resolve()
+        return
+      })
+    },
     async getList() {
       this.oldgetDataDetail = this.getterDataRecords.map(v => v.id)
       this.newgetDataDetail = this.oldgetDataDetail.slice()
       this.$nextTick(() => {
         this.setSort()
       })
-    },
-    setFocus(fieldChildren) {
-      let isFocusEnabled = false
-      fieldChildren.forEach(fieldItem => {
-        if (!isFocusEnabled) {
-          if (this.isFocusable(fieldItem) && !this.$refs.hasOwnProperty(fieldItem.columnName)) {
-            this.$refs[fieldItem.columnName][0].focus(fieldItem.columnName)
-            isFocusEnabled = true
-          }
-        }
-        return
-      })
-    },
-    isFocusable(field) {
-      if (fieldIsDisplayed(field) && !field.isReadOnly && field.isUpdateable) {
-        return true
-      }
-      return false
     },
     setSort() {
       if (!this.isMobile) {
@@ -1069,7 +1066,8 @@ export default {
 </style>
 <style>
   .el-table .warning-row {
-    background: oldlace;
+    background: rgba(104, 245, 203, 0.712);
+    /* background: oldlace; */
   }
 
   .el-table .success-row {
