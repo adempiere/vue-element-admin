@@ -46,7 +46,7 @@ module.exports = {
     const actions = [{
       type: 'add',
       path: `src/store/modules/ADempiere/${name}.js`,
-      templateFile: 'plop-templates/store/index.hbs',
+      templateFile: 'plop-templates/ADempiere/store/index.hbs',
       data: {
         name: name,
         state: data.blocks.includes('state'),
