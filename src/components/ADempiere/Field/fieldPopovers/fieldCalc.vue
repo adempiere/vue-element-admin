@@ -76,11 +76,15 @@ export default {
     fieldAttributes: {
       type: Object,
       required: true
+    },
+    fieldValue: {
+      type: Number,
+      default: undefined
     }
   },
   data() {
     return {
-      calcValue: '',
+      calcValue: this.fieldValue,
       selectedValues: [],
       tableData: [{
         row1: {
@@ -188,6 +192,11 @@ export default {
           value: undefined
         }
       }]
+    }
+  },
+  watch: {
+    fieldValue(value) {
+      this.calcValue = value
     }
   },
   methods: {
