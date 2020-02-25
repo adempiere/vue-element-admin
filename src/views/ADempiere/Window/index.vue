@@ -54,7 +54,8 @@
                 </div>
               </template>
               <template slot="paneR">
-                <el-container style="height: 86vh;">
+                <el-container id="PanelRight" style="height: 86vh;">
+                  <resize-observer @notify="handleResize" />
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
                       <el-header style="height: 39px; background: #F5F7FA">
@@ -356,7 +357,7 @@ export default {
           background: '#F5F7FA',
           overflowX: 'auto',
           overflowY: 'hidden',
-          width: '35%'
+          width: this.$store.getters.getPanelRight + 'px'
         }
       }
       return {
@@ -445,8 +446,14 @@ export default {
   },
   created() {
     this.getWindow()
+    this.handleResize()
   },
   methods: {
+    handleResize() {
+      var PanelRight = document.getElementById('PanelRight')
+      var widthPanel = PanelRight.clientWidth - 350
+      this.$store.dispatch('setPanelRight', widthPanel)
+    },
     conteInfo() {
       this.show = !this.show
       this.$store.dispatch('listWorkflowLogs', {

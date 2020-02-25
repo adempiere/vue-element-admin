@@ -24,6 +24,9 @@ export default {
     }
   },
   computed: {
+    getPanelRight() {
+      return this.$store.getters.getPanelRight
+    },
     gettersNodeList() {
       var node = this.$store.getters.getNodeWorkflow
       if (!this.isEmptyValue(node.workflowsList)) {
