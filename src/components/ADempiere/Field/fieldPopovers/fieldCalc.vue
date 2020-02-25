@@ -3,9 +3,15 @@
     <el-button type="text">
       <i class="el-icon-monitor el-icon--right" />
     </el-button>
-    <el-dropdown-menu slot="dropdown">
-      <el-input v-model="calcValue" />
+    <el-dropdown-menu slot="dropdown" class="dropdown-calc">
+      <el-input
+        v-model="calcValue"
+        v-shortkey="['enter']"
+        class="calc-input"
+        @shortkey.native="setResult()"
+      />
       <el-table
+        ref="calculator"
         :data="tableData"
         style="width: 100%"
         border
@@ -213,21 +219,24 @@ export default {
         }
       }
       if (row[column.property].value === '=') {
-        // eslint-disable-next-line no-eval
-        this.calcValue = '' + eval(this.calcValue)
-        this.$children[0].visible = false
-        if (!this.isEmptyValue(this.calcValue)) {
-          this.$store.dispatch('notifyFieldChange', {
-            isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
-            panelType: this.fieldAttributes.panelType,
-            parentUuid: this.fieldAttributes.parentUuid,
-            containerUuid: this.fieldAttributes.containerUuid,
-            columnName: this.fieldAttributes.columnName,
-            newValue: Number(this.calcValue),
-            field: this.fieldAttributes,
-            isChangedOldValue: true
-          })
-        }
+        this.setResult()
+      }
+    },
+    setResult() {
+      // eslint-disable-next-line no-eval
+      this.calcValue = '' + eval(this.calcValue)
+      this.$children[0].visible = false
+      if (!this.isEmptyValue(this.calcValue)) {
+        this.$store.dispatch('notifyFieldChange', {
+          isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
+          panelType: this.fieldAttributes.panelType,
+          parentUuid: this.fieldAttributes.parentUuid,
+          containerUuid: this.fieldAttributes.containerUuid,
+          columnName: this.fieldAttributes.columnName,
+          newValue: Number(this.calcValue),
+          field: this.fieldAttributes,
+          isChangedOldValue: true
+        })
       }
     },
     spanMethod({ row, column, rowIndex, columnIndex }) {
@@ -236,6 +245,13 @@ export default {
           return {
             rowspan: 2,
             colspan: 1
+          }
+        }
+      } else if (rowIndex === 2) {
+        if (this.isEmptyValue(row[column.property].value)) {
+          return {
+            rowspan: 0,
+            colspan: 0
           }
         }
       } else if (rowIndex === 3) {
@@ -250,6 +266,11 @@ export default {
           return {
             rowspan: 1,
             colspan: 2
+          }
+        } else if (this.isEmptyValue(row[column.property].value)) {
+          return {
+            rowspan: 0,
+            colspan: 0
           }
         }
       }
@@ -266,7 +287,15 @@ export default {
 }
 </script>
 <style>
-	.el-table--enable-row-hover .el-table__body tr:hover>td{
+	.el-table--enable-row-hover .el-table__body tr:hover > td {
 		background-color: #ffffff !important;
 	}
+  .calc-table .el-table__body-wrapper > table {
+    border-spacing: 5px;
+  }
+  .calc-table .el-table__body tr > td {
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.5);
+    border-radius: 5px;
+    cursor: pointer;
+  }
 </style>
