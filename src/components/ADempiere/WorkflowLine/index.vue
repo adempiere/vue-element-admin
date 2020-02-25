@@ -1,13 +1,12 @@
 <template>
-  <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="1" finish-status="success" simple>
-    <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="1" finish-status="success" simple :style="styleSteps">
-      <el-step
-        v-for="(node, index) in gettersNodeList"
-        :key="index"
-        :title="node.name"
-      />
-    </el-steps>
-  </el-steps></template>
+  <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="1" finish-status="success" simple :style="styleSteps">
+    <el-step
+      v-for="(node, index) in gettersNodeList"
+      :key="index"
+      :title="node.name"
+    />
+  </el-steps>
+</template>
 <script>
 export default {
   name: 'WorkflowLine',
