@@ -1,15 +1,22 @@
 <template>
   <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="1" finish-status="success" simple>
-    <el-step
-      v-for="(node, index) in gettersNodeList"
-      :key="index"
-      :title="node.name"
-    />
-  </el-steps>
-</template>
+    <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="1" finish-status="success" simple :style="styleSteps">
+      <el-step
+        v-for="(node, index) in gettersNodeList"
+        :key="index"
+        :title="node.name"
+      />
+    </el-steps>
+  </el-steps></template>
 <script>
 export default {
   name: 'WorkflowLine',
+  props: {
+    styleSteps: {
+      type: Object,
+      default: () => {}
+    }
+  },
   data() {
     return {
       currentKey: 100,
@@ -36,15 +43,27 @@ export default {
   .scroll-window-log-change {
     max-height: 74vh !important;
   }
-  .el-steps--simple {
-    /* padding: 13px 8%; */
-    padding-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 0%;
-    padding-right: 0px;
-    border-radius: 4px;
-    background: #F5F7FA;
-    overflow-x: auto;
-    max-width: 100%;
+  .el-step.is-simple {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: inline-flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 50%;
+  }
+  .el-step.is-simple .el-step__main {
+    position: relative;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: inline-block;
+    -webkit-box-align: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+    /* -webkit-box-flex: 1; */
+    -ms-flex-positive: 1;
+    -webkit-box-flex: 1;
+    flex-grow: 1;
+    width: 15vw;
   }
 </style>

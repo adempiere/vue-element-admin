@@ -57,10 +57,12 @@
                 <el-container style="height: 86vh;">
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
-                      <el-header style="height: 39px;">
+                      <el-header style="height: 39px; background: #F5F7FA">
                         <el-container>
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
-                            <workflow-line />
+                            <workflow-line
+                              :style-steps="StyleStepsSimple"
+                            />
                           </el-aside>
                           <el-main>
                             <context-menu
@@ -250,6 +252,12 @@ export default {
     WorkflowLogs,
     WorkflowLine
   },
+  props: {
+    styleSteps: {
+      type: Object,
+      default: () => {}
+    }
+  },
   data() {
     return {
       windowMetadata: {},
@@ -329,11 +337,38 @@ export default {
     splitAreaStyle() {
       if (this.isShowedTabsChildren) {
         return {
-          overflow: 'auto'
+          overflowX: 'hidden',
+          overflowY: 'auto'
         }
       }
       return {
         overflow: 'hidden'
+      }
+    },
+    StyleStepsSimple() {
+      if (this.isShowedRecordNavigation) {
+        return {
+          paddingTop: '0px',
+          paddingBottom: '0px',
+          paddingLeft: '0px',
+          paddingRight: '0px',
+          borderRadius: '4px',
+          background: '#F5F7FA',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          width: '35%'
+        }
+      }
+      return {
+        paddingTop: '0px',
+        paddingBottom: '0px',
+        paddingLeft: '0px',
+        paddingRight: '0px',
+        borderRadius: '4px',
+        background: '#F5F7FA',
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        width: 'auto'
       }
     },
     sizeAreaStyle() {
@@ -660,6 +695,7 @@ export default {
     border-radius: 4px;
     background: #F5F7FA;
     overflow-x: auto;
+    overflow-y: hidden;
     width: auto;
   }
   .scroll-window-log-change {
