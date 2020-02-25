@@ -5,7 +5,7 @@
     <el-col></el-col> container-->
   <el-col
     v-if="!inTable"
-    v-show="isDisplayed()"
+    v-show="isDisplayed"
     key="is-panel-template"
     :xs="sizeFieldResponsive.xs"
     :sm="sizeFieldResponsive.sm"
@@ -19,7 +19,7 @@
     >
       <template slot="label">
         <field-operator-comparison
-          v-if="isAdvancedQuery && isDisplayed()"
+          v-if="isAdvancedQuery && isDisplayed"
           key="is-field-operator-comparison"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
@@ -76,7 +76,8 @@ import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTra
 import FieldCalc from '@/components/ADempiere/Field/fieldPopovers/fieldCalc'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
-import { fieldIsDisplayed } from '@/utils/ADempiere'
+import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
+import { showMessage } from '@/utils/ADempiere/notification'
 
 /**
  * This is the base component for linking the components according to the
@@ -148,10 +149,16 @@ export default {
         // DOM properties
         required: this.isMandatory(),
         readonly: this.isReadOnly(),
-        displayed: this.isDisplayed(),
+        displayed: this.isDisplayed,
         disabled: !this.field.isActive,
         isSelectCreated: this.isSelectCreated
       }
+    },
+    isDisplayed() {
+      if (this.isAdvancedQuery) {
+        return this.field.isShowedFromUser
+      }
+      return fieldIsDisplayed(this.field) && (this.isMandatory() || this.field.isShowedFromUser || this.inTable)
     },
     isSelectCreated() {
       return this.isAdvancedQuery &&
@@ -174,7 +181,7 @@ export default {
       return false
     },
     sizeFieldResponsive() {
-      if (!this.isDisplayed()) {
+      if (!this.isDisplayed) {
         return DEFAULT_SIZE
       }
 
@@ -277,12 +284,7 @@ export default {
     this.field = this.metadataField
   },
   methods: {
-    isDisplayed() {
-      if (this.isAdvancedQuery) {
-        return this.field.isShowedFromUser
-      }
-      return fieldIsDisplayed(this.field) && (this.isMandatory() || this.field.isShowedFromUser || this.inTable)
-    },
+    showMessage,
     isReadOnly() {
       if (this.isAdvancedQuery) {
         if (['NULL', 'NOT_NULL'].includes(this.field.operator)) {
@@ -353,7 +355,7 @@ export default {
       return Boolean(field)
     },
     focusField() {
-      if (this.isDisplayed() && this.isMandatory() && !this.isReadOnly()) {
+      if (this.isDisplayed && this.isMandatory() && !this.isReadOnly()) {
         this.$refs[this.field.columnName].activeFocus()
       }
     }
