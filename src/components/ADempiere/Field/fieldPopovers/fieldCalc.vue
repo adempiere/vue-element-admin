@@ -91,7 +91,6 @@ export default {
   data() {
     return {
       calcValue: this.fieldValue,
-      selectedValues: [],
       tableData: [{
         row1: {
           type: 'operator',

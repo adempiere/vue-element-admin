@@ -11,6 +11,8 @@
     controls-position="right"
     :class="'display-type-' + cssClass"
     @change="preHandleChange"
+    @blur="calcValue"
+    @keydown="addValues"
   />
 </template>
 
@@ -30,7 +32,9 @@ export default {
     value = this.validateValue(value)
     return {
       value: value,
-      showControls: true
+      showControls: true,
+      operation: '',
+      expression: /[^\d\/.()%\*\+\-]/gim
     }
   },
   computed: {
@@ -78,6 +82,39 @@ export default {
         return undefined
       }
       return Number(value)
+    },
+    addValues(value) {
+      if (!this.isEmptyValue(value) && !this.expression.test(value.key)) {
+        this.operation += value.key
+      } else {
+        if (value.key === 'Backspace') {
+          this.operation = this.operation.slice(0, -1)
+        }
+        if (value.key === 'Enter') {
+          this.calcValue()
+        }
+      }
+    },
+    calcValue() {
+      const calc = String(this.value) + this.operation
+      let result = calc.replace(this.expression, '')
+      // eslint-disable-next-line no-eval
+      result = eval(result)
+      if (!this.isEmptyValue(result)) {
+        this.$store.dispatch('notifyFieldChange', {
+          isAdvancedQuery: this.metadata.isAdvancedQuery,
+          panelType: this.metadata.panelType,
+          parentUuid: this.metadata.parentUuid,
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnName,
+          newValue: result,
+          field: this.metadata,
+          isChangedOldValue: true
+        })
+          .then(response => {
+            this.operation = ''
+          })
+      }
     }
   }
 }
