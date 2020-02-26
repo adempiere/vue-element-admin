@@ -119,7 +119,7 @@
                           </el-card>
                         </div>
                         <div style="right: 0%; top: 40%; position: absolute;">
-                          <el-button v-show="!showContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                          <el-button v-show="!show && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
