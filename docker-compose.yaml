@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  web-client:
+    container_name: adempiere-vue-client
+    network_mode: bridge
+    build: .
+    volumes:
+      - /usr/app/
+      - /usr/app/node_modules
+    stdin_open: true
+    tty: true
+    # TODO: Add enviroment variables to ports
+    ports:
+      - 9526:9526 # Prod
+      # - 9527:9527 # Dev
