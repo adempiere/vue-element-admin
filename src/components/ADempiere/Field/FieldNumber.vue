@@ -1,19 +1,21 @@
 <template>
-  <el-input-number
-    :ref="metadata.columnName"
-    v-model="value"
-    type="number"
-    :min="minValue"
-    :max="maxValue"
-    :placeholder="metadata.help"
-    :disabled="isDisabled"
-    :precision="precision"
-    controls-position="right"
-    :class="'display-type-' + cssClass"
-    @change="preHandleChange"
-    @blur="calcValue"
-    @keydown="addValues"
-  />
+  <el-tooltip v-model="isShowed" :manual="true" :content="valueToDisplay" placement="top" effect="light">
+    <el-input-number
+      :ref="metadata.columnName"
+      v-model="value"
+      type="number"
+      :min="minValue"
+      :max="maxValue"
+      :placeholder="metadata.help"
+      :disabled="isDisabled"
+      :precision="precision"
+      controls-position="right"
+      :class="'display-type-' + cssClass"
+      @change="preHandleChange"
+      @blur="calcValue"
+      @keydown.native="addValues"
+    />
+  </el-tooltip>
 </template>
 
 <script>
@@ -34,7 +36,9 @@ export default {
       value: value,
       showControls: true,
       operation: '',
-      expression: /[^\d\/.()%\*\+\-]/gim
+      expression: /[^\d\/.()%\*\+\-]/gim,
+      valueToDisplay: '',
+      isShowed: false
     }
   },
   computed: {
@@ -86,12 +90,16 @@ export default {
     addValues(value) {
       if (!this.isEmptyValue(value) && !this.expression.test(value.key)) {
         this.operation += value.key
+        const calc = String(this.value) + this.operation
+        const splitedValues = calc.split(/[\/.()%\*\+\-]/)
+        if (splitedValues.length > 1 && !splitedValues.some(value => this.isEmptyValue(value))) {
+          // eslint-disable-next-line no-eval
+          this.valueToDisplay = eval(calc) + ''
+          this.isShowed = true
+        }
       } else {
         if (value.key === 'Backspace') {
           this.operation = this.operation.slice(0, -1)
-        }
-        if (value.key === 'Enter') {
-          this.calcValue()
         }
       }
     },
@@ -113,6 +121,7 @@ export default {
         })
           .then(response => {
             this.operation = ''
+            this.isShowed = false
           })
       }
     }
