@@ -78,16 +78,9 @@ export const menuTableMixin = {
     getDataAllRecord() {
       return this.getterDataRecordsAndSelection.record
     },
-    fieldList() {
+    fieldsList() {
       if (this.panelMetadata && this.panelMetadata.fieldList) {
-        let sortAttribute = 'sequence'
-        if (this.panelType === 'browser') {
-          sortAttribute = 'seqNoGrid'
-        }
-        return this.sortFields(
-          this.panelMetadata.fieldList,
-          sortAttribute
-        )
+        return this.panelMetadata.fieldList
       }
       return []
     },
@@ -249,7 +242,7 @@ export const menuTableMixin = {
         this.$store.dispatch('addNewRow', {
           parentUuid: this.parentUuid,
           containerUuid: this.containerUuid,
-          fieldList: this.fieldList,
+          fieldList: this.fieldsList,
           isEdit: true,
           isSendServer: false
         })

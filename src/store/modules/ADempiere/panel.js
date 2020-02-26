@@ -95,7 +95,15 @@ const panel = {
             }
           }
         })
-        params.fieldList = assignedGroup(params.fieldList)
+
+        let orderBy = 'sequence'
+        if ((params.panelType === 'window' && !params.isParent) || params.panelType === 'browser') {
+          orderBy = 'seqNoGrid'
+        }
+        params.fieldList = assignedGroup({
+          fieldsList: params.fieldList,
+          orderBy
+        })
       }
 
       params.keyColumn = keyColumn
@@ -496,23 +504,22 @@ const panel = {
       // get field
       const field = fieldList.find(fieldItem => fieldItem.columnName === columnName)
 
-      if (!(isAdvancedQuery && ['IN', 'NOT_IN'].includes(field.operator))) {
-        newValue = parsedValueComponent({
-          fieldType: field.componentPath,
-          referenceType: field.referenceType,
-          value: newValue
-        })
-
-        if (field.isRange) {
-          valueTo = parsedValueComponent({
+      if (!(panelType === 'table' || isAdvancedQuery)) {
+        if (!['IN', 'NOT_IN'].includes(field.operator)) {
+          newValue = parsedValueComponent({
             fieldType: field.componentPath,
             referenceType: field.referenceType,
-            value: valueTo
+            value: newValue
           })
+          if (field.isRange) {
+            valueTo = parsedValueComponent({
+              fieldType: field.componentPath,
+              referenceType: field.referenceType,
+              value: valueTo
+            })
+          }
         }
-      }
 
-      if (!(panelType === 'table' || isAdvancedQuery)) {
         //  Call context management
         dispatch('setContext', {
           parentUuid,
@@ -555,9 +562,7 @@ const panel = {
               }
             })
         }
-      }
 
-      if (!isAdvancedQuery) {
         //  Change Dependents
         dispatch('changeDependentFieldsList', {
           parentUuid,
