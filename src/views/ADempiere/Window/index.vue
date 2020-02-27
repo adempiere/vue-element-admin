@@ -63,6 +63,7 @@
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
                             <workflow-line
                               :style-steps="StyleStepsSimple"
+                              :container-uuid="windowMetadata.currentTabUuid"
                             />
                           </el-aside>
                           <el-main>
@@ -129,7 +130,7 @@
                           </el-card>
                         </div>
                         <div style="right: 0%; top: 40%; position: absolute;">
-                          <el-button v-show="!show && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                          <el-button v-show="!showContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
@@ -541,19 +542,26 @@ export default {
   },
   created() {
     this.getWindow()
-    this.handleResize()
+    if (this.isShowedRecordNavigation) {
+      this.handleResize()
+    }
   },
   methods: {
     handleResize() {
       var PanelRight = document.getElementById('PanelRight')
-      var widthPanel = PanelRight.clientWidth - 350
-      this.$store.dispatch('setPanelRight', widthPanel)
+      console.log(this.isEmptyValue(PanelRight), PanelRight, epale)
+      var epale = PanelRight
+      if (!this.isEmptyValue(epale)) {
+        var widthPanel = PanelRight.clientWidth - 350
+        this.$store.dispatch('setPanelRight', widthPanel)
+      }
     },
     conteInfo() {
       this.showContainerInfo = !this.showContainerInfo
       if (this.showContainerInfo) {
         this.$store.dispatch('listWorkflowLogs', {
           tableName: this.getTableName,
+          recordUuid: this.$route.query.action,
           recordId: this.getRecord[this.getTableName + '_ID']
         })
         this.$store.dispatch(this.activeInfo, {

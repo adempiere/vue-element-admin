@@ -611,6 +611,10 @@ export default {
       return groupsList
     },
     setTagsViewTitle(actionValue) {
+      this.$store.dispatch('listDocumentStatus', {
+        recordUuid: this.$route.query.action,
+        recordId: this.$route.params.recordId
+      })
       if (actionValue === 'create-new' || this.isEmptyValue(actionValue)) {
         this.tagTitle.action = this.$t('tagsView.newRecord')
       } else if (actionValue === 'advancedQuery') {
