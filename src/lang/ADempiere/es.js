@@ -288,5 +288,9 @@ export default {
     NOT_NULL: 'Tiene un valor',
     IN: 'Incluye',
     NOT_IN: 'No incluye'
+  },
+  quickAccess: {
+    newRecord: 'Quick Access to Create New Record',
+    listRecords: 'Quick Access to List All Records'
   }
 }

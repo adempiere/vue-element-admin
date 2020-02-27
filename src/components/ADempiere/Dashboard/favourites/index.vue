@@ -23,8 +23,12 @@
             </el-tag>
             <br>
             <el-button-group class="actions-buttons">
-              <el-button v-if="row.action === 'window'" size="mini" circle @click.stop="windowAction(row, 'create-new')"><i class="el-icon-circle-plus-outline" /></el-button>
-              <el-button v-if="row.action === 'window'" size="mini" circle @click.stop="windowAction(row, 'listRecords')"><i class="el-icon-search" /></el-button>
+              <el-tooltip :content="$t('quickAccess.newRecord')" placement="top">
+                <el-button v-if="row.action === 'window'" size="mini" circle @click.stop="windowAction(row, 'create-new')"><i class="el-icon-circle-plus-outline" /></el-button>
+              </el-tooltip>
+              <el-tooltip :content="$t('quickAccess.listRecords')" placement="top">
+                <el-button v-if="row.action === 'window'" size="mini" circle @click.stop="windowAction(row, 'listRecords')"><i class="el-icon-search" /></el-button>
+              </el-tooltip>
             </el-button-group>
           </template>
         </el-table-column>
