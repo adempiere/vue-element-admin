@@ -290,7 +290,7 @@ export default {
     NOT_IN: 'No incluye'
   },
   quickAccess: {
-    newRecord: 'Quick Access to Create New Record',
-    listRecords: 'Quick Access to List All Records'
+    newRecord: 'Acceso Rápido para Crear Registro Nuevo',
+    listRecords: 'Acceso Rápido para Listar los Registros'
   }
 }
