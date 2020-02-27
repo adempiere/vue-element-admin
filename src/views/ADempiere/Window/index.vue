@@ -58,12 +58,14 @@
                   <resize-observer @notify="handleResize" />
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
-                      <el-header style="height: 39px; background: #F5F7FA">
+                      <el-header style="height: 50px; background: #F5F7FA">
                         <el-container>
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
                             <workflow-line
                               :style-steps="StyleStepsSimple"
                               :container-uuid="windowMetadata.currentTabUuid"
+                              :parent-uuid="windowUuid"
+                              :panel-type="panelType"
                             />
                           </el-aside>
                           <el-main>
@@ -820,6 +822,10 @@ export default {
 }
 </style>
 <style>
+  .el-step.is-simple .el-step__icon-inner {
+    font-size: 18px;
+    padding-top: 30px;
+  }
   .el-steps--simple {
     /* padding: 13px 8%; */
     padding-top: 0px;

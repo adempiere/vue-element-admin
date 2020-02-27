@@ -1,10 +1,48 @@
 <template>
-  <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="getActive" :process-status="typeStatus" finish-status="success" simple :style="styleSteps">
+  <el-steps v-if="!isEmptyValue(gettersNodeList)" :active="getActive" finish-status="success" simple :style="styleSteps">
     <el-step
       v-for="(node, index) in listDocumentStatus"
       :key="index"
-      :title="node.name"
-    />
+      :icon="index < getActive ? 'el-icon-finished' : ( index === getActive ? 'el-icon-s-flag' : 'el-icon-d-arrow-right')"
+    >
+      <template slot="title">
+        <el-popover
+          v-if="index === getActive"
+          placement="top-start"
+          width="400"
+          trigger="click"
+        >
+          <el-select
+            v-model="valueActionDocument"
+            @change="documentActionChange"
+            @visible-change="listActionDocument"
+          >
+            <el-option
+              v-for="(item, key) in listDocumentActions"
+              :key="key"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
+          <el-tag
+            v-if="isEmptyValue(valueActionDocument)"
+            :type="tagStatus(getValueStatus)"
+          >
+            {{ getValue.displayColumn }}
+          </el-tag>
+          <el-tag
+            v-else
+            :type="tagStatus(valueActionDocument)"
+          >
+            {{ labelDocumentActions }}
+          </el-tag>
+          <p v-if="isEmptyValue(descriptionDocumentActions)"> {{ getValue.description }} </p>
+          <p v-else> {{ descriptionDocumentActions }} </p>
+          <el-button slot="reference" type="text" :autofocus="true" class="title"> {{ node.name }} </el-button>
+        </el-popover>
+        <span v-else> {{ node.name }} </span>
+      </template>
+    </el-step>
   </el-steps>
 </template>
 <script>
@@ -15,9 +53,17 @@ export default {
       type: Object,
       default: () => {}
     },
+    parentUuid: {
+      type: String,
+      default: ''
+    },
     containerUuid: {
       type: String,
-      required: true
+      default: ''
+    },
+    panelType: {
+      type: String,
+      default: 'window'
     }
   },
   data() {
@@ -25,7 +71,8 @@ export default {
       currentKey: 100,
       typeAction: 0,
       chatNote: '',
-      documentStatusesList: []
+      documentStatusesList: [],
+      valueActionDocument: ''
     }
   },
   computed: {
@@ -37,12 +84,23 @@ export default {
     },
     getValueStatus() {
       if (!this.isEmptyValue(this.getterPanel)) {
-        var epale = this.getterPanel.fieldList.find(field => {
+        var status = this.getterPanel.fieldList.find(field => {
           if (field.columnName === 'DocStatus') {
             return field
           }
         })
-        return epale.value
+        return status.value
+      }
+      return 'CL'
+    },
+    getValue() {
+      if (!this.isEmptyValue(this.getterPanel)) {
+        var value = this.getterPanel.fieldList.find(field => {
+          if (field.columnName === 'DocStatus') {
+            return field
+          }
+        })
+        return value
       }
       return 'CL'
     },
@@ -63,18 +121,97 @@ export default {
     typeStatus() {
       if (this.getValueStatus === 'VO') {
         return 'error'
-      } else if (this.getValueStatus === 'CO') {
-        return 'success'
       } else {
-        return 'finish'
+        return 'success'
       }
+    },
+    documentActions() {
+      return this.$store.getters.getListDocumentActions
+    },
+    listDocumentActions() {
+      return this.documentActions.documentActionsList
+    },
+    labelDocumentActions() {
+      const found = this.listDocumentActions.find(element => {
+        if (element.value === this.valueActionDocument) {
+          return element
+        }
+      })
+      if (this.isEmptyValue(found)) {
+        return this.valueActionDocument
+      }
+      return found.name
+    },
+    descriptionDocumentActions() {
+      const found = this.listDocumentActions.find(element => {
+        if (element.value === this.valueActionDocument) {
+          return element
+        }
+      })
+      if (this.isEmptyValue(found)) {
+        return this.valueActionDocument
+      }
+      return found.description
+    },
+    processOrderUuid() {
+      return this.$store.getters.getOrders
     }
   },
   created() {
     this.gettersNodeList
+  },
+  methods: {
+    listActionDocument(isShowList) {
+      if (isShowList) {
+        if (!this.withoutRecord && this.$route.query.action !== this.documentActions.recordUuid) {
+          this.$store.dispatch('listDocumentActionStatus', {
+            recordUuid: this.$route.query.action,
+            recordId: this.$route.params.recordId
+          })
+        }
+      }
+    },
+    documentActionChange(value) {
+      this.$store.dispatch('notifyFieldChange', {
+        parentUuid: this.parentUuid,
+        containerUuid: this.containerUuid,
+        columnName: 'DocAction',
+        isSendToServer: true,
+        newValue: value
+      })
+        .then(response => {
+          const actionProcess = this.$store.getters.getOrders
+          this.$store.dispatch('startProcess', {
+            action: {
+              uuid: actionProcess.uuid,
+              id: actionProcess.id,
+              name: actionProcess.name
+            }, // process metadata
+            tableName: this.$route.params.tableName,
+            recordId: this.$route.params.recordId,
+            recordUuid: this.$route.query.action,
+            parametersList: [{
+              columnName: 'DocStatus',
+              value: this.valueActionDocument
+            }],
+            isActionDocument: true,
+            parentUuid: this.parentUuid,
+            panelType: this.panelType,
+            containerUuid: this.containerUuid// determinate if get table name and record id (window) or selection (browser)
+          })
+          this.valueActionDocument = ''
+        })
+    }
   }
 }
 </script>
+
+<style scoped>
+  .el-button--text {
+    border-color: transparent;
+    color: #000000;
+  }
+</style>
 
 <style>
   .scroll-window-log-change {
@@ -102,5 +239,11 @@ export default {
     -webkit-box-flex: 1;
     flex-grow: 1;
     width: 15vw;
+  }
+  .title {
+    color: #000000;
+    text-size-adjust: 20px;
+    font-size: 100%;
+    font-weight: 605!important;
   }
 </style>
