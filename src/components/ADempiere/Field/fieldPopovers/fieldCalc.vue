@@ -8,6 +8,7 @@
         v-model="calcValue"
         v-shortkey="['enter']"
         class="calc-input"
+        @input="validateValue"
         @shortkey.native="setResult()"
       />
       <el-table
@@ -281,6 +282,9 @@ export default {
         return true
       }
       return false
+    },
+    validateValue(value) {
+      this.calcValue = value.replace(/[^\d\/.()%\*\+\-]/gim, '')
     }
   }
 }
