@@ -21,6 +21,7 @@
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 import { FIELDS_FLOATS } from '@/components/ADempiere/Field/references'
+import { showMessage } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'FieldNumber',
@@ -81,6 +82,7 @@ export default {
     }
   },
   methods: {
+    showMessage,
     validateValue(value) {
       if (this.isEmptyValue(value) || isNaN(value)) {
         return undefined
@@ -92,10 +94,15 @@ export default {
         this.operation += value.key
         const calc = String(this.value) + this.operation
         const splitedValues = calc.split(/[\/.()%\*\+\-]/)
-        if (splitedValues.length > 1 && !splitedValues.some(value => this.isEmptyValue(value))) {
-          // eslint-disable-next-line no-eval
-          this.valueToDisplay = eval(calc) + ''
-          this.isShowed = true
+        if (splitedValues.length > 1 || !splitedValues.some(value => this.isEmptyValue(value))) {
+          try {
+            // eslint-disable-next-line no-eval
+            this.valueToDisplay = eval(calc) + ''
+            this.isShowed = true
+          } catch (error) {
+            this.valueToDisplay = error.message
+            this.isShowed = true
+          }
         }
       } else {
         if (value.key === 'Backspace') {
@@ -106,23 +113,30 @@ export default {
     calcValue() {
       const calc = String(this.value) + this.operation
       let result = calc.replace(this.expression, '')
-      // eslint-disable-next-line no-eval
-      result = eval(result)
-      if (!this.isEmptyValue(result)) {
-        this.$store.dispatch('notifyFieldChange', {
-          isAdvancedQuery: this.metadata.isAdvancedQuery,
-          panelType: this.metadata.panelType,
-          parentUuid: this.metadata.parentUuid,
-          containerUuid: this.metadata.containerUuid,
-          columnName: this.metadata.columnName,
-          newValue: result,
-          field: this.metadata,
-          isChangedOldValue: true
-        })
-          .then(response => {
-            this.operation = ''
-            this.isShowed = false
+      try {
+        // eslint-disable-next-line no-eval
+        result = eval(result)
+        if (!this.isEmptyValue(result)) {
+          this.$store.dispatch('notifyFieldChange', {
+            isAdvancedQuery: this.metadata.isAdvancedQuery,
+            panelType: this.metadata.panelType,
+            parentUuid: this.metadata.parentUuid,
+            containerUuid: this.metadata.containerUuid,
+            columnName: this.metadata.columnName,
+            newValue: result,
+            field: this.metadata,
+            isChangedOldValue: true
           })
+            .finally(() => {
+              this.operation = ''
+              this.isShowed = false
+            })
+        }
+      } catch (error) {
+        this.showMessage({
+          type: 'error',
+          message: error.message
+        })
       }
     }
   }
