@@ -266,7 +266,7 @@ export default {
     },
     isContextInfo() {
       if (!this.isAdvancedQuery) {
-        return (this.field.contextInfo && this.field.contextInfo.isActive) || this.field.reference.zoomWindowList.length
+        return (this.field.contextInfo && this.field.contextInfo.isActive) || this.field.reference.windowsList.length
       }
       return false
     },

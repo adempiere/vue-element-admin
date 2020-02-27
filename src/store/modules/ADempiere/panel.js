@@ -95,7 +95,15 @@ const panel = {
             }
           }
         })
-        params.fieldList = assignedGroup(params.fieldList)
+
+        let orderBy = 'sequence'
+        if ((params.panelType === 'window' && !params.isParent) || params.panelType === 'browser') {
+          orderBy = 'seqNoGrid'
+        }
+        params.fieldList = assignedGroup({
+          fieldsList: params.fieldList,
+          orderBy
+        })
       }
 
       params.keyColumn = keyColumn
@@ -441,7 +449,7 @@ const panel = {
       })
 
       // show fields in query
-      if (isShowedField && Object.keys(newValues).length) {
+      if (isShowedField && !isEmptyValue(newValues)) {
         // join column names without duplicating it
         fieldsShowed = Array.from(new Set([
           ...fieldsShowed,
@@ -611,6 +619,13 @@ const panel = {
                 }
               })
             }
+            commit('changeField', {
+              field,
+              newField: {
+                ...field,
+                oldOperator: field.operator
+              }
+            })
             dispatch('getObjectListFromCriteria', {
               parentUuid,
               containerUuid,
@@ -624,13 +639,6 @@ const panel = {
               })
             })
               .then(response => {
-                commit('changeField', {
-                  field,
-                  newField: {
-                    ...field,
-                    oldOperator: field.operator
-                  }
-                })
                 if (response && response.length) {
                   dispatch('notifyPanelChange', {
                     parentUuid,

@@ -27,7 +27,16 @@ export function generateField({
   const referenceType = componentReference.alias[0]
 
   let parsedDefaultValue = fieldToGenerate.defaultValue
-  if (!moreAttributes.isAdvancedQuery) {
+  let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
+  let operator = 'EQUAL'
+  if (moreAttributes.isAdvancedQuery) {
+    parsedDefaultValue = undefined
+    parsedDefaultValueTo = undefined
+
+    if (['FieldText', 'FieldTextLong'].includes(componentReference.type)) {
+      operator = 'LIKE'
+    }
+  } else {
     if (String(parsedDefaultValue).includes('@')) {
       parsedDefaultValue = parseContext({
         ...moreAttributes,
@@ -58,16 +67,15 @@ export function generateField({
         })
       }
     }
-  }
-  parsedDefaultValue = parsedValueComponent({
-    fieldType: componentReference.type,
-    value: parsedDefaultValue,
-    referenceType,
-    isMandatory: fieldToGenerate.isMandatory
-  })
 
-  let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
-  if (!moreAttributes.isAdvancedQuery) {
+    parsedDefaultValue = parsedValueComponent({
+      fieldType: componentReference.type,
+      value: parsedDefaultValue,
+      referenceType,
+      isMandatory: fieldToGenerate.isMandatory
+    })
+
+    // VALUE TO
     // if (String(parsedDefaultValueTo).includes('@SQL=')) {
     //   parsedDefaultValueTo.replace('@SQL=', '')
     if (String(parsedDefaultValueTo).includes('@')) {
@@ -99,15 +107,15 @@ export function generateField({
         })
       }
     }
-  }
-  parsedDefaultValueTo = parsedValueComponent({
-    fieldType: componentReference.type,
-    value: parsedDefaultValueTo,
-    referenceType,
-    isMandatory: fieldToGenerate.isMandatory
-  })
 
-  fieldToGenerate.reference.zoomWindowList = fieldToGenerate.reference.windowsList
+    parsedDefaultValueTo = parsedValueComponent({
+      fieldType: componentReference.type,
+      value: parsedDefaultValueTo,
+      referenceType,
+      isMandatory: fieldToGenerate.isMandatory
+    })
+  }
+
   const field = {
     ...fieldToGenerate,
     ...moreAttributes,
@@ -135,14 +143,9 @@ export function generateField({
     isShowedTableFromUser: fieldToGenerate.isDisplayed,
     isFixedTableColumn: false,
     // Advanced query
-    operator: 'EQUAL', // current operator
+    operator, // current operator
     oldOperator: undefined, // old operator
-    defaultOperator: 'EQUAL'
-  }
-
-  if (moreAttributes.isAdvancedQuery && ['FieldText', 'FieldTextLong'].includes(field.componentPath)) {
-    field.operator = 'LIKE'
-    field.defaultOperator = 'LIKE'
+    defaultOperator: operator
   }
 
   // evaluate simple logics without context
@@ -260,8 +263,8 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
       .filter(field => field.parentFieldsList && field.isActive)
       .forEach((field, index, list) => {
         field.parentFieldsList.forEach(parentColumnName => {
-          var parentField = list.find(parentField => {
-            return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+          const parentField = list.find(itemParentField => {
+            return itemParentField.columnName === parentColumnName && parentColumnName !== field.columnName
           })
           if (parentField) {
             parentField.dependentFieldsList.push(field.columnName)
@@ -380,7 +383,7 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
  * @return string type, assigned value to folder after evaluating the parameter
  */
 export function evalutateTypeField(displayTypeId, isAllInfo = false) {
-  var component = REFERENCES.find(reference => displayTypeId === reference.id)
+  const component = REFERENCES.find(reference => displayTypeId === reference.id)
   if (isAllInfo) {
     return component
   }
@@ -398,8 +401,7 @@ export function getFieldTemplate(attributesOverwrite) {
     directQuery: '',
     parsedDirectQuery: '',
     validationCode: '',
-    windowsList: [],
-    zoomWindowList: []
+    windowsList: []
   }
   const newField = {
     id: 0,
@@ -467,18 +469,21 @@ export function getFieldTemplate(attributesOverwrite) {
  * @param  {array} fieldList Field of List with
  * @return {array} fieldList
  */
-export function assignedGroup(fieldList, assignedGroup) {
-  if (fieldList === undefined || fieldList.length <= 0) {
-    return fieldList
+export function assignedGroup({ fieldsList, groupToAssigned, orderBy }) {
+  if (fieldsList === undefined || fieldsList.length <= 0) {
+    return fieldsList
   }
 
-  fieldList = sortFields(fieldList, 'sequence', 'asc', fieldList[0].panelType)
+  fieldsList = sortFields({
+    fieldsList,
+    orderBy
+  })
 
   let firstChangeGroup = false
   let currentGroup = ''
   let typeGroup = ''
 
-  fieldList.forEach(fieldElement => {
+  fieldsList.forEach(fieldElement => {
     if (fieldElement.panelType !== 'window') {
       fieldElement.groupAssigned = ''
       fieldElement.typeGroupAssigned = ''
@@ -507,12 +512,12 @@ export function assignedGroup(fieldList, assignedGroup) {
     fieldElement.groupAssigned = currentGroup
     fieldElement.typeGroupAssigned = typeGroup
 
-    if (assignedGroup !== undefined) {
-      fieldElement.groupAssigned = assignedGroup
+    if (groupToAssigned !== undefined) {
+      fieldElement.groupAssigned = groupToAssigned
     }
   })
 
-  return fieldList
+  return fieldsList
 }
 
 /**
@@ -524,18 +529,26 @@ export function assignedGroup(fieldList, assignedGroup) {
  * @param {string} panelType
  * @returns {array}
  */
-export function sortFields(arr, orderBy = 'sequence', type = 'asc', panelType = 'window') {
-  if (panelType === 'browser') {
-    orderBy = 'seqNoGrid'
+export function sortFields({
+  fieldsList,
+  orderBy = 'sequence',
+  type = 'asc'
+}) {
+  if (type.toLowerCase() === 'asc') {
+    fieldsList.sort((itemA, itemB) => {
+      return itemA[orderBy] - itemB[orderBy]
+      // return itemA[orderBy] > itemB[orderBy]
+    })
+  } else {
+    fieldsList.sort((itemA, itemB) => {
+      return itemA[orderBy] + itemB[orderBy]
+      // return itemA[orderBy] > itemB[orderBy]
+    })
   }
-  arr.sort((itemA, itemB) => {
-    return itemA[orderBy] - itemB[orderBy]
-    // return itemA[orderBy] > itemB[orderBy]
-  })
-  if (type.toLowerCase() === 'desc') {
-    return arr.reverse()
-  }
-  return arr
+  // if (type.toLowerCase() === 'desc') {
+  //   return fieldsList.reverse()
+  // }
+  return fieldsList
 }
 
 /**

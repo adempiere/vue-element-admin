@@ -5,7 +5,7 @@
   >
     <el-container style="height: 86vh;">
       <Split>
-        <SplitArea :size="show ? isSizePanel : 100" :min-size="100">
+        <SplitArea :size="showContainerInfo ? isSizePanel : 100" :min-size="100">
           <el-aside width="100%">
             <split-pane :min-percent="10" :default-percent="defaultPorcentSplitPane" split="vertical">
               <template>
@@ -15,7 +15,7 @@
                     <div class="small-4 columns">
                       <div class="w">
                         <div class="open-left" />
-                        <div class="open-datatable-aside">
+                        <div :class="styleTableNavigation">
                           <el-button
                             v-show="!isPanel"
                             :icon="iconShowedRecordNavigation"
@@ -25,7 +25,7 @@
                             @click="handleChangeShowedRecordNavigation(false)"
                           />
                           <el-button
-                            v-show="!isPanel"
+                            v-show="!isPanel && !isMobile"
                             :icon="iconIsShowedAside"
                             circle
                             class="el-button-window"
@@ -73,8 +73,53 @@
                           :tabs-list="windowMetadata.tabsListParent"
                           class="tab-window"
                         />
-                        <div :class="classIsContainerInfo">
-                          <el-button v-show="!show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                        <div v-if="isMobile">
+                          <el-card class="box-card">
+                            <el-tabs v-model="activeInfo" @tab-click="handleClick">
+                              <el-tab-pane
+                                name="listChatEntries"
+                              >
+                                <span slot="label">
+                                  <i class="el-icon-s-comment" />
+                                  {{ $t('window.containerInfo.notes') }}
+                                </span>
+                                <div>
+                                  <chat-entries />
+                                </div>
+                              </el-tab-pane>
+                              <el-tab-pane
+                                name="listRecordLogs"
+                              >
+                                <span slot="label">
+                                  <svg-icon icon-class="tree-table" />
+                                  {{ $t('window.containerInfo.changeLog') }}
+                                </span>
+                                <div
+                                  key="change-log-loaded"
+                                >
+                                  <record-logs />
+                                </div>
+                              </el-tab-pane>
+                              <el-tab-pane
+                                v-if="getIsWorkflowLog"
+                                name="listWorkflowLogs"
+                              >
+                                <span slot="label">
+                                  <i class="el-icon-s-help" />
+                                  {{ $t('window.containerInfo.workflowLog') }}
+                                </span>
+                                <div
+                                  v-if="getIsWorkflowLog"
+                                  key="workflow-log-loaded"
+                                >
+                                  <workflow-logs />
+                                </div>
+                              </el-tab-pane>
+                            </el-tabs>
+                          </el-card>
+                        </div>
+                        <div style="right: 0%; top: 40%; position: absolute;">
+                          <el-button v-show="!showContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
@@ -142,14 +187,14 @@
             </split-pane>
           </el-aside>
         </SplitArea>
-        <SplitArea :size="show ? isSize : 0">
+        <SplitArea :size="showContainerInfo ? isSize : 0">
           <el-main>
             <div :class="isCloseInfo">
-              <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+              <el-button v-show="showContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
             <div id="example-1">
               <transition name="slide-fade">
-                <p v-if="show">
+                <p v-if="showContainerInfo">
                   <el-card class="box-card">
                     <el-tabs v-model="activeInfo" @tab-click="handleClick">
                       <el-tab-pane
@@ -226,7 +271,6 @@ import splitPane from 'vue-splitpane'
 import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
 import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
-
 export default {
   name: 'WindowView',
   components: {
@@ -248,7 +292,7 @@ export default {
       isLoaded: false,
       isPanel: false,
       activeInfo: 'listChatEntries',
-      show: false,
+      showContainerInfo: false,
       // TODO: Manage attribute with store
       isShowedRecordPanel: false
     }
@@ -299,13 +343,13 @@ export default {
       return 'container-info'
     },
     isSize() {
-      if (this.isMobile && (this.show)) {
+      if (this.isMobile && this.showContainerInfo) {
         return 98
       }
       return 50
     },
     isSizePanel() {
-      if (this.isMobile && (this.show)) {
+      if (this.isMobile && this.showContainerInfo) {
         return 2
       }
       return 50
@@ -340,8 +384,14 @@ export default {
         overflow: 'hidden'
       }
     },
+    styleTableNavigation() {
+      if (this.isShowedRecordNavigation && this.isMobile) {
+        return 'open-datatable-aside-mobile'
+      }
+      return 'open-datatable-aside'
+    },
     splitAreaStyle() {
-      if (this.isShowedTabsChildren) {
+      if (this.isShowedTabsChildren || this.isMobile) {
         return {
           overflow: 'auto'
         }
@@ -415,7 +465,7 @@ export default {
       return this.getterDataRecordsAndSelection.record
     },
     getTableName() {
-      return this.$store.getters.getPanel(this.windowMetadata.firstTabUuid, false).tableName
+      return this.$store.getters.getTableNameFromTab(this.windowUuid, this.windowMetadata.firstTabUuid)
     },
     // current record
     getRecord() {
@@ -429,15 +479,17 @@ export default {
   },
   watch: {
     $route(value) {
-      this.$store.dispatch(this.activeInfo, {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
-        .then(response => {
-          if (value.query.action === 'create-new') {
-            this.$store.dispatch('isNote', false)
-          }
+      if (this.showContainerInfo) {
+        this.$store.dispatch(this.activeInfo, {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
         })
+          .then(response => {
+            if (value.query.action === 'create-new') {
+              this.$store.dispatch('isNote', false)
+            }
+          })
+      }
     }
   },
   created() {
@@ -445,8 +497,8 @@ export default {
   },
   methods: {
     conteInfo() {
-      this.show = !this.show
-      if (this.show) {
+      this.showContainerInfo = !this.showContainerInfo
+      if (this.showContainerInfo) {
         this.$store.dispatch('listWorkflowLogs', {
           tableName: this.getTableName,
           recordId: this.getRecord[this.getTableName + '_ID']
@@ -469,7 +521,6 @@ export default {
       this.$store.dispatch('setSplitHeightTop', {
         splitHeightTop: size[0]
       })
-
       this.$store.dispatch('setSplitHeight', {
         splitHeight: size[1]
       })
@@ -490,7 +541,6 @@ export default {
     },
     generateWindow() {
       this.windowMetadata = this.getterWindow
-
       let isShowRecords = this.isShowedRecordNavigation
       if (isShowRecords === undefined) {
         if ((['M', 'Q'].includes(this.windowMetadata.windowType) && this.getterRecordList >= 10) ||
@@ -501,7 +551,6 @@ export default {
         }
         this.handleChangeShowedRecordNavigation(!isShowRecords)
       }
-
       this.isLoaded = true
     },
     handleChangeShowedRecordNavigation(valueToChange) {
@@ -556,7 +605,6 @@ export default {
     color: #333;
     line-height: 21px;
   }
-
   .el-aside {
     height: 100%;
     color: #333;
@@ -620,6 +668,13 @@ export default {
     position: absolute;
     top: 41%;
     display: none;
+    z-index: 5;
+    right: 1%!important;
+  }
+  .open-datatable-aside-mobile {
+    position: absolute;
+    top: 41%;
+    display: grid;
     z-index: 5;
     right: 1%!important;
   }
@@ -733,23 +788,19 @@ export default {
     position: relative;
     height: 100vh;
   }
-
   .left-container {
     background-color: #ffffff;
     height: 100%;
   }
-
   .right-container {
     background-color: #ffffff;
     height: 200px;
   }
-
   .top-container {
     background-color: #ffffff;
     width: 100%;
     height: 100%;
   }
-
   .bottom-container {
     width: 100%;
     background-color: #95E1D3;
