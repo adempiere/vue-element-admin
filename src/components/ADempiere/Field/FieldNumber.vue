@@ -100,7 +100,7 @@ export default {
             this.valueToDisplay = eval(calc) + ''
             this.isShowed = true
           } catch (error) {
-            this.valueToDisplay = error.message
+            this.valueToDisplay = '...'
             this.isShowed = true
           }
         }

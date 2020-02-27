@@ -1,7 +1,7 @@
 <template>
   <el-dropdown trigger="click">
     <el-button type="text">
-      <i class="el-icon-monitor el-icon--right" />
+      <i class="el-icon-s-operation el-icon--right" />
     </el-button>
     <el-dropdown-menu slot="dropdown" class="dropdown-calc">
       <el-input
