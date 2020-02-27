@@ -61,8 +61,8 @@
                       <el-header style="height: 50px; background: #F5F7FA">
                         <el-container>
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
-                            <workflow-line
-                              :style-steps="StyleStepsSimple"
+                            <workflow-status-bar
+                              :style-steps="styleStepsSimple"
                               :container-uuid="windowMetadata.currentTabUuid"
                               :parent-uuid="windowUuid"
                               :panel-type="panelType"
@@ -285,7 +285,7 @@ import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
 import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
 // Workflow
-import WorkflowLine from '@/components/ADempiere/WorkflowLine'
+import WorkflowStatusBar from '@/components/ADempiere/WorkflowStatusBar'
 
 export default {
   name: 'WindowView',
@@ -299,7 +299,7 @@ export default {
     ChatEntries,
     RecordLogs,
     WorkflowLogs,
-    WorkflowLine
+    WorkflowStatusBar
   },
   props: {
     styleSteps: {
@@ -424,7 +424,7 @@ export default {
         overflow: 'hidden'
       }
     },
-    StyleStepsSimple() {
+    styleStepsSimple() {
       if (this.isShowedRecordNavigation) {
         return {
           paddingTop: '0px',
@@ -551,9 +551,8 @@ export default {
   methods: {
     handleResize() {
       var PanelRight = document.getElementById('PanelRight')
-      console.log(this.isEmptyValue(PanelRight), PanelRight, epale)
-      var epale = PanelRight
-      if (!this.isEmptyValue(epale)) {
+      var resizeWidth = PanelRight
+      if (!this.isEmptyValue(resizeWidth)) {
         var widthPanel = PanelRight.clientWidth - 350
         this.$store.dispatch('setPanelRight', widthPanel)
       }

@@ -47,7 +47,7 @@
 </template>
 <script>
 export default {
-  name: 'WorkflowLine',
+  name: 'WorkflowStatusBar',
   props: {
     styleSteps: {
       type: Object,

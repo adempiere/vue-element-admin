@@ -139,7 +139,6 @@ const containerInfo = {
         })
     },
     listWorkflows({ commit, state }, tableName) {
-      // const tableName = params.tableName
       const pageSize = 0
       const pageToken = 0
       return requestListWorkflows({ tableName, pageSize, pageToken })

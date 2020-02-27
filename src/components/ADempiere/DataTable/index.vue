@@ -740,7 +740,6 @@ export default {
           isSendServer: false
         })
         this.$refs.multipleTable.$refs.bodyWrapper.scrollTop = 0
-        // this.setFocus()
       } else {
         const fieldsEmpty = this.$store.getters.getFieldListEmptyMandatory({
           containerUuid: this.containerUuid
@@ -1075,7 +1074,6 @@ export default {
 <style>
   .el-table .warning-row {
     background: rgba(104, 245, 203, 0.712);
-    /* background: oldlace; */
   }
 
   .el-table .success-row {
