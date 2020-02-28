@@ -226,6 +226,21 @@ export default {
     align-items: center;
     width: 50%;
   }
+  .el-step.is-simple .el-step__arrow {
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    /* flex-grow: 1; */
+    display: flex;
+    display: -ms-flexbox;
+    margin-top: -9px !important;
+    /* margin-bottom: -7px; */
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+  }
   .el-step.is-simple .el-step__main {
     position: relative;
     display: -webkit-box;
