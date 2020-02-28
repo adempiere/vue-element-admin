@@ -61,12 +61,14 @@
                       <el-header style="height: 50px; background: #F5F7FA">
                         <el-container>
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
-                            <workflow-status-bar
-                              :style-steps="styleStepsSimple"
-                              :container-uuid="windowMetadata.currentTabUuid"
-                              :parent-uuid="windowUuid"
-                              :panel-type="panelType"
-                            />
+                            <el-scrollbar>
+                              <workflow-status-bar
+                                :style-steps="styleStepsSimple"
+                                :container-uuid="windowMetadata.currentTabUuid"
+                                :parent-uuid="windowUuid"
+                                :panel-type="panelType"
+                              />
+                            </el-scrollbar>
                           </el-aside>
                           <el-main>
                             <context-menu

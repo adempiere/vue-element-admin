@@ -38,7 +38,7 @@
           </el-tag>
           <p v-if="isEmptyValue(descriptionDocumentActions)"> {{ getValue.description }} </p>
           <p v-else> {{ descriptionDocumentActions }} </p>
-          <el-button slot="reference" type="text" :autofocus="true" class="title"> {{ node.name }} </el-button>
+          <el-link slot="reference" :autofocus="true" :underline="false" class="title"> {{ node.name }} </el-link>
         </el-popover>
         <span v-else> {{ node.name }} </span>
       </template>
