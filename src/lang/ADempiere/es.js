@@ -142,7 +142,13 @@ export default {
     resetAllFilters: 'Reiniciar todos los filtros',
     switchActiveText: 'Si',
     switchInactiveText: 'No',
-    contextFieldTitle: 'Información de Contexto'
+    contextFieldTitle: 'Información de Contexto',
+    locationTitle: 'Entre nueva Localización/Dirección',
+    cuntry: 'País',
+    region: 'Región',
+    city: 'Ciudad',
+    address: 'Dirección',
+    zipCode: 'Código Postal'
   },
   views: {
     browser: 'Consulta Inteligente',

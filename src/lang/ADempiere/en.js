@@ -142,7 +142,13 @@ export default {
     resetAllFilters: 'Reset all filters',
     switchActiveText: 'Yes',
     switchInactiveText: 'Not',
-    contextFieldTitle: 'Context Information'
+    contextFieldTitle: 'Context Information',
+    locationTitle: 'Enter new Location/Address',
+    cuntry: 'Country',
+    region: 'Region',
+    city: 'City',
+    address: 'Address',
+    zipCode: 'Zip Code'
   },
   views: {
     browser: 'Smart Browser',

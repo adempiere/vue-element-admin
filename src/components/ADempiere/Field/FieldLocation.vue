@@ -2,13 +2,20 @@
   <el-popover
     ref="popover"
     placement="left"
-    title="Entre nueva Localización/Dirección"
+    :title="$t('components.locationTitle')"
     trigger="focus"
   >
     <el-form label-position="top" :model="formLabelAlign" size="mini">
       <el-scrollbar wrap-class="location-scroll">
-        <el-form-item label="Pais">
-          <el-select v-model="formLabelAlign.Pais" :loading="isLoadingData" placeholder="Pais" class="custom-field-select" @visible-change="listCountries" @change="listRegions">
+        <el-form-item :label="$t('components.country')">
+          <el-select
+            v-model="formLabelAlign.country"
+            :loading="isLoadingData"
+            :placeholder="$t('components.country')"
+            class="custom-field-select"
+            @visible-change="listCountries"
+            @change="listRegions"
+          >
             <el-option
               v-for="country in countries"
               :key="country.value"
@@ -17,8 +24,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Estado">
-          <el-select v-model="formLabelAlign.Estado" :loading="isLoadingData" placeholder="Estado" class="custom-field-select" @change="listCities">
+        <el-form-item :label="$t('components.region')">
+          <el-select
+            v-model="formLabelAlign.region"
+            :loading="isLoadingData"
+            :placeholder="$t('components.region')"
+            class="custom-field-select"
+            @change="listCities"
+          >
             <el-option
               v-for="region in regions"
               :key="region.value"
@@ -27,8 +40,13 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Ciudad">
-          <el-select v-model="formLabelAlign.Ciudad" :loading="isLoadingData" placeholder="Ciudad" class="custom-field-select">
+        <el-form-item :label="$t('components.city')">
+          <el-select
+            v-model="formLabelAlign.city"
+            :loading="isLoadingData"
+            :placeholder="$t('components.city')"
+            class="custom-field-select"
+          >
             <el-option
               v-for="city in cities"
               :key="city.value"
@@ -37,26 +55,26 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Dirección 1">
-          <el-input v-model="formLabelAlign.Dir1" />
+        <el-form-item :label="$t('components.address') + '1'">
+          <el-input v-model="formLabelAlign.address1" />
         </el-form-item>
-        <el-form-item label="Dirección 2">
-          <el-input v-model="formLabelAlign.Dir2" />
+        <el-form-item :label="$t('components.address') + '2'">
+          <el-input v-model="formLabelAlign.address2" />
         </el-form-item>
-        <el-form-item label="Dirección 3">
-          <el-input v-model="formLabelAlign.Dir3" />
+        <el-form-item :label="$t('components.address') + '3'">
+          <el-input v-model="formLabelAlign.address3" />
         </el-form-item>
-        <el-form-item label="Dirección 4">
-          <el-input v-model="formLabelAlign.Dir4" />
+        <el-form-item :label="$t('components.address') + '4'">
+          <el-input v-model="formLabelAlign.address4" />
         </el-form-item>
-        <el-form-item label="Código Postal">
-          <el-input v-model="formLabelAlign.CodigoPostal" />
+        <el-form-item :label="$t('components.zipCode')">
+          <el-input v-model="formLabelAlign.zipCode" />
         </el-form-item>
       </el-scrollbar>
     </el-form>
     <br>
     <maps />
-    <el-input slot="reference" v-model="value" placeholder="Please input" />
+    <el-input slot="reference" v-model="value" />
   </el-popover>
 </template>
 
@@ -74,14 +92,14 @@ export default {
       value: null,
       isLoadingData: false,
       formLabelAlign: {
-        Pais: null,
-        Estado: null,
-        Ciudad: null,
-        Dir1: '',
-        Dir2: '',
-        Dir3: '',
-        Dir4: '',
-        CodigoPostal: ''
+        country: null,
+        region: null,
+        city: null,
+        address1: '',
+        address2: '',
+        address3: '',
+        address4: '',
+        zipCode: ''
       },
       countries: [],
       regions: [],
