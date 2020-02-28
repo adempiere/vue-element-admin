@@ -8,9 +8,11 @@
         v-model="calcValue"
         v-shortkey="['enter']"
         class="calc-input"
-        @input="validateValue"
-        @shortkey.native="setResult()"
-      />
+        @keydown.native="calculateValue"
+        @shortkey.native="changeValue"
+      >
+        <template slot="append">{{ valueToDisplay }}</template>
+      </el-input>
       <el-table
         ref="calculator"
         :data="tableData"
@@ -92,6 +94,7 @@ export default {
   data() {
     return {
       calcValue: this.fieldValue,
+      valueToDisplay: '',
       tableData: [{
         row1: {
           type: 'operator',
@@ -219,25 +222,24 @@ export default {
         }
       }
       if (row[column.property].value === '=') {
-        this.setResult()
+        this.changeValue()
       }
     },
-    setResult() {
-      // eslint-disable-next-line no-eval
-      this.calcValue = '' + eval(this.calcValue)
-      this.$children[0].visible = false
-      if (!this.isEmptyValue(this.calcValue)) {
-        this.$store.dispatch('notifyFieldChange', {
-          isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
-          panelType: this.fieldAttributes.panelType,
-          parentUuid: this.fieldAttributes.parentUuid,
-          containerUuid: this.fieldAttributes.containerUuid,
-          columnName: this.fieldAttributes.columnName,
-          newValue: Number(this.calcValue),
-          field: this.fieldAttributes,
-          isChangedOldValue: true
+    changeValue() {
+      const result = Number(this.valueToDisplay)
+      this.$store.dispatch('notifyFieldChange', {
+        isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
+        panelType: this.fieldAttributes.panelType,
+        parentUuid: this.fieldAttributes.parentUuid,
+        containerUuid: this.fieldAttributes.containerUuid,
+        columnName: this.fieldAttributes.columnName,
+        newValue: result,
+        field: this.fieldAttributes,
+        isChangedOldValue: true
+      })
+        .finally(() => {
+          this.clearVariables()
         })
-      }
     },
     spanMethod({ row, column, rowIndex, columnIndex }) {
       if (rowIndex === 1) {
@@ -283,8 +285,13 @@ export default {
       }
       return false
     },
-    validateValue(value) {
-      this.calcValue = value.replace(/[^\d\/.()%\*\+\-]/gim, '')
+    calculateValue(event) {
+      const result = this.calculationValue(this.fieldValue, event)
+      if (!this.isEmptyValue(result)) {
+        this.valueToDisplay = result
+      } else {
+        this.valueToDisplay = '...'
+      }
     }
   }
 }

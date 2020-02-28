@@ -18,13 +18,13 @@
       :required="isMandatory()"
     >
       <template slot="label">
-        <field-operator-comparison
+        <operator-comparison
           v-if="isAdvancedQuery && isDisplayed"
           key="is-field-operator-comparison"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
         />
-        <field-context-info
+        <context-info
           v-else-if="isContextInfo"
           key="is-field-context-info"
           :field-attributes="fieldAttributes"
@@ -34,17 +34,17 @@
           {{ isFieldOnly() }}
         </span>
 
-        <field-document-status
+        <document-status
           v-if="isDocuemntStatus"
           :field="fieldAttributes"
         />
 
-        <field-translated
+        <translated
           v-if="field.isTranslated && !isAdvancedQuery"
           :field-attributes="fieldAttributes"
           :record-uuid="field.recordUuid"
         />
-        <field-calc
+        <calculator
           v-if="!isAdvancedQuery && isNumeric"
           :field-attributes="fieldAttributes"
           :field-value="field.value"
@@ -69,11 +69,11 @@
 </template>
 
 <script>
-import FieldContextInfo from '@/components/ADempiere/Field/fieldPopovers/fieldContextInfo'
-import FieldDocumentStatus from '@/components/ADempiere/Field/fieldPopovers/fieldDocumentStatus'
-import FieldOperatorComparison from '@/components/ADempiere/Field/fieldPopovers/fieldOperatorComparison'
-import FieldTranslated from '@/components/ADempiere/Field/fieldPopovers/fieldTranslated'
-import FieldCalc from '@/components/ADempiere/Field/fieldPopovers/fieldCalc'
+import contextInfo from '@/components/ADempiere/Field/popover/contextInfo'
+import documentStatus from '@/components/ADempiere/Field/popover/documentStatus'
+import operatorComparison from '@/components/ADempiere/Field/popover/operatorComparison'
+import translated from '@/components/ADempiere/Field/popover/translated'
+import calculator from '@/components/ADempiere/Field/popover/calculator'
 import { FIELD_ONLY } from '@/components/ADempiere/Field/references'
 import { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
@@ -86,11 +86,11 @@ import { showMessage } from '@/utils/ADempiere/notification'
 export default {
   name: 'FieldDefinition',
   components: {
-    FieldContextInfo,
-    FieldDocumentStatus,
-    FieldOperatorComparison,
-    FieldTranslated,
-    FieldCalc
+    contextInfo,
+    documentStatus,
+    operatorComparison,
+    translated,
+    calculator
   },
   props: {
     parentUuid: {

@@ -3,6 +3,7 @@
     <el-input-number
       :ref="metadata.columnName"
       v-model="value"
+      v-shortkey="['enter']"
       type="number"
       :min="minValue"
       :max="maxValue"
@@ -12,8 +13,9 @@
       controls-position="right"
       :class="'display-type-' + cssClass"
       @change="preHandleChange"
-      @blur="calcValue"
-      @keydown.native="addValues"
+      @shortkey.native="changeValue"
+      @blur="changeValue"
+      @keydown.native="calculateValue"
     />
   </el-tooltip>
 </template>
@@ -21,7 +23,6 @@
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 import { FIELDS_FLOATS } from '@/components/ADempiere/Field/references'
-import { showMessage } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'FieldNumber',
@@ -82,62 +83,38 @@ export default {
     }
   },
   methods: {
-    showMessage,
     validateValue(value) {
       if (this.isEmptyValue(value) || isNaN(value)) {
         return undefined
       }
       return Number(value)
     },
-    addValues(value) {
-      if (!this.isEmptyValue(value) && !this.expression.test(value.key)) {
-        this.operation += value.key
-        const calc = String(this.value) + this.operation
-        const splitedValues = calc.split(/[\/.()%\*\+\-]/)
-        if (splitedValues.length > 1 || !splitedValues.some(value => this.isEmptyValue(value))) {
-          try {
-            // eslint-disable-next-line no-eval
-            this.valueToDisplay = eval(calc) + ''
-            this.isShowed = true
-          } catch (error) {
-            this.valueToDisplay = '...'
-            this.isShowed = true
-          }
-        }
+    calculateValue(event) {
+      const result = this.calculationValue(this.value, event)
+      if (!this.isEmptyValue(result)) {
+        this.valueToDisplay = result
+        this.isShowed = true
       } else {
-        if (value.key === 'Backspace') {
-          this.operation = this.operation.slice(0, -1)
-        }
+        this.valueToDisplay = '...'
+        this.isShowed = true
       }
     },
-    calcValue() {
-      const calc = String(this.value) + this.operation
-      let result = calc.replace(this.expression, '')
-      try {
-        // eslint-disable-next-line no-eval
-        result = eval(result)
-        if (!this.isEmptyValue(result)) {
-          this.$store.dispatch('notifyFieldChange', {
-            isAdvancedQuery: this.metadata.isAdvancedQuery,
-            panelType: this.metadata.panelType,
-            parentUuid: this.metadata.parentUuid,
-            containerUuid: this.metadata.containerUuid,
-            columnName: this.metadata.columnName,
-            newValue: result,
-            field: this.metadata,
-            isChangedOldValue: true
-          })
-            .finally(() => {
-              this.operation = ''
-              this.isShowed = false
-            })
-        }
-      } catch (error) {
-        this.showMessage({
-          type: 'error',
-          message: error.message
+    changeValue() {
+      const result = this.validateValue(this.valueToDisplay)
+      this.$store.dispatch('notifyFieldChange', {
+        isAdvancedQuery: this.metadata.isAdvancedQuery,
+        panelType: this.metadata.panelType,
+        parentUuid: this.metadata.parentUuid,
+        containerUuid: this.metadata.containerUuid,
+        columnName: this.metadata.columnName,
+        newValue: result,
+        field: this.metadata,
+        isChangedOldValue: true
+      })
+        .finally(() => {
+          this.clearVariables()
+          this.isShowed = false
         })
-      }
     }
   }
 }
