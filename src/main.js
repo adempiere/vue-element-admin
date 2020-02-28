@@ -30,7 +30,7 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 import * as globalMethods from '@/utils/ADempiere/globalMethods' // global methods
-
+import * as VueGoogleMaps from 'vue2-google-maps'
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -65,6 +65,13 @@ Vue.config.productionTip = false
 
 Vue.use(require('vue-shortkey'))
 
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyBqXvq7tyq9cgZ1kD64NKXK1KUfI2I8cio',
+    libraries: 'places'
+  },
+  installComponents: true
+})
 new Vue({
   el: '#app',
   router,
