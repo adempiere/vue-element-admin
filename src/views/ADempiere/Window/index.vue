@@ -58,7 +58,7 @@
                   <resize-observer @notify="handleResize" />
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
-                      <el-header style="height: 50px; background: #F5F7FA">
+                      <el-header style="height: 45px; background: #F5F7FA">
                         <el-container>
                           <el-aside width="100%" style="width: 78vw;overflow: hidden;">
                             <el-scrollbar>

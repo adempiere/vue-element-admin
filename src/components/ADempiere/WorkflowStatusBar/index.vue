@@ -257,8 +257,21 @@ export default {
   }
   .title {
     color: #000000;
-    text-size-adjust: 20px;
+    text-size-adjust: 14px;
     font-size: 100%;
     font-weight: 605!important;
+  }
+  .el-step.is-simple .el-step__title {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .el-step.is-simple:last-of-type .el-step__arrow {
+    display: flex;
+  }
+  .el-step.is-simple .el-step__head {
+    width: auto;
+    font-size: 0;
+    padding-right: 10px;
+    margin-bottom: -5px !important;
   }
 </style>
