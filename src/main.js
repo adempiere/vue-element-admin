@@ -68,7 +68,7 @@ Vue.use(require('vue-shortkey'))
 Vue.use(VueGoogleMaps, {
   load: {
     key: 'AIzaSyBqXvq7tyq9cgZ1kD64NKXK1KUfI2I8cio',
-    libraries: 'places'
+    libraries: 'places, drawing, geometry, visualization'
   },
   installComponents: true
 })
