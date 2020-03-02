@@ -101,20 +101,9 @@ export default {
     },
     changeValue() {
       const result = this.validateValue(this.valueToDisplay)
-      this.$store.dispatch('notifyFieldChange', {
-        isAdvancedQuery: this.metadata.isAdvancedQuery,
-        panelType: this.metadata.panelType,
-        parentUuid: this.metadata.parentUuid,
-        containerUuid: this.metadata.containerUuid,
-        columnName: this.metadata.columnName,
-        newValue: result,
-        field: this.metadata,
-        isChangedOldValue: true
-      })
-        .finally(() => {
-          this.clearVariables()
-          this.isShowed = false
-        })
+      this.preHandleChange(result)
+      this.clearVariables()
+      this.isShowed = false
     }
   }
 }

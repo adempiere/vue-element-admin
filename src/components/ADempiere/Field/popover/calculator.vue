@@ -213,12 +213,19 @@ export default {
       const isAcceptedType = ['result', 'clear'].includes(row[column.property].type)
       if (!isAcceptedType && !this.isDisabled(row, column)) {
         this.calcValue += row[column.property].value
+        const result = this.calculationValue(this.calcValue, event)
+        if (!this.isEmptyValue(result)) {
+          this.valueToDisplay = result
+        } else {
+          this.valueToDisplay = '...'
+        }
       }
       if (row[column.property].type === 'clear') {
         if (row[column.property].value === 'C') {
           this.calcValue = this.calcValue.slice(0, -1)
         } else if (row[column.property].value === 'AC') {
           this.calcValue = ''
+          this.valueToDisplay = ''
         }
       }
       if (row[column.property].value === '=') {
@@ -226,19 +233,32 @@ export default {
       }
     },
     changeValue() {
-      const result = Number(this.valueToDisplay)
-      this.$store.dispatch('notifyFieldChange', {
-        isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
-        panelType: this.fieldAttributes.panelType,
+      const newValue = Number(this.valueToDisplay)
+      let isSendCallout = true
+      const isSendToServer = true
+      const isChangedOldValue = false
+      if (this.fieldAttributes.isAdvancedQuery) {
+        isSendCallout = false
+      }
+
+      const sendParameters = {
         parentUuid: this.fieldAttributes.parentUuid,
         containerUuid: this.fieldAttributes.containerUuid,
-        columnName: this.fieldAttributes.columnName,
-        newValue: result,
         field: this.fieldAttributes,
-        isChangedOldValue: true
+        panelType: this.fieldAttributes.panelType,
+        columnName: this.fieldAttributes.columnName,
+        newValue,
+        isAdvancedQuery: this.fieldAttributes.isAdvancedQuery,
+        isSendToServer,
+        isSendCallout,
+        isChangedOldValue
+      }
+      this.$store.dispatch('notifyFieldChange', {
+        ...sendParameters
       })
         .finally(() => {
           this.clearVariables()
+          this.$children[0].visible = false
         })
     },
     spanMethod({ row, column, rowIndex, columnIndex }) {

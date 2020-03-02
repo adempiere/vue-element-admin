@@ -430,6 +430,15 @@ export function calculationValue(value, event) {
         return null
       }
     }
+  } else if (!this.isEmptyValue(event) && event.type === 'click') {
+    if (!isEmptyValue(value)) {
+      try {
+        // eslint-disable-next-line no-eval
+        return eval(value) + ''
+      } catch (error) {
+        return null
+      }
+    }
   } else {
     if (value.key === 'Backspace') {
       partialValue = partialValue.slice(0, -1)
