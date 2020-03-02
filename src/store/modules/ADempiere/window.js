@@ -252,24 +252,21 @@ const window = {
             isAdvancedQuery
           }
 
-          let fieldUuidsequence = 0
           let fieldLinkColumnName
           //  Convert from gRPC
           const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
+            if (fieldItem.isParent) {
+              fieldLinkColumnName = fieldItem.columnName
+            }
+
             fieldItem = generateField({
               fieldToGenerate: fieldItem,
               moreAttributes: {
                 ...additionalAttributes,
+                fieldLinkColumnName: fieldItem.columnName,
                 fieldListIndex: index
               }
             })
-            if (fieldItem.sequence > fieldUuidsequence) {
-              fieldUuidsequence = fieldItem.sequence
-            }
-
-            if (fieldItem.isParent) {
-              fieldLinkColumnName = fieldItem.columnName
-            }
 
             return fieldItem
           })
@@ -277,23 +274,24 @@ const window = {
           if (!isAdvancedQuery) {
             //  Get dependent fields
             fieldsList
-              .filter(field => field.parentFieldsList && field.isActive)
               .forEach((field, index, list) => {
-                field.parentFieldsList.forEach(parentColumnName => {
-                  const parentField = list.find(parentField => {
-                    return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                if (field.parentFieldsList.length && field.isActive) {
+                  field.parentFieldsList.forEach(parentColumnName => {
+                    const parentField = list.find(parentField => {
+                      return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                    })
+                    if (parentField) {
+                      parentField.dependentFieldsList.push(field.columnName)
+                    }
                   })
-                  if (parentField) {
-                    parentField.dependentFieldsList.push(field.columnName)
-                  }
-                })
+                }
               })
           }
 
           if (!fieldsList.find(field => field.columnName === 'UUID')) {
             const attributesOverwrite = {
               panelType: panelType,
-              sequence: (fieldUuidsequence + 10),
+              sequence: 0,
               name: 'UUID',
               columnName: 'UUID',
               isAdvancedQuery,

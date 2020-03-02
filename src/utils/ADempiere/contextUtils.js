@@ -23,38 +23,19 @@ export const getContext = ({
  * @param {string} mandatoryLogic
  * @param {string} readOnlyLogic
  * @param {string} defaultValue
+ * @returns {array} List column name of parent fields
  */
 export function getParentFields({ displayLogic, mandatoryLogic, readOnlyLogic, defaultValue }) {
-  let parentFields = []
-  //  For Display logic
-  if (displayLogic) {
-    parentFields = Array.from(new Set([
-      ...parentFields,
-      ...evaluator.parseDepends(displayLogic)
-    ]))
-  }
-  //  For Mandatory Logic
-  if (mandatoryLogic) {
-    parentFields = Array.from(new Set([
-      ...parentFields,
-      ...evaluator.parseDepends(mandatoryLogic)
-    ]))
-  }
-  //  For Read Only Logic
-  if (readOnlyLogic) {
-    parentFields = Array.from(new Set([
-      ...parentFields,
-      ...evaluator.parseDepends(readOnlyLogic)
-    ]))
-  }
-  //  For Default Value
-  if (defaultValue) {
-    parentFields = Array.from(new Set([
-      ...parentFields,
-      ...evaluator.parseDepends(defaultValue)
-    ]))
-  }
-  return parentFields
+  return Array.from(new Set([
+    //  For Display logic
+    ...evaluator.parseDepends(displayLogic),
+    //  For Mandatory Logic
+    ...evaluator.parseDepends(mandatoryLogic),
+    //  For Read Only Logic
+    ...evaluator.parseDepends(readOnlyLogic),
+    //  For Default Value
+    ...evaluator.parseDepends(defaultValue)
+  ]))
 }
 
 /**
