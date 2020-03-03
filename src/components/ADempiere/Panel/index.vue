@@ -315,9 +315,6 @@ export default {
   },
   created() {
     // get fields with uuid
-    if (this.getterPanel.isDocument) {
-      this.$store.dispatch('listWorkflows', this.metadata.tableName)
-    }
     this.getPanel()
   },
   methods: {
@@ -617,10 +614,11 @@ export default {
       return groupsList
     },
     setTagsViewTitle(actionValue) {
-      if (this.getterPanel.isDocument) {
+      if (this.getterPanel.isDocument && this.getterDataStore.isLoaded) {
+        this.$store.dispatch('listWorkflows', this.metadata.tableName)
         this.$store.dispatch('listDocumentStatus', {
           recordUuid: this.$route.query.action,
-          tableName: this.$route.params.tableName
+          tableName: this.metadata.tableName
         })
       }
       if (actionValue === 'create-new' || this.isEmptyValue(actionValue)) {
