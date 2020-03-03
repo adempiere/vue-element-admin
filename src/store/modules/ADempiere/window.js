@@ -294,10 +294,10 @@ const window = {
 
           if (!isWithUuidField) {
             const fieldUuid = getFieldTemplate({
-              panelType: panelType,
+              ...additionalAttributes,
+              isShowedFromUser: false,
               name: 'UUID',
               columnName: 'UUID',
-              isAdvancedQuery,
               componentPath: 'FieldText'
             })
             fieldsList.push(fieldUuid)
