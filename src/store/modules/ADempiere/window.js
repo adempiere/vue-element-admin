@@ -252,6 +252,7 @@ const window = {
             isAdvancedQuery
           }
 
+          let isWithUuidField = false // indicates it contains the uuid field
           let fieldLinkColumnName
           //  Convert from gRPC
           const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
@@ -267,6 +268,10 @@ const window = {
                 fieldListIndex: index
               }
             })
+
+            if (!isWithUuidField && fieldItem.columnName === 'UUID') {
+              isWithUuidField = true
+            }
 
             return fieldItem
           })
@@ -288,17 +293,15 @@ const window = {
               })
           }
 
-          if (!fieldsList.find(field => field.columnName === 'UUID')) {
-            const attributesOverwrite = {
+          if (!isWithUuidField) {
+            const fieldUuid = getFieldTemplate({
               panelType: panelType,
-              sequence: 0,
               name: 'UUID',
               columnName: 'UUID',
               isAdvancedQuery,
               componentPath: 'FieldText'
-            }
-            const field = getFieldTemplate(attributesOverwrite)
-            fieldsList.push(field)
+            })
+            fieldsList.push(fieldUuid)
           }
 
           const window = getters.getWindow(parentUuid)

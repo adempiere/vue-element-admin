@@ -69,14 +69,14 @@ export function parseContext({
   if (value.includes('@SQL=')) {
     value = value.replace('@SQL=', '')
   }
-  // var instances = value.length - value.replace('@', '').length
+  // const instances = value.length - value.replace('@', '').length
   // if ((instances > 0) && (instances % 2) !== 0) { // could be an email address
   //   return value
   // }
 
-  var token
-  var inString = value
-  var outString = ''
+  let token, contextInfo
+  let inString = value
+  let outString = ''
 
   let firstIndexTag = inString.indexOf('@')
 
@@ -98,7 +98,7 @@ export function parseContext({
     token = inString.substring(0, secondIndexTag)
     columnName = token
 
-    var contextInfo = getContext({
+    contextInfo = getContext({
       parentUuid,
       containerUuid,
       columnName

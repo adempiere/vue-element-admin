@@ -48,7 +48,7 @@ export function generateField({
     }
 
     if (isEmptyValue(parsedDefaultValue) &&
-      fieldToGenerate.columnName !== `${moreAttributes.tableName}_ID` &&
+      !(fieldToGenerate.isKey || fieldToGenerate.isParent) &&
       String(parsedDefaultValue).trim() !== '-1') {
       parsedDefaultValue = getPreference({
         parentUuid: fieldToGenerate.parentUuid,
@@ -85,7 +85,7 @@ export function generateField({
     }
 
     if (isEmptyValue(parsedDefaultValueTo) &&
-      fieldToGenerate.columnName !== `${moreAttributes.tableName}_ID` &&
+      !(fieldToGenerate.isKey || fieldToGenerate.isParent) &&
       String(parsedDefaultValueTo).trim() !== '-1') {
       parsedDefaultValueTo = getPreference({
         parentUuid: fieldToGenerate.parentUuid,
@@ -389,18 +389,7 @@ export function evalutateTypeField(displayTypeId, isAllInfo = false) {
 
 // Default template for injected fields
 export function getFieldTemplate(attributesOverwrite) {
-  const referenceValue = {
-    tableName: '',
-    keyColumnName: '',
-    displayColumnName: '',
-    query: '',
-    parsedQuery: '',
-    directQuery: '',
-    parsedDirectQuery: '',
-    validationCode: '',
-    windowsList: []
-  }
-  const newField = {
+  return {
     id: 0,
     uuid: '',
     name: '',
@@ -449,16 +438,26 @@ export function getFieldTemplate(attributesOverwrite) {
     readOnlyLogic: undefined,
     parentFieldsList: undefined,
     dependentFieldsList: [],
-    reference: referenceValue,
+    reference: {
+      tableName: '',
+      keyColumnName: '',
+      displayColumnName: '',
+      query: '',
+      parsedQuery: '',
+      directQuery: '',
+      parsedDirectQuery: '',
+      validationCode: '',
+      windowsList: []
+    },
     contextInfo: undefined,
     isShowedFromUser: false,
     isFixedTableColumn: false,
     sizeFieldFromType: {
       type: 'Button',
       size: DEFAULT_SIZE
-    }
+    },
+    ...attributesOverwrite
   }
-  return Object.assign(newField, attributesOverwrite)
 }
 
 /**
