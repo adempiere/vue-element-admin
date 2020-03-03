@@ -256,21 +256,20 @@ const window = {
           let fieldLinkColumnName
           //  Convert from gRPC
           const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
-            if (fieldItem.isParent) {
-              fieldLinkColumnName = fieldItem.columnName
-            }
-
             fieldItem = generateField({
               fieldToGenerate: fieldItem,
               moreAttributes: {
                 ...additionalAttributes,
-                fieldLinkColumnName: fieldItem.columnName,
                 fieldListIndex: index
               }
             })
 
             if (!isWithUuidField && fieldItem.columnName === 'UUID') {
               isWithUuidField = true
+            }
+
+            if (fieldItem.isParent) {
+              fieldLinkColumnName = fieldItem.columnName
             }
 
             return fieldItem
