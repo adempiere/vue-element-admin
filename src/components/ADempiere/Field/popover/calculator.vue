@@ -119,15 +119,15 @@ export default {
       }, {
         row1: {
           type: 'value',
-          value: 7
+          value: '7'
         },
         row2: {
           type: 'value',
-          value: 8
+          value: '8'
         },
         row3: {
           type: 'value',
-          value: 9
+          value: '9'
         },
         row4: {
           type: 'operator',
@@ -140,15 +140,15 @@ export default {
       }, {
         row1: {
           type: 'value',
-          value: 4
+          value: '4'
         },
         row2: {
           type: 'value',
-          value: 5
+          value: '5'
         },
         row3: {
           type: 'value',
-          value: 7
+          value: '7'
         },
         row4: {
           type: 'operator',
@@ -161,15 +161,15 @@ export default {
       }, {
         row1: {
           type: 'value',
-          value: 1
+          value: '1'
         },
         row2: {
           type: 'value',
-          value: 2
+          value: '2'
         },
         row3: {
           type: 'value',
-          value: 3
+          value: '3'
         },
         row4: {
           type: 'result',
@@ -182,7 +182,7 @@ export default {
       }, {
         row1: {
           type: 'value',
-          value: 0
+          value: '0'
         },
         row2: {
           type: 'operator',
@@ -284,7 +284,7 @@ export default {
           }
         }
       } else if (rowIndex === 4) {
-        if (row[column.property].value === 0) {
+        if (row[column.property].value === '0') {
           return {
             rowspan: 1,
             colspan: 2

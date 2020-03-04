@@ -90,8 +90,8 @@ export default {
       return Number(value)
     },
     calculateValue(event) {
-      const isValidKey = this.expression.test(event.key)
-      if (isValidKey) {
+      const isAllowed = event.key.match(this.expression)
+      if (isAllowed) {
         const result = this.calculationValue(this.value, event)
         if (!this.isEmptyValue(result)) {
           this.valueToDisplay = result
@@ -100,7 +100,7 @@ export default {
           this.valueToDisplay = '...'
           this.isShowed = true
         }
-      } else if (!isValidKey && event.key === 'Backspace') {
+      } else if (!isAllowed && event.key === 'Backspace') {
         const result = this.calculationValue(this.value, event)
         if (!this.isEmptyValue(result)) {
           this.valueToDisplay = result
@@ -114,7 +114,7 @@ export default {
       }
     },
     changeValue() {
-      if (this.valueToDisplay !== '...') {
+      if (!this.isEmptyValue(this.valueToDisplay) && this.valueToDisplay !== '...') {
         const result = this.validateValue(this.valueToDisplay)
         this.preHandleChange(result)
       }
