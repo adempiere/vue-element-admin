@@ -38,7 +38,7 @@ export default {
       value: value,
       showControls: true,
       operation: '',
-      expression: /[^\d\/.()%\*\+\-]/gim,
+      expression: /[\d\/.()%\*\+\-]/gim,
       valueToDisplay: '',
       isShowed: false
     }
@@ -90,18 +90,34 @@ export default {
       return Number(value)
     },
     calculateValue(event) {
-      const result = this.calculationValue(this.value, event)
-      if (!this.isEmptyValue(result)) {
-        this.valueToDisplay = result
-        this.isShowed = true
+      const isValidKey = this.expression.test(event.key)
+      if (isValidKey) {
+        const result = this.calculationValue(this.value, event)
+        if (!this.isEmptyValue(result)) {
+          this.valueToDisplay = result
+          this.isShowed = true
+        } else {
+          this.valueToDisplay = '...'
+          this.isShowed = true
+        }
+      } else if (!isValidKey && event.key === 'Backspace') {
+        const result = this.calculationValue(this.value, event)
+        if (!this.isEmptyValue(result)) {
+          this.valueToDisplay = result
+          this.isShowed = true
+        } else {
+          this.valueToDisplay = '...'
+          this.isShowed = true
+        }
       } else {
-        this.valueToDisplay = '...'
-        this.isShowed = true
+        event.preventDefault()
       }
     },
     changeValue() {
-      const result = this.validateValue(this.valueToDisplay)
-      this.preHandleChange(result)
+      if (this.valueToDisplay !== '...') {
+        const result = this.validateValue(this.valueToDisplay)
+        this.preHandleChange(result)
+      }
       this.clearVariables()
       this.isShowed = false
     }
