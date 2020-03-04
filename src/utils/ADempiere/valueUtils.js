@@ -422,7 +422,7 @@ export function calculationValue(value, event) {
   const isValidKey = VALIDATE_EXPRESSION.test(event.key)
   if (event.type === 'keydown' && isValidKey) {
     partialValue += event.key
-    const operation = String(value) + partialValue
+    const operation = isEmptyValue(value) ? partialValue : String(value) + partialValue
     if (!isEmptyValue(operation)) {
       try {
         // eslint-disable-next-line no-eval

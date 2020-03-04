@@ -212,7 +212,7 @@ export default {
     sendValue(row, column) {
       const isAcceptedType = ['result', 'clear'].includes(row[column.property].type)
       if (!isAcceptedType && !this.isDisabled(row, column)) {
-        this.calcValue += row[column.property].value
+        this.isEmptyValue(this.calcValue) ? this.calcValue = row[column.property].value : this.calcValue += row[column.property].value
         const result = this.calculationValue(this.calcValue, event)
         if (!this.isEmptyValue(result)) {
           this.valueToDisplay = result
