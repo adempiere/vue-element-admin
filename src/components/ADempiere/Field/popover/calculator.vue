@@ -1,6 +1,6 @@
 <template>
   <el-dropdown trigger="click">
-    <el-button type="text">
+    <el-button type="text" :disabled="fieldAttributes.readonly">
       <i class="el-icon-s-operation el-icon--right" />
     </el-button>
     <el-dropdown-menu slot="dropdown" class="dropdown-calc">
