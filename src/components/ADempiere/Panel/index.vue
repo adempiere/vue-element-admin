@@ -358,7 +358,7 @@ export default {
      * TODO: Delete route parameters after reading them
      */
     readParameters() {
-      var parameters = {
+      const parameters = {
         isLoadAllRecords: true,
         isReference: false,
         isNewRecord: false,
@@ -394,7 +394,11 @@ export default {
         })
 
         if (route.query.action && route.query.action === 'reference') {
-          const referenceInfo = this.$store.getters.getReferencesInfo(route.query.windowUuid, route.query.recordUuid, route.query.referenceUuid)
+          const referenceInfo = this.$store.getters.getReferencesInfo({
+            windowUuid: this.parentUuid,
+            recordUuid: route.query.recordUuid,
+            referenceUuid: route.query.referenceUuid
+          })
           route.params.isReadParameters = true
           parameters.isLoadAllRecords = false
           parameters.isReference = true
@@ -555,8 +559,8 @@ export default {
             } else {
               this.$router.push({
                 query: {
-                  action: 'create-new',
-                  ...this.$route.query
+                  ...this.$route.query,
+                  action: 'create-new'
                 }
               })
             }
@@ -640,8 +644,10 @@ export default {
         }
       }
       if (this.isPanelWindow) {
-        const tempRoute = Object.assign({}, this.$route, { title: `${this.tagTitle.base} - ${this.tagTitle.action}` })
-        this.$store.dispatch('tagsView/updateVisitedView', tempRoute)
+        this.$store.dispatch('tagsView/updateVisitedView', {
+          ...this.$route,
+          title: `${this.tagTitle.base} - ${this.tagTitle.action}`
+        })
       }
     },
     setData(dataTransfer) {
