@@ -141,7 +141,7 @@ export function parseContext({
       contextInfo = isSOTrxMenu
     }
     if (contextInfo === undefined || contextInfo.length === 0) {
-      console.info(`No Context for: ${token}`)
+      // console.info(`No Context for: ${token}`)
       isError = true
       errorsList.push(token)
     } else {
