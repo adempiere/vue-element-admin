@@ -155,7 +155,7 @@ export default {
           }
         }
         this.value = value
-        if (!this.findLabel(value)) {
+        if (this.metadata.displayed && this.metadata.optionCRUD !== 'create-new' && !this.findLabel(value) && this.isEmptyValue(this.metadata.displayColumn)) {
           this.value = undefined
         }
       }

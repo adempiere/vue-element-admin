@@ -246,7 +246,7 @@ export const recursiveTreeSearch = ({
  * @param {string} referenceType, reference in ADempiere
  * @param {boolean} isMandatory, field is mandatory
  */
-export function parsedValueComponent({ fieldType, value, referenceType, isMandatory = false }) {
+export function parsedValueComponent({ fieldType, value, referenceType, isMandatory = false, isIdentifier = false }) {
   if ((value === undefined || value === null) && !isMandatory) {
     if (fieldType === 'FieldYesNo') {
       return Boolean(value)
@@ -318,7 +318,7 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
       if (typeof value === 'boolean') {
         value = value ? 'Y' : 'N'
       }
-      if (referenceType === 'TableDirect') {
+      if (referenceType === 'TableDirect' || (referenceType === 'Table' && isIdentifier)) {
         if (value !== '' && value !== null && value !== undefined) {
           value = Number(value)
         }
