@@ -531,7 +531,7 @@ export default {
     },
     isWorkflowBarStatus() {
       const panel = this.$store.getters.getPanel(this.windowMetadata.currentTabUuid)
-      if (!this.isEmptyValue(panel) && panel.isDocument && this.$route.meta.type === 'window') {
+      if (!this.isEmptyValue(panel) && panel.isDocument && this.$route.meta.type === 'window' && this.$route.query.action !== 'create-new') {
         return true
       }
       return false
