@@ -186,7 +186,6 @@
                       :in-table="true"
                       :metadata-field="{
                         ...fieldAttributes,
-                        parentUuid: parentUuid,
                         displayColumn: scope.row['DisplayColumn_' + fieldAttributes.columnName],
                         tableIndex: scope.$index,
                         rowKey: scope.row[getterPanel.keyColumn],
@@ -326,10 +325,10 @@ export default {
   },
   computed: {
     getterContextMenu() {
-      const process = this.$store.getters.getContextMenu(this.containerUuid).actions
+      const process = this.$store.getters.getContextMenu(this.containerUuid)
       if (process) {
-        return process.filter(menu => {
-          if (menu.type === 'process') {
+        return process.actions.filter(menu => {
+          if (menu.type === 'process' || menu.type === 'application') {
             return menu
           }
         })
@@ -635,6 +634,8 @@ export default {
           referenceType: field.referenceType,
           number: row[field.columnName]
         })
+      } else if (field.componentPath === 'FieldSelect' && this.isEmptyValue(row['DisplayColumn_' + field.columnName]) && row[field.columnName] === 0) {
+        return field.defaultValue
       }
       return row['DisplayColumn_' + field.columnName] || row[field.columnName]
     },
@@ -725,7 +726,7 @@ export default {
       this.getterDataRecords.shift()
     },
     tableRowClassName({ row, rowIndex }) {
-      if (row.isNew) {
+      if (row.isNew && this.isEmptyValue(row.Created)) {
         return 'warning-row'
       }
       return ''
@@ -1016,7 +1017,7 @@ export default {
     },
     getFieldDefinition(fieldDefinition, row) {
       let styleSheet = ''
-      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditionsList.length)) {
+      if (fieldDefinition && (!this.isEmptyValue(fieldDefinition.id) || fieldDefinition.conditionsList.length)) {
         fieldDefinition.conditionsList.forEach(condition => {
           const columns = evaluator.parseDepends(condition.condition)
           let conditionLogic = condition.condition
@@ -1073,7 +1074,7 @@ export default {
 </style>
 <style>
   .el-table .warning-row {
-    background: rgba(104, 245, 203, 0.712);
+    background: rgba(161, 250, 223, 0.945);
   }
 
   .el-table .success-row {

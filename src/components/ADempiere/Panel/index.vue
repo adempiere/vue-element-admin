@@ -31,20 +31,17 @@
               :shadow="shadowGroup"
               :body-style="{ padding: '10px' }"
             >
-              <el-row :gutter="gutterRow">
+              <el-row>
                 <template v-for="(fieldAttributes, subKey) in firstGroup.metadataFields">
                   <field-definition
                     :ref="fieldAttributes.columnName"
                     :key="subKey"
-                    :parent-uuid="parentUuid"
-                    :container-uuid="containerUuid"
                     :metadata-field="{
                       ...fieldAttributes,
                       optionCRUD,
                       recordUuid: uuidRecord
                     }"
                     :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
-                    :panel-type="panelType"
                     :in-group="!getterIsShowedRecordNavigation"
                     :is-advanced-query="isAdvancedQuery"
                   />
@@ -90,20 +87,17 @@
                         />
                       </div>
                     </div>
-                    <el-row :gutter="gutterRow">
+                    <el-row>
                       <template v-for="(fieldAttributes, subKey) in item.metadataFields">
                         <field-definition
                           :ref="fieldAttributes.columnName"
                           :key="subKey"
-                          :parent-uuid="parentUuid"
-                          :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
                             optionCRUD,
                             recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
-                          :panel-type="panelType"
                           :in-group="isPanelWindow && fieldGroups.length > 1"
                           :is-advanced-query="isAdvancedQuery"
                         />
@@ -143,20 +137,17 @@
                         />
                       </div>
                     </div>
-                    <el-row :gutter="gutterRow">
+                    <el-row>
                       <template v-for="(fieldAttributes, subKey) in item.metadataFields">
                         <field-definition
                           :ref="fieldAttributes.columnName"
                           :key="subKey"
-                          :parent-uuid="parentUuid"
-                          :container-uuid="containerUuid"
                           :metadata-field="{
                             ...fieldAttributes,
                             optionCRUD,
                             recordUuid: uuidRecord
                           }"
                           :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
-                          :panel-type="panelType"
                           :in-group="isPanelWindow && fieldGroups.length > 1"
                         />
                       </template>
@@ -228,7 +219,6 @@ export default {
     return {
       fieldList: [],
       dataRecords: {},
-      gutterRow: 0,
       isLoadPanel: false,
       isLoadRecord: false,
       uuidRecord: this.$route.query.action,
@@ -315,7 +305,6 @@ export default {
   },
   created() {
     // get fields with uuid
-    this.$store.dispatch('listWorkflows', this.metadata.tableName)
     this.getPanel()
   },
   methods: {
@@ -358,7 +347,7 @@ export default {
      * TODO: Delete route parameters after reading them
      */
     readParameters() {
-      var parameters = {
+      const parameters = {
         isLoadAllRecords: true,
         isReference: false,
         isNewRecord: false,
@@ -394,7 +383,11 @@ export default {
         })
 
         if (route.query.action && route.query.action === 'reference') {
-          const referenceInfo = this.$store.getters.getReferencesInfo(route.query.windowUuid, route.query.recordUuid, route.query.referenceUuid)
+          const referenceInfo = this.$store.getters.getReferencesInfo({
+            windowUuid: this.parentUuid,
+            recordUuid: route.query.recordUuid,
+            referenceUuid: route.query.referenceUuid
+          })
           route.params.isReadParameters = true
           parameters.isLoadAllRecords = false
           parameters.isReference = true
@@ -555,8 +548,8 @@ export default {
             } else {
               this.$router.push({
                 query: {
-                  action: 'create-new',
-                  ...this.$route.query
+                  ...this.$route.query,
+                  action: 'create-new'
                 }
               })
             }
@@ -615,11 +608,11 @@ export default {
       return groupsList
     },
     setTagsViewTitle(actionValue) {
-      if (!this.isEmptyValue(this.$route.params.recordId) && this.getterPanel.isDocument) {
+      if (this.getterPanel.isDocument && this.getterDataStore.isLoaded) {
+        this.$store.dispatch('listWorkflows', this.metadata.tableName)
         this.$store.dispatch('listDocumentStatus', {
           recordUuid: this.$route.query.action,
-          recordId: this.$route.params.recordId,
-          tableName: this.$route.params.tableName
+          tableName: this.metadata.tableName
         })
       }
       if (actionValue === 'create-new' || this.isEmptyValue(actionValue)) {
@@ -640,8 +633,10 @@ export default {
         }
       }
       if (this.isPanelWindow) {
-        const tempRoute = Object.assign({}, this.$route, { title: `${this.tagTitle.base} - ${this.tagTitle.action}` })
-        this.$store.dispatch('tagsView/updateVisitedView', tempRoute)
+        this.$store.dispatch('tagsView/updateVisitedView', {
+          ...this.$route,
+          title: `${this.tagTitle.base} - ${this.tagTitle.action}`
+        })
       }
     },
     setData(dataTransfer) {

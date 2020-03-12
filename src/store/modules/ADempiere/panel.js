@@ -97,7 +97,7 @@ const panel = {
         })
 
         let orderBy = 'sequence'
-        if ((params.panelType === 'window' && !params.isParent) || params.panelType === 'browser') {
+        if ((params.panelType === 'window' && !params.isParentTab) || params.panelType === 'browser') {
           orderBy = 'seqNoGrid'
         }
         params.fieldList = assignedGroup({
@@ -531,7 +531,7 @@ const panel = {
         })
 
         // request context info field
-        if (!isEmptyValue(field.value) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
+        if ((!isEmptyValue(field.value) || !isEmptyValue(newValue)) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
           var isSQL = false
           var sqlStatement = field.contextInfo.sqlStatement
           if (sqlStatement.includes('@')) {
@@ -658,10 +658,33 @@ const panel = {
         } else if (!getters.isNotReadyForSubmit(containerUuid)) {
           // TODO: refactory for it and change for a standard method
           if (field.panelType === 'browser' && fieldIsDisplayed(field)) {
-            dispatch('getBrowserSearch', {
-              containerUuid,
-              isClearSelection: true
-            })
+            let isReadyForQuery = true
+            if (field.isSQLValue) {
+              let awaitForValuesToQuery = panel.awaitForValuesToQuery
+              awaitForValuesToQuery--
+              dispatch('changeBrowserAttribute', {
+                containerUuid,
+                attributeName: 'awaitForValuesToQuery',
+                attributeValue: awaitForValuesToQuery
+              })
+              if (awaitForValuesToQuery === 0) {
+                if (panel.isShowedCriteria) {
+                  dispatch('changeBrowserAttribute', {
+                    containerUuid,
+                    attributeName: 'isShowedCriteria',
+                    attributeValue: false
+                  })
+                }
+              } else if (awaitForValuesToQuery > 0) {
+                isReadyForQuery = false
+              }
+            }
+            if (isReadyForQuery && !field.dependentFieldsList.length) {
+              dispatch('getBrowserSearch', {
+                containerUuid,
+                isClearSelection: true
+              })
+            }
           }
           if (field.panelType === 'window' && fieldIsDisplayed(field)) {
             const uuid = getters.getUuid(containerUuid)
@@ -749,7 +772,7 @@ const panel = {
       })
 
       //  Iterate for change logic
-      dependentsList.forEach(fieldDependent => {
+      dependentsList.map(async fieldDependent => {
         //  isDisplayed Logic
         let isDisplayedFromLogic, isMandatoryFromLogic, isReadOnlyFromLogic, defaultValue
         if (!isEmptyValue(fieldDependent.displayLogic)) {
@@ -779,30 +802,41 @@ const panel = {
           })
         }
         //  Default Value
-        if (fieldDependent.defaultValue.trim() !== '' &&
+        if (!isEmptyValue(fieldDependent.defaultValue) &&
           fieldDependent.defaultValue.includes('@') &&
-          String(fieldDependent.defaultValue).trim() !== '-1') {
+          !fieldDependent.defaultValue.includes('@SQL=')) {
           defaultValue = parseContext({
             parentUuid,
             containerUuid,
             value: fieldDependent.defaultValue
           }).value
-          if (isSendToServer && defaultValue !== fieldDependent.defaultValue) {
-            dispatch('getRecordBySQL', {
-              field: fieldDependent,
+        }
+        if (!isEmptyValue(fieldDependent.defaultValue) &&
+          fieldDependent.defaultValue.includes('@SQL=')) {
+          defaultValue = parseContext({
+            parentUuid,
+            containerUuid,
+            isSQL: true,
+            value: fieldDependent.defaultValue
+          }).query
+          if (defaultValue !== fieldDependent.parsedDefaultValue) {
+            const newValue = await dispatch('getValueBySQL', {
+              parentUuid,
+              containerUuid,
               query: defaultValue
             })
-              .then(response => {
-                dispatch('notifyFieldChange', {
-                  parentUuid,
-                  containerUuid,
-                  panelType: fieldDependent.panelType,
-                  columnName: fieldDependent.columnName,
-                  newValue: response.key
-                })
-              })
+
+            dispatch('notifyFieldChange', {
+              parentUuid,
+              containerUuid,
+              isSendToServer,
+              panelType: fieldDependent.panelType,
+              columnName: fieldDependent.columnName,
+              newValue
+            })
           }
         }
+
         commit('changeFieldLogic', {
           field: fieldDependent,
           isDisplayedFromLogic,
@@ -1124,6 +1158,12 @@ const panel = {
               value: fieldItem.defaultValue,
               isSQL
             })
+            if (typeof valueToReturn === 'object') {
+              valueToReturn = {
+                ...valueToReturn,
+                defaultValue: fieldItem.defaultValue
+              }
+            }
           }
 
           valueToReturn = parsedValueComponent({
