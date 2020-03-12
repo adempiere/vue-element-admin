@@ -144,11 +144,12 @@ export default {
     switchInactiveText: 'Not',
     contextFieldTitle: 'Context Information',
     locationTitle: 'Enter new Location/Address',
-    cuntry: 'Country',
+    country: 'Country',
     region: 'Region',
     city: 'City',
     address: 'Address',
-    zipCode: 'Zip Code'
+    zipCode: 'Zip Code',
+    places: 'Places'
   },
   views: {
     browser: 'Smart Browser',

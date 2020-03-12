@@ -144,11 +144,12 @@ export default {
     switchInactiveText: 'No',
     contextFieldTitle: 'Información de Contexto',
     locationTitle: 'Entre nueva Localización/Dirección',
-    cuntry: 'País',
+    country: 'País',
     region: 'Región',
     city: 'Ciudad',
     address: 'Dirección',
-    zipCode: 'Código Postal'
+    zipCode: 'Código Postal',
+    places: 'Lugares'
   },
   views: {
     browser: 'Consulta Inteligente',
