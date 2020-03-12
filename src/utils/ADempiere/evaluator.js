@@ -14,8 +14,7 @@
 class evaluator {
   /**
    * Evaluate logic's
-   * @param {string} parentUuid Parent (Window)
-   * @param {string} containerUuid Parent (Tab / Process / Smart Browser)
+   * @param {string} parentUuid Parent (Window / Process / Smart Browser) 
    * @param {function} context
    * @param {string} logic
    * @param {boolean} defaultReturned value to return if logic or context is undefined
