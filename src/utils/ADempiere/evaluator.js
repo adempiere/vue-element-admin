@@ -14,7 +14,7 @@
 class evaluator {
   /**
    * Evaluate logic's
-   * @param {string} parentUuid Parent (Window / Process / Smart Browser) 
+   * @param {string} parentUuid Parent (Window / Process / Smart Browser)
    * @param {function} context
    * @param {string} logic
    * @param {boolean} defaultReturned value to return if logic or context is undefined
@@ -129,9 +129,14 @@ class evaluator {
       first = first.replace(/@/g, '').trim()
       isGlobal = first.startsWith('#')
       isCountable = first.startsWith('$')
+      if (isGlobal || isCountable) {
+        parentUuid = null
+        containerUuid = null
+      }
+
       const value = context({
-        parentUuid: (isGlobal || isCountable) ? null : parentUuid,
-        containerUuid: (isGlobal || isCountable) ? null : containerUuid,
+        parentUuid,
+        containerUuid,
         columnName: first
       })
       // in context exists this column name
@@ -157,8 +162,8 @@ class evaluator {
     if (expr.test(second)) {
       second = second.replace(/@/g, ' ').trim() // strip tag
       secondEval = context({
-        parentUuid: (isGlobal || isCountable) ? null : parentUuid,
-        containerUuid: (isGlobal || isCountable) ? null : containerUuid,
+        parentUuid,
+        containerUuid,
         columnName: first
       }) // replace with it's value
     }
