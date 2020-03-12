@@ -89,7 +89,7 @@
                           :tabs-list="windowMetadata.tabsListParent"
                           class="tab-window"
                         />
-                        <div v-if="isMobile">
+                        <div v-if="isMobile && panelType === 'windo'">
                           <el-card class="box-card">
                             <el-tabs v-model="activeInfo" @tab-click="handleClick">
                               <el-tab-pane
@@ -156,6 +156,7 @@
                           </div>
                         </div>
                         <modal-dialog
+                          v-if="panelType === 'report'"
                           :parent-uuid="windowUuid"
                           :container-uuid="windowMetadata.currentTabUuid"
                         />
@@ -214,6 +215,55 @@
                   <el-card class="box-card">
                     <el-tabs v-model="activeInfo" @tab-click="handleClick">
                       <el-tab-pane
+                        v-if="!isEmptyValue(getterContextMenu)"
+                        :name="$t('window.containerInfo.associatedProcesses')"
+                      >
+                        <span slot="label">
+                          <svg-icon icon-class="component" />
+                          {{ $t('window.containerInfo.associatedProcesses') }}
+                        </span>
+                        <div>
+                          <el-collapse
+                            v-for="(action, index) in getterContextMenu"
+                            :key="index"
+                            v-model="activeName"
+                            accordion
+                            @change="handleChangeProcess(action)"
+                          >
+                            <el-collapse-item
+                              :title="action.name"
+                              :name="index"
+                            >
+                              <el-card>
+                                <el-container style="max-height: 38vh;">
+                                  <el-main style="height: auto;">
+                                    <main-panel
+                                      v-if="!isEmptyValue(modalMetadata.fieldList)"
+                                      key="main-panel"
+                                      :parent-uuid="windowUuid"
+                                      :container-uuid="modalMetadata.uuid"
+                                      :metadata="modalMetadata"
+                                      :panel-type="modalMetadata.panelType"
+                                    />
+                                    <p v-else> {{ modalMetadata.description }} </p>
+                                  </el-main>
+                                  <el-footer>
+                                    <el-button
+                                      type="primary"
+                                      style="float: right;"
+                                      @click="runAction(action)"
+                                    >
+                                      {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
+                                    </el-button>
+                                  </el-footer>
+                                </el-container>
+                              </el-card>
+                            </el-collapse-item>
+                          </el-collapse>
+                        </div>
+                      </el-tab-pane>
+                      <el-tab-pane
+                        v-if="panelType === 'window'"
                         name="listChatEntries"
                       >
                         <span slot="label">
@@ -225,6 +275,7 @@
                         </div>
                       </el-tab-pane>
                       <el-tab-pane
+                        v-if="panelType === 'window'"
                         name="listRecordLogs"
                       >
                         <span slot="label">
@@ -289,6 +340,9 @@ import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
 // Workflow
 import WorkflowStatusBar from '@/components/ADempiere/WorkflowStatusBar'
+// Panel Process
+import MainPanel from '@/components/ADempiere/Panel'
+import { showNotification } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'WindowView',
@@ -302,7 +356,8 @@ export default {
     ChatEntries,
     RecordLogs,
     WorkflowLogs,
-    WorkflowStatusBar
+    WorkflowStatusBar,
+    MainPanel
   },
   props: {
     styleSteps: {
@@ -317,6 +372,7 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
+      activeName: '',
       activeInfo: 'listChatEntries',
       showContainerInfo: false,
       // TODO: Manage attribute with store
@@ -535,6 +591,22 @@ export default {
         return true
       }
       return false
+    },
+    getterContextMenu() {
+      if (!this.isEmptyValue(this.getterWindow)) {
+        const process = this.$store.getters.getContextMenu(this.getterWindow.currentTabUuid).actions
+        if (process) {
+          return process.filter(menu => {
+            if (menu.type === 'process') {
+              return menu
+            }
+          })
+        }
+      }
+      return []
+    },
+    modalMetadata() {
+      return this.$store.state.processControl.metadata
     }
   },
   watch: {
@@ -559,6 +631,51 @@ export default {
     }
   },
   methods: {
+    showNotification,
+    // mostrar panel con los procesos
+    handleChangeProcess(action) {
+      if (action.type === 'process') {
+        console.log(this.$route.meta.tabUuid)
+        // open modal dialog with metadata
+        this.$store.dispatch('setShowDialog', {
+          type: action.type,
+          action: {
+            ...action,
+            containerUuid: action.uuid
+          }
+        })
+      }
+    },
+    runAction(action) {
+      console.log(action, this.windowUuid, this.panelType, this.reportExportType, this.$route)
+      console.log(this.$route.meta.tabUuid)
+      console.log(action.containerUuidAssociated)
+      if (action !== undefined) {
+        const fieldNotReady = this.$store.getters.isNotReadyForSubmit(action.uuid)
+        if (!fieldNotReady) {
+          console.log(action, this.windowUuid, this.$route.meta.tabUuid, this.panelType, this.reportExportType, this.$route)
+          this.$store.dispatch('startProcess', {
+            action: action, // process metadata
+            parentUuid: this.windowUuid,
+            isProcessTableSelection: false,
+            containerUuid: this.$route.meta.tabUuid,
+            panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
+            reportFormat: '',
+            routeToDelete: this.$route
+          })
+            .catch(error => {
+              console.warn(error)
+            })
+        } else {
+          this.showNotification({
+            type: 'warning',
+            title: this.$t('notifications.emptyValues'),
+            name: '<b>' + fieldNotReady.name + '.</b> ',
+            message: this.$t('notifications.fieldMandatory')
+          })
+        }
+      }
+    },
     handleResize() {
       var PanelRight = document.getElementById('PanelRight')
       var resizeWidth = PanelRight
@@ -569,12 +686,7 @@ export default {
     },
     conteInfo() {
       this.showContainerInfo = !this.showContainerInfo
-      if (this.showContainerInfo) {
-        this.$store.dispatch('listWorkflowLogs', {
-          tableName: this.getTableName,
-          recordUuid: this.$route.query.action,
-          recordId: this.getRecord[this.getTableName + '_ID']
-        })
+      if (this.showContainerInfo && this.activeInfo !== this.$t('window.containerInfo.associatedProcesses')) {
         this.$store.dispatch(this.activeInfo, {
           tableName: this.getTableName,
           recordId: this.getRecord[this.getTableName + '_ID']
@@ -583,10 +695,12 @@ export default {
       this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
     },
     handleClick(tab, event) {
-      this.$store.dispatch(tab.name, {
-        tableName: this.getTableName,
-        recordId: this.getRecord[this.getTableName + '_ID']
-      })
+      if (tab.name !== this.$t('window.containerInfo.associatedProcesses')) {
+        this.$store.dispatch(tab.name, {
+          tableName: this.getTableName,
+          recordId: this.getRecord[this.getTableName + '_ID']
+        })
+      }
     },
     // callback new size
     onDrag(size) {
@@ -834,6 +948,21 @@ export default {
 }
 </style>
 <style>
+  .el-collapse-item__header {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    height: 48px;
+    color: #000000;
+    line-height: 48px;
+    background-color: #fff;
+    cursor: pointer;
+    border-bottom: 1px solid #e6ebf5;
+    transition: border-bottom-color .3s;
+    outline: none;
+    font-size: 14px;
+    font-weight: 605!important;
+  }
   .el-step.is-simple .el-step__icon-inner {
     font-size: 18px;
     padding-top: 30px;

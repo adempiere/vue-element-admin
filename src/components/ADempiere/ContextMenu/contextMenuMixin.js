@@ -343,7 +343,16 @@ export const contextMixin = {
             }
           })
       }
-      this.actions = this.metadataMenu.actions
+      if (this.panelType !== 'window' || this.panelType !== 'browser') {
+        this.actions = this.metadataMenu.actions.filter(action => {
+          if (action.type !== 'process') {
+            console.log(action)
+            return action
+          }
+        })
+      } else {
+        this.actions = this.metadataMenu.actions
+      }
       if (this.panelType === 'window') {
         const processAction = this.actions.find(item => {
           if (item.name === 'Procesar Orden' || (item.name === 'Process Order')) {
