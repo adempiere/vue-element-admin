@@ -72,7 +72,8 @@ export function generateField({
       fieldType: componentReference.type,
       value: parsedDefaultValue,
       referenceType,
-      isMandatory: fieldToGenerate.isMandatory
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
 
     if (String(fieldToGenerate.defaultValue).includes('@SQL=')) {
@@ -114,7 +115,8 @@ export function generateField({
       fieldType: componentReference.type,
       value: parsedDefaultValueTo,
       referenceType,
-      isMandatory: fieldToGenerate.isMandatory
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
   }
 
