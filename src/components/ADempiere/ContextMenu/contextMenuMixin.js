@@ -346,7 +346,6 @@ export const contextMixin = {
       if (this.panelType !== 'window' || this.panelType !== 'browser') {
         this.actions = this.metadataMenu.actions.filter(action => {
           if (action.type !== 'process') {
-            console.log(action)
             return action
           }
         })
@@ -389,6 +388,7 @@ export const contextMixin = {
     },
     showModal(action) {
       // TODO: Refactor and remove redundant dispatchs
+      this.$store.dispatch('showProcess', true)
       if (action.type === 'process') {
         // Add context from view open in process to opening
         if (action.parentUuidAssociated || action.containerUuidAssociated) {

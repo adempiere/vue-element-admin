@@ -91,47 +91,11 @@
                         />
                         <div v-if="isMobile && panelType === 'windo'">
                           <el-card class="box-card">
-                            <el-tabs v-model="activeInfo" @tab-click="handleClick">
-                              <el-tab-pane
-                                name="listChatEntries"
-                              >
-                                <span slot="label">
-                                  <i class="el-icon-s-comment" />
-                                  {{ $t('window.containerInfo.notes') }}
-                                </span>
-                                <div>
-                                  <chat-entries />
-                                </div>
-                              </el-tab-pane>
-                              <el-tab-pane
-                                name="listRecordLogs"
-                              >
-                                <span slot="label">
-                                  <svg-icon icon-class="tree-table" />
-                                  {{ $t('window.containerInfo.changeLog') }}
-                                </span>
-                                <div
-                                  key="change-log-loaded"
-                                >
-                                  <record-logs />
-                                </div>
-                              </el-tab-pane>
-                              <el-tab-pane
-                                v-if="getIsWorkflowLog"
-                                name="listWorkflowLogs"
-                              >
-                                <span slot="label">
-                                  <i class="el-icon-s-help" />
-                                  {{ $t('window.containerInfo.workflowLog') }}
-                                </span>
-                                <div
-                                  v-if="getIsWorkflowLog"
-                                  key="workflow-log-loaded"
-                                >
-                                  <workflow-logs />
-                                </div>
-                              </el-tab-pane>
-                            </el-tabs>
+                            <tab-info
+                              :window-uuid="windowUuid"
+                              :table-name="getTableName"
+                              :record="getRecord"
+                            />
                           </el-card>
                         </div>
                         <div style="right: 0%; top: 40%; position: absolute;">
@@ -156,7 +120,7 @@
                           </div>
                         </div>
                         <modal-dialog
-                          v-if="panelType === 'report'"
+                          v-if="isShowProcess"
                           :parent-uuid="windowUuid"
                           :container-uuid="windowMetadata.currentTabUuid"
                         />
@@ -209,106 +173,112 @@
             <div :class="isCloseInfo">
               <el-button v-show="showContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
-            <div id="example-1">
-              <transition name="slide-fade">
-                <p v-if="showContainerInfo">
-                  <el-card class="box-card">
-                    <el-tabs v-model="activeInfo" @tab-click="handleClick">
-                      <el-tab-pane
-                        v-if="!isEmptyValue(getterContextMenu)"
-                        :name="$t('window.containerInfo.associatedProcesses')"
-                      >
-                        <span slot="label">
-                          <svg-icon icon-class="component" />
-                          {{ $t('window.containerInfo.associatedProcesses') }}
-                        </span>
-                        <div>
-                          <el-collapse
-                            v-for="(action, index) in getterContextMenu"
-                            :key="index"
-                            v-model="activeName"
-                            accordion
-                            @change="handleChangeProcess(action)"
+            <transition name="slide-fade">
+              <span v-if="showContainerInfo">
+                <el-card class="box-card">
+                  <tab-info
+                    :window-uuid="windowUuid"
+                    :table-name="getTableName"
+                    :record="getRecord"
+                    :is-workflow="isWorkflowBarStatus"
+                  />
+                </el-card>
+                <!-- <el-card class="box-card">
+                  <el-tabs v-model="activeInfo" @tab-click="handleClick">
+                    <el-tab-pane
+                      v-if="!isEmptyValue(getterContextMenu)"
+                      :name="$t('window.containerInfo.associatedProcesses')"
+                    >
+                      <span slot="label">
+                        <svg-icon icon-class="component" />
+                        {{ $t('window.containerInfo.associatedProcesses') }}
+                      </span>
+                      <div>
+                        <el-collapse
+                          v-for="(action, index) in getterContextMenu"
+                          :key="index"
+                          v-model="activeName"
+                          accordion
+                          @change="handleChangeProcess(action)"
+                        >
+                          <el-collapse-item
+                            :title="action.name"
+                            :name="index"
                           >
-                            <el-collapse-item
-                              :title="action.name"
-                              :name="index"
-                            >
-                              <el-card>
-                                <el-container style="max-height: 38vh;">
-                                  <el-main style="height: auto;">
-                                    <main-panel
-                                      v-if="!isEmptyValue(modalMetadata.fieldList)"
-                                      key="main-panel"
-                                      :parent-uuid="windowUuid"
-                                      :container-uuid="modalMetadata.uuid"
-                                      :metadata="modalMetadata"
-                                      :panel-type="modalMetadata.panelType"
-                                    />
-                                    <p v-else> {{ modalMetadata.description }} </p>
-                                  </el-main>
-                                  <el-footer>
-                                    <el-button
-                                      type="primary"
-                                      style="float: right;"
-                                      @click="runAction(action)"
-                                    >
-                                      {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
-                                    </el-button>
-                                  </el-footer>
-                                </el-container>
-                              </el-card>
-                            </el-collapse-item>
-                          </el-collapse>
-                        </div>
-                      </el-tab-pane>
-                      <el-tab-pane
-                        v-if="panelType === 'window'"
-                        name="listChatEntries"
+                            <el-card>
+                              <el-container style="max-height: 38vh;">
+                                <el-main style="height: auto;">
+                                  <main-panel
+                                    v-if="!isEmptyValue(modalMetadata.fieldList)"
+                                    key="main-panel"
+                                    :parent-uuid="windowUuid"
+                                    :container-uuid="modalMetadata.uuid"
+                                    :metadata="modalMetadata"
+                                    :panel-type="modalMetadata.panelType"
+                                  />
+                                  <p v-else> {{ modalMetadata.description }} </p>
+                                </el-main>
+                                <el-footer>
+                                  <el-button
+                                    type="primary"
+                                    style="float: right;"
+                                    @click="runAction(action)"
+                                  >
+                                    {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
+                                  </el-button>
+                                </el-footer>
+                              </el-container>
+                            </el-card>
+                          </el-collapse-item>
+                        </el-collapse>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane
+                      v-if="panelType === 'window'"
+                      name="listChatEntries"
+                    >
+                      <span slot="label">
+                        <i class="el-icon-s-comment" />
+                        {{ $t('window.containerInfo.notes') }}
+                      </span>
+                      <div>
+                        <chat-entries />
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane
+                      v-if="panelType === 'window'"
+                      name="listRecordLogs"
+                    >
+                      <span slot="label">
+                        <svg-icon icon-class="tree-table" />
+                        {{ $t('window.containerInfo.changeLog') }}
+                      </span>
+                      <div
+                        v-if="getIsChangeLog"
+                        key="change-log-loaded"
                       >
-                        <span slot="label">
-                          <i class="el-icon-s-comment" />
-                          {{ $t('window.containerInfo.notes') }}
-                        </span>
-                        <div>
-                          <chat-entries />
-                        </div>
-                      </el-tab-pane>
-                      <el-tab-pane
-                        v-if="panelType === 'window'"
-                        name="listRecordLogs"
-                      >
-                        <span slot="label">
-                          <svg-icon icon-class="tree-table" />
-                          {{ $t('window.containerInfo.changeLog') }}
-                        </span>
-                        <div
-                          v-if="getIsChangeLog"
-                          key="change-log-loaded"
-                        >
-                          <record-logs />
-                        </div>
-                      </el-tab-pane>
-                      <el-tab-pane
+                        <record-logs />
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane
+                      v-if="getIsWorkflowLog"
+                      name="listWorkflowLogs"
+                    >
+                      <span slot="label">
+                        <i class="el-icon-s-help" />
+                        {{ $t('window.containerInfo.workflowLog') }}
+                      </span>
+                      <div
                         v-if="getIsWorkflowLog"
-                        name="listWorkflowLogs"
+                        key="workflow-log-loaded"
                       >
-                        <span slot="label">
-                          <i class="el-icon-s-help" />
-                          {{ $t('window.containerInfo.workflowLog') }}
-                        </span>
-                        <div
-                          v-if="getIsWorkflowLog"
-                          key="workflow-log-loaded"
-                        >
-                          <workflow-logs />
-                        </div>
-                      </el-tab-pane>
-                    </el-tabs>
-                  </el-card>
-                </p>
-              </transition>
-            </div>
+                        <workflow-logs />
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </el-card> -->
+              </span>
+            </transition>
           </el-main>
         </SplitArea>
       </Split>
@@ -335,14 +305,15 @@ import ModalDialog from '@/components/ADempiere/Dialog'
 import DataTable from '@/components/ADempiere/DataTable'
 import splitPane from 'vue-splitpane'
 // Container Info
-import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
-import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
-import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
+// import ChatEntries from '@/components/ADempiere/ContainerInfo/components/chatEntries'
+// import RecordLogs from '@/components/ADempiere/ContainerInfo/components/recordLogs'
+// import WorkflowLogs from '@/components/ADempiere/ContainerInfo/components/workflowLogs'
 // Workflow
 import WorkflowStatusBar from '@/components/ADempiere/WorkflowStatusBar'
 // Panel Process
-import MainPanel from '@/components/ADempiere/Panel'
+// import MainPanel from '@/components/ADempiere/Panel'
 import { showNotification } from '@/utils/ADempiere/notification'
+import TabInfo from '@//components/ADempiere/ContainerInfo'
 
 export default {
   name: 'WindowView',
@@ -353,11 +324,12 @@ export default {
     DataTable,
     splitPane,
     ModalDialog,
-    ChatEntries,
-    RecordLogs,
-    WorkflowLogs,
+    // ChatEntries,
+    // RecordLogs,
+    // WorkflowLogs,
     WorkflowStatusBar,
-    MainPanel
+    // MainPanel,
+    TabInfo
   },
   props: {
     styleSteps: {
@@ -607,6 +579,9 @@ export default {
     },
     modalMetadata() {
       return this.$store.state.processControl.metadata
+    },
+    isShowProcess() {
+      return this.$store.getters.getShowProcess
     }
   },
   watch: {
@@ -632,50 +607,6 @@ export default {
   },
   methods: {
     showNotification,
-    // mostrar panel con los procesos
-    handleChangeProcess(action) {
-      if (action.type === 'process') {
-        console.log(this.$route.meta.tabUuid)
-        // open modal dialog with metadata
-        this.$store.dispatch('setShowDialog', {
-          type: action.type,
-          action: {
-            ...action,
-            containerUuid: action.uuid
-          }
-        })
-      }
-    },
-    runAction(action) {
-      console.log(action, this.windowUuid, this.panelType, this.reportExportType, this.$route)
-      console.log(this.$route.meta.tabUuid)
-      console.log(action.containerUuidAssociated)
-      if (action !== undefined) {
-        const fieldNotReady = this.$store.getters.isNotReadyForSubmit(action.uuid)
-        if (!fieldNotReady) {
-          console.log(action, this.windowUuid, this.$route.meta.tabUuid, this.panelType, this.reportExportType, this.$route)
-          this.$store.dispatch('startProcess', {
-            action: action, // process metadata
-            parentUuid: this.windowUuid,
-            isProcessTableSelection: false,
-            containerUuid: this.$route.meta.tabUuid,
-            panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
-            reportFormat: '',
-            routeToDelete: this.$route
-          })
-            .catch(error => {
-              console.warn(error)
-            })
-        } else {
-          this.showNotification({
-            type: 'warning',
-            title: this.$t('notifications.emptyValues'),
-            name: '<b>' + fieldNotReady.name + '.</b> ',
-            message: this.$t('notifications.fieldMandatory')
-          })
-        }
-      }
-    },
     handleResize() {
       var PanelRight = document.getElementById('PanelRight')
       var resizeWidth = PanelRight
@@ -686,23 +617,8 @@ export default {
     },
     conteInfo() {
       this.showContainerInfo = !this.showContainerInfo
-      if (this.showContainerInfo && this.activeInfo !== this.$t('window.containerInfo.associatedProcesses')) {
-        this.$store.dispatch(this.activeInfo, {
-          tableName: this.getTableName,
-          recordId: this.getRecord[this.getTableName + '_ID']
-        })
-      }
-      this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
+      this.$store.dispatch('showContainerInfo', this.getterShowContainerInfo)
     },
-    handleClick(tab, event) {
-      if (tab.name !== this.$t('window.containerInfo.associatedProcesses')) {
-        this.$store.dispatch(tab.name, {
-          tableName: this.getTableName,
-          recordId: this.getRecord[this.getTableName + '_ID']
-        })
-      }
-    },
-    // callback new size
     onDrag(size) {
       this.$store.dispatch('setSplitHeightTop', {
         splitHeightTop: size[0]
