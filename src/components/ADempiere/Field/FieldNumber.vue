@@ -101,8 +101,10 @@ export default {
           this.isShowed = true
         }
       } else if (!isAllowed && event.key === 'Backspace') {
-        const result = this.calculationValue(this.value, event)
+        const newValue = String(this.value).slice(0, -1)
+        const result = this.calculationValue(newValue, event)
         if (!this.isEmptyValue(result)) {
+          this.value = this.validateValue(result)
           this.valueToDisplay = result
           this.isShowed = true
         } else {

@@ -1,10 +1,11 @@
 <template>
   <el-dropdown trigger="click">
-    <el-button type="text" :disabled="fieldAttributes.readonly">
+    <el-button type="text" :disabled="fieldAttributes.readonly" @click="focusCalc">
       <i class="el-icon-s-operation el-icon--right" />
     </el-button>
     <el-dropdown-menu slot="dropdown" class="dropdown-calc">
       <el-input
+        ref="calculatorInput"
         v-model="calcValue"
         v-shortkey="['enter']"
         class="calc-input"
@@ -312,6 +313,9 @@ export default {
       } else {
         this.valueToDisplay = '...'
       }
+    },
+    focusCalc() {
+      this.$refs.calculatorInput.focus()
     }
   }
 }

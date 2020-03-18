@@ -441,8 +441,13 @@ export function calculationValue(value, event) {
       }
     }
   } else {
-    if (value.key === 'Backspace') {
-      partialValue = partialValue.slice(0, -1)
+    if (event.key === 'Backspace' && !isEmptyValue(value)) {
+      try {
+        // eslint-disable-next-line no-eval
+        return eval(value) + ''
+      } catch (error) {
+        return null
+      }
     } else {
       return null
     }
