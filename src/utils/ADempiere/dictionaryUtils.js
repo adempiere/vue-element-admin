@@ -1,6 +1,6 @@
 import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
-import { getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
+import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
 import REFERENCES, { FIELD_NOT_SHOWED } from '@/components/ADempiere/Field/references'
 import { FIELD_DISPLAY_SIZES, DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import language from '@/lang'
@@ -26,7 +26,10 @@ export function generateField({
 
   const componentReference = evalutateTypeField(fieldToGenerate.displayType, true)
   const referenceType = componentReference.alias[0]
-
+  let isDisplayedFromLogic = fieldToGenerate.isDisplayed
+  let isMandatoryFromLogic = false
+  let isReadOnlyFromLogic = false
+  let parentFieldsList = []
   let parsedDefaultValue = fieldToGenerate.defaultValue
   let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
   let operator = 'EQUAL'
@@ -72,7 +75,8 @@ export function generateField({
       fieldType: componentReference.type,
       value: parsedDefaultValue,
       referenceType,
-      isMandatory: fieldToGenerate.isMandatory
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
 
     if (String(fieldToGenerate.defaultValue).includes('@SQL=')) {
@@ -114,8 +118,36 @@ export function generateField({
       fieldType: componentReference.type,
       value: parsedDefaultValueTo,
       referenceType,
-      isMandatory: fieldToGenerate.isMandatory
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
+
+    parentFieldsList = getParentFields(fieldToGenerate)
+
+    // evaluate logics
+    const setEvaluateLogics = {
+      parentUuid: moreAttributes.parentUuid,
+      containerUuid: moreAttributes.containerUuid,
+      context: getContext
+    }
+    if (!isEmptyValue(fieldToGenerate.displayLogic)) {
+      isDisplayedFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.displayLogic
+      })
+    }
+    if (!isEmptyValue(fieldToGenerate.mandatoryLogic)) {
+      isMandatoryFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.mandatoryLogic
+      })
+    }
+    if (!isEmptyValue(fieldToGenerate.readOnlyLogic)) {
+      isReadOnlyFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.readOnlyLogic
+      })
+    }
   }
 
   const field = {
@@ -134,11 +166,11 @@ export function generateField({
     parsedDefaultValue,
     parsedDefaultValueTo,
     // logics to app
-    isDisplayedFromLogic: fieldToGenerate.isDisplayed,
-    isReadOnlyFromLogic: false,
-    isMandatoryFromLogic: false,
+    isDisplayedFromLogic,
+    isReadOnlyFromLogic,
+    isMandatoryFromLogic,
     //
-    parentFieldsList: [],
+    parentFieldsList,
     dependentFieldsList: [],
     // TODO: Add support on server
     // app attributes
@@ -150,31 +182,6 @@ export function generateField({
     operator, // current operator
     oldOperator: undefined, // old operator
     defaultOperator: operator
-  }
-
-  // evaluate simple logics without context
-  if (!field.isAdvancedQuery) {
-    field.parentFieldsList = getParentFields(fieldToGenerate)
-
-    if (field.displayLogic.trim() !== '' && !field.displayLogic.includes('@')) {
-      field.isDisplayedFromLogic = evaluator.evaluateLogic({
-        type: 'displayed',
-        logic: field.displayLogic
-      })
-      field.isDisplayedFromLogic = Boolean(field.isDisplayedFromLogic)
-    }
-    if (field.mandatoryLogic.trim() !== '' && !field.mandatoryLogic.includes('@')) {
-      field.isMandatoryFromLogic = evaluator.evaluateLogic({
-        logic: field.mandatoryLogic
-      })
-      field.isMandatoryFromLogic = Boolean(field.isMandatoryFromLogic)
-    }
-    if (field.readOnlyLogic.trim() !== '' && !field.readOnlyLogic.includes('@')) {
-      field.isReadOnlyFromLogic = evaluator.evaluateLogic({
-        logic: field.readOnlyLogic
-      })
-      field.isReadOnlyFromLogic = Boolean(field.isReadOnlyFromLogic)
-    }
   }
 
   // Sizes from panel and groups
@@ -201,9 +208,7 @@ export function generateField({
 
   // hidden field type button
   const notShowedField = FIELD_NOT_SHOWED.find(itemField => {
-    if (field.displayType === itemField.id) {
-      return true
-    }
+    return field.displayType === itemField.id
   })
   if (notShowedField) {
     field.isDisplayedFromLogic = false

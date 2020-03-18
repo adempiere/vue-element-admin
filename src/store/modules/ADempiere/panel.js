@@ -6,7 +6,7 @@
 // - Process & Report: Always save a panel and parameters
 // - Smart Browser: Can have a search panel, table panel and process panel
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
-import evaluator, { parseContext } from '@/utils/ADempiere/contextUtils'
+import evaluator, { getContext, parseContext } from '@/utils/ADempiere/contextUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
 import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
 import router from '@/router'
@@ -323,11 +323,13 @@ const panel = {
             type: 'info'
           })
 
-          panel.fieldList.forEach(fieldToBlanck => {
-            commit('changeFieldValueToNull', {
-              field: fieldToBlanck,
-              value: undefined
-            })
+          panel.fieldList.forEach(fieldToBlank => {
+            if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
+              commit('changeFieldValueToNull', {
+                field: fieldToBlank,
+                value: undefined
+              })
+            }
           })
 
           if (panel.isTabsChildren) {
@@ -511,13 +513,15 @@ const panel = {
           newValue = parsedValueComponent({
             fieldType: field.componentPath,
             referenceType: field.referenceType,
-            value: newValue
+            value: newValue,
+            isIdentifier: field.columnName.includes('_ID')
           })
           if (field.isRange) {
             valueTo = parsedValueComponent({
               fieldType: field.componentPath,
               referenceType: field.referenceType,
-              value: valueTo
+              value: valueTo,
+              isIdentifier: field.columnName.includes('_ID')
             })
           }
         }
@@ -775,28 +779,27 @@ const panel = {
       dependentsList.map(async fieldDependent => {
         //  isDisplayed Logic
         let isDisplayedFromLogic, isMandatoryFromLogic, isReadOnlyFromLogic, defaultValue
-        if (fieldDependent.displayLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.displayLogic)) {
           isDisplayedFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
-            logic: fieldDependent.displayLogic,
-            type: 'displayed'
+            logic: fieldDependent.displayLogic
           })
         }
         //  Mandatory Logic
-        if (fieldDependent.mandatoryLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.mandatoryLogic)) {
           isMandatoryFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
             logic: fieldDependent.mandatoryLogic
           })
         }
         //  Read Only Logic
-        if (fieldDependent.readOnlyLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.readOnlyLogic)) {
           isReadOnlyFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
             logic: fieldDependent.readOnlyLogic
@@ -1171,7 +1174,8 @@ const panel = {
             fieldType: fieldItem.componentPath,
             referenceType: fieldItem.referenceType,
             isMandatory: fieldItem.isMandatory,
-            value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn
+            value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn,
+            isIdentifier: fieldItem.columnName.includes('_ID')
           })
           attributesObject[fieldItem.columnName] = valueToReturn
 
@@ -1337,7 +1341,8 @@ const panel = {
                   fieldType: parameterItem.componentPath,
                   value: itemValue,
                   referenceType: parameterItem.referenceType,
-                  isMandatory
+                  isMandatory,
+                  isIdentifier: parameterItem.columnName.includes('_ID')
                 })
               })
             } else {
