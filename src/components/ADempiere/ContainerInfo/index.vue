@@ -151,9 +151,9 @@ export default {
     },
     getterContextMenu() {
       if (!this.isEmptyValue(this.getterWindow)) {
-        const process = this.$store.getters.getContextMenu(this.getterWindow.currentTabUuid).actions
-        if (process) {
-          return process.filter(menu => {
+        const process = this.$store.getters.getContextMenu(this.getterWindow.currentTabUuid)
+        if (!this.isEmptyValue(process)) {
+          return process.actions.filter(menu => {
             if (menu.type === 'process') {
               return menu
             }
