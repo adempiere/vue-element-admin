@@ -2,6 +2,7 @@
 const proxyAddress = process.env.VUE_APP_PROXY_ADDRESS || 'localhost'
 const proxyPort = process.env.VUE_APP_PROXY_PORT || '8989'
 
+// TODO: Add support to https (SSL/TLS)
 export const API_ADDRESS = `http://${proxyAddress}:${proxyPort}`
 
 export const ACCESS_ADDRESS = `${API_ADDRESS}/access`
