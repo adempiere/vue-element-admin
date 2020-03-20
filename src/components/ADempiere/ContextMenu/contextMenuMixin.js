@@ -525,10 +525,7 @@ export const contextMixin = {
               }
               response.url = link.href
             }
-            this.$store.dispatch('finishProcess', {
-              processOutput: response,
-              routeToDelete: this.$route
-            })
+            this.$store.dispatch('finishProcess', response)
           })
       }
     },
