@@ -343,7 +343,7 @@ export const contextMixin = {
             }
           })
       }
-      if (this.panelType !== 'window' || this.panelType !== 'browser') {
+      if (this.panelType === 'window') {
         this.actions = this.metadataMenu.actions.filter(action => {
           if (action.type !== 'process') {
             return action
