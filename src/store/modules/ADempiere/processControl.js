@@ -176,8 +176,11 @@ const processControl = {
         const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
 
         const isSession = !isEmptyValue(getToken())
+        let procesingMessage = {
+          close: () => false
+        }
         if (isSession) {
-          showNotification({
+          procesingMessage = showNotification({
             title: language.t('notifications.processing'),
             message: processDefinition.name,
             summary: processDefinition.description,
@@ -469,7 +472,7 @@ const processControl = {
             .then(runProcessResponse => {
               const { instanceUuid, output } = runProcessResponse
               let logList = []
-              if (runProcessResponse.logsList) {
+              if (!isEmptyValue(runProcessResponse.logsList)) {
                 logList = runProcessResponse.logsList
               }
 
@@ -585,8 +588,8 @@ const processControl = {
                 logs: logList,
                 output
               })
-              dispatch('setReportTypeToShareLink', processResult.output.reportType)
               resolve(processResult)
+              dispatch('setReportTypeToShareLink', processResult.output.reportType)
             })
             .catch(error => {
               Object.assign(processResult, {
@@ -616,7 +619,10 @@ const processControl = {
               }
 
               commit('addNotificationProcess', processResult)
-              dispatch('finishProcess', processResult)
+              dispatch('finishProcess', {
+                processOutput: processResult,
+                procesingMessage
+              })
 
               commit('deleteInExecution', {
                 containerUuid
@@ -880,7 +886,10 @@ const processControl = {
       }
       commit('setShowDialog', false)
     },
-    finishProcess({ commit }, processOutput) {
+    finishProcess({ commit }, {
+      processOutput,
+      procesingMessage
+    }) {
       const processMessage = {
         name: processOutput.processName,
         title: language.t('notifications.succesful'),
@@ -924,6 +933,10 @@ const processControl = {
       if (isSession) {
         showNotification(processMessage)
       }
+      if (!isEmptyValue(procesingMessage)) {
+        procesingMessage.close()
+      }
+
       commit('addStartedProcess', processOutput)
       commit('setReportValues', processOutput)
     },
