@@ -177,10 +177,11 @@
               <span v-if="showContainerInfo">
                 <el-card class="box-card">
                   <tab-info
-                    :window-uuid="windowUuid"
+                    :panel-uuid="windowUuid"
                     :table-name="getTableName"
                     :record="getRecord"
                     :is-workflow="isWorkflowBarStatus"
+                    :panel-type="panelType"
                   />
                 </el-card>
               </span>
