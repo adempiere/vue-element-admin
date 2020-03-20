@@ -253,6 +253,14 @@ const processControl = {
           // close view if is process, report.
           router.push({ path: '/dashboard' })
           dispatch('tagsView/delView', params.routeToDelete)
+
+          // reset panel and set defalt isShowedFromUser
+          if (!processDefinition.isReport) {
+            dispatch('resetPanelToNew', {
+              containerUuid: params.containerUuid,
+              panelType: params.panelType
+            })
+          }
         }
         if (params.isProcessTableSelection) {
           var windowSelectionProcess = getters.getProcessSelect
