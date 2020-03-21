@@ -1,23 +1,32 @@
-import { requestListRecordsLogs, requestListWorkflowsLogs, requestListWorkflows, requestListRecordChats, requestListChatEntries, requestCreateChatEntry } from '@/api/ADempiere/data'
+import {
+  requestListRecordsLogs,
+  requestListWorkflowsLogs,
+  requestListWorkflows,
+  requestListRecordChats,
+  requestListChatEntries,
+  requestCreateChatEntry
+} from '@/api/ADempiere/data'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
+const initStateContainerInfo = {
+  listworkflowLog: [],
+  listRecordLogs: [],
+  listRecordChats: [],
+  listChatEntries: [],
+  listWorkflows: [],
+  chat: [],
+  note: [],
+  isNote: false
+}
+
 const containerInfo = {
-  state: {
-    listworkflowLog: [],
-    listRecordLogs: [],
-    listRecordChats: [],
-    listChatEntries: [],
-    listWorkflows: [],
-    chat: [],
-    note: [],
-    isNote: false
-  },
+  state: initStateContainerInfo,
   mutations: {
     addListWorkflow(state, payload) {
       state.listworkflowLog = payload
     },
     addListWorkflows(state, payload) {
-      state.listworkflows = payload
+      state.listWorkflows = payload
     },
     addListRecordLogs(state, payload) {
       state.listRecordLogs = payload
@@ -36,6 +45,9 @@ const containerInfo = {
     },
     isNote(state, payload) {
       state.isNote = payload
+    },
+    resetStateContainerInfo(state) {
+      state = initStateContainerInfo
     }
   },
   actions: {
@@ -66,17 +78,17 @@ const containerInfo = {
       const pageToken = 0
       return requestListRecordChats({ tableName, recordId, pageSize, pageToken })
         .then(response => {
-          var chatList = response.recordChatsList
-          var listRecord = {
+          const chatList = response.recordChatsList
+          const listRecord = {
             recordChatsList: response.recordChatsList,
             recordCount: response.recordCount,
             nextPageToken: response.nextPageToken
           }
           chatList.forEach(chat => {
-            var uuid = chat.chatUuid
+            const uuid = chat.chatUuid
             requestListChatEntries({ uuid, pageSize, pageToken })
               .then(response => {
-                var listlogsChat = state.chat
+                const listlogsChat = state.chat
                 let chatUpgrade = []
                 let chatAll
                 if (recordId === chat.recordId) {
@@ -102,51 +114,56 @@ const containerInfo = {
           console.warn(`Error getting List Chat: ${error.message}. Code: ${error.code}.`)
         })
     },
-    listRecordLogs({ commit, state }, params) {
+    listRecordLogs({ commit }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const pageSize = 0
       const pageToken = 0
       return requestListRecordsLogs({ tableName, recordId, pageSize, pageToken })
         .then(response => {
-          var listRecord = {
+          const listRecord = {
             recordCount: response.recordCount,
             recorLogs: response.recordLogsList
           }
           commit('addListRecordLogs', listRecord)
+          return listRecord
         })
         .catch(error => {
           console.warn(`Error getting List Record Logs: ${error.message}. Code: ${error.code}.`)
         })
     },
-    listWorkflowLogs({ commit, state, dispatch }, params) {
+    listWorkflowLogs({ commit, dispatch }, params) {
       const tableName = params.tableName
       const recordId = params.recordId
       const pageSize = 0
       const pageToken = 0
-      dispatch('listWorkflows', {
-        tableName: tableName
-      })
+      dispatch('listWorkflows', tableName)
       return requestListWorkflowsLogs({ tableName, recordId, pageSize, pageToken })
         .then(response => {
-          var workflowLog = {
+          const workflowLog = {
             recordCount: response.recordCount,
             workflowLogsList: response.workflowLogsList,
             nextPageToken: response.nextPageToken
           }
           commit('addListWorkflow', workflowLog)
+          return workflowLog
         })
         .catch(error => {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
         })
     },
-    listWorkflows({ commit, state }, params) {
-      const tableName = params.tableName
+    listWorkflows({ commit }, tableName) {
       const pageSize = 0
       const pageToken = 0
       return requestListWorkflows({ tableName, pageSize, pageToken })
         .then(response => {
-          commit('addListWorkflows', response)
+          const nodeWorflow = {
+            nextPageToken: response.nextPageToken,
+            recordCount: response.recordCount,
+            workflowsList: response.workflowsList
+          }
+          commit('addListWorkflows', nodeWorflow)
+          return nodeWorflow
         })
         .catch(error => {
           console.warn(`Error getting List workflow: ${error.message}. Code: ${error.code}.`)
@@ -156,6 +173,9 @@ const containerInfo = {
   getters: {
     getWorkflow: (state) => {
       return state.listworkflowLog.workflowLogsList
+    },
+    getNodeWorkflow: (state) => {
+      return state.listWorkflows
     },
     getRecordLogs: (state) => {
       return state.listRecordLogs

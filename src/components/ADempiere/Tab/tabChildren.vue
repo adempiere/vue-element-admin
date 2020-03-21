@@ -57,9 +57,19 @@ export default {
     },
     getterIsLoadContextParent() {
       return this.getterDataParentTab.isLoadedContext
+    },
+    isReadyFromGetData() {
+      return !this.getDataSelection.isLoaded && this.getterIsLoadContextParent && this.getterIsLoadRecordParent
     }
   },
   watch: {
+    '$route.query.tabChild'(actionValue) {
+      if (this.isEmptyValue(actionValue)) {
+        this.currentTabChild = '0'
+        return
+      }
+      this.currentTabChild = actionValue
+    },
     // Current TabChildren
     currentTabChild(newValue, oldValue) {
       if (newValue !== oldValue) {
@@ -75,20 +85,17 @@ export default {
       }
     },
     // Refrest the records of the TabChildren
-    getDataSelection(value) {
-      if (!value.isLoaded && this.getterIsLoadContextParent && this.getterIsLoadRecordParent) {
-        this.getDataTable()
-      }
-    },
-    // Load parent tab context
-    getterIsLoadContextParent(value) {
-      if (value && !this.getDataSelection.isLoaded && this.getterIsLoadRecordParent) {
+    isReadyFromGetData(value) {
+      if (value) {
         this.getDataTable()
       }
     }
   },
   mounted() {
     this.setCurrentTabChild()
+    if (this.isReadyFromGetData) {
+      this.getDataTable()
+    }
   },
   methods: {
     setCurrentTabChild() {

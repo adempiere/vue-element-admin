@@ -5,20 +5,22 @@ import { showMessage } from '@/utils/ADempiere/notification'
 import language from '@/lang'
 import router from '@/router'
 
-const windowControl = {
-  state: {
-    inCreate: [],
-    references: [],
-    windowOldRoute: {
-      path: '',
-      fullPath: '',
-      query: {}
-    },
-    dataLog: {}, // { containerUuid, recordId, tableName, eventType }
-    tabSequenceRecord: [],
-    totalResponse: 0,
-    totalRequest: 0
+const initStateWindowControl = {
+  inCreate: [],
+  references: [],
+  windowOldRoute: {
+    path: '',
+    fullPath: '',
+    query: {}
   },
+  dataLog: {}, // { containerUuid, recordId, tableName, eventType }
+  tabSequenceRecord: [],
+  totalResponse: 0,
+  totalRequest: 0
+}
+
+const windowControl = {
+  state: initStateWindowControl,
   mutations: {
     addInCreate(state, payload) {
       state.inCreate.push(payload)
@@ -28,15 +30,6 @@ const windowControl = {
     },
     addReferencesList(state, payload) {
       state.references.push(payload)
-    },
-    deleteReference(state, payload) {
-      state.references = state.references.filter(itemReference => {
-        if (itemReference.parentUuid === payload.windowUuid &&
-          itemReference.recordUuid === payload.recordUuid) {
-          return false
-        }
-        return true
-      })
     },
     setDataLog(state, payload) {
       state.dataLog = payload
@@ -52,6 +45,9 @@ const windowControl = {
     },
     setTotalRequest(state, payload) {
       state.totalRequest = payload
+    },
+    resetStateWindowControl(state) {
+      state = initStateWindowControl
     }
   },
   actions: {
@@ -894,7 +890,7 @@ const windowControl = {
     getReferencesList: (state) => (windowUuid, recordUuid) => {
       return state.references.find(item => item.windowUuid === windowUuid && item.recordUuid === recordUuid)
     },
-    getReferencesInfo: (state, getters) => (windowUuid, recordUuid, referenceUuid) => {
+    getReferencesInfo: (state, getters) => ({ windowUuid, recordUuid, referenceUuid }) => {
       const references = getters.getReferencesList(windowUuid, recordUuid)
       return references.referencesList.find(item => item.uuid === referenceUuid)
     },

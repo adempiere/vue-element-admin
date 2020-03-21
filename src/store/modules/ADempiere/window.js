@@ -8,19 +8,20 @@ import language from '@/lang'
 import router from '@/router'
 import { generateField, getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
 
+const initStateWindow = {
+  window: [],
+  windowIndex: 0
+}
+
 const window = {
-  state: {
-    window: [],
-    windowIndex: 0
-  },
+  state: initStateWindow,
   mutations: {
     addWindow(state, payload) {
       state.window.push(payload)
       state.windowIndex++
     },
     dictionaryResetCacheWindow(state) {
-      state.window = []
-      state.windowIndex = 0
+      state = initStateWindow
     },
     changeWindow(state, payload) {
       payload.window = payload.newWindow
@@ -197,7 +198,9 @@ const window = {
               parentTabs.push(tab)
               return tab
             }
-            childrenTabs.push(tab)
+            if (!tab.isSortTab) {
+              childrenTabs.push(tab)
+            }
             return tab
           })
 
@@ -252,7 +255,7 @@ const window = {
             isAdvancedQuery
           }
 
-          let fieldUuidsequence = 0
+          let isWithUuidField = false // indicates it contains the uuid field
           let fieldLinkColumnName
           //  Convert from gRPC
           const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
@@ -263,8 +266,9 @@ const window = {
                 fieldListIndex: index
               }
             })
-            if (fieldItem.sequence > fieldUuidsequence) {
-              fieldUuidsequence = fieldItem.sequence
+
+            if (!isWithUuidField && fieldItem.columnName === 'UUID') {
+              isWithUuidField = true
             }
 
             if (fieldItem.isParent) {
@@ -277,30 +281,29 @@ const window = {
           if (!isAdvancedQuery) {
             //  Get dependent fields
             fieldsList
-              .filter(field => field.parentFieldsList && field.isActive)
               .forEach((field, index, list) => {
-                field.parentFieldsList.forEach(parentColumnName => {
-                  const parentField = list.find(parentField => {
-                    return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                if (field.parentFieldsList.length && field.isActive) {
+                  field.parentFieldsList.forEach(parentColumnName => {
+                    const parentField = list.find(parentField => {
+                      return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                    })
+                    if (parentField) {
+                      parentField.dependentFieldsList.push(field.columnName)
+                    }
                   })
-                  if (parentField) {
-                    parentField.dependentFieldsList.push(field.columnName)
-                  }
-                })
+                }
               })
           }
 
-          if (!fieldsList.find(field => field.columnName === 'UUID')) {
-            const attributesOverwrite = {
-              panelType: panelType,
-              sequence: (fieldUuidsequence + 10),
+          if (!isWithUuidField) {
+            const fieldUuid = getFieldTemplate({
+              ...additionalAttributes,
+              isShowedFromUser: false,
               name: 'UUID',
               columnName: 'UUID',
-              isAdvancedQuery,
               componentPath: 'FieldText'
-            }
-            const field = getFieldTemplate(attributesOverwrite)
-            fieldsList.push(field)
+            })
+            fieldsList.push(fieldUuid)
           }
 
           const window = getters.getWindow(parentUuid)

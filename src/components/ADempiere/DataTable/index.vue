@@ -165,7 +165,7 @@
               fixed
               min-width="50"
             />
-            <template v-for="(fieldAttributes, key) in fieldList">
+            <template v-for="(fieldAttributes, key) in fieldsList">
               <el-table-column
                 v-if="isDisplayed(fieldAttributes)"
                 :key="key"
@@ -186,7 +186,6 @@
                       :in-table="true"
                       :metadata-field="{
                         ...fieldAttributes,
-                        parentUuid: parentUuid,
                         displayColumn: scope.row['DisplayColumn_' + fieldAttributes.columnName],
                         tableIndex: scope.$index,
                         rowKey: scope.row[getterPanel.keyColumn],
@@ -326,10 +325,10 @@ export default {
   },
   computed: {
     getterContextMenu() {
-      const process = this.$store.getters.getContextMenu(this.containerUuid).actions
+      const process = this.$store.getters.getContextMenu(this.containerUuid)
       if (process) {
-        return process.filter(menu => {
-          if (menu.type === 'process') {
+        return process.actions.filter(menu => {
+          if (menu.type === 'process' || menu.type === 'application') {
             return menu
           }
         })
@@ -445,12 +444,20 @@ export default {
       }
       return this.getterHeight - 300 - totalRow
     },
-    fieldList() {
+    fieldsList() {
       if (this.getterPanel && this.getterPanel.fieldList) {
-        return this.sortFields(
-          this.getterPanel.fieldList,
-          this.panelType !== 'browser' ? 'seqNoGrid' : 'sequence'
-        )
+        if ((this.panelType === 'window' && this.isParent) || this.panelType === 'browser') {
+          let orderBy = 'seqNoGrid'
+          if (this.panelType === 'browser') {
+            orderBy = 'sequence'
+          }
+
+          return this.sortFields({
+            fieldsList: this.getterPanel.fieldList,
+            orderBy
+          })
+        }
+        return this.getterPanel.fieldList
       }
       return []
     },
@@ -627,6 +634,8 @@ export default {
           referenceType: field.referenceType,
           number: row[field.columnName]
         })
+      } else if (field.componentPath === 'FieldSelect' && this.isEmptyValue(row['DisplayColumn_' + field.columnName]) && row[field.columnName] === 0) {
+        return field.defaultValue
       }
       return row['DisplayColumn_' + field.columnName] || row[field.columnName]
     },
@@ -717,7 +726,7 @@ export default {
       this.getterDataRecords.shift()
     },
     tableRowClassName({ row, rowIndex }) {
-      if (row.isNew) {
+      if (row.isNew && rowIndex === 0) {
         return 'warning-row'
       }
       return ''
@@ -727,7 +736,7 @@ export default {
         this.$store.dispatch('addNewRow', {
           parentUuid: this.parentUuid,
           containerUuid: this.containerUuid,
-          fieldList: this.fieldList,
+          fieldList: this.fieldsList,
           isEdit: true,
           isSendServer: false
         })
@@ -744,7 +753,7 @@ export default {
     },
     async setFocus() {
       return new Promise(resolve => {
-        const fieldFocus = this.fieldList.find(itemField => {
+        const fieldFocus = this.fieldsList.find(itemField => {
           if (this.$refs.hasOwnProperty(itemField.columnName)) {
             if (fieldIsDisplayed(itemField) && !itemField.isReadOnly && itemField.isUpdateable) {
               return true
@@ -939,7 +948,7 @@ export default {
         }).then(response => {
           this.isLoadPanelFromServer = true
         }).catch(error => {
-          console.warn(`FieldList Load Error ${error.code}: ${error.message}.`)
+          console.warn(`Fields List Load Error ${error.code}: ${error.message}.`)
         })
       }
     },
@@ -959,7 +968,7 @@ export default {
           sums[index] = 'Σ'
           return
         }
-        const field = this.fieldList.find(field => field.columnName === columnItem.property)
+        const field = this.fieldsList.find(field => field.columnName === columnItem.property)
         if (!FIELDS_QUANTITY.includes(field.referenceType)) {
           sums[index] = ''
           return
@@ -1008,7 +1017,7 @@ export default {
     },
     getFieldDefinition(fieldDefinition, row) {
       let styleSheet = ''
-      if (fieldDefinition && (fieldDefinition.id !== null || fieldDefinition.conditionsList.length)) {
+      if (fieldDefinition && (!this.isEmptyValue(fieldDefinition.id) || fieldDefinition.conditionsList.length)) {
         fieldDefinition.conditionsList.forEach(condition => {
           const columns = evaluator.parseDepends(condition.condition)
           let conditionLogic = condition.condition
@@ -1065,7 +1074,7 @@ export default {
 </style>
 <style>
   .el-table .warning-row {
-    background: rgba(104, 245, 203, 0.712);
+    background: rgba(161, 250, 223, 0.945);
   }
 
   .el-table .success-row {

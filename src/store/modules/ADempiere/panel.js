@@ -6,7 +6,7 @@
 // - Process & Report: Always save a panel and parameters
 // - Smart Browser: Can have a search panel, table panel and process panel
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
-import evaluator, { parseContext } from '@/utils/ADempiere/contextUtils'
+import evaluator, { getContext, parseContext } from '@/utils/ADempiere/contextUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
 import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
 import router from '@/router'
@@ -95,7 +95,15 @@ const panel = {
             }
           }
         })
-        params.fieldList = assignedGroup(params.fieldList)
+
+        let orderBy = 'sequence'
+        if ((params.panelType === 'window' && !params.isParentTab) || params.panelType === 'browser') {
+          orderBy = 'seqNoGrid'
+        }
+        params.fieldList = assignedGroup({
+          fieldsList: params.fieldList,
+          orderBy
+        })
       }
 
       params.keyColumn = keyColumn
@@ -315,11 +323,13 @@ const panel = {
             type: 'info'
           })
 
-          panel.fieldList.forEach(fieldToBlanck => {
-            commit('changeFieldValueToNull', {
-              field: fieldToBlanck,
-              value: undefined
-            })
+          panel.fieldList.forEach(fieldToBlank => {
+            if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
+              commit('changeFieldValueToNull', {
+                field: fieldToBlank,
+                value: undefined
+              })
+            }
           })
 
           if (panel.isTabsChildren) {
@@ -399,22 +409,24 @@ const panel = {
               value: newValues[actionField.columnName]
             })
               .then(response => {
-                dispatch('notifyFieldChange', {
-                  isSendToServer,
-                  isSendCallout,
-                  isAdvancedQuery,
-                  panelType,
-                  parentUuid,
-                  containerUuid,
-                  columnName: actionField.columnName,
-                  displayColumn: response.label,
-                  newValue: newValues[actionField.columnName],
-                  valueTo: newValues[`${actionField.columnName}_To`],
-                  fieldList,
-                  field: actionField,
-                  withOutColumnNames,
-                  isChangedOldValue: true // defines if set oldValue with newValue instead of current value
-                })
+                if (!isEmptyValue(response)) {
+                  dispatch('notifyFieldChange', {
+                    isSendToServer,
+                    isSendCallout,
+                    isAdvancedQuery,
+                    panelType,
+                    parentUuid,
+                    containerUuid,
+                    columnName: actionField.columnName,
+                    displayColumn: response.label,
+                    newValue: newValues[actionField.columnName],
+                    valueTo: newValues[`${actionField.columnName}_To`],
+                    fieldList,
+                    field: actionField,
+                    withOutColumnNames,
+                    isChangedOldValue: true // defines if set oldValue with newValue instead of current value
+                  })
+                }
               })
           } else {
             newValues[`DisplayColumn_${actionField.columnName}`] = lookup.label
@@ -439,7 +451,7 @@ const panel = {
       })
 
       // show fields in query
-      if (isShowedField && Object.keys(newValues).length) {
+      if (isShowedField && !isEmptyValue(newValues)) {
         // join column names without duplicating it
         fieldsShowed = Array.from(new Set([
           ...fieldsShowed,
@@ -501,13 +513,15 @@ const panel = {
           newValue = parsedValueComponent({
             fieldType: field.componentPath,
             referenceType: field.referenceType,
-            value: newValue
+            value: newValue,
+            isIdentifier: field.columnName.includes('_ID')
           })
           if (field.isRange) {
             valueTo = parsedValueComponent({
               fieldType: field.componentPath,
               referenceType: field.referenceType,
-              value: valueTo
+              value: valueTo,
+              isIdentifier: field.columnName.includes('_ID')
             })
           }
         }
@@ -521,7 +535,7 @@ const panel = {
         })
 
         // request context info field
-        if (!isEmptyValue(field.value) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
+        if ((!isEmptyValue(field.value) || !isEmptyValue(newValue)) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
           var isSQL = false
           var sqlStatement = field.contextInfo.sqlStatement
           if (sqlStatement.includes('@')) {
@@ -610,6 +624,13 @@ const panel = {
                 }
               })
             }
+            commit('changeField', {
+              field,
+              newField: {
+                ...field,
+                oldOperator: field.operator
+              }
+            })
             dispatch('getObjectListFromCriteria', {
               parentUuid,
               containerUuid,
@@ -623,13 +644,6 @@ const panel = {
               })
             })
               .then(response => {
-                commit('changeField', {
-                  field,
-                  newField: {
-                    ...field,
-                    oldOperator: field.operator
-                  }
-                })
                 if (response && response.length) {
                   dispatch('notifyPanelChange', {
                     parentUuid,
@@ -649,10 +663,33 @@ const panel = {
         } else if (!getters.isNotReadyForSubmit(containerUuid)) {
           // TODO: refactory for it and change for a standard method
           if (field.panelType === 'browser' && fieldIsDisplayed(field)) {
-            dispatch('getBrowserSearch', {
-              containerUuid,
-              isClearSelection: true
-            })
+            let isReadyForQuery = true
+            if (field.isSQLValue) {
+              let awaitForValuesToQuery = panel.awaitForValuesToQuery
+              awaitForValuesToQuery--
+              dispatch('changeBrowserAttribute', {
+                containerUuid,
+                attributeName: 'awaitForValuesToQuery',
+                attributeValue: awaitForValuesToQuery
+              })
+              if (awaitForValuesToQuery === 0) {
+                if (panel.isShowedCriteria) {
+                  dispatch('changeBrowserAttribute', {
+                    containerUuid,
+                    attributeName: 'isShowedCriteria',
+                    attributeValue: false
+                  })
+                }
+              } else if (awaitForValuesToQuery > 0) {
+                isReadyForQuery = false
+              }
+            }
+            if (isReadyForQuery && !field.dependentFieldsList.length) {
+              dispatch('getBrowserSearch', {
+                containerUuid,
+                isClearSelection: true
+              })
+            }
           }
           if (field.panelType === 'window' && fieldIsDisplayed(field)) {
             const uuid = getters.getUuid(containerUuid)
@@ -740,61 +777,71 @@ const panel = {
       })
 
       //  Iterate for change logic
-      dependentsList.forEach(fieldDependent => {
+      dependentsList.map(async fieldDependent => {
         //  isDisplayed Logic
         let isDisplayedFromLogic, isMandatoryFromLogic, isReadOnlyFromLogic, defaultValue
-        if (fieldDependent.displayLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.displayLogic)) {
           isDisplayedFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
-            logic: fieldDependent.displayLogic,
-            type: 'displayed'
+            logic: fieldDependent.displayLogic
           })
         }
         //  Mandatory Logic
-        if (fieldDependent.mandatoryLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.mandatoryLogic)) {
           isMandatoryFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
             logic: fieldDependent.mandatoryLogic
           })
         }
         //  Read Only Logic
-        if (fieldDependent.readOnlyLogic.trim() !== '') {
+        if (!isEmptyValue(fieldDependent.readOnlyLogic)) {
           isReadOnlyFromLogic = evaluator.evaluateLogic({
-            context: getters,
+            context: getContext,
             parentUuid,
             containerUuid,
             logic: fieldDependent.readOnlyLogic
           })
         }
         //  Default Value
-        if (fieldDependent.defaultValue.trim() !== '' &&
+        if (!isEmptyValue(fieldDependent.defaultValue) &&
           fieldDependent.defaultValue.includes('@') &&
-          String(fieldDependent.defaultValue).trim() !== '-1') {
+          !fieldDependent.defaultValue.includes('@SQL=')) {
           defaultValue = parseContext({
             parentUuid,
             containerUuid,
             value: fieldDependent.defaultValue
           }).value
-          if (isSendToServer && defaultValue !== fieldDependent.defaultValue) {
-            dispatch('getRecordBySQL', {
-              field: fieldDependent,
+        }
+        if (!isEmptyValue(fieldDependent.defaultValue) &&
+          fieldDependent.defaultValue.includes('@SQL=')) {
+          defaultValue = parseContext({
+            parentUuid,
+            containerUuid,
+            isSQL: true,
+            value: fieldDependent.defaultValue
+          }).query
+          if (defaultValue !== fieldDependent.parsedDefaultValue) {
+            const newValue = await dispatch('getValueBySQL', {
+              parentUuid,
+              containerUuid,
               query: defaultValue
             })
-              .then(response => {
-                dispatch('notifyFieldChange', {
-                  parentUuid,
-                  containerUuid,
-                  panelType: fieldDependent.panelType,
-                  columnName: fieldDependent.columnName,
-                  newValue: response.key
-                })
-              })
+
+            dispatch('notifyFieldChange', {
+              parentUuid,
+              containerUuid,
+              isSendToServer,
+              panelType: fieldDependent.panelType,
+              columnName: fieldDependent.columnName,
+              newValue
+            })
           }
         }
+
         commit('changeFieldLogic', {
           field: fieldDependent,
           isDisplayedFromLogic,
@@ -1118,13 +1165,20 @@ const panel = {
               value: fieldItem.defaultValue,
               isSQL
             })
+            if (typeof valueToReturn === 'object') {
+              valueToReturn = {
+                ...valueToReturn,
+                defaultValue: fieldItem.defaultValue
+              }
+            }
           }
 
           valueToReturn = parsedValueComponent({
             fieldType: fieldItem.componentPath,
             referenceType: fieldItem.referenceType,
             isMandatory: fieldItem.isMandatory,
-            value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn
+            value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn,
+            isIdentifier: fieldItem.columnName.includes('_ID')
           })
           attributesObject[fieldItem.columnName] = valueToReturn
 
@@ -1290,7 +1344,8 @@ const panel = {
                   fieldType: parameterItem.componentPath,
                   value: itemValue,
                   referenceType: parameterItem.referenceType,
-                  isMandatory
+                  isMandatory,
+                  isIdentifier: parameterItem.columnName.includes('_ID')
                 })
               })
             } else {

@@ -22,6 +22,10 @@ export default {
   name: 'FieldText',
   mixins: [fieldMixin],
   props: {
+    inTable: {
+      type: Boolean,
+      default: false
+    },
     pattern: {
       type: String,
       default: undefined
@@ -39,7 +43,7 @@ export default {
       if (this.metadata.inTable) {
         return 1
       }
-      return 5
+      return 4
     },
     typeTextBox() {
       // String, Url, FileName...

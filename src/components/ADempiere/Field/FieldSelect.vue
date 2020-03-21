@@ -49,7 +49,7 @@ export default {
         label: ' ',
         key: undefined
       }],
-      blanckOption: {
+      blankOption: {
         // label with '' value is assumed to be undefined non-existent
         label: ' ',
         key: undefined || -1
@@ -75,7 +75,7 @@ export default {
     },
     getterLookupItem() {
       if (this.isEmptyValue(this.metadata.reference.directQuery)) {
-        return this.blanckOption
+        return this.blankOption
       }
       return this.$store.getters.getLookupItem({
         parentUuid: this.metadata.parentUuid,
@@ -87,7 +87,7 @@ export default {
     },
     getterLookupList() {
       if (this.isEmptyValue(this.metadata.reference.query)) {
-        return this.blanckOption
+        return this.blankOption
       }
       return this.$store.getters.getLookupList({
         parentUuid: this.metadata.parentUuid,
@@ -105,10 +105,18 @@ export default {
         tableName: this.metadata.reference.tableName,
         value: this.value
       })
-      if (allOptions && ((allOptions.length && allOptions[0].key !== this.blanckOption.key) || !allOptions.length)) {
-        allOptions.unshift(this.blanckOption)
+
+      if (this.isEmptyValue(allOptions) || !this.blankOptionInfo.hasBlankOption) {
+        allOptions.unshift(this.blankOption)
       }
       return allOptions
+    },
+    blankOptionInfo() {
+      return {
+        hasBlankOption: this.options.some(option => option.label === ' '),
+        index: this.options.findIndex(option => option.label === ' '),
+        option: this.options.find(option => option.label === ' ')
+      }
     }
   },
   watch: {
@@ -140,13 +148,19 @@ export default {
           value = value ? 'Y' : 'N'
         }
         if (this.metadata.displayed) {
-          if (!this.options.some(option => option.key === value)) {
+          if (!this.options.some(option => option.key === value) &&
+            !this.isEmptyValue(this.metadata.displayColumn)) {
             this.options.push({
               key: value,
-              label: this.findLabel(value)
+              label: this.metadata.displayColumn
             })
-            this.value = value
           }
+        }
+        if (!this.findLabel(value) &&
+          this.metadata.displayed &&
+          this.metadata.optionCRUD !== 'create-new' &&
+          this.isEmptyValue(this.metadata.displayColumn)) {
+          value = undefined
         }
         this.value = value
       }
@@ -170,7 +184,7 @@ export default {
   beforeMount() {
     if (this.metadata.displayed) {
       this.options = this.getterLookupAll
-      if (!this.isEmptyValue(this.value) && this.metadata.panelType !== 'table') {
+      if (!this.isEmptyValue(this.value) && !this.metadata.isAdvancedQuery) {
         if (!this.findLabel(this.value)) {
           if (!this.isEmptyValue(this.metadata.displayColumn)) {
           // verify if exists to add
@@ -225,7 +239,7 @@ export default {
           }
           this.options = this.getterLookupAll
           if (this.options.length && !this.options[0].key) {
-            this.options.unshift(this.blanckOption)
+            this.options.unshift(this.blankOption)
           }
         })
         .finally(() => {
@@ -237,13 +251,13 @@ export default {
      */
     getDataLookupList(isShowList) {
       if (isShowList) {
-        // TODO: Evaluate if length = 1 and this element key = blanckOption
+        // TODO: Evaluate if length = 1 and this element key = blankOption
         if (this.getterLookupList.length === 0) {
           this.remoteMethod()
         }
       }
     },
-    remoteMethod() {
+    async remoteMethod() {
       if (this.isEmptyValue(this.metadata.reference.query)) {
         return
       }
@@ -272,7 +286,7 @@ export default {
       })
       // TODO: Evaluate if is number -1 or string '' (or default value)
       this.options = this.getterLookupAll
-      this.value = this.blanckOption.key
+      this.value = this.blankOption.key
     }
   }
 }

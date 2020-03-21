@@ -1,14 +1,13 @@
 
-export const ADDRESS_HOST = 'http://localhost'
+const proxyAddress = process.env.VUE_APP_PROXY_ADDRESS || 'localhost'
+const proxyPort = process.env.VUE_APP_PROXY_PORT || '8989'
 
-export const PORT_DICTIONARY = '8990'
-export const HOST_GRPC_DICTIONARY = ADDRESS_HOST + ':' + PORT_DICTIONARY
+export const API_ADDRESS = `http://${proxyAddress}:${proxyPort}`
 
-export const PORT_DATA = '8991'
-export const HOST_GRPC_DATA = ADDRESS_HOST + ':' + PORT_DATA
+export const ACCESS_ADDRESS = `${API_ADDRESS}/access`
 
-export const PORT_AUTHENTICATION = '8989'
-export const HOST_GRPC_AUTHENTICATION = ADDRESS_HOST + ':' + PORT_AUTHENTICATION
+export const DICTIONARY_ADDRESS = `${API_ADDRESS}/dictionary`
 
-export const PORT_ENROLLMENT = '8992'
-export const HOST_GRPC_ENROLLMENT = ADDRESS_HOST + ':' + PORT_ENROLLMENT
+export const BUSINESS_DATA_ADDRESS = `${API_ADDRESS}/businessdata`
+
+export const ENROLLMENT_ADDRESS = `${API_ADDRESS}/enrollment`

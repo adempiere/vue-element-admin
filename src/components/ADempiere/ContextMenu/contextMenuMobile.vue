@@ -1,5 +1,6 @@
 <template>
   <div class="container-submenu-mobile container-context-menu">
+    <svg-icon v-if="isPanelTypeMobile" :icon-class="iconDefault" @click="runAction(actions[0])" />
     <right-menu>
       <el-menu
         ref="contextMenu"
@@ -96,13 +97,13 @@
           <template slot="title">
             {{ $t('components.contextMenuReferences') }}
           </template>
-          <template v-if="references && isEmptyValue(references.referencesList)">
+          <template v-if="references && !isEmptyValue(references.referencesList)">
             <el-scrollbar wrap-class="scroll-child">
               <el-menu-item
                 v-for="(reference, index) in references.referencesList"
                 :key="index"
                 :index="reference.displayName"
-                @click="runAction(reference)"
+                @click="openReference(reference)"
               >
                 {{ reference.displayName }}
               </el-menu-item>
@@ -126,6 +127,30 @@ export default {
   components: {
     RightMenu
   },
-  mixins: [contextMixin]
+  mixins: [contextMixin],
+  computed: {
+    isPanelTypeMobile() {
+      console.log(this.panelType, this.$route.meta.type)
+      if (this.$route.meta.type === 'process' || this.$route.meta.type === 'report') {
+        return true
+      }
+      return false
+    },
+    iconDefault() {
+      if (this.$route.meta.type === 'process') {
+        return 'component'
+      }
+      return 'skill'
+    }
+  }
 }
 </script>
+<style scoped>
+  .svg-icon {
+    width: 1em;
+    height: 2em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+  }
+</style>
