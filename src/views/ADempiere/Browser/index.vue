@@ -1,6 +1,7 @@
 <template>
   <el-container v-if="isLoaded" key="browser-loaded" class="view-base" style="height: 86vh;">
     <modal-dialog
+      v-if="isShowProcess"
       :container-uuid="browserUuid"
       :panel-type="panelType"
     />
@@ -45,21 +46,38 @@
       </el-popover>
     </el-header>
     <el-main>
-      <el-collapse v-model="activeSearch" class="container-collasep-open" @change="handleChange">
-        <el-collapse-item :title="$t('views.searchCriteria')" name="opened-criteria">
-          <main-panel
-            :container-uuid="browserUuid"
-            :metadata="browserMetadata"
-            :panel-type="panelType"
-          />
-        </el-collapse-item>
-      </el-collapse>
-      <data-table
-        v-if="isLoaded"
-        :container-uuid="browserUuid"
-        :panel-type="panelType"
-        :metadata="browserMetadata"
-      />
+      <Split :style="infoTab ? 'overflow: auto' : 'overflow: hidden'" :gutter-size="infoTab ? 8 : 0">
+        <SplitArea :size="sisePanel" direction="vertical">
+          <el-collapse v-model="activeSearch" class="container-collasep-open" @change="handleChange">
+            <el-collapse-item :title="$t('views.searchCriteria')" name="opened-criteria">
+              <main-panel
+                :container-uuid="browserUuid"
+                :metadata="browserMetadata"
+                :panel-type="panelType"
+              />
+            </el-collapse-item>
+          </el-collapse>
+          <div style="position: inherit;display: -webkit-box;margin-top: 8px;">
+            <data-table
+              v-if="isLoaded"
+              :container-uuid="browserUuid"
+              :panel-type="panelType"
+              :metadata="browserMetadata"
+            />
+            <el-button type="info" icon="el-icon-s-tools" circle style="position: absolute;top: 51%;" class="el-button-window" @click="ShowPanelInfo" />
+          </div>
+        </SplitArea>
+        <SplitArea :size="infoTab ? 50 : 2">
+          <el-card v-if="infoTab" class="box-card">
+            <tab-info
+              :info-process-uuid="browserUuid"
+              :panel-type="panelType"
+              :record="recordsRun"
+              :is-process-browser="getContainerIsReadyForSubmit"
+            />
+          </el-card>
+        </SplitArea>
+      </Split>
     </el-main>
   </el-container>
   <div
@@ -80,6 +98,7 @@ import ContextMenu from '@/components/ADempiere/ContextMenu'
 import MainPanel from '@/components/ADempiere/Panel'
 import DataTable from '@/components/ADempiere/DataTable'
 import ModalDialog from '@/components/ADempiere/Dialog'
+import TabInfo from '@/components/ADempiere/ContainerInfo'
 
 export default {
   name: 'BrowserView',
@@ -87,6 +106,7 @@ export default {
     MainPanel,
     DataTable,
     ContextMenu,
+    TabInfo,
     ModalDialog
   },
   props: {
@@ -101,7 +121,8 @@ export default {
       browserUuid: this.$route.meta.uuid,
       activeSearch: [],
       isLoaded: false,
-      panelType: 'browser'
+      panelType: 'browser',
+      infoTab: false
     }
   },
   computed: {
@@ -134,6 +155,22 @@ export default {
         return this.getterBrowser.isShowedCriteria
       }
       return false
+    },
+    recordsRun() {
+      const record = this.$store.getters.getDataRecordAndSelection(this.browserUuid).selection
+      if (!this.isEmptyValue(record)) {
+        return record
+      }
+      return []
+    },
+    sisePanel() {
+      if (this.infoTab) {
+        return 50
+      }
+      return 99
+    },
+    isShowProcess() {
+      return this.$store.getters.getShowProcess
     }
   },
   watch: {
@@ -149,6 +186,9 @@ export default {
     this.getBrowser()
   },
   methods: {
+    ShowPanelInfo() {
+      this.infoTab = !this.infoTab
+    },
     handleChange(value) {
       let showCriteria = false
       if (this.activeSearch.length) {
@@ -205,8 +245,38 @@ export default {
 </script>
 
 <style>
+  .el-collapse-item__header {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    height: 48px;
+    color: #000000;
+    line-height: 48px;
+    background-color: #fff;
+    cursor: pointer;
+    border-bottom: 1px solid #e6ebf5;
+    transition: border-bottom-color .3s;
+    outline: none;
+    font-size: 14px;
+    font-weight: 605!important;
+  }
   .el-collapse-item__header:hover {
     background-color: #fcfcfc;
+  }
+  .el-button-window {
+    cursor: pointer;
+    background: #FFFFFF;
+    border: 1px solid #DCDFE6;
+    border-color: #DCDFE6;
+    color: white;
+    background: #008fd3;
+  }
+  .center{
+    text-align: center;
+  }
+  .w-33 {
+    width: 100%;
+    background-color: transparent;
   }
 </style>
 <style scoped>

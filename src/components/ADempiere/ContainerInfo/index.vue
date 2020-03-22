@@ -1,7 +1,7 @@
 <template>
   <el-tabs v-model="activeInfo" @tab-click="handleClick">
     <el-tab-pane
-      v-if="!isEmptyValue(getterContextMenu)"
+      v-if="!isEmptyValue(tabProcess)"
       :name="$t('window.containerInfo.associatedProcesses')"
     >
       <span slot="label">
@@ -10,7 +10,7 @@
       </span>
       <div>
         <el-collapse
-          v-for="(action, index) in getterContextMenu"
+          v-for="(action, index) in tabProcess"
           :key="index"
           v-model="activeName"
           accordion
@@ -19,6 +19,7 @@
           <el-collapse-item
             :title="action.name"
             :name="index"
+            :disabled="isEmptyValue(record)"
           >
             <el-card>
               <el-container style="max-height: 38vh;">
@@ -26,7 +27,7 @@
                   <main-panel
                     v-if="!isEmptyValue(modalMetadata.fieldList)"
                     key="main-panel"
-                    :parent-uuid="windowUuid"
+                    :parent-uuid="infoProcessUuid"
                     :container-uuid="modalMetadata.uuid"
                     :metadata="modalMetadata"
                     :panel-type="modalMetadata.panelType"
@@ -49,6 +50,7 @@
       </div>
     </el-tab-pane>
     <el-tab-pane
+      v-if="panelType === 'window'"
       name="listChatEntries"
     >
       <span slot="label">
@@ -60,6 +62,7 @@
       </div>
     </el-tab-pane>
     <el-tab-pane
+      v-if="panelType === 'window'"
       name="listRecordLogs"
     >
       <span slot="label">
@@ -107,7 +110,7 @@ export default {
     MainPanel
   },
   props: {
-    windowUuid: {
+    infoProcessUuid: {
       type: String,
       default: ''
     },
@@ -116,10 +119,18 @@ export default {
       default: ''
     },
     record: {
-      type: Object,
-      default: () => ({})
+      type: [Array, Object],
+      default: undefined
+    },
+    panelType: {
+      type: String,
+      default: ''
     },
     isWorkflow: {
+      type: Boolean,
+      default: false
+    },
+    isProcessBrowser: {
       type: Boolean,
       default: false
     }
@@ -147,7 +158,7 @@ export default {
       return false
     },
     getterWindow() {
-      return this.$store.getters.getWindow(this.windowUuid)
+      return this.$store.getters.getWindow(this.infoProcessUuid)
     },
     getterContextMenu() {
       if (!this.isEmptyValue(this.getterWindow)) {
@@ -173,10 +184,27 @@ export default {
       }
       epale = ['listChatEntries', 'listRecordLogs', 'listWorkflowLogs']
       return epale
+    },
+    getterContextMenuBrowser() {
+      const process = this.$store.getters.getContextMenu(this.infoProcessUuid)
+      if (!this.isEmptyValue(process)) {
+        return process.actions.filter(menu => {
+          if (menu.type === 'process') {
+            return menu
+          }
+        })
+      }
+      return []
+    },
+    tabProcess() {
+      if (this.panelType === 'window') {
+        return this.getterContextMenu
+      }
+      return this.getterContextMenuBrowser
     }
   },
   created() {
-    if (!this.isEmptyValue(this.getterContextMenu)) {
+    if (!this.isEmptyValue(this.tabProcess)) {
       this.activeInfo = this.$t('window.containerInfo.associatedProcesses')
     }
     if (this.activeInfo !== this.$t('window.containerInfo.associatedProcesses')) {
@@ -201,14 +229,17 @@ export default {
       }
     },
     runAction(action) {
+      console.log(this.record)
       if (action !== undefined) {
-        const fieldNotReady = this.$store.getters.isNotReadyForSubmit(action.uuid)
+        const fieldNotReady = this.panelType === 'browser' ? this.isEmptyValue(this.record) : this.$store.getters.isNotReadyForSubmit(this.browserUuid)
+        console.log(fieldNotReady)
         if (!fieldNotReady) {
           this.$store.dispatch('startProcess', {
             action: action, // process metadata
-            parentUuid: this.windowUuid,
+            parentUuid: this.infoProcessUuid,
             isProcessTableSelection: false,
-            containerUuid: this.$route.meta.tabUuid,
+            // containerUuid: this.$route.meta.tabUuid,
+            containerUuid: this.panelType === 'browser' ? this.panelUuid : this.$route.meta.tabUuid,
             panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
             reportFormat: '',
             routeToDelete: this.$route
