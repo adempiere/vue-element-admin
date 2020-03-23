@@ -333,7 +333,7 @@ export default {
           }
         })
       }
-      return false
+      return []
     },
     getShowContextMenuTable() {
       return this.$store.getters.getShowContextMenuTable
