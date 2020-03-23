@@ -1,5 +1,6 @@
 import { runCallOutRequest } from '@/api/ADempiere/data'
 import { showMessage } from '@/utils/ADempiere/notification'
+import language from '@/lang'
 
 const callOutControl = {
   actions: {
@@ -56,13 +57,14 @@ const callOutControl = {
               isChangeFromCallout: true
             })
           }
+          return calloutResponse.values
         })
         .catch(error => {
           showMessage({
-            message: error.message,
+            message: error.message || language.t('window.callout.error'),
             type: 'error'
           })
-          console.warn(`Field ${columnName} error callout`, error.message)
+          console.warn(`Field ${columnName} error callout. Code ${error.code}: ${error.message}`)
         })
     }
   }
