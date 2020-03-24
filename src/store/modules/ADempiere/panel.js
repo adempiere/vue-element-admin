@@ -522,7 +522,7 @@ const panel = {
       isChangedOldValue = false, withOutColumnNames = [],
       isChangeMultipleFields = false
     }) {
-      return new Promise(resolve => {
+      return new Promise(async resolve => {
         const panel = getters.getPanel(containerUuid, isAdvancedQuery)
         const { fieldList: fieldsList, tableName } = panel
         // get field
@@ -573,20 +573,18 @@ const panel = {
                 sqlStatement = sqlStatement.query
               }
             }
-            dispatch('getContextInfoValueFromServer', {
+            const contextInfo = await dispatch('getContextInfoValueFromServer', {
               parentUuid,
               containerUuid,
               contextInfoUuid: field.contextInfo.uuid,
               columnName,
               sqlStatement
             })
-              .then(response => {
-                if (!isEmptyValue(response) && !isEmptyValue(response.messageText)) {
-                  field.contextInfo.isActive = true
-                  field.contextInfo.messageText.msgText = response.messageText
-                  field.contextInfo.messageText.msgTip = response.messageTip
-                }
-              })
+            if (!isEmptyValue(contextInfo) && !isEmptyValue(contextInfo.messageText)) {
+              field.contextInfo.isActive = true
+              field.contextInfo.messageText.msgText = contextInfo.messageText
+              field.contextInfo.messageText.msgTip = contextInfo.messageTip
+            }
           }
 
           //  Change Dependents
