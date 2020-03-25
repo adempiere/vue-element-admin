@@ -1,6 +1,7 @@
 <template>
   <div v-if="isLoading" key="report-viewer-loaded" style="min-height: inherit;">
     <context-menu
+      :menu-parent-uuid="menuParentUuid"
       :container-uuid="reportResult.processUuid"
       :panel-type="panelType"
       :is-report="true"
@@ -77,6 +78,7 @@
 import ContextMenu from '@/components/ADempiere/ContextMenu'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import { showNotification } from '@/utils/ADempiere/notification'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils'
 
 export default {
   name: 'ReportViewer',
@@ -116,6 +118,16 @@ export default {
     },
     getterCachedReport() {
       return this.$store.getters.getCachedReport(this.$route.params.instanceUuid)
+    },
+    menuParentUuid() {
+      const option = recursiveTreeSearch({
+        treeData: this.$store.getters.permission_routes,
+        attributeValue: this.processMetadata.uuid,
+        attributeName: 'meta',
+        secondAttribute: 'uuid',
+        attributeChilds: 'children'
+      })
+      return option.meta.parentUuid
     }
   },
   mounted() {

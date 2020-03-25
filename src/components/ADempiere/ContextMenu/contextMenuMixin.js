@@ -92,7 +92,10 @@ export const contextMixin = {
       if (this.isEmptyValue(menuUuid)) {
         menuUuid = this.menuParentUuid
       }
-      const relations = this.$store.getters.getRelations(menuUuid)
+      let relations = this.$store.getters.getRelations(menuUuid)
+      if (this.isEmptyValue(relations)) {
+        relations = this.$store.getters.getRelations(this.menuParentUuid)
+      }
       return relations.children
     },
     permissionRoutes() {
