@@ -496,7 +496,7 @@ export const contextMixin = {
             })
         }
       } else if (action.type === 'updateReport') {
-        var updateReportParams = {
+        const updateReportParams = {
           instanceUuid: action.instanceUuid,
           processUuid: action.processUuid,
           tableName: action.tableName,
@@ -535,8 +535,7 @@ export const contextMixin = {
               response.url = link.href
             }
             this.$store.dispatch('finishProcess', {
-              processOutput: response,
-              routeToDelete: this.$route
+              processOutput: response
             })
           })
       }

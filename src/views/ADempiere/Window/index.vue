@@ -178,6 +178,7 @@
                 <el-card class="box-card">
                   <tab-info
                     :info-process-uuid="windowUuid"
+                    :container-uuid="windowMetadata.currentTabUuid"
                     :table-name="getTableName"
                     :record="getRecord"
                     :is-workflow="isWorkflowBarStatus"

@@ -281,6 +281,9 @@ export default {
         addNote: 'Add Note'
       },
       associatedProcesses: 'Associated processes'
+    },
+    callout: {
+      error: 'Error In Callout'
     }
   },
   data: {

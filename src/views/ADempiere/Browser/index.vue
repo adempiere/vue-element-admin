@@ -71,6 +71,7 @@
           <el-card v-if="infoTab" class="box-card">
             <tab-info
               :info-process-uuid="browserUuid"
+              :container-uuid="browserUuid"
               :panel-type="panelType"
               :record="recordsRun"
               :is-process-browser="getContainerIsReadyForSubmit"

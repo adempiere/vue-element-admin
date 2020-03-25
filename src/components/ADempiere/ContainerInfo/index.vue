@@ -114,6 +114,10 @@ export default {
       type: String,
       default: ''
     },
+    containerUuid: {
+      type: String,
+      default: ''
+    },
     tableName: {
       type: String,
       default: ''
@@ -229,17 +233,15 @@ export default {
       }
     },
     runAction(action) {
-      console.log(this.record)
       if (action !== undefined) {
-        const fieldNotReady = this.panelType === 'browser' ? this.isEmptyValue(this.record) : this.$store.getters.isNotReadyForSubmit(this.browserUuid)
-        console.log(fieldNotReady)
+        const fieldNotReady = this.panelType === 'browser' ? this.isEmptyValue(this.record) : this.$store.getters.isNotReadyForSubmit(action.uuid)
         if (!fieldNotReady) {
           this.$store.dispatch('startProcess', {
             action: action, // process metadata
             parentUuid: this.infoProcessUuid,
             isProcessTableSelection: false,
             // containerUuid: this.$route.meta.tabUuid,
-            containerUuid: this.panelType === 'browser' ? this.panelUuid : this.$route.meta.tabUuid,
+            containerUuid: this.panelType === 'browser' ? this.panelUuid : this.containerUuid,
             panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
             reportFormat: '',
             routeToDelete: this.$route
