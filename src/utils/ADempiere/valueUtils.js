@@ -418,11 +418,12 @@ export function tagStatus(tag) {
 
 let partialValue = ''
 export function calculationValue(value, event) {
+  const isZero = Number(value) === 0
   const VALIDATE_EXPRESSION = /[\d\/.()%\*\+\-]/gim
   const isValidKey = VALIDATE_EXPRESSION.test(event.key)
   if (event.type === 'keydown' && isValidKey) {
     partialValue += event.key
-    const operation = isEmptyValue(value) ? partialValue : String(value) + partialValue
+    const operation = isEmptyValue(value) || isZero ? partialValue : String(value) + partialValue
     if (!isEmptyValue(operation)) {
       try {
         // eslint-disable-next-line no-eval
@@ -441,7 +442,7 @@ export function calculationValue(value, event) {
       }
     }
   } else {
-    if (event.key === 'Backspace' && !isEmptyValue(value)) {
+    if ((event.key === 'Backspace' || event.key === 'Delete') && !isEmptyValue(value)) {
       try {
         // eslint-disable-next-line no-eval
         return eval(value) + ''

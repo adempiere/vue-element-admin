@@ -101,16 +101,32 @@ export default {
           this.isShowed = true
         }
       } else if (!isAllowed && event.key === 'Backspace') {
-        event.preventDefault()
-        const newValue = String(this.value).slice(0, -1)
-        const result = this.calculationValue(newValue, event)
-        if (!this.isEmptyValue(result)) {
-          this.value = this.validateValue(result)
-          this.valueToDisplay = result
-          this.isShowed = true
-        } else {
-          this.valueToDisplay = '...'
-          this.isShowed = true
+        if (String(this.value).slice(0, -1) > 0) {
+          event.preventDefault()
+          const newValue = String(this.value).slice(0, -1)
+          const result = this.calculationValue(newValue, event)
+          if (!this.isEmptyValue(result)) {
+            this.value = this.validateValue(result)
+            this.valueToDisplay = result
+            this.isShowed = true
+          } else {
+            this.valueToDisplay = '...'
+            this.isShowed = true
+          }
+        }
+      } else if (!isAllowed && event.key === 'Delete') {
+        if (String(this.value).slice(-1) > 0) {
+          event.preventDefault()
+          const newValue = String(this.value).slice(-1)
+          const result = this.calculationValue(newValue, event)
+          if (!this.isEmptyValue(result)) {
+            this.value = this.validateValue(result)
+            this.valueToDisplay = result
+            this.isShowed = true
+          } else {
+            this.valueToDisplay = '...'
+            this.isShowed = true
+          }
         }
       } else {
         event.preventDefault()
