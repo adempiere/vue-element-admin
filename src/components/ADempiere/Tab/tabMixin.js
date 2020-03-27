@@ -6,6 +6,10 @@ export const tabMixin = {
       type: String,
       default: ''
     },
+    windowMetadata: {
+      type: Object,
+      default: () => {}
+    },
     tabsList: {
       type: Array,
       default: () => []
@@ -37,9 +41,11 @@ export const tabMixin = {
       })
     },
     setCurrentTab() {
-      this.$store.dispatch('setCurrentTab', {
+      this.$store.dispatch('changeTabAttribute', {
         parentUuid: this.windowUuid,
-        containerUuid: this.tabUuid
+        containerUuid: this.tabUuid,
+        attributeName: 'currentTabUuid',
+        attributeValue: this.tabUuid
       })
       this.$route.meta.tabUuid = this.tabUuid
     },

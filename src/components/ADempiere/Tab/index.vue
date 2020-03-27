@@ -17,6 +17,7 @@
           :metadata="tabAttributes"
           :group-tab="tabAttributes.tabGroup"
           :panel-type="panelType"
+          :is-showed-record-navigation="windowMetadata.isShowedRecordNavigation"
         />
       </el-tab-pane>
     </template>
@@ -34,12 +35,19 @@ export default {
   },
   mixins: [tabMixin],
   computed: {
-    getWindow() {
-      return this.$store.getters.getWindow(this.windowUuid)
-    },
     // if tabs children is showed or closed
     isShowedTabsChildren() {
-      return this.getWindow.isShowedTabsChildren
+      if (!this.isEmptyValue(this.windowMetadata)) {
+        this.windowMetadata.isShowedTabsChildren
+      }
+      return false
+    },
+    // if tabs children is showed or closed
+    isShowedRecordNavigation() {
+      if (!this.isEmptyValue(this.windowMetadata)) {
+        this.windowMetadata.isShowedRecordNavigation
+      }
+      return false
     },
     tabParentStyle() {
       if (this.isShowedTabsChildren) {
