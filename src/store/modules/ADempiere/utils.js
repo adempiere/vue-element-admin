@@ -28,7 +28,8 @@ const initStateUtils = {
     isReaded: false,
     isLoaded: false
   },
-  panelRight: ''
+  panelRight: '',
+  currentRecord: {}
 }
 
 const utils = {
@@ -97,6 +98,9 @@ const utils = {
     },
     resetStateUtils(state) {
       state = initStateUtils
+    },
+    setCurrentRecor(state, payload) {
+      state.currentRecord = payload
     }
   },
   actions: {
@@ -160,6 +164,10 @@ const utils = {
     },
     setPanelRight({ commit }, panelRight) {
       commit('setPanelRight', panelRight)
+    },
+    currentRecord({ commit }, record) {
+      console.log(record)
+      commit('setCurrentRecor', record)
     }
   },
   getters: {
@@ -232,6 +240,9 @@ const utils = {
     },
     getPanelRight: (state) => {
       return state.panelRight
+    },
+    getCurrentRecord: (state) => {
+      return state.currentRecord
     }
   }
 }
