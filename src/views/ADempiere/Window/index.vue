@@ -180,7 +180,7 @@
                     :info-process-uuid="windowUuid"
                     :container-uuid="windowMetadata.currentTabUuid"
                     :table-name="getTableName"
-                    :record="getRecord"
+                    :record="getCurrentRecord"
                     :is-workflow="isWorkflowBarStatus"
                     :panel-type="panelType"
                   />
@@ -454,6 +454,12 @@ export default {
         }
       })
       return record
+    },
+    getCurrentRecord() {
+      if (this.isEmptyValue(this.$store.getters.getCurrentRecord)) {
+        return this.getterDataRecords[0]
+      }
+      return this.$store.getters.getCurrentRecord
     },
     isWorkflowBarStatus() {
       const panel = this.$store.getters.getPanel(this.windowMetadata.currentTabUuid)

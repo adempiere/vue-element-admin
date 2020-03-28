@@ -29,7 +29,8 @@ const initStateUtils = {
     isReaded: false,
     isLoaded: false
   },
-  panelRight: ''
+  panelRight: '',
+  currentRecord: {}
 }
 
 const utils = {
@@ -101,6 +102,9 @@ const utils = {
     },
     showProcess(state, payload) {
       state.isShowedModalProcess = payload
+    },
+    setCurrentRecor(state, payload) {
+      state.currentRecord = payload
     }
   },
   actions: {
@@ -167,6 +171,10 @@ const utils = {
     },
     showProcess({ commit }, show) {
       commit('showProcess', show)
+    },
+    currentRecord({ commit }, record) {
+      console.log(record)
+      commit('setCurrentRecor', record)
     }
   },
   getters: {
@@ -242,6 +250,9 @@ const utils = {
     },
     getShowProcess: (state) => {
       return state.isShowedModalProcess
+    },
+    getCurrentRecord: (state) => {
+      return state.currentRecord
     }
   }
 }

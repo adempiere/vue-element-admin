@@ -207,6 +207,16 @@ export default {
       return this.getterContextMenuBrowser
     }
   },
+  watch: {
+    record(value) {
+      if (!this.isEmptyValue(value) && this.activeInfo !== 'Procesos Asociados') {
+        this.$store.dispatch(this.activeInfo, {
+          tableName: this.tableName,
+          recordId: value[this.tableName + '_ID']
+        })
+      }
+    }
+  },
   created() {
     if (!this.isEmptyValue(this.tabProcess)) {
       this.activeInfo = this.$t('window.containerInfo.associatedProcesses')

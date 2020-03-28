@@ -675,6 +675,7 @@ export default {
       }
       this.setTagsViewTitle(uuidRecord)
       this.setFocus()
+      this.$store.dispatch('currentRecord', this.dataRecords)
     },
     async setFocus() {
       return new Promise(resolve => {
