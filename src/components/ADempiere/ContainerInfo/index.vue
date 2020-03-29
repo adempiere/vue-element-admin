@@ -58,7 +58,10 @@
         {{ $t('window.containerInfo.notes') }}
       </span>
       <div>
-        <chat-entries />
+        <chat-entries
+          :table="tableName"
+          :record-id="record"
+        />
       </div>
     </el-tab-pane>
     <el-tab-pane

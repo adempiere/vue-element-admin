@@ -54,6 +54,9 @@ export const MixinInfo = {
     },
     isNote() {
       return this.$store.getters.getIsNote
+    },
+    record() {
+      return this.$store.getters.getCurrentRecord
     }
   },
   methods: {
@@ -61,15 +64,15 @@ export const MixinInfo = {
       var chatTextLong = this.$store.getters.getChatTextLong
       if (!this.isEmptyValue(chatTextLong)) {
         this.$store.dispatch('createChatEntry', {
-          tableName: this.$route.params.tableName,
-          recordId: this.$route.params.recordId,
+          tableName: this.table,
+          recordId: this.recordId[this.table + '_ID'],
           comment: chatTextLong
         })
           .then(() => {
             this.$store.dispatch('setMarkDown', true)
             this.$store.dispatch('listChatEntries', {
-              tableName: this.$route.params.tableName,
-              recordId: this.$route.params.recordId
+              tableName: this.table,
+              recordId: this.recordId[this.tabrecordle + '_ID']
             })
           })
       }

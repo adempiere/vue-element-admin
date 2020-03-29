@@ -44,6 +44,16 @@ export default {
   components: {
     chatTextLong
   },
-  mixins: [MixinInfo]
+  mixins: [MixinInfo],
+  props: {
+    table: {
+      type: String,
+      required: true
+    },
+    recordId: {
+      type: [Array, Object],
+      default: undefined
+    }
+  }
 }
 </script>
