@@ -37,7 +37,7 @@
   </div>
 </template>
 <script>
-import { MixinInfo } from '@/components/ADempiere/ContainerInfo/mixinInfo'
+import { MixinInfo } from '@/components/ADempiere/ContainerInfo/components/mixinInfo'
 import chatTextLong from '@/components/ADempiere/Field/chatTextLong'
 export default {
   name: 'ChatEntries',

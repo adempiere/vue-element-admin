@@ -279,7 +279,8 @@ export default {
         workflowName: 'Name of Workflow Status',
         timeElapsed: 'Time Elapsed',
         addNote: 'Add Note'
-      }
+      },
+      associatedProcesses: 'Associated processes'
     },
     callout: {
       error: 'Error In Callout'

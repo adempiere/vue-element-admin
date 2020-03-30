@@ -99,6 +99,9 @@ export default {
     },
     getDataSelection() {
       return this.getterDataRecordsAndSelection.selection
+    },
+    isShowProcess() {
+      return this.$store.getters.getShowProcess
     }
   },
   watch: {
@@ -124,6 +127,7 @@ export default {
         type: this.modalMetadata.panelType,
         action: undefined
       })
+      this.$store.dispatch('showProcess', false)
     },
     runAction(action) {
       if (action.isSortTab) {
