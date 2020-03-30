@@ -343,7 +343,15 @@ export const contextMixin = {
             }
           })
       }
-      this.actions = this.metadataMenu.actions
+      if (this.panelType === 'window') {
+        this.actions = this.metadataMenu.actions.filter(action => {
+          if (action.type !== 'process') {
+            return action
+          }
+        })
+      } else {
+        this.actions = this.metadataMenu.actions
+      }
       if (this.panelType === 'window') {
         const processAction = this.actions.find(item => {
           if (item.name === 'Procesar Orden' || (item.name === 'Process Order')) {
@@ -380,6 +388,7 @@ export const contextMixin = {
     },
     showModal(action) {
       // TODO: Refactor and remove redundant dispatchs
+      this.$store.dispatch('showProcess', true)
       if (action.type === 'process') {
         // Add context from view open in process to opening
         if (action.parentUuidAssociated || action.containerUuidAssociated) {
