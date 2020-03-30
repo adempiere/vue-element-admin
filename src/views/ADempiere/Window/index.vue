@@ -77,9 +77,9 @@
                               :menu-parent-uuid="$route.meta.parentUuid"
                               :parent-uuid="windowUuid"
                               :container-uuid="windowMetadata.currentTabUuid"
-                              :table-name="windowMetadata.firstTab.tableName"
+                              :table-name="windowMetadata.currentTab.tableName"
                               :panel-type="panelType"
-                              :is-insert-record="getterIsInsertRecord"
+                              :is-insert-record="windowMetadata.currentTab.isInsertRecord"
                             />
                           </el-main>
                         </el-container>
@@ -484,13 +484,6 @@ export default {
     },
     getterRecordList() {
       return this.$store.getters.getDataRecordsList(this.windowMetadata.currentTabUuid).length
-    },
-    getterIsInsertRecord() {
-      const tab = this.$store.getters.getCurrentTab(this.windowUuid)
-      if (tab) {
-        return tab.isInsertRecord
-      }
-      return false
     },
     gettersListRecordLogs() {
       const changeLog = this.$store.getters.getRecordLogs.recorLogs

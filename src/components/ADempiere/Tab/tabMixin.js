@@ -41,11 +41,10 @@ export const tabMixin = {
       })
     },
     setCurrentTab() {
-      this.$store.dispatch('changeTabAttribute', {
+      this.$store.dispatch('setCurrentTab', {
         parentUuid: this.windowUuid,
         containerUuid: this.tabUuid,
-        attributeName: 'currentTabUuid',
-        attributeValue: this.tabUuid
+        window: this.windowMetadata
       })
       this.$route.meta.tabUuid = this.tabUuid
     },
@@ -59,7 +58,7 @@ export const tabMixin = {
       }
     },
     handleBeforeLeave(activeName) {
-      const metadataTab = this.tabsList.find(tab => tab.index === parseInt(activeName), 10)
+      const metadataTab = this.tabsList.find(tab => tab.index === parseInt(activeName, 10))
       if (!this.isEmptyValue(metadataTab.whereClause) && metadataTab.whereClause.includes('@')) {
         metadataTab.whereClause = parseContext({
           parentUuid: metadataTab.parentUuid,

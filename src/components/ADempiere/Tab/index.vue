@@ -35,22 +35,9 @@ export default {
   },
   mixins: [tabMixin],
   computed: {
-    // if tabs children is showed or closed
-    isShowedTabsChildren() {
-      if (!this.isEmptyValue(this.windowMetadata)) {
-        this.windowMetadata.isShowedTabsChildren
-      }
-      return false
-    },
-    // if tabs children is showed or closed
-    isShowedRecordNavigation() {
-      if (!this.isEmptyValue(this.windowMetadata)) {
-        this.windowMetadata.isShowedRecordNavigation
-      }
-      return false
-    },
     tabParentStyle() {
-      if (this.isShowedTabsChildren) {
+      // if tabs children is showed or closed
+      if (this.windowMetadata.isShowedTabsChildren) {
         return {
           height: '100%',
           overflow: 'hidden'

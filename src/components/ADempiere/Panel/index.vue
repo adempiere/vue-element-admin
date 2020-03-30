@@ -345,6 +345,7 @@ export default {
           parentUuid: this.parentUuid,
           containerUuid: this.containerUuid,
           panelType: this.panelType,
+          panelMetadata: this.metadata,
           isAdvancedQuery: this.isAdvancedQuery
         }).then(() => {
           this.generatePanel(this.getterFieldList)

@@ -23,6 +23,10 @@ const window = {
     dictionaryResetCacheWindow(state) {
       state = initStateWindow
     },
+    setCurrentTab(state, payload) {
+      payload.window.currentTab = payload.tab
+      payload.window.currentTabUuid = payload.tab.uuid
+    },
     changeWindowAttribute(state, payload) {
       let value = payload.attributeValue
       if (payload.attributeNameControl) {
@@ -47,8 +51,8 @@ const window = {
         .then(responseWindow => {
           const firstTabTableName = responseWindow.tabsList[0].tableName
           const firstTabUuid = responseWindow.tabsList[0].uuid
-          const childrenTabs = []
-          const parentTabs = []
+          const tabsListParent = []
+          const tabsListChildren = []
 
           const tabsSequence = []
           // TODO Add source tab on the server for tabs Translation and Sort
@@ -87,6 +91,7 @@ const window = {
               // app properties
               isAssociatedTabSequence: false, // show modal with order tab
               isShowedRecordNavigation: !(tabItem.isSingleRow),
+              isLoadFieldsList: false,
               index
             }
             delete tab.processesList
@@ -99,7 +104,7 @@ const window = {
               processName: language.t('window.newRecord'),
               type: 'dataAction',
               action: 'resetPanelToNew',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: !tab.isInsertRecord || tab.isReadOnly
             }, {
               // action to delete record selected
@@ -107,7 +112,7 @@ const window = {
               processName: language.t('window.deleteRecord'),
               type: 'dataAction',
               action: 'deleteEntity',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: tab.isReadOnly
             }, {
               // action to undo create, update, delete record
@@ -115,7 +120,7 @@ const window = {
               processName: language.t('data.undo'),
               type: 'dataAction',
               action: 'undoModifyData',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: false
             }, {
               name: language.t('data.lockRecord'),
@@ -193,36 +198,32 @@ const window = {
             //  Add process menu
             dispatch('setContextMenu', {
               containerUuid: tab.uuid,
-              actions: actions
+              actions
             })
 
             if (tab.isParentTab) {
-              parentTabs.push(tab)
+              tabsListParent.push(tab)
               return tab
             }
             if (!tab.isSortTab) {
-              childrenTabs.push(tab)
+              tabsListChildren.push(tab)
             }
             return tab
           })
 
-          const tabProperties = {
-            tabsList: tabs,
-            currentTab: parentTabs[0],
-            tabsListParent: parentTabs,
-            tabsListChildren: childrenTabs,
-            // app attributes
-            currentTabUuid: parentTabs[0].uuid
-          }
-
           const newWindow = {
             ...responseWindow,
-            ...tabProperties,
-            firstTab: parentTabs[0],
+            tabsList: tabs,
+            currentTab: tabsListParent[0],
+            tabsListParent,
+            tabsListChildren,
+            // app attributes
+            currentTabUuid: tabsListParent[0].uuid,
+            firstTab: tabsListParent[0],
             firstTabUuid,
             windowIndex: state.windowIndex + 1,
             // App properties
-            isShowedTabsChildren: Boolean(childrenTabs.length),
+            isShowedTabsChildren: Boolean(tabsListChildren.length),
             isShowedRecordNavigation: undefined,
             isShowedAdvancedQuery: false
           }
@@ -243,6 +244,7 @@ const window = {
       parentUuid,
       containerUuid,
       panelType = 'window',
+      panelMetadata,
       isAdvancedQuery = false
     }) {
       return new Promise(resolve => {
@@ -314,20 +316,32 @@ const window = {
               fieldsList.push(fieldUuid)
             }
 
+            if (isEmptyValue(panelMetadata)) {
+              panelMetadata = getters.getTab(parentUuid, containerUuid)
+            }
             //  Panel for save on store
             const panel = {
-              ...getters.getTab(parentUuid, containerUuid),
+              ...panelMetadata,
               isAdvancedQuery,
               fieldLinkColumnName,
               fieldList: fieldsList,
               panelType,
               // app attributes
+              isLoadFieldsList: true,
               isShowedTotals: false,
               isTabsChildren // to delete records assiciated
             }
 
             dispatch('addPanel', panel)
             resolve(panel)
+
+            dispatch('changeTabAttribute', {
+              parentUuid,
+              containerUuid,
+              tab: panelMetadata,
+              attributeName: 'isLoadFieldsList',
+              attributeValue: true
+            })
           })
           .catch(error => {
             showMessage({
@@ -336,6 +350,24 @@ const window = {
             })
             console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`)
           })
+      })
+    },
+    setCurrentTab({ commit, getters }, {
+      parentUuid,
+      containerUuid,
+      window,
+      tab
+    }) {
+      if (isEmptyValue(window)) {
+        window = getters.getWindow(parentUuid)
+      }
+      if (isEmptyValue(tab)) {
+        tab = window.tabsList.find(itemTab => itemTab.uuid === containerUuid)
+      }
+
+      commit('setCurrentTab', {
+        window,
+        tab
       })
     },
     changeWindowAttribute({ commit, getters }, {
@@ -348,8 +380,7 @@ const window = {
       if (isEmptyValue(window)) {
         window = getters.getWindow(parentUuid)
       }
-      const newWindow = window
-      newWindow[attributeName] = attributeValue
+
       commit('changeWindowAttribute', {
         parentUuid,
         window,
