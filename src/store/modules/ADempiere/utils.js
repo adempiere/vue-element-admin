@@ -166,7 +166,6 @@ const utils = {
       commit('setPanelRight', panelRight)
     },
     currentRecord({ commit }, record) {
-      console.log(record)
       commit('setCurrentRecor', record)
     }
   },
