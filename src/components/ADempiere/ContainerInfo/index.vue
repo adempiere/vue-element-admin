@@ -181,13 +181,13 @@ export default {
       return this.$store.state.processControl.metadata
     },
     listTab() {
-      var epale = []
+      var tabName = []
       if (!this.isEmptyValue(this.getterContextMenu)) {
-        epale = [this.$t('window.containerInfo.associatedProcesses'), 'listChatEntries', 'listRecordLogs', 'listWorkflowLogs']
-        return epale
+        tabName = [this.$t('window.containerInfo.associatedProcesses'), 'listChatEntries', 'listRecordLogs', 'listWorkflowLogs']
+        return tabName
       }
-      epale = ['listChatEntries', 'listRecordLogs', 'listWorkflowLogs']
-      return epale
+      tabName = ['listChatEntries', 'listRecordLogs', 'listWorkflowLogs']
+      return tabName
     },
     getterContextMenuBrowser() {
       const process = this.$store.getters.getContextMenu(this.infoProcessUuid)
