@@ -15,7 +15,7 @@ assignees: 'yamelsenih'
 2. [xxx]
 3. [xxxx]
 
-#### Screenshot or Gif（截图或动态图）
+#### Screenshot or Gif
 
 
 #### Link to minimal reproduction
