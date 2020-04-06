@@ -13,16 +13,21 @@
           <h3 class="text-center" style="margin: 0 !important;">
             <el-popover
               v-if="!isEmptyValue(processMetadata.help)"
+              ref="helpTitle"
               placement="top-start"
-              :title="processMetadata.name"
+              :title="reportTitle"
               width="400"
               trigger="hover"
             >
               <div v-html="processMetadata.help" />
-              <el-button slot="reference" type="text" class="title">
-                {{ processMetadata.name }}
-              </el-button>
             </el-popover>
+            <el-button
+              v-popover:helpTitle
+              type="text"
+              class="title"
+            >
+              {{ reportTitle }}
+            </el-button>
           </h3>
           <iframe
             v-if="reportFormat === 'pdf'"
@@ -110,6 +115,9 @@ export default {
     // TODO: Add get metadata from server to open report view from link
     processMetadata() {
       return this.$store.getters.getProcessById(this.$route.params.processId)
+    },
+    reportTitle() {
+      return this.processMetadata.name || this.$route.meta.title
     },
     url() {
       return this.$store.getters.getProcessResult.url
