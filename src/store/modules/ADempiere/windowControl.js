@@ -295,12 +295,6 @@ const windowControl = {
         }
         return true
       })
-      // if (rootGetters.getShowContainerInfo) {
-      //   dispatch('listRecordLogs', {
-      //     tableName: panel.tableName,
-      //     recordId
-      //   })
-      // }
       return updateEntity({
         tableName: panel.tableName,
         recordUuid,
@@ -333,12 +327,12 @@ const windowControl = {
             recordUuid,
             eventType: 'UPDATE'
           })
-          // if (containerInfo) {
-          dispatch('listRecordLogs', {
-            tableName: panel.tableName,
-            recordId
-          })
-          // }
+          if (rootGetters.getShowContainerInfo) {
+            dispatch('listRecordLogs', {
+              tableName: panel.tableName,
+              recordId
+            })
+          }
           return newValues
         })
         .catch(error => {
@@ -414,6 +408,7 @@ const windowControl = {
               parentUuid,
               containerUuid,
               newValues: response,
+              isSendCallout: false,
               isSendToServer: false
             })
           }
@@ -509,14 +504,22 @@ const windowControl = {
     },
     /**
      * Delete selection records in table
-     * @param {string} containerUuid
      * @param {string} parentUuid
+     * @param {string} containerUuid
+     * @param {string} tableName
+     * @param {boolean} isParentTab
      */
     deleteSelectionDataList({ dispatch, rootGetters }, {
       parentUuid,
-      containerUuid
+      containerUuid,
+      tableName,
+      isParentTab
     }) {
-      const { tableName, isParentTab } = rootGetters.getTab(parentUuid, containerUuid)
+      if (isEmptyValue(tableName) || isEmptyValue(isParentTab)) {
+        const tab = rootGetters.getTab(parentUuid, containerUuid)
+        tableName = tab.tableName
+        isParentTab = tab.isParentTab
+      }
       const allData = rootGetters.getDataRecordAndSelection(containerUuid)
       let selectionLength = allData.selection.length
 
@@ -675,7 +678,7 @@ const windowControl = {
         })
       }
       return dispatch('getObjectListFromCriteria', {
-        parentUuid: tab.parentUuid,
+        parentUuid,
         containerUuid,
         tableName: tab.tableName,
         query: parsedQuery,
@@ -692,15 +695,16 @@ const windowControl = {
             if (newValues) {
               // update fields with values obtained from the server
               dispatch('notifyPanelChange', {
-                parentUuid: tab.parentUuid,
+                parentUuid,
                 containerUuid,
                 newValues,
+                isSendCallout: false,
                 isSendToServer: false
               })
             } else {
               // this record is missing (Deleted or the query does not include it)
               dispatch('resetPanelToNew', {
-                parentUuid: tab.parentUuid,
+                parentUuid,
                 containerUuid
               })
             }
@@ -760,20 +764,23 @@ const windowControl = {
     },
     /**
      * Get references asociate to record
-     * @param {string} parentUuid
+     * @param {string} parentUuid as windowUuid
      * @param {string} containerUuid
+     * @param {string} tableName
      * @param {string} recordUuid
      */
     getReferencesListFromServer({ commit, rootGetters }, {
-      parentUuid,
+      parentUuid: windowUuid,
       containerUuid,
+      tableName,
       recordUuid
     }) {
-      // TODO: check if you get better performance search only the window and get the current tab
-      const { tableName } = rootGetters.getTab(parentUuid, containerUuid)
+      if (isEmptyValue(tableName)) {
+        tableName = rootGetters.getTab(windowUuid, containerUuid).tableName
+      }
       return new Promise((resolve, reject) => {
         getReferencesList({
-          windowUuid: parentUuid,
+          windowUuid,
           tableName,
           recordUuid
         })
@@ -787,7 +794,7 @@ const windowControl = {
             })
             const references = {
               ...referenceResponse,
-              windowUuid: parentUuid,
+              windowUuid,
               recordUuid,
               referencesList
             }

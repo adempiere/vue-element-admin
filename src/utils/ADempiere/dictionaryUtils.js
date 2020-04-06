@@ -33,7 +33,11 @@ export function generateField({
   let parsedDefaultValue = fieldToGenerate.defaultValue
   let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
   let operator = 'EQUAL'
+  let isNumericField = componentReference.type === 'FieldNumber'
+  let isTranslatedField = fieldToGenerate.isTranslated
   if (moreAttributes.isAdvancedQuery) {
+    isNumericField = false
+    isTranslatedField = false
     parsedDefaultValue = undefined
     parsedDefaultValueTo = undefined
 
@@ -175,6 +179,7 @@ export function generateField({
     // TODO: Add support on server
     // app attributes
     isShowedFromUser,
+    isShowedFromUserDefault: isShowedFromUser, // set this value when reset panel
     isShowedTableFromUser: fieldToGenerate.isDisplayed,
     isFixedTableColumn: false,
     valueType: componentReference.valueType, // value type to convert with gGRPC
@@ -182,7 +187,10 @@ export function generateField({
     // Advanced query
     operator, // current operator
     oldOperator: undefined, // old operator
-    defaultOperator: operator
+    defaultOperator: operator,
+    // popover's
+    isNumericField,
+    isTranslatedField
   }
 
   // Sizes from panel and groups
@@ -198,13 +206,17 @@ export function generateField({
   }
 
   // Overwrite some values
-  if (typeRange) {
-    field.uuid = `${field.uuid}_To`
-    field.columnName = `${field.columnName}_To`
-    field.name = `${field.name} To`
-    field.value = parsedDefaultValueTo
-    field.defaultValue = field.defaultValueTo
-    field.parsedDefaultValue = field.parsedDefaultValueTo
+  if (field.isRange) {
+    field.operator = 'GREATER_EQUAL'
+    if (typeRange) {
+      field.uuid = `${field.uuid}_To`
+      field.columnName = `${field.columnName}_To`
+      field.name = `${field.name} To`
+      field.value = parsedDefaultValueTo
+      field.defaultValue = field.defaultValueTo
+      field.parsedDefaultValue = field.parsedDefaultValueTo
+      field.operator = 'LESS_EQUAL'
+    }
   }
 
   // hidden field type button
