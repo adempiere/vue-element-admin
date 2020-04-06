@@ -22,11 +22,8 @@
 
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
-import { FIELDS_FLOATS } from '@/components/ADempiere/Field/references'
+import { FIELDS_DECIMALS } from '@/components/ADempiere/Field/references'
 
-/**
- * TODO: Add change switch decimal point (.) or decimal comma (,)
- */
 export default {
   name: 'FieldNumber',
   mixins: [fieldMixin],
@@ -66,7 +63,7 @@ export default {
     },
     precision() {
       // Amount, Costs+Prices, Number
-      if (FIELDS_FLOATS.includes(this.metadata.referenceType)) {
+      if (FIELDS_DECIMALS.includes(this.metadata.referenceType)) {
         return 2
       }
       return undefined

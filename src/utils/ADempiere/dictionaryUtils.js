@@ -160,7 +160,7 @@ export function generateField({
     isSOTrxMenu,
     // displayed attributes
     componentPath: componentReference.type,
-    isSupported: componentReference.support,
+    isSupport: componentReference.support,
     referenceType,
     displayColumn: undefined, // link to value from selects and table
     // value attributes

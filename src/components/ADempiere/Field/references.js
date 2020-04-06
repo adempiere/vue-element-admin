@@ -358,6 +358,6 @@ export const FIELD_READ_ONLY_FORM = [
   }
 ]
 
-export const FIELDS_FLOATS = ['Amount', 'Costs+Prices', 'Number', 'Quantity']
+export const FIELDS_DECIMALS = ['Amount', 'Costs+Prices', 'Number', 'Quantity']
 
 export const FIELDS_QUANTITY = ['Amount', 'Costs+Prices', 'Integer', 'Number', 'Quantity']
