@@ -27,7 +27,7 @@ const REFERENCES = [
     type: 'FieldText',
     support: false,
     description: 'Resource Assignment',
-    valueType: 'STRING',
+    valueType: 'INTEGER',
     alias: ['Assignment']
   },
   {
@@ -35,7 +35,7 @@ const REFERENCES = [
     type: 'FieldBinary',
     support: true,
     description: 'Binary Data',
-    valueType: 'NULL',
+    valueType: 'INTEGER',
     alias: ['Binary']
   },
   {
@@ -44,7 +44,7 @@ const REFERENCES = [
     type: 'FieldButton',
     support: true,
     description: 'Command Button - starts a process',
-    valueType: 'NULL',
+    valueType: 'STRING',
     alias: ['Button']
   },
   {
@@ -52,7 +52,7 @@ const REFERENCES = [
     type: 'FieldText',
     support: false,
     description: 'Chart',
-    valueType: 'STRING',
+    valueType: 'INTEGER',
     alias: ['Chart']
   },
   {
@@ -60,7 +60,7 @@ const REFERENCES = [
     type: 'FieldText',
     support: false,
     description: 'Color element',
-    valueType: 'STRING',
+    valueType: 'INTEGER',
     alias: ['Color']
   },
   {
@@ -124,7 +124,7 @@ const REFERENCES = [
     type: 'FieldImage',
     support: true,
     description: 'Binary Image Data',
-    valueType: 'NULL',
+    valueType: 'INTEGER',
     alias: ['Image']
   },
   {
@@ -140,7 +140,7 @@ const REFERENCES = [
     type: 'FieldSelect',
     support: true,
     description: 'Reference List',
-    valueType: ['INTEGER', 'STRING'],
+    valueType: 'STRING',
     alias: ['List']
   },
   {
@@ -148,7 +148,7 @@ const REFERENCES = [
     type: 'FieldText',
     support: false,
     description: 'Location/Address',
-    valueType: 'STRING',
+    valueType: 'INTEGER',
     alias: ['Location', 'Location (Address)', 'Location/Address']
   },
   {
@@ -188,7 +188,7 @@ const REFERENCES = [
     type: 'FieldText',
     support: false,
     description: 'Product Attribute',
-    valueType: 'STRING',
+    valueType: 'INTEGER',
     alias: ['ProductAttribute', 'Product Attribute']
   },
   {
@@ -204,7 +204,7 @@ const REFERENCES = [
     type: 'FieldSelect',
     support: true,
     description: 'Search Field',
-    valueType: ['INTEGER', 'STRING'],
+    valueType: 'INTEGER',
     alias: ['Search']
   },
   {

@@ -82,7 +82,7 @@ const windowControl = {
           containerUuid,
           propertyName: 'value',
           isEvaluateValues: true,
-          isAddDisplayColumn: true
+          isAddDisplayColumn: false
         })
 
         commit('addInCreate', {
