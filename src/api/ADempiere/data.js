@@ -1,24 +1,15 @@
 import { getLanguage } from '@/lang/index'
 import { getToken } from '@/utils/auth'
 import BusinessData from '@adempiere/grpc-data-client'
-import { HOST_GRPC_DATA } from '@/api/ADempiere/constants'
+import { BUSINESS_DATA_ADDRESS } from '@/api/ADempiere/constants'
 
 // Get Instance for connection
 function Instance() {
   return new BusinessData(
-    HOST_GRPC_DATA,
+    BUSINESS_DATA_ADDRESS,
     getToken(),
     getLanguage() || 'en_US'
   )
-}
-
-/**
- * Converted the gRPC value to the value needed
- * @param {object} grpcValue Value get of gRPC
- * @returns {mixed}
- */
-export function convertValueFromGRPC(grpcValue) {
-  return Instance.call(this).convertValueFromGRPC(grpcValue)
 }
 
 /**
@@ -187,15 +178,15 @@ export function getLookupList({
  * @param {number}  reportType
  * @param {number}  tableName, table name of tab, used only window
  * @param {number}  recordId, record identifier, used only window
- * @param {array}   parameters, parameters from process [{ columnName, value }]
- * @param {array}   selection, selection records, used only browser
+ * @param {array}   parametersList, parameters from process [{ columnName, value }]
+ * @param {array}   selectionsList, selection records, used only browser
       [{
           selectionId,
           selectionValues: [{ columnName, value }]
       }]
  * @param {string}  printFormatUuid
  */
-export function runProcess({ uuid, reportType, tableName, recordId, parameters: parametersList = [], selection: selectionsList = [], printFormatUuid }) {
+export function runProcess({ uuid, reportType, tableName, recordId, parametersList = [], selectionsList = [], printFormatUuid }) {
   //  Run Process
   return Instance.call(this).requestRunProcess({
     uuid,
@@ -215,13 +206,13 @@ export function runProcess({ uuid, reportType, tableName, recordId, parameters: 
  * @param {string} whereClause
  * @param {string} orderByClause
  * @param {string} nextPageToken
- * @param {array}  parameters, This allows follow structure:
+ * @param {array}  parametersList, This allows follow structure:
  * [{
  *     columnName,
  *     value
  * }]
  */
-export function getBrowserSearch({ uuid, parameters: parametersList = [], query, whereClause, orderByClause, nextPageToken: pageToken, pageSize }) {
+export function getBrowserSearch({ uuid, parametersList = [], query, whereClause, orderByClause, nextPageToken: pageToken, pageSize }) {
   //  Run browser
   return Instance.call(this).requestListBrowserSearch({
     uuid,
@@ -275,7 +266,7 @@ export function getReferencesList({ windowUuid, tableName, recordId, recordUuid,
  * @param {array}   attributesList
  * @returns {Map} Entity
  */
-export function runCallOutRequest({ windowUuid, windowNo, tabUuid, tableName, columnName, value, oldValue, callout, attributesList = [] }) {
+export function runCallOutRequest({ windowUuid, windowNo, tabUuid, tableName, columnName, value, oldValue, valueType, callout, attributesList = [] }) {
   return Instance.call(this).requestRunCallout({
     windowUuid,
     windowNo,
@@ -284,6 +275,7 @@ export function runCallOutRequest({ windowUuid, windowNo, tabUuid, tableName, co
     columnName,
     value,
     oldValue,
+    valueType,
     callout,
     attributesList
   })
@@ -513,6 +505,27 @@ export function requestCreateChatEntry({ tableName, recordId, comment }) {
  */
 export function requestListDocumentActions({ tableName, recordId, recordUuid, documentStatus, documentAction, pageSize, pageToken }) {
   return Instance.call(this).requestListDocumentActions({
+    tableName,
+    recordId,
+    recordUuid,
+    documentStatus,
+    documentAction,
+    pageSize,
+    pageToken
+  })
+}
+/**
+ * Request Document Status List
+ * @param {string} tableName
+ * @param {number} recordId
+ * @param {string} recordUuid
+ * @param {string} documentStatus
+ * @param {string} documentAction
+ * @param {number} pageSize
+ * @param {string} pageToken
+ */
+export function requestListDocumentStatuses({ tableName, recordId, recordUuid, documentStatus, documentAction, pageSize, pageToken }) {
+  return Instance.call(this).requestListDocumentStatuses({
     tableName,
     recordId,
     recordUuid,

@@ -1,29 +1,35 @@
 import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
-import { requestListDocumentActions } from '@/api/ADempiere/data'
+import { requestListDocumentActions, requestListDocumentStatuses } from '@/api/ADempiere/data'
 
 // Store used for set all related to context menu
 // for Window, Process, Smart Browser andother customized component
 // See structure:
-// menu: [
+// contextMenu: [
 //   {
 //     containerUuid: '',
 //     relations: [],
 //     actions: [],
 //     references: []
-//     defaultAction: {},
-//     lastAction: {}
 //   }
 // ]
-const contextMenu = {
-  state: {
-    contextMenu: [],
-    listDocumentAction: {
-      defaultDocumentAction: undefined,
-      documentActionsList: [],
-      recordId: undefined,
-      recordUuid: undefined
-    }
+const initStateContextMenu = {
+  contextMenu: [],
+  listDocumentStatus: {
+    defaultDocumentAction: undefined,
+    documentActionsList: [],
+    recordId: undefined,
+    recordUuid: undefined
   },
+  listDocumentAction: {
+    defaultDocumentAction: undefined,
+    documentActionsList: [],
+    recordId: undefined,
+    recordUuid: undefined
+  }
+}
+
+const contextMenu = {
+  state: initStateContextMenu,
   mutations: {
     setContextMenu(state, payload) {
       state.contextMenu.push(payload)
@@ -33,11 +39,34 @@ const contextMenu = {
     },
     listDocumentAction(state, payload) {
       state.listDocumentAction = payload
+    },
+    addlistDocumentStatus(state, payload) {
+      state.listDocumentStatus = payload
+    },
+    resetContextMenu(state) {
+      state = initStateContextMenu
     }
   },
   actions: {
-    setContextMenu({ commit }, payload) {
-      commit('setContextMenu', payload)
+    /**
+     * Sub menu associated with panel
+     * @param {string} containerUuid
+     * @param {array}  relations
+     * @param {array}  actions
+     * @param {array}  references
+     */
+    setContextMenu({ commit }, {
+      containerUuid,
+      relations = [],
+      actions = [],
+      references = []
+    }) {
+      commit('setContextMenu', {
+        containerUuid,
+        relations,
+        actions,
+        references
+      })
     },
     /**
      * TODO: Verify tableName params to change in constant
@@ -45,35 +74,68 @@ const contextMenu = {
      * @param {string} recordUuid
      */
     listDocumentActionStatus({ commit }, {
-      tableName = 'C_Order',
+      tableName,
       recordId,
       recordUuid,
       documentAction,
       documentStatus
     }) {
-      requestListDocumentActions({
-        tableName,
-        recordId,
-        recordUuid,
-        documentAction,
-        documentStatus,
-        pageSize: 0,
-        pageToken: ''
-      })
-        .then(responseDocumentActios => {
-          const documentAction = {
-            defaultDocumentAction: responseDocumentActios.defaultDocumentAction,
-            documentActionsList: responseDocumentActios.documentActionsList,
-            recordId,
-            recordUuid
-          }
+      return new Promise(resolve => {
+        requestListDocumentActions({
+          tableName,
+          recordId,
+          recordUuid,
+          documentAction,
+          documentStatus,
+          pageSize: 0,
+          pageToken: ''
+        })
+          .then(responseDocumentActios => {
+            const documentAction = {
+              defaultDocumentAction: responseDocumentActios.defaultDocumentAction,
+              documentActionsList: responseDocumentActios.documentActionsList,
+              recordId,
+              recordUuid
+            }
 
-          commit('listDocumentAction', documentAction)
-          return documentAction
+            commit('listDocumentAction', documentAction)
+            resolve(documentAction)
+          })
+          .catch(error => {
+            console.warn(`Error getting document action list. Code ${error.code}: ${error.message}.`)
+          })
+      })
+    },
+    listDocumentStatus({ commit }, {
+      tableName,
+      recordId,
+      recordUuid,
+      documentAction,
+      documentStatus
+    }) {
+      return new Promise(resolve => {
+        requestListDocumentStatuses({
+          tableName,
+          recordId,
+          recordUuid,
+          documentAction,
+          documentStatus,
+          pageSize: 0,
+          pageToken: ''
         })
-        .catch(error => {
-          console.warn(error)
-        })
+          .then(responseDocumentStatus => {
+            const documentStatus = {
+              documentActionsList: responseDocumentStatus.documentStatusesList,
+              recordId,
+              recordUuid
+            }
+            commit('addlistDocumentStatus', documentStatus)
+            resolve(documentStatus)
+          })
+          .catch(error => {
+            console.warn(`Error getting document statuses list. Code ${error.code}: ${error.message}.`)
+          })
+      })
     }
   },
   getters: {
@@ -93,13 +155,16 @@ const contextMenu = {
       const menu = state.contextMenu.find(
         item => item.containerUuid === containerUuid
       )
-      if (menu === undefined) {
-        return menu
+      if (menu) {
+        return menu.actions
       }
-      return menu.actions
+      return menu
     },
     getListDocumentActions: (state) => {
       return state.listDocumentAction
+    },
+    getListDocumentStatus: (state) => {
+      return state.listDocumentStatus
     },
     getListDocumentActionByUuid: (state) => (recordUuid) => {
       return state.listDocumentAction.find(itemDocumentAction => itemDocumentAction.recordUuid === recordUuid)

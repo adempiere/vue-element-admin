@@ -16,8 +16,12 @@ const browser = {
     dictionaryResetCacheBrowser(state) {
       state.browser = []
     },
-    changeBrowser(state, payload) {
-      payload.browser = payload.newBrowser
+    changeBrowserAttribute(state, payload) {
+      let value = payload.attributeValue
+      if (payload.attributeNameControl) {
+        value = payload.browser[payload.attributeNameControl]
+      }
+      payload.browser[payload.attributeName] = value
     }
   },
   actions: {
@@ -41,7 +45,8 @@ const browser = {
 
             //  Convert from gRPC
             const fieldsRangeList = []
-            let isMandatoryParams = false
+            let isShowedCriteria = false
+            let awaitForValues = 0
             let fieldsList = browserResponse.fieldsList.map((fieldItem, index) => {
               const someAttributes = {
                 ...additionalAttributes,
@@ -65,24 +70,29 @@ const browser = {
                 fieldsRangeList.push(fieldRange)
               }
 
-              if ((query.includes(`@${field.columnName}@`) ||
-                query.includes(`@${field.columnName}_To@`) ||
-                whereClause.includes(`@${field.columnName}@`) ||
-                whereClause.includes(`@${field.columnName}_To@`)) &&
-                field.isQueryCriteria) {
-                field.isMandatory = true
-                field.isMandatoryFromLogic = true
-                field.isShowedFromUser = true
-              }
-
               // Only isQueryCriteria fields with values, displayed in main panel
               if (field.isQueryCriteria) {
+                if (field.isSQLValue) {
+                  isShowedCriteria = true
+                  field.isShowedFromUser = true
+                  awaitForValues++
+                }
+                if (query.includes(`@${field.columnName}@`) ||
+                  query.includes(`@${field.columnName}_To@`) ||
+                  whereClause.includes(`@${field.columnName}@`) ||
+                  whereClause.includes(`@${field.columnName}_To@`)) {
+                  field.isMandatory = true
+                  field.isMandatoryFromLogic = true
+                  field.isShowedFromUser = true
+                }
+
                 if (isEmptyValue(field.value)) {
                   // isMandatory params to showed search criteria
                   if (field.isMandatory || field.isMandatoryFromLogic) {
-                    isMandatoryParams = true
+                    isShowedCriteria = true
                   }
                 } else {
+                  // with value
                   field.isShowedFromUser = true
                 }
               }
@@ -91,21 +101,40 @@ const browser = {
             })
             fieldsList = fieldsList.concat(fieldsRangeList)
 
-            //  Get dependent fields
+            // Get dependent fields
             fieldsList
-              .filter(field => field.parentFieldsList && field.isActive)
               .forEach((field, index, list) => {
-                field.parentFieldsList.forEach(parentColumnName => {
-                  const parentField = list.find(parentField => {
-                    return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                if (field.isActive && field.parentFieldsList.length) {
+                  field.parentFieldsList.forEach(parentColumnName => {
+                    const parentField = list.find(parentField => {
+                      return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                    })
+                    if (parentField) {
+                      parentField.dependentFieldsList.push(field.columnName)
+                    }
                   })
-                  if (parentField) {
-                    parentField.dependentFieldsList.push(field.columnName)
-                  }
-                })
+                }
               })
 
-            //  Convert from gRPC process list
+            // Panel for save on store
+            const newBrowser = {
+              ...browserResponse,
+              containerUuid,
+              fieldList: fieldsList,
+              panelType,
+              // app attributes
+              awaitForValues, // control to values
+              awaitForValuesToQuery: awaitForValues, // get values from request search
+              isShowedCriteria,
+              isShowedTotals: true
+            }
+
+            commit('addBrowser', newBrowser)
+            dispatch('addPanel', newBrowser)
+
+            resolve(newBrowser)
+
+            // Convert from gRPC process list
             const actions = []
             if (process) {
               actions.push({
@@ -126,29 +155,11 @@ const browser = {
               //   containerUuidAssociated: containerUuid
               // })
             }
-            //  Add process menu
+            // Add process menu
             dispatch('setContextMenu', {
               containerUuid,
-              relations: [],
-              actions,
-              references: []
+              actions
             })
-
-            //  Panel for save on store
-            const newBrowser = {
-              ...browserResponse,
-              containerUuid,
-              fieldList: fieldsList,
-              panelType,
-              // app attributes
-              isShowedCriteria: Boolean(fieldsList.length && isMandatoryParams),
-              isShowedTotals: true
-            }
-
-            commit('addBrowser', newBrowser)
-            dispatch('addPanel', newBrowser)
-
-            resolve(newBrowser)
           })
           .catch(error => {
             router.push({ path: '/dashboard' })
@@ -165,16 +176,17 @@ const browser = {
       containerUuid,
       browser,
       attributeName,
+      attributeNameControl,
       attributeValue
     }) {
       if (isEmptyValue(browser)) {
         browser = getters.getBrowser(containerUuid)
       }
-      const newBrowser = browser
-      newBrowser[attributeName] = attributeValue
-      commit('changeBrowser', {
+      commit('changeBrowserAttribute', {
         browser,
-        newBrowser
+        attributeName,
+        attributeValue,
+        attributeNameControl
       })
     }
   },

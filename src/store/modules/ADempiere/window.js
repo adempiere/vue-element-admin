@@ -8,28 +8,38 @@ import language from '@/lang'
 import router from '@/router'
 import { generateField, getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
 
+const initStateWindow = {
+  window: [],
+  windowIndex: 0
+}
+
 const window = {
-  state: {
-    window: [],
-    windowIndex: 0
-  },
+  state: initStateWindow,
   mutations: {
     addWindow(state, payload) {
       state.window.push(payload)
       state.windowIndex++
     },
     dictionaryResetCacheWindow(state) {
-      state.window = []
-      state.windowIndex = 0
-    },
-    changeWindow(state, payload) {
-      payload.window = payload.newWindow
+      state = initStateWindow
     },
     setCurrentTab(state, payload) {
-      payload.window.currentTabUuid = payload.tabUuid
+      payload.window.currentTab = payload.tab
+      payload.window.currentTabUuid = payload.tab.uuid
     },
-    setTabIsLoadField(state, payload) {
-      payload.tab.isLoadFieldList = payload.isLoadFieldList
+    changeWindowAttribute(state, payload) {
+      let value = payload.attributeValue
+      if (payload.attributeNameControl) {
+        value = payload.window[payload.attributeNameControl]
+      }
+      payload.window[payload.attributeName] = value
+    },
+    changeTabAttribute(state, payload) {
+      let value = payload.attributeValue
+      if (payload.attributeNameControl) {
+        value = payload.tab[payload.attributeNameControl]
+      }
+      payload.tab[payload.attributeName] = value
     }
   },
   actions: {
@@ -39,10 +49,10 @@ const window = {
     }) {
       return getWindowMetadata(windowUuid)
         .then(responseWindow => {
-          const firstTab = responseWindow.tabsList[0].tableName
+          const firstTabTableName = responseWindow.tabsList[0].tableName
           const firstTabUuid = responseWindow.tabsList[0].uuid
-          const childrenTabs = []
-          const parentTabs = []
+          const tabsListParent = []
+          const tabsListChildren = []
 
           const tabsSequence = []
           // TODO Add source tab on the server for tabs Translation and Sort
@@ -77,11 +87,11 @@ const window = {
               tabGroup: tabItem.fieldGroup,
               firstTabUuid,
               // relations
-              isParentTab: Boolean(firstTab === tabItem.tableName),
+              isParentTab: Boolean(firstTabTableName === tabItem.tableName),
               // app properties
               isAssociatedTabSequence: false, // show modal with order tab
               isShowedRecordNavigation: !(tabItem.isSingleRow),
-              isLoadFieldList: false,
+              isLoadFieldsList: false,
               index
             }
             delete tab.processesList
@@ -94,7 +104,7 @@ const window = {
               processName: language.t('window.newRecord'),
               type: 'dataAction',
               action: 'resetPanelToNew',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: !tab.isInsertRecord || tab.isReadOnly
             }, {
               // action to delete record selected
@@ -102,7 +112,7 @@ const window = {
               processName: language.t('window.deleteRecord'),
               type: 'dataAction',
               action: 'deleteEntity',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: tab.isReadOnly
             }, {
               // action to undo create, update, delete record
@@ -110,7 +120,7 @@ const window = {
               processName: language.t('data.undo'),
               type: 'dataAction',
               action: 'undoModifyData',
-              uuidParent: responseWindow,
+              uuidParent: windowUuid,
               disabled: false
             }, {
               name: language.t('data.lockRecord'),
@@ -163,7 +173,7 @@ const window = {
             if (tabItem.processesList && tabItem.processesList.length) {
               const processList = tabItem.processesList.map(processItem => {
                 // TODO: No list of parameters
-                // // add process associated in vuex store
+                // add process associated in vuex store
                 // dispatch('addProcessAssociated', {
                 //   processToGenerate: processItem,
                 //   containerUuidAssociated: tabItem.uuid
@@ -188,35 +198,32 @@ const window = {
             //  Add process menu
             dispatch('setContextMenu', {
               containerUuid: tab.uuid,
-              relations: [],
-              actions: actions,
-              references: []
+              actions
             })
 
             if (tab.isParentTab) {
-              parentTabs.push(tab)
+              tabsListParent.push(tab)
               return tab
             }
-            childrenTabs.push(tab)
+            if (!tab.isSortTab) {
+              tabsListChildren.push(tab)
+            }
             return tab
           })
 
-          const tabProperties = {
-            tabsList: tabs,
-            currentTab: parentTabs[0],
-            tabsListParent: parentTabs,
-            tabsListChildren: childrenTabs,
-            // app attributes
-            currentTabUuid: parentTabs[0].uuid
-          }
-
           const newWindow = {
             ...responseWindow,
-            ...tabProperties,
+            tabsList: tabs,
+            currentTab: tabsListParent[0],
+            tabsListParent,
+            tabsListChildren,
+            // app attributes
+            currentTabUuid: tabsListParent[0].uuid,
+            firstTab: tabsListParent[0],
             firstTabUuid,
             windowIndex: state.windowIndex + 1,
             // App properties
-            isShowedTabsChildren: Boolean(childrenTabs.length),
+            isShowedTabsChildren: Boolean(tabsListChildren.length),
             isShowedRecordNavigation: undefined,
             isShowedAdvancedQuery: false
           }
@@ -237,141 +244,167 @@ const window = {
       parentUuid,
       containerUuid,
       panelType = 'window',
+      panelMetadata,
       isAdvancedQuery = false
     }) {
-      return getTabMetadata(containerUuid)
-        .then(tabResponse => {
-          const additionalAttributes = {
-            parentUuid,
-            containerUuid,
-            isShowedFromUser: true,
-            panelType,
-            tableName: tabResponse.tableName,
-            //
-            isReadOnlyFromForm: false,
-            isAdvancedQuery
-          }
+      return new Promise(resolve => {
+        getTabMetadata(containerUuid)
+          .then(tabResponse => {
+            const additionalAttributes = {
+              parentUuid,
+              containerUuid,
+              isShowedFromUser: true,
+              panelType,
+              tableName: tabResponse.tableName,
+              //
+              isReadOnlyFromForm: false,
+              isAdvancedQuery
+            }
 
-          let fieldUuidsequence = 0
-          let fieldLinkColumnName
-          //  Convert from gRPC
-          const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
-            fieldItem = generateField({
-              fieldToGenerate: fieldItem,
-              moreAttributes: {
-                ...additionalAttributes,
-                fieldListIndex: index
+            let isWithUuidField = false // indicates it contains the uuid field
+            let fieldLinkColumnName
+            //  Convert and add to app attributes
+            const fieldsList = tabResponse.fieldsList.map((fieldItem, index) => {
+              fieldItem = generateField({
+                fieldToGenerate: fieldItem,
+                moreAttributes: {
+                  ...additionalAttributes,
+                  fieldListIndex: index
+                }
+              })
+
+              if (!isWithUuidField && fieldItem.columnName === 'UUID') {
+                isWithUuidField = true
               }
+
+              if (fieldItem.isParent) {
+                fieldLinkColumnName = fieldItem.columnName
+              }
+
+              return fieldItem
             })
-            if (fieldItem.sequence > fieldUuidsequence) {
-              fieldUuidsequence = fieldItem.sequence
-            }
 
-            if (fieldItem.isParent) {
-              fieldLinkColumnName = fieldItem.columnName
-            }
-
-            return fieldItem
-          })
-
-          if (!isAdvancedQuery) {
-            //  Get dependent fields
-            fieldsList
-              .filter(field => field.parentFieldsList && field.isActive)
-              .forEach((field, index, list) => {
-                field.parentFieldsList.forEach(parentColumnName => {
-                  const parentField = list.find(parentField => {
-                    return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
-                  })
-                  if (parentField) {
-                    parentField.dependentFieldsList.push(field.columnName)
+            let isTabsChildren = false
+            if (!isAdvancedQuery) {
+              //  Get dependent fields
+              fieldsList
+                .forEach((field, index, list) => {
+                  if (field.parentFieldsList.length && field.isActive) {
+                    field.parentFieldsList.forEach(parentColumnName => {
+                      const parentField = list.find(parentField => {
+                        return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+                      })
+                      if (parentField) {
+                        parentField.dependentFieldsList.push(field.columnName)
+                      }
+                    })
                   }
                 })
-              })
-          }
 
-          if (!fieldsList.find(field => field.columnName === 'UUID')) {
-            const attributesOverwrite = {
-              panelType: panelType,
-              sequence: (fieldUuidsequence + 10),
-              name: 'UUID',
-              columnName: 'UUID',
-              isAdvancedQuery,
-              componentPath: 'FieldText'
+              const window = getters.getWindow(parentUuid)
+              isTabsChildren = Boolean(window.tabsListChildren.length)
             }
-            const field = getFieldTemplate(attributesOverwrite)
-            fieldsList.push(field)
-          }
 
-          const window = getters.getWindow(parentUuid)
-          //  Panel for save on store
-          const panel = {
-            ...getters.getTab(parentUuid, containerUuid),
-            isAdvancedQuery,
-            fieldLinkColumnName: fieldLinkColumnName,
-            fieldList: fieldsList,
-            panelType,
-            // app attributes
-            isShowedTotals: false,
-            isTabsChildren: Boolean(window.tabsListChildren.length)
-          }
+            if (!isWithUuidField) {
+              const fieldUuid = getFieldTemplate({
+                ...additionalAttributes,
+                isShowedFromUser: false,
+                name: 'UUID',
+                columnName: 'UUID',
+                componentPath: 'FieldText'
+              })
+              fieldsList.push(fieldUuid)
+            }
 
-          dispatch('addPanel', panel)
-          dispatch('setTabIsLoadField', {
-            parentUuid,
-            containerUuid
+            if (isEmptyValue(panelMetadata)) {
+              panelMetadata = getters.getTab(parentUuid, containerUuid)
+            }
+            //  Panel for save on store
+            const panel = {
+              ...panelMetadata,
+              isAdvancedQuery,
+              fieldLinkColumnName,
+              fieldList: fieldsList,
+              panelType,
+              // app attributes
+              isLoadFieldsList: true,
+              isShowedTotals: false,
+              isTabsChildren // to delete records assiciated
+            }
+
+            dispatch('addPanel', panel)
+            resolve(panel)
+
+            dispatch('changeTabAttribute', {
+              parentUuid,
+              containerUuid,
+              tab: panelMetadata,
+              attributeName: 'isLoadFieldsList',
+              attributeValue: true
+            })
           })
-          return panel
-        })
-        .catch(error => {
-          showMessage({
-            message: language.t('login.unexpectedError'),
-            type: 'error'
+          .catch(error => {
+            showMessage({
+              message: language.t('login.unexpectedError'),
+              type: 'error'
+            })
+            console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`)
           })
-          console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`)
-        })
+      })
+    },
+    setCurrentTab({ commit, getters }, {
+      parentUuid,
+      containerUuid,
+      window,
+      tab
+    }) {
+      if (isEmptyValue(window)) {
+        window = getters.getWindow(parentUuid)
+      }
+      if (isEmptyValue(tab)) {
+        tab = window.tabsList.find(itemTab => itemTab.uuid === containerUuid)
+      }
+
+      commit('setCurrentTab', {
+        window,
+        tab
+      })
     },
     changeWindowAttribute({ commit, getters }, {
       parentUuid,
       window,
       attributeName,
+      attributeNameControl,
       attributeValue
     }) {
       if (isEmptyValue(window)) {
         window = getters.getWindow(parentUuid)
       }
-      const newWindow = window
-      newWindow[attributeName] = attributeValue
-      commit('changeWindow', {
+
+      commit('changeWindowAttribute', {
+        parentUuid,
         window,
-        newWindow
+        attributeName,
+        attributeNameControl,
+        attributeValue
       })
     },
-    /**
-     * @param {string} parentUuid
-     * @param {string} containerUuid
-     */
-    setCurrentTab({ commit, getters }, {
+    changeTabAttribute({ commit, getters }, {
       parentUuid,
-      containerUuid
+      containerUuid,
+      tab,
+      attributeName,
+      attributeNameControl,
+      attributeValue
     }) {
-      commit('setCurrentTab', {
-        window: getters.getWindow(parentUuid),
-        tabUuid: containerUuid
-      })
-    },
-    /**
-     * Indicate if fields is load in tab (containerUuid)
-     * @param {string} parentUuid
-     * @param {string} containerUuid
-     */
-    setTabIsLoadField({ commit, getters }, {
-      parentUuid, containerUuid
-    }) {
-      const tab = getters.getTab(parentUuid, containerUuid)
-      commit('setTabIsLoadField', {
-        tab: tab,
-        isLoadFieldList: true
+      if (isEmptyValue(tab)) {
+        tab = getters.getTab(parentUuid, containerUuid)
+      }
+      commit('changeTabAttribute', {
+        tab,
+        attributeName,
+        attributeValue,
+        attributeNameControl
       })
     }
   },
@@ -407,13 +440,6 @@ const window = {
       return {
         isInsertRecord: false
       }
-    },
-    getTabIsLoadField: (state, getters) => (windowUuid, tabUuid) => {
-      const tab = getters.getTab(windowUuid, tabUuid)
-      if (tab) {
-        return tab.isLoadFieldList
-      }
-      return tab
     },
     getTableNameFromTab: (state, getters) => (windowUuid, tabUuid) => {
       return getters.getTab(windowUuid, tabUuid).tableName

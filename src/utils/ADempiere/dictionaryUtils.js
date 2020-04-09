@@ -1,6 +1,6 @@
 import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
-import { getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
+import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
 import REFERENCES, { FIELD_NOT_SHOWED } from '@/components/ADempiere/Field/references'
 import { FIELD_DISPLAY_SIZES, DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import language from '@/lang'
@@ -18,6 +18,7 @@ export function generateField({
   isSOTrxMenu
 }) {
   let isShowedFromUser = false
+  let isSQLValue = false
   // verify if it no overwrite value with ...moreAttributes
   if (moreAttributes.isShowedFromUser) {
     isShowedFromUser = moreAttributes.isShowedFromUser
@@ -25,10 +26,27 @@ export function generateField({
 
   const componentReference = evalutateTypeField(fieldToGenerate.displayType, true)
   const referenceType = componentReference.alias[0]
-
+  let isDisplayedFromLogic = fieldToGenerate.isDisplayed
+  let isMandatoryFromLogic = false
+  let isReadOnlyFromLogic = false
+  let parentFieldsList = []
   let parsedDefaultValue = fieldToGenerate.defaultValue
-  if (!moreAttributes.isAdvancedQuery) {
-    if (String(parsedDefaultValue).includes('@')) {
+  let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
+  let operator = 'EQUAL'
+  let isNumericField = componentReference.type === 'FieldNumber'
+  let isTranslatedField = fieldToGenerate.isTranslated
+  if (moreAttributes.isAdvancedQuery) {
+    isNumericField = false
+    isTranslatedField = false
+    parsedDefaultValue = undefined
+    parsedDefaultValueTo = undefined
+
+    if (['FieldText', 'FieldTextLong'].includes(componentReference.type)) {
+      operator = 'LIKE'
+    }
+  } else {
+    if (String(parsedDefaultValue).includes('@') &&
+      String(parsedDefaultValue).trim() !== '-1') {
       parsedDefaultValue = parseContext({
         ...moreAttributes,
         columnName: fieldToGenerate.columnName,
@@ -37,8 +55,8 @@ export function generateField({
       }).value
     }
 
-    if ((isEmptyValue(parsedDefaultValue) ||
-      String(parsedDefaultValue).includes('@')) &&
+    if (isEmptyValue(parsedDefaultValue) &&
+      !(fieldToGenerate.isKey || fieldToGenerate.isParent) &&
       String(parsedDefaultValue).trim() !== '-1') {
       parsedDefaultValue = getPreference({
         parentUuid: fieldToGenerate.parentUuid,
@@ -48,9 +66,7 @@ export function generateField({
 
       // search value preference with elementName
       if (!isEmptyValue(fieldToGenerate.elementName) &&
-        (isEmptyValue(parsedDefaultValue) ||
-        String(parsedDefaultValue).includes('@')) &&
-        String(parsedDefaultValue).trim() !== '-1') {
+        isEmptyValue(parsedDefaultValue)) {
         parsedDefaultValue = getPreference({
           parentUuid: fieldToGenerate.parentUuid,
           containerUuid: fieldToGenerate.containerUuid,
@@ -58,19 +74,23 @@ export function generateField({
         })
       }
     }
-  }
-  parsedDefaultValue = parsedValueComponent({
-    fieldType: componentReference.type,
-    value: parsedDefaultValue,
-    referenceType,
-    isMandatory: fieldToGenerate.isMandatory
-  })
 
-  let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
-  if (!moreAttributes.isAdvancedQuery) {
-    // if (String(parsedDefaultValueTo).includes('@SQL=')) {
-    //   parsedDefaultValueTo.replace('@SQL=', '')
-    if (String(parsedDefaultValueTo).includes('@')) {
+    parsedDefaultValue = parsedValueComponent({
+      fieldType: componentReference.type,
+      value: parsedDefaultValue,
+      referenceType,
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
+    })
+
+    if (String(fieldToGenerate.defaultValue).includes('@SQL=')) {
+      isShowedFromUser = true
+      isSQLValue = true
+    }
+
+    // VALUE TO
+    if (String(parsedDefaultValueTo).includes('@') &&
+      String(parsedDefaultValueTo).trim() !== '-1') {
       parsedDefaultValueTo = parseContext({
         ...moreAttributes,
         columnName: `${fieldToGenerate.columnName}_To`,
@@ -78,8 +98,8 @@ export function generateField({
       }).value
     }
 
-    if ((isEmptyValue(parsedDefaultValueTo) ||
-      String(parsedDefaultValueTo).includes('@')) &&
+    if (isEmptyValue(parsedDefaultValueTo) &&
+      !(fieldToGenerate.isKey || fieldToGenerate.isParent) &&
       String(parsedDefaultValueTo).trim() !== '-1') {
       parsedDefaultValueTo = getPreference({
         parentUuid: fieldToGenerate.parentUuid,
@@ -89,9 +109,7 @@ export function generateField({
 
       // search value preference with elementName
       if (!isEmptyValue(fieldToGenerate.elementName) &&
-        (isEmptyValue(parsedDefaultValueTo) ||
-        String(parsedDefaultValueTo).includes('@')) &&
-        String(parsedDefaultValueTo).trim() !== '-1') {
+        isEmptyValue(parsedDefaultValueTo)) {
         parsedDefaultValueTo = getPreference({
           parentUuid: fieldToGenerate.parentUuid,
           containerUuid: fieldToGenerate.containerUuid,
@@ -99,18 +117,47 @@ export function generateField({
         })
       }
     }
-  }
-  parsedDefaultValueTo = parsedValueComponent({
-    fieldType: componentReference.type,
-    value: parsedDefaultValueTo,
-    referenceType,
-    isMandatory: fieldToGenerate.isMandatory
-  })
 
-  fieldToGenerate.reference.zoomWindowList = fieldToGenerate.reference.windowsList
+    parsedDefaultValueTo = parsedValueComponent({
+      fieldType: componentReference.type,
+      value: parsedDefaultValueTo,
+      referenceType,
+      isMandatory: fieldToGenerate.isMandatory,
+      isIdentifier: fieldToGenerate.columnName.includes('_ID')
+    })
+
+    parentFieldsList = getParentFields(fieldToGenerate)
+
+    // evaluate logics
+    const setEvaluateLogics = {
+      parentUuid: moreAttributes.parentUuid,
+      containerUuid: moreAttributes.containerUuid,
+      context: getContext
+    }
+    if (!isEmptyValue(fieldToGenerate.displayLogic)) {
+      isDisplayedFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.displayLogic
+      })
+    }
+    if (!isEmptyValue(fieldToGenerate.mandatoryLogic)) {
+      isMandatoryFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.mandatoryLogic
+      })
+    }
+    if (!isEmptyValue(fieldToGenerate.readOnlyLogic)) {
+      isReadOnlyFromLogic = evaluator.evaluateLogic({
+        ...setEvaluateLogics,
+        logic: fieldToGenerate.readOnlyLogic
+      })
+    }
+  }
+
   const field = {
     ...fieldToGenerate,
     ...moreAttributes,
+    isSOTrxMenu,
     // displayed attributes
     componentPath: componentReference.type,
     isSupport: componentReference.support,
@@ -123,51 +170,27 @@ export function generateField({
     parsedDefaultValue,
     parsedDefaultValueTo,
     // logics to app
-    isDisplayedFromLogic: fieldToGenerate.isDisplayed,
-    isReadOnlyFromLogic: false,
-    isMandatoryFromLogic: false,
+    isDisplayedFromLogic,
+    isReadOnlyFromLogic,
+    isMandatoryFromLogic,
     //
-    parentFieldsList: [],
+    parentFieldsList,
     dependentFieldsList: [],
     // TODO: Add support on server
     // app attributes
     isShowedFromUser,
+    isShowedFromUserDefault: isShowedFromUser, // set this value when reset panel
     isShowedTableFromUser: fieldToGenerate.isDisplayed,
     isFixedTableColumn: false,
+    valueType: componentReference.valueType, // value type to convert with gGRPC
+    isSQLValue,
     // Advanced query
-    operator: 'EQUAL', // current operator
+    operator, // current operator
     oldOperator: undefined, // old operator
-    defaultOperator: 'EQUAL'
-  }
-
-  if (moreAttributes.isAdvancedQuery && ['FieldText', 'FieldTextLong'].includes(field.componentPath)) {
-    field.operator = 'LIKE'
-    field.defaultOperator = 'LIKE'
-  }
-
-  // evaluate simple logics without context
-  if (!field.isAdvancedQuery) {
-    field.parentFieldsList = getParentFields(fieldToGenerate)
-
-    if (field.displayLogic.trim() !== '' && !field.displayLogic.includes('@')) {
-      field.isDisplayedFromLogic = evaluator.evaluateLogic({
-        type: 'displayed',
-        logic: field.displayLogic
-      })
-      field.isDisplayedFromLogic = Boolean(field.isDisplayedFromLogic)
-    }
-    if (field.mandatoryLogic.trim() !== '' && !field.mandatoryLogic.includes('@')) {
-      field.isMandatoryFromLogic = evaluator.evaluateLogic({
-        logic: field.mandatoryLogic
-      })
-      field.isMandatoryFromLogic = Boolean(field.isMandatoryFromLogic)
-    }
-    if (field.readOnlyLogic.trim() !== '' && !field.readOnlyLogic.includes('@')) {
-      field.isReadOnlyFromLogic = evaluator.evaluateLogic({
-        logic: field.readOnlyLogic
-      })
-      field.isReadOnlyFromLogic = Boolean(field.isReadOnlyFromLogic)
-    }
+    defaultOperator: operator,
+    // popover's
+    isNumericField,
+    isTranslatedField
   }
 
   // Sizes from panel and groups
@@ -183,20 +206,22 @@ export function generateField({
   }
 
   // Overwrite some values
-  if (typeRange) {
-    field.uuid = `${field.uuid}_To`
-    field.columnName = `${field.columnName}_To`
-    field.name = `${field.name} To`
-    field.value = parsedDefaultValueTo
-    field.defaultValue = field.defaultValueTo
-    field.parsedDefaultValue = field.parsedDefaultValueTo
+  if (field.isRange) {
+    field.operator = 'GREATER_EQUAL'
+    if (typeRange) {
+      field.uuid = `${field.uuid}_To`
+      field.columnName = `${field.columnName}_To`
+      field.name = `${field.name} To`
+      field.value = parsedDefaultValueTo
+      field.defaultValue = field.defaultValueTo
+      field.parsedDefaultValue = field.parsedDefaultValueTo
+      field.operator = 'LESS_EQUAL'
+    }
   }
 
   // hidden field type button
   const notShowedField = FIELD_NOT_SHOWED.find(itemField => {
-    if (field.displayType === itemField.id) {
-      return true
-    }
+    return field.displayType === itemField.id
   })
   if (notShowedField) {
     field.isDisplayedFromLogic = false
@@ -257,16 +282,17 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
 
     //  Get dependent fields
     fieldDefinitionList
-      .filter(field => field.parentFieldsList && field.isActive)
       .forEach((field, index, list) => {
-        field.parentFieldsList.forEach(parentColumnName => {
-          var parentField = list.find(parentField => {
-            return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
+        if (field.isActive && field.parentFieldsList.length) {
+          field.parentFieldsList.forEach(parentColumnName => {
+            const parentField = list.find(itemParentField => {
+              return itemParentField.columnName === parentColumnName && parentColumnName !== field.columnName
+            })
+            if (parentField) {
+              parentField.dependentFieldsList.push(field.columnName)
+            }
           })
-          if (parentField) {
-            parentField.dependentFieldsList.push(field.columnName)
-          }
-        })
+        }
       })
   }
 
@@ -380,7 +406,7 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
  * @return string type, assigned value to folder after evaluating the parameter
  */
 export function evalutateTypeField(displayTypeId, isAllInfo = false) {
-  var component = REFERENCES.find(reference => displayTypeId === reference.id)
+  const component = REFERENCES.find(reference => displayTypeId === reference.id)
   if (isAllInfo) {
     return component
   }
@@ -389,19 +415,7 @@ export function evalutateTypeField(displayTypeId, isAllInfo = false) {
 
 // Default template for injected fields
 export function getFieldTemplate(attributesOverwrite) {
-  const referenceValue = {
-    tableName: '',
-    keyColumnName: '',
-    displayColumnName: '',
-    query: '',
-    parsedQuery: '',
-    directQuery: '',
-    parsedDirectQuery: '',
-    validationCode: '',
-    windowsList: [],
-    zoomWindowList: []
-  }
-  const newField = {
+  return {
     id: 0,
     uuid: '',
     name: '',
@@ -450,16 +464,26 @@ export function getFieldTemplate(attributesOverwrite) {
     readOnlyLogic: undefined,
     parentFieldsList: undefined,
     dependentFieldsList: [],
-    reference: referenceValue,
+    reference: {
+      tableName: '',
+      keyColumnName: '',
+      displayColumnName: '',
+      query: '',
+      parsedQuery: '',
+      directQuery: '',
+      parsedDirectQuery: '',
+      validationCode: '',
+      windowsList: []
+    },
     contextInfo: undefined,
     isShowedFromUser: false,
     isFixedTableColumn: false,
     sizeFieldFromType: {
       type: 'Button',
       size: DEFAULT_SIZE
-    }
+    },
+    ...attributesOverwrite
   }
-  return Object.assign(newField, attributesOverwrite)
 }
 
 /**
@@ -467,18 +491,21 @@ export function getFieldTemplate(attributesOverwrite) {
  * @param  {array} fieldList Field of List with
  * @return {array} fieldList
  */
-export function assignedGroup(fieldList, assignedGroup) {
-  if (fieldList === undefined || fieldList.length <= 0) {
-    return fieldList
+export function assignedGroup({ fieldsList, groupToAssigned, orderBy }) {
+  if (fieldsList === undefined || fieldsList.length <= 0) {
+    return fieldsList
   }
 
-  fieldList = sortFields(fieldList, 'sequence', 'asc', fieldList[0].panelType)
+  fieldsList = sortFields({
+    fieldsList,
+    orderBy
+  })
 
   let firstChangeGroup = false
   let currentGroup = ''
   let typeGroup = ''
 
-  fieldList.forEach(fieldElement => {
+  fieldsList.forEach(fieldElement => {
     if (fieldElement.panelType !== 'window') {
       fieldElement.groupAssigned = ''
       fieldElement.typeGroupAssigned = ''
@@ -507,12 +534,12 @@ export function assignedGroup(fieldList, assignedGroup) {
     fieldElement.groupAssigned = currentGroup
     fieldElement.typeGroupAssigned = typeGroup
 
-    if (assignedGroup !== undefined) {
-      fieldElement.groupAssigned = assignedGroup
+    if (groupToAssigned !== undefined) {
+      fieldElement.groupAssigned = groupToAssigned
     }
   })
 
-  return fieldList
+  return fieldsList
 }
 
 /**
@@ -524,18 +551,26 @@ export function assignedGroup(fieldList, assignedGroup) {
  * @param {string} panelType
  * @returns {array}
  */
-export function sortFields(arr, orderBy = 'sequence', type = 'asc', panelType = 'window') {
-  if (panelType === 'browser') {
-    orderBy = 'seqNoGrid'
+export function sortFields({
+  fieldsList,
+  orderBy = 'sequence',
+  type = 'asc'
+}) {
+  if (type.toLowerCase() === 'asc') {
+    fieldsList.sort((itemA, itemB) => {
+      return itemA[orderBy] - itemB[orderBy]
+      // return itemA[orderBy] > itemB[orderBy]
+    })
+  } else {
+    fieldsList.sort((itemA, itemB) => {
+      return itemA[orderBy] + itemB[orderBy]
+      // return itemA[orderBy] > itemB[orderBy]
+    })
   }
-  arr.sort((itemA, itemB) => {
-    return itemA[orderBy] - itemB[orderBy]
-    // return itemA[orderBy] > itemB[orderBy]
-  })
-  if (type.toLowerCase() === 'desc') {
-    return arr.reverse()
-  }
-  return arr
+  // if (type.toLowerCase() === 'desc') {
+  //   return fieldsList.reverse()
+  // }
+  return fieldsList
 }
 
 /**

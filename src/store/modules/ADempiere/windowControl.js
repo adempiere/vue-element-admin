@@ -5,20 +5,22 @@ import { showMessage } from '@/utils/ADempiere/notification'
 import language from '@/lang'
 import router from '@/router'
 
-const windowControl = {
-  state: {
-    inCreate: [],
-    references: [],
-    windowOldRoute: {
-      path: '',
-      fullPath: '',
-      query: {}
-    },
-    dataLog: {}, // { containerUuid, recordId, tableName, eventType }
-    tabSequenceRecord: [],
-    totalResponse: 0,
-    totalRequest: 0
+const initStateWindowControl = {
+  inCreate: [],
+  references: [],
+  windowOldRoute: {
+    path: '',
+    fullPath: '',
+    query: {}
   },
+  dataLog: {}, // { containerUuid, recordId, tableName, eventType }
+  tabSequenceRecord: [],
+  totalResponse: 0,
+  totalRequest: 0
+}
+
+const windowControl = {
+  state: initStateWindowControl,
   mutations: {
     addInCreate(state, payload) {
       state.inCreate.push(payload)
@@ -28,15 +30,6 @@ const windowControl = {
     },
     addReferencesList(state, payload) {
       state.references.push(payload)
-    },
-    deleteReference(state, payload) {
-      state.references = state.references.filter(itemReference => {
-        if (itemReference.parentUuid === payload.windowUuid &&
-          itemReference.recordUuid === payload.recordUuid) {
-          return false
-        }
-        return true
-      })
     },
     setDataLog(state, payload) {
       state.dataLog = payload
@@ -52,6 +45,9 @@ const windowControl = {
     },
     setTotalRequest(state, payload) {
       state.totalRequest = payload
+    },
+    resetStateWindowControl(state) {
+      state = initStateWindowControl
     }
   },
   actions: {
@@ -86,7 +82,7 @@ const windowControl = {
           containerUuid,
           propertyName: 'value',
           isEvaluateValues: true,
-          isAddDisplayColumn: true
+          isAddDisplayColumn: false
         })
 
         commit('addInCreate', {
@@ -191,27 +187,33 @@ const windowControl = {
 
       // TODO: Evaluate peformance without filter using delete(prop) before convert object to array
       // attributes or fields
-      let finalAttributes = convertObjectToArrayPairs(row)
-      finalAttributes = finalAttributes.filter(itemAttribute => {
-        if (isEmptyValue(itemAttribute.value)) {
-          return false
-        }
+      const fieldsList = getters.getFieldsListFromPanel(containerUuid)
+      const attributesList = []
+      fieldsList.forEach(itemAttribute => {
         if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
           return false
         }
-        return true
+        if (isEmptyValue(row[itemAttribute.columnName])) {
+          return false
+        }
+
+        attributesList.push({
+          value: row[itemAttribute.columnName],
+          columnName: itemAttribute.columnName,
+          valueType: itemAttribute.valueType
+        })
       })
 
       commit('addInCreate', {
         containerUuid,
         tableName,
-        attributesList: finalAttributes
+        attributesList
       })
 
       let isError = false
       return createEntity({
         tableName,
-        attributesList: finalAttributes
+        attributesList
       })
         .then(createEntityResponse => {
           showMessage({
@@ -261,7 +263,7 @@ const windowControl = {
           commit('deleteInCreate', {
             containerUuid,
             tableName,
-            attributesList: finalAttributes
+            attributesList
           })
         })
     },
@@ -293,12 +295,6 @@ const windowControl = {
         }
         return true
       })
-      // if (rootGetters.getShowContainerInfo) {
-      //   dispatch('listRecordLogs', {
-      //     tableName: panel.tableName,
-      //     recordId
-      //   })
-      // }
       return updateEntity({
         tableName: panel.tableName,
         recordUuid,
@@ -331,12 +327,12 @@ const windowControl = {
             recordUuid,
             eventType: 'UPDATE'
           })
-          // if (containerInfo) {
-          dispatch('listRecordLogs', {
-            tableName: panel.tableName,
-            recordId
-          })
-          // }
+          if (rootGetters.getShowContainerInfo) {
+            dispatch('listRecordLogs', {
+              tableName: panel.tableName,
+              recordId
+            })
+          }
           return newValues
         })
         .catch(error => {
@@ -412,6 +408,7 @@ const windowControl = {
               parentUuid,
               containerUuid,
               newValues: response,
+              isSendCallout: false,
               isSendToServer: false
             })
           }
@@ -507,14 +504,22 @@ const windowControl = {
     },
     /**
      * Delete selection records in table
-     * @param {string} containerUuid
      * @param {string} parentUuid
+     * @param {string} containerUuid
+     * @param {string} tableName
+     * @param {boolean} isParentTab
      */
     deleteSelectionDataList({ dispatch, rootGetters }, {
       parentUuid,
-      containerUuid
+      containerUuid,
+      tableName,
+      isParentTab
     }) {
-      const { tableName, isParentTab } = rootGetters.getTab(parentUuid, containerUuid)
+      if (isEmptyValue(tableName) || isEmptyValue(isParentTab)) {
+        const tab = rootGetters.getTab(parentUuid, containerUuid)
+        tableName = tab.tableName
+        isParentTab = tab.isParentTab
+      }
       const allData = rootGetters.getDataRecordAndSelection(containerUuid)
       let selectionLength = allData.selection.length
 
@@ -673,7 +678,7 @@ const windowControl = {
         })
       }
       return dispatch('getObjectListFromCriteria', {
-        parentUuid: tab.parentUuid,
+        parentUuid,
         containerUuid,
         tableName: tab.tableName,
         query: parsedQuery,
@@ -690,15 +695,16 @@ const windowControl = {
             if (newValues) {
               // update fields with values obtained from the server
               dispatch('notifyPanelChange', {
-                parentUuid: tab.parentUuid,
+                parentUuid,
                 containerUuid,
                 newValues,
+                isSendCallout: false,
                 isSendToServer: false
               })
             } else {
               // this record is missing (Deleted or the query does not include it)
               dispatch('resetPanelToNew', {
-                parentUuid: tab.parentUuid,
+                parentUuid,
                 containerUuid
               })
             }
@@ -758,20 +764,23 @@ const windowControl = {
     },
     /**
      * Get references asociate to record
-     * @param {string} parentUuid
+     * @param {string} parentUuid as windowUuid
      * @param {string} containerUuid
+     * @param {string} tableName
      * @param {string} recordUuid
      */
     getReferencesListFromServer({ commit, rootGetters }, {
-      parentUuid,
+      parentUuid: windowUuid,
       containerUuid,
+      tableName,
       recordUuid
     }) {
-      // TODO: check if you get better performance search only the window and get the current tab
-      const { tableName } = rootGetters.getTab(parentUuid, containerUuid)
+      if (isEmptyValue(tableName)) {
+        tableName = rootGetters.getTab(windowUuid, containerUuid).tableName
+      }
       return new Promise((resolve, reject) => {
         getReferencesList({
-          windowUuid: parentUuid,
+          windowUuid,
           tableName,
           recordUuid
         })
@@ -785,7 +794,7 @@ const windowControl = {
             })
             const references = {
               ...referenceResponse,
-              windowUuid: parentUuid,
+              windowUuid,
               recordUuid,
               referencesList
             }
@@ -888,7 +897,7 @@ const windowControl = {
     getReferencesList: (state) => (windowUuid, recordUuid) => {
       return state.references.find(item => item.windowUuid === windowUuid && item.recordUuid === recordUuid)
     },
-    getReferencesInfo: (state, getters) => (windowUuid, recordUuid, referenceUuid) => {
+    getReferencesInfo: (state, getters) => ({ windowUuid, recordUuid, referenceUuid }) => {
       const references = getters.getReferencesList(windowUuid, recordUuid)
       return references.referencesList.find(item => item.uuid === referenceUuid)
     },

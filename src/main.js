@@ -7,6 +7,8 @@ import 'normalize.css/normalize.css' // a modern alternative to CSS resets
 import Element from 'element-ui'
 import './styles/element-variables.scss'
 import VueSplit from 'vue-split-panel'
+import 'vue-resize/dist/vue-resize.css'
+import VueResize from 'vue-resize'
 /**
  * TODO: Waiting for PR to:
  * https://github.com/vue-extend/v-markdown/pull/4
@@ -14,6 +16,8 @@ import VueSplit from 'vue-split-panel'
  * import VMarkdown from 'v-markdown'
  */
 import VMarkdown from 'v-markdown/src'
+
+import VueShortkey from 'vue-shortkey'
 
 import '@/styles/index.scss' // global css
 
@@ -42,7 +46,9 @@ if (process.env.NODE_ENV === 'production') {
   mockXHR()
 }
 Vue.use(VMarkdown)
+Vue.use(VueShortkey)
 Vue.use(VueSplit)
+Vue.use(VueResize)
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
   i18n: (key, value) => i18n.t(key, value)
@@ -59,8 +65,6 @@ Object.keys(globalMethods).forEach(key => {
 })
 
 Vue.config.productionTip = false
-
-Vue.use(require('vue-shortkey'))
 
 new Vue({
   el: '#app',

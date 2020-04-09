@@ -5,7 +5,7 @@
   >
     <el-container style="height: 86vh;">
       <Split>
-        <SplitArea :size="show ? isSizePanel : 100" :min-size="100">
+        <SplitArea :size="sizePanel" :min-size="100">
           <el-aside width="100%">
             <split-pane :min-percent="10" :default-percent="defaultPorcentSplitPane" split="vertical">
               <template>
@@ -15,7 +15,7 @@
                     <div class="small-4 columns">
                       <div class="w">
                         <div class="open-left" />
-                        <div class="open-datatable-aside">
+                        <div :class="styleTableNavigation">
                           <el-button
                             v-show="!isPanel"
                             :icon="iconShowedRecordNavigation"
@@ -25,7 +25,7 @@
                             @click="handleChangeShowedRecordNavigation(false)"
                           />
                           <el-button
-                            v-show="!isPanel"
+                            v-show="!isPanel && !isMobile"
                             :icon="iconIsShowedAside"
                             circle
                             class="el-button-window"
@@ -54,32 +54,95 @@
                 </div>
               </template>
               <template slot="paneR">
-                <el-container style="height: 86vh;">
+                <el-container id="PanelRight" style="height: 86vh;">
+                  <resize-observer @notify="handleResize" />
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
-                      <el-header style="height: 39px;">
-                        <context-menu
-                          v-show="!isShowedRecordPanel"
-                          :menu-parent-uuid="$route.meta.parentUuid"
-                          :parent-uuid="windowUuid"
-                          :container-uuid="windowMetadata.currentTabUuid"
-                          :panel-type="panelType"
-                          :is-insert-record="getterIsInsertRecord"
-                        />
+                      <el-header :style="isWorkflowBarStatus ? 'height: 45px; background: #F5F7FA' : 'height: 40px'">
+                        <el-container>
+                          <el-aside width="100%" style="width: 78vw;overflow: hidden;">
+                            <el-scrollbar>
+                              <workflow-status-bar
+                                v-if="isWorkflowBarStatus"
+                                :style-steps="styleStepsSimple"
+                                :container-uuid="windowMetadata.currentTabUuid"
+                                :parent-uuid="windowUuid"
+                                :panel-type="panelType"
+                              />
+                            </el-scrollbar>
+                          </el-aside>
+                          <el-main>
+                            <context-menu
+                              v-show="!isShowedRecordPanel"
+                              :menu-parent-uuid="$route.meta.parentUuid"
+                              :parent-uuid="windowUuid"
+                              :container-uuid="windowMetadata.currentTabUuid"
+                              :table-name="windowMetadata.currentTab.tableName"
+                              :panel-type="panelType"
+                              :is-insert-record="windowMetadata.currentTab.isInsertRecord"
+                            />
+                          </el-main>
+                        </el-container>
                       </el-header>
                       <el-main :style="styleMainTab">
                         <tab-parent
                           :window-uuid="windowUuid"
+                          :window-metadata="windowMetadata"
                           :tabs-list="windowMetadata.tabsListParent"
                           class="tab-window"
                         />
-                        <div :class="classIsContainerInfo">
-                          <el-button v-show="!show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                        <div v-if="isMobile">
+                          <el-card class="box-card">
+                            <el-tabs v-model="activeInfo" @tab-click="handleClick">
+                              <el-tab-pane
+                                name="listChatEntries"
+                              >
+                                <span slot="label">
+                                  <i class="el-icon-s-comment" />
+                                  {{ $t('window.containerInfo.notes') }}
+                                </span>
+                                <div>
+                                  <chat-entries />
+                                </div>
+                              </el-tab-pane>
+                              <el-tab-pane
+                                name="listRecordLogs"
+                              >
+                                <span slot="label">
+                                  <svg-icon icon-class="tree-table" />
+                                  {{ $t('window.containerInfo.changeLog') }}
+                                </span>
+                                <div
+                                  key="change-log-loaded"
+                                >
+                                  <record-logs />
+                                </div>
+                              </el-tab-pane>
+                              <el-tab-pane
+                                v-if="getIsWorkflowLog"
+                                name="listWorkflowLogs"
+                              >
+                                <span slot="label">
+                                  <i class="el-icon-s-help" />
+                                  {{ $t('window.containerInfo.workflowLog') }}
+                                </span>
+                                <div
+                                  v-if="getIsWorkflowLog"
+                                  key="workflow-log-loaded"
+                                >
+                                  <workflow-logs />
+                                </div>
+                              </el-tab-pane>
+                            </el-tabs>
+                          </el-card>
+                        </div>
+                        <div style="right: 0%; top: 40%; position: absolute;">
+                          <el-button v-show="!showContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
                             <div
-                              v-show="windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
+                              v-show="!isEmptyValue(windowMetadata.tabsListChildren)"
                               class="open-detail"
                             />
                             <el-button
@@ -90,7 +153,7 @@
                               :class="classIsMobile"
                               circle
                               type="primary"
-                              @click="handleChangeShowedTabChildren()"
+                              @click="handleChangeShowedTabChildren(true)"
                             />
                           </div>
                         </div>
@@ -115,7 +178,7 @@
                     </SplitArea>
                     <SplitArea v-show="isShowedTabsChildren" :size="50">
                       <el-header
-                        v-if="isShowedTabsChildren && windowMetadata.tabsListChildren && windowMetadata.tabsListChildren.length"
+                        v-if="isShowedTabsChildren && !isEmptyValue(windowMetadata.tabsListChildren)"
                         style="height: auto; padding-right: 35px !important; padding-bottom: 33px;"
                       >
                         <div class="w-33">
@@ -124,12 +187,13 @@
                               icon="el-icon-caret-bottom"
                               circle
                               class="el-button-window"
-                              @click="handleChangeShowedTabChildren()"
+                              @click="handleChangeShowedTabChildren(false)"
                             />
                           </div>
                         </div>
                         <tab-children
                           :window-uuid="windowUuid"
+                          :window-metadata="windowMetadata"
                           :tabs-list="windowMetadata.tabsListChildren"
                           :first-tab-uuid="windowMetadata.firstTabUuid"
                           :style="{ 'height': getHeightPanelBottom + 'vh' }"
@@ -142,14 +206,14 @@
             </split-pane>
           </el-aside>
         </SplitArea>
-        <SplitArea :size="show ? isSize : 0">
+        <SplitArea :size="showContainerInfo ? isSize : 0">
           <el-main>
             <div :class="isCloseInfo">
-              <el-button v-show="show" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+              <el-button v-show="showContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
             <div id="example-1">
               <transition name="slide-fade">
-                <p v-if="show">
+                <p v-if="showContainerInfo">
                   <el-card class="box-card">
                     <el-tabs v-model="activeInfo" @tab-click="handleClick">
                       <el-tab-pane
@@ -226,6 +290,8 @@ import splitPane from 'vue-splitpane'
 import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
 import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
+// Workflow
+import WorkflowStatusBar from '@/components/ADempiere/WorkflowStatusBar'
 
 export default {
   name: 'WindowView',
@@ -238,7 +304,14 @@ export default {
     ModalDialog,
     ChatEntries,
     RecordLogs,
-    WorkflowLogs
+    WorkflowLogs,
+    WorkflowStatusBar
+  },
+  props: {
+    styleSteps: {
+      type: Object,
+      default: () => {}
+    }
   },
   data() {
     return {
@@ -248,7 +321,7 @@ export default {
       isLoaded: false,
       isPanel: false,
       activeInfo: 'listChatEntries',
-      show: false,
+      showContainerInfo: false,
       // TODO: Manage attribute with store
       isShowedRecordPanel: false
     }
@@ -299,16 +372,19 @@ export default {
       return 'container-info'
     },
     isSize() {
-      if (this.isMobile && (this.show)) {
+      if (this.isMobile && this.showContainerInfo) {
         return 98
       }
       return 50
     },
-    isSizePanel() {
-      if (this.isMobile && (this.show)) {
-        return 2
+    sizePanel() {
+      if (this.showContainerInfo) {
+        if (this.isMobile) {
+          return 2
+        }
+        return 50
       }
-      return 50
+      return 100
     },
     isCloseInfo() {
       if (this.isMobile) {
@@ -340,30 +416,65 @@ export default {
         overflow: 'hidden'
       }
     },
+    styleTableNavigation() {
+      if (this.isShowedRecordNavigation && this.isMobile) {
+        return 'open-datatable-aside-mobile'
+      }
+      return 'open-datatable-aside'
+    },
     splitAreaStyle() {
-      if (this.isShowedTabsChildren) {
+      if (this.isShowedTabsChildren || this.isMobile) {
         return {
-          overflow: 'auto'
+          overflowX: 'hidden',
+          overflowY: 'auto'
         }
       }
       return {
         overflow: 'hidden'
       }
     },
+    styleStepsSimple() {
+      const baseStyle = {
+        paddingTop: '0px',
+        paddingBottom: '0px',
+        paddingLeft: '0px',
+        paddingRight: '0px',
+        borderRadius: '4px',
+        background: '#F5F7FA',
+        overflowX: 'auto',
+        overflowY: 'hidden'
+      }
+      if (this.isShowedRecordNavigation) {
+        return {
+          ...baseStyle,
+          width: this.$store.getters.getPanelRight + 'px'
+        }
+      }
+      return {
+        ...baseStyle,
+        width: 'auto'
+      }
+    },
     sizeAreaStyle() {
       if (this.isShowedTabsChildren) {
         return 50
       }
-      return 100
+      return 110
     },
     getterWindow() {
       return this.$store.getters.getWindow(this.windowUuid)
     },
     isShowedTabsChildren() {
-      return this.getterWindow.isShowedTabsChildren
+      if (this.windowMetadata && this.windowMetadata.isShowedTabsChildren) {
+        return this.windowMetadata.isShowedTabsChildren
+      }
+      return false
     },
     isShowedRecordNavigation() {
-      return this.$store.getters.getIsShowedRecordNavigation(this.windowUuid)
+      if (this.windowMetadata && this.windowMetadata.isShowedRecordNavigation) {
+        return this.windowMetadata.isShowedRecordNavigation
+      }
+      return false
     },
     getHeightPanelTop() {
       return this.$store.getters.getSplitHeightTop
@@ -373,13 +484,6 @@ export default {
     },
     getterRecordList() {
       return this.$store.getters.getDataRecordsList(this.windowMetadata.currentTabUuid).length
-    },
-    getterIsInsertRecord() {
-      const tab = this.$store.getters.getCurrentTab(this.windowUuid)
-      if (tab) {
-        return tab.isInsertRecord
-      }
-      return false
     },
     gettersListRecordLogs() {
       const changeLog = this.$store.getters.getRecordLogs.recorLogs
@@ -415,7 +519,10 @@ export default {
       return this.getterDataRecordsAndSelection.record
     },
     getTableName() {
-      return this.$store.getters.getPanel(this.windowMetadata.firstTabUuid, false).tableName
+      if (this.windowMetadata && this.windowMetadata.firstTab.tableName) {
+        return this.windowMetadata.firstTab.tableName
+      }
+      return undefined
     },
     // current record
     getRecord() {
@@ -425,43 +532,72 @@ export default {
         }
       })
       return record
+    },
+    getCurrentRecord() {
+      if (this.isEmptyValue(this.$store.getters.getCurrentRecord)) {
+        return this.getterDataRecords[0]
+      }
+      return this.$store.getters.getCurrentRecord
+    },
+    isWorkflowBarStatus() {
+      const panel = this.$store.getters.getPanel(this.windowMetadata.currentTabUuid)
+      if (!this.isEmptyValue(panel) && panel.isDocument && this.$route.meta.type === 'window' && this.$route.query.action !== 'create-new') {
+        return true
+      }
+      return false
     }
   },
   watch: {
     $route(value) {
-      this.$store.dispatch(this.activeInfo, {
-        tableName: this.$route.params.tableName,
-        recordId: this.$route.params.recordId
-      })
-        .then(response => {
-          if (value.query.action === 'create-new') {
-            this.$store.dispatch('isNote', false)
-          }
+      if (this.showContainerInfo) {
+        this.$store.dispatch(this.activeInfo, {
+          tableName: this.$route.params.tableName,
+          recordId: this.$route.params.recordId
         })
+          .then(response => {
+            if (value.query.action === 'create-new') {
+              this.$store.dispatch('isNote', false)
+            }
+          })
+      }
     }
   },
   created() {
     this.getWindow()
+    if (this.isShowedRecordNavigation) {
+      this.handleResize()
+    }
   },
   methods: {
+    handleResize() {
+      const panelRight = document.getElementById('PanelRight')
+      if (!this.isEmptyValue(panelRight)) {
+        const widthPanel = panelRight.clientWidth - 350
+        this.$store.dispatch('setPanelRight', widthPanel)
+      }
+    },
     conteInfo() {
-      this.show = !this.show
-      if (this.show) {
+      this.showContainerInfo = !this.showContainerInfo
+      if (this.showContainerInfo) {
+        const tableName = this.getTableName
+        const recordId = this.getRecord[tableName + '_ID']
         this.$store.dispatch('listWorkflowLogs', {
-          tableName: this.getTableName,
-          recordId: this.getRecord[this.getTableName + '_ID']
+          tableName,
+          recordUuid: this.$route.query.action,
+          recordId
         })
         this.$store.dispatch(this.activeInfo, {
-          tableName: this.getTableName,
-          recordId: this.getRecord[this.getTableName + '_ID']
+          tableName,
+          recordId
         })
       }
       this.$store.dispatch('showContainerInfo', !this.getterShowContainerInfo)
     },
     handleClick(tab, event) {
+      const tableName = this.getTableName
       this.$store.dispatch(tab.name, {
-        tableName: this.getTableName,
-        recordId: this.getRecord[this.getTableName + '_ID']
+        tableName,
+        recordId: this.getRecord[tableName + '_ID']
       })
     },
     // callback new size
@@ -469,15 +605,15 @@ export default {
       this.$store.dispatch('setSplitHeightTop', {
         splitHeightTop: size[0]
       })
-
       this.$store.dispatch('setSplitHeight', {
         splitHeight: size[1]
       })
     },
     // get window from vuex store or server
     getWindow() {
-      if (this.getterWindow) {
-        this.generateWindow()
+      const window = this.getterWindow
+      if (window) {
+        this.generateWindow(window)
         return
       }
       this.$store.dispatch('getWindowFromServer', {
@@ -485,28 +621,30 @@ export default {
         routeToDelete: this.$route
       })
         .then(response => {
-          this.generateWindow()
+          this.generateWindow(response)
         })
     },
-    generateWindow() {
-      this.windowMetadata = this.getterWindow
-
+    generateWindow(window) {
+      this.windowMetadata = window
       let isShowRecords = this.isShowedRecordNavigation
       if (isShowRecords === undefined) {
-        if ((['M', 'Q'].includes(this.windowMetadata.windowType) && this.getterRecordList >= 10) ||
+        if ((['M', 'Q'].includes(this.windowMetadata.windowType) && this.getterRecordList >= 10 && this.$route.query.action !== 'create-new') ||
           this.$route.query.action === 'advancedQuery') {
           isShowRecords = true
-        } else if (this.windowMetadata.windowType === 'T') {
+        } else if (this.windowMetadata.windowType === 'T' || this.$route.query.action === 'create-new') {
           isShowRecords = false
+        } else if (this.$route.query.action === 'listRecords') {
+          isShowRecords = true
+          this.handleChangeShowedPanel(true)
         }
-        this.handleChangeShowedRecordNavigation(!isShowRecords)
+        this.handleChangeShowedRecordNavigation(isShowRecords)
       }
-
       this.isLoaded = true
     },
     handleChangeShowedRecordNavigation(valueToChange) {
       this.$store.dispatch('changeWindowAttribute', {
         parentUuid: this.windowUuid, // act as parentUuid
+        window: this.windowMetadata,
         attributeName: 'isShowedRecordNavigation',
         attributeValue: valueToChange
       })
@@ -515,11 +653,12 @@ export default {
       this.isPanel = !this.isPanel
       this.isShowedRecordPanel = !this.isShowedRecordPanel
     },
-    handleChangeShowedTabChildren() {
+    handleChangeShowedTabChildren(isShowedChilds) {
       this.$store.dispatch('changeWindowAttribute', {
         parentUuid: this.windowUuid, // act as parentUuid
+        window: this.windowMetadata,
         attributeName: 'isShowedTabsChildren',
-        attributeValue: !this.isShowedTabsChildren
+        attributeValue: isShowedChilds
       })
     }
   }
@@ -556,7 +695,6 @@ export default {
     color: #333;
     line-height: 21px;
   }
-
   .el-aside {
     height: 100%;
     color: #333;
@@ -623,6 +761,13 @@ export default {
     z-index: 5;
     right: 1%!important;
   }
+  .open-datatable-aside-mobile {
+    position: absolute;
+    top: 41%;
+    display: grid;
+    z-index: 5;
+    right: 1%!important;
+  }
   .close-datatable {
     position: absolute;
     top: 45%;
@@ -652,7 +797,7 @@ export default {
     bottom: 5%;
   }
   .open-left {
-    width: 5%;
+    width: 2%;
     height: 97%;
     position: absolute;
     top: 2%;
@@ -704,6 +849,22 @@ export default {
 }
 </style>
 <style>
+  .el-step.is-simple .el-step__icon-inner {
+    font-size: 18px;
+    padding-top: 30px;
+  }
+  .el-steps--simple {
+    /* padding: 13px 8%; */
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 0%;
+    padding-right: 0px;
+    border-radius: 4px;
+    background: #F5F7FA;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: auto;
+  }
   .scroll-window-log-change {
     max-height: 74vh !important;
   }
@@ -733,23 +894,19 @@ export default {
     position: relative;
     height: 100vh;
   }
-
   .left-container {
     background-color: #ffffff;
     height: 100%;
   }
-
   .right-container {
     background-color: #ffffff;
     height: 200px;
   }
-
   .top-container {
     background-color: #ffffff;
     width: 100%;
     height: 100%;
   }
-
   .bottom-container {
     width: 100%;
     background-color: #95E1D3;

@@ -1,5 +1,3 @@
-import { convertValueFromGRPC } from '@/api/ADempiere/data'
-
 /**
  * Checks if value is empty. Deep-checks arrays and objects
  * Note: isEmpty([]) == true, isEmpty({}) == true,
@@ -10,14 +8,14 @@ import { convertValueFromGRPC } from '@/api/ADempiere/data'
 export function isEmptyValue(value) {
   if (value === undefined || value == null) {
     return true
-  } else if (value === -1 || String(value).trim() === '-1') {
+  } else if (String(value).trim() === '-1') {
     return true
   } else if (typeof value === 'string') {
     return Boolean(!value.trim().length)
   } else if (typeof value === 'function' || typeof value === 'number' || typeof value === 'boolean' || Object.prototype.toString.call(value) === '[object Date]') {
     return false
-  } else if (Object.prototype.toString.call(value) === '[object Map]' && value.size === 0) {
-    return true
+  } else if (Object.prototype.toString.call(value) === '[object Map]' || Object.prototype.toString.call(value) === '[object Set]') {
+    return Boolean(!value.size)
   } else if (Array.isArray(value)) {
     return Boolean(!value.length)
   } else if (typeof value === 'object') {
@@ -37,9 +35,8 @@ export function typeValue(value) {
   } else if (typeof value === 'number') {
     if (value.isInteger()) {
       return 'INTEGER'
-    } else {
-      return 'NUMBER'
     }
+    return 'DOUBLE'
   } else if (typeof value === 'boolean') {
     return 'BOOLEAN'
   } else if (Object.prototype.toString.call(value) === '[object Date]') {
@@ -135,41 +132,6 @@ export function convertArrayPairsToObject({
     result[element[nameKey]] = element[nameValue]
   })
 
-  return result
-}
-
-export function convertValuesMapToObject(map) {
-  var objectConverted = {}
-  map.forEach((value, key) => {
-    var valueResult = map.get(key)
-    var tempValue
-    if (valueResult) {
-      tempValue = convertValueFromGRPC(value)
-    }
-    objectConverted[key] = tempValue
-  })
-  return objectConverted
-}
-
-export function convertMapToArrayPairs({
-  toConvert,
-  nameKey = 'columnName',
-  nameValue = 'value',
-  isGRPC = true
-}) {
-  const result = []
-  if (toConvert) {
-    toConvert.forEach((value, key) => {
-      const element = {}
-      element[nameKey] = key
-      element[nameValue] = value
-      if (isGRPC) {
-        element[nameValue] = convertValueFromGRPC(value)
-      }
-
-      result.push(element)
-    })
-  }
   return result
 }
 
@@ -278,10 +240,20 @@ export const recursiveTreeSearch = ({
 }
 
 /**
- *
- * @param {*} param0
+ * Parsed value to component type
+ * @param {mixed} value, value to parsed
+ * @param {string} fieldType, or componentPath
+ * @param {string} referenceType, reference in ADempiere
+ * @param {boolean} isMandatory, field is mandatory
+ * @param {boolean} isIdentifier, field is ID
  */
-export function parsedValueComponent({ fieldType, value, referenceType, isMandatory = false }) {
+export function parsedValueComponent({
+  fieldType,
+  value,
+  referenceType,
+  isMandatory = false,
+  isIdentifier = false
+}) {
   if ((value === undefined || value === null) && !isMandatory) {
     if (fieldType === 'FieldYesNo') {
       return Boolean(value)
@@ -353,7 +325,7 @@ export function parsedValueComponent({ fieldType, value, referenceType, isMandat
       if (typeof value === 'boolean') {
         value = value ? 'Y' : 'N'
       }
-      if (referenceType === 'TableDirect') {
+      if (referenceType === 'TableDirect' || (referenceType === 'Table' && isIdentifier)) {
         if (value !== '' && value !== null && value !== undefined) {
           value = Number(value)
         }
@@ -412,4 +384,47 @@ export function tagStatus(tag) {
       break
   }
   return type
+}
+
+let partialValue = ''
+export function calculationValue(value, event) {
+  const isZero = Number(value) === 0
+  const VALIDATE_EXPRESSION = /[\d\/.()%\*\+\-]/gim
+  const isValidKey = VALIDATE_EXPRESSION.test(event.key)
+  if (event.type === 'keydown' && isValidKey) {
+    partialValue += event.key
+    const operation = isEmptyValue(value) || isZero ? partialValue : String(value) + partialValue
+    if (!isEmptyValue(operation)) {
+      try {
+        // eslint-disable-next-line no-eval
+        return eval(operation) + ''
+      } catch (error) {
+        return null
+      }
+    }
+  } else if (event.type === 'click') {
+    if (!isEmptyValue(value)) {
+      try {
+        // eslint-disable-next-line no-eval
+        return eval(value) + ''
+      } catch (error) {
+        return null
+      }
+    }
+  } else {
+    if ((event.key === 'Backspace' || event.key === 'Delete') && !isEmptyValue(value)) {
+      try {
+        // eslint-disable-next-line no-eval
+        return eval(value) + ''
+      } catch (error) {
+        return null
+      }
+    } else {
+      return null
+    }
+  }
+}
+
+export function clearVariables() {
+  partialValue = ''
 }

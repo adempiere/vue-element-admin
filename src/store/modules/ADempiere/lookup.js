@@ -1,13 +1,15 @@
 import { getLookup, getLookupList } from '@/api/ADempiere/data'
-import { getCurrentRole } from '@/utils/ADempiere/auth'
+import { getToken as getSession } from '@/utils/auth'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 
+const initStateLookup = {
+  lookupItem: [],
+  lookupList: []
+}
+
 const lookup = {
-  state: {
-    lookupItem: [],
-    lookupList: []
-  },
+  state: initStateLookup,
   mutations: {
     addLoockupItem(state, payload) {
       state.lookupItem.push(payload)
@@ -18,9 +20,20 @@ const lookup = {
     deleteLookupList(state, payload) {
       state.lookupItem = payload.lookupItem
       state.lookupList = payload.lookupList
+    },
+    resetStateLookup(state) {
+      state = initStateLookup
     }
   },
   actions: {
+    /**
+    * Get display column from lookup
+    * @param {string} parentUuid
+    * @param {string} containerUuid
+    * @param {string} tableName
+    * @param {string} directQuery
+    * @param {string|number} value identifier or key
+    */
     getLookupItemFromServer({ commit, rootGetters }, {
       parentUuid,
       containerUuid,
@@ -45,33 +58,36 @@ const lookup = {
       return getLookup({
         tableName,
         directQuery: parsedDirectQuery,
-        value: value
+        value
       })
-        .then(response => {
-          const label = response.values.DisplayColumn
+        .then(lookupItemResponse => {
+          const label = lookupItemResponse.values.DisplayColumn
           const option = {
             label: isEmptyValue(label) ? ' ' : label,
-            key: value // response.values.KeyColumn
+            key: value // lookupItemResponse.values.KeyColumn
           }
 
           commit('addLoockupItem', {
-            option: option,
-            value: value, // isNaN(objectParams.value) ? objectParams.value : parseInt(objectParams.value, 10),
+            option,
+            value, // isNaN(objectParams.value) ? objectParams.value : parseInt(objectParams.value, 10),
             parsedDirectQuery: directQuery,
             tableName,
-            roleUuid: getCurrentRole(),
+            sessionUuid: getSession(),
             clientId: rootGetters.getContextClientId
           })
           return option
         })
         .catch(error => {
-          console.warn(`Get Lookup, Select Base - Error ${error.code}: ${error.message}`)
+          console.warn(`Get Lookup, Select Base - Error ${error.code}: ${error.message}.`)
         })
     },
     /**
-     * tableName,
-     * query
-     */
+    * Get display column's list from lookup
+    * @param {string} parentUuid
+    * @param {string} containerUuid
+    * @param {string} tableName
+    * @param {string} query
+    */
     getLookupListFromServer({ commit, rootGetters }, {
       parentUuid,
       containerUuid,
@@ -101,25 +117,29 @@ const lookup = {
         query: parsedQuery,
         valuesList
       })
-        .then(response => {
-          const options = response.recordsList.map(itemLookup => {
-            return {
-              label: itemLookup.values.DisplayColumn,
-              key: itemLookup.values.KeyColumn
+        .then(lookupListResponse => {
+          const list = []
+          lookupListResponse.recordsList.forEach(itemLookup => {
+            const key = itemLookup.values.KeyColumn
+            if (![null, -1, undefined].includes(key)) {
+              list.push({
+                label: itemLookup.values.DisplayColumn,
+                key
+              })
             }
           })
 
           commit('addLoockupList', {
-            list: options,
+            list,
             tableName,
             parsedQuery,
-            roleUuid: getCurrentRole(),
+            sessionUuid: getSession(),
             clientId: rootGetters.getContextClientId
           })
-          return options
+          return list
         })
         .catch(error => {
-          console.warn(`Get Lookup List, Select Base - Error ${error.code}: ${error.message}`)
+          console.warn(`Get Lookup List, Select Base - Error ${error.code}: ${error.message}.`)
         })
     },
     deleteLookupList({ commit, state }, {
@@ -143,7 +163,7 @@ const lookup = {
         return itemLookup.parsedDirectQuery !== parsedDirectQuery &&
         itemLookup.tableName !== tableName &&
         itemLookup.value !== value &&
-        itemLookup.roleUuid !== getCurrentRole()
+        itemLookup.sessionUuid !== getSession()
       })
 
       let parsedQuery = query
@@ -158,7 +178,7 @@ const lookup = {
       const lookupList = state.lookupList.filter(itemLookup => {
         return itemLookup.parsedQuery !== parsedQuery &&
         itemLookup.tableName !== tableName &&
-        itemLookup.roleUuid !== getCurrentRole()
+        itemLookup.sessionUuid !== getSession()
       })
       commit('deleteLookupList', {
         lookupItem,
@@ -186,7 +206,7 @@ const lookup = {
       const lookupItem = state.lookupItem.find(itemLookup => {
         return itemLookup.parsedDirectQuery === parsedDirectQuery &&
           itemLookup.tableName === tableName &&
-          itemLookup.roleUuid === getCurrentRole() &&
+          itemLookup.sessionUuid === getSession() &&
           itemLookup.clientId === rootGetters.getContextClientId &&
           itemLookup.value === value
       })
@@ -213,16 +233,11 @@ const lookup = {
       const lookupList = state.lookupList.find(itemLookup => {
         return itemLookup.parsedQuery === parsedQuery &&
           itemLookup.tableName === tableName &&
-          itemLookup.roleUuid === getCurrentRole() &&
+          itemLookup.sessionUuid === getSession() &&
           itemLookup.clientId === rootGetters.getContextClientId
       })
       if (lookupList) {
-        const resultLookup = lookupList.list.filter(lookup => {
-          if (lookup.key !== undefined) {
-            return lookup
-          }
-        })
-        return resultLookup
+        return lookupList.list
       }
       return []
     },
@@ -237,13 +252,6 @@ const lookup = {
       directQuery,
       value
     }) => {
-      const item = getters.getLookupItem({
-        parentUuid,
-        containerUuid,
-        tableName,
-        directQuery,
-        value
-      })
       const list = getters.getLookupList({
         parentUuid,
         containerUuid,
@@ -251,8 +259,18 @@ const lookup = {
         query
       })
       const allList = list
-      if (item && !list.find(itemLookup => itemLookup.key === item.key)) {
-        allList.push(item)
+      // set item values getter from server into list
+      if (isEmptyValue(list)) {
+        const item = getters.getLookupItem({
+          parentUuid,
+          containerUuid,
+          tableName,
+          directQuery,
+          value
+        })
+        if (!isEmptyValue(item)) {
+          allList.push(item)
+        }
       }
       return allList
     }

@@ -51,10 +51,11 @@ export default {
         label: ' ',
         key: undefined
       }],
-      blanckOption: {
+      blankValues: [null, undefined, -1],
+      blankOption: {
         // label with '' value is assumed to be undefined non-existent
         label: ' ',
-        key: undefined || -1
+        key: undefined
       }
     }
   },
@@ -75,21 +76,10 @@ export default {
       }
       return styleClass
     },
-    getterLookupItem() {
-      if (this.isEmptyValue(this.metadata.reference.directQuery)) {
-        return this.blanckOption
-      }
-      return this.$store.getters.getLookupItem({
-        parentUuid: this.metadata.parentUuid,
-        containerUuid: this.metadata.containerUuid,
-        directQuery: this.metadata.reference.directQuery,
-        tableName: this.metadata.reference.tableName,
-        value: this.value
-      })
-    },
     getterLookupList() {
-      if (this.isEmptyValue(this.metadata.reference.query)) {
-        return this.blanckOption
+      if (this.isEmptyValue(this.metadata.reference.query) ||
+        !this.metadata.displayed) {
+        return [this.blankOption]
       }
       return this.$store.getters.getLookupList({
         parentUuid: this.metadata.parentUuid,
@@ -107,8 +97,10 @@ export default {
         tableName: this.metadata.reference.tableName,
         value: this.value
       })
-      if (allOptions && ((allOptions.length && allOptions[0].key !== this.blanckOption.key) || !allOptions.length)) {
-        allOptions.unshift(this.blanckOption)
+
+      if (this.isEmptyValue(allOptions) || (allOptions.length &&
+        (!this.blankValues.includes(allOptions[0].key)))) {
+        allOptions.unshift(this.blankOption)
       }
       return allOptions
     }
@@ -142,13 +134,18 @@ export default {
           value = value ? 'Y' : 'N'
         }
         if (this.metadata.displayed) {
-          if (!this.options.some(option => option.key === value)) {
+          if (!this.options.some(option => option.key === value) &&
+            !this.isEmptyValue(this.metadata.displayColumn)) {
             this.options.push({
               key: value,
-              label: this.isEmptyValue(this.findLabel(value)) ? ' ' : this.findLabel(value)
+              label: this.metadata.displayColumn
             })
-            this.value = value
           }
+        }
+        if (!this.findLabel(value) &&
+          this.metadata.displayed &&
+          this.isEmptyValue(this.metadata.displayColumn)) {
+          value = undefined
         }
         this.value = value
       }
@@ -167,12 +164,19 @@ export default {
           }
         }
       }
+    },
+    'metadata.displayed'(value) {
+      if (value) {
+        this.changeBlankOption()
+        this.options = this.getterLookupAll
+      }
     }
   },
   beforeMount() {
     if (this.metadata.displayed) {
+      this.changeBlankOption()
       this.options = this.getterLookupAll
-      if (!this.isEmptyValue(this.value) && this.metadata.panelType !== 'table') {
+      if (!this.isEmptyValue(this.value) && !this.metadata.isAdvancedQuery) {
         if (!this.findLabel(this.value)) {
           if (!this.isEmptyValue(this.metadata.displayColumn)) {
           // verify if exists to add
@@ -182,7 +186,8 @@ export default {
             })
           } else {
             if (!this.isPanelWindow || (this.isPanelWindow &&
-              (this.isEmptyValue(this.metadata.optionCRUD) || this.metadata.optionCRUD === 'create-new'))) {
+              (this.isEmptyValue(this.metadata.optionCRUD) ||
+              this.metadata.optionCRUD === 'create-new'))) {
               this.getDataLookupItem()
             }
           }
@@ -191,6 +196,20 @@ export default {
     }
   },
   methods: {
+    changeBlankOption() {
+      if (Number(this.metadata.defaultValue) === -1) {
+        this.blankOption = {
+          label: ' ',
+          key: -1
+        }
+      }
+      if (this.value === undefined || this.value === null) {
+        this.blankOption = {
+          label: ' ',
+          key: undefined
+        }
+      }
+    },
     preHandleChange(value) {
       const label = this.findLabel(this.value)
       this.handleChange(value, undefined, label)
@@ -225,10 +244,8 @@ export default {
               attributeValue: responseLookupItem.label
             })
           }
+          this.changeBlankOption()
           this.options = this.getterLookupAll
-          if (this.options.length && !this.options[0].key) {
-            this.options.unshift(this.blanckOption)
-          }
         })
         .finally(() => {
           this.isLoading = false
@@ -239,13 +256,14 @@ export default {
      */
     getDataLookupList(isShowList) {
       if (isShowList) {
-        // TODO: Evaluate if length = 1 and this element key = blanckOption
-        if (this.getterLookupList.length === 0) {
+        // TODO: Evaluate if length = 1 and this element key = blankOption
+        const list = this.getterLookupList
+        if (this.isEmptyValue(list) || (list.length === 1 && this.blankValues.includes(list[0]))) {
           this.remoteMethod()
         }
       }
     },
-    remoteMethod() {
+    async remoteMethod() {
       if (this.isEmptyValue(this.metadata.reference.query)) {
         return
       }
@@ -257,6 +275,7 @@ export default {
         query: this.metadata.reference.query
       })
         .then(responseLookupList => {
+          this.changeBlankOption()
           this.options = this.getterLookupAll
         })
         .finally(() => {
@@ -270,13 +289,19 @@ export default {
         tableName: this.metadata.reference.tableName,
         query: this.metadata.reference.query,
         directQuery: this.metadata.reference.directQuery,
-        value: this.metadata.value
+        value: this.value
       })
-      // TODO: Evaluate if is number -1 or string '' (or default value)
-      this.options = this.getterLookupAll
-      this.value = this.blanckOption.key
-    },
-    getRemoteList(value) {
+      // set empty list and empty option
+      this.changeBlankOption()
+      const list = []
+      list.push(this.blankOption)
+      this.options = list
+
+      // set empty value
+      this.value = this.blankOption.key
+    }
+  },
+  getRemoteList(value) {
       if (!isNaN(value)) {
         value = parseInt(value, 10)
       }
@@ -295,8 +320,6 @@ export default {
             })
         }, 250)
       }
-    }
-  }
 }
 </script>
 

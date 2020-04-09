@@ -6,25 +6,28 @@ import { showNotification } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
 import router from '@/router'
+import { getToken } from '@/utils/auth'
+
+const initStateProcessControl = {
+  inExecution: [], // process not response from server
+  isVisibleDialog: false,
+  reportObject: {},
+  reportList: [],
+  metadata: {},
+  process: [], // process to run finish
+  sessionProcess: [],
+  notificationProcess: [],
+  inRequestMetadata: [],
+  reportViewList: [],
+  totalResponse: 0,
+  totalRequest: 0,
+  totalSelection: 0,
+  errorSelection: 0,
+  successSelection: 0
+}
 
 const processControl = {
-  state: {
-    inExecution: [], // process not response from server
-    isVisibleDialog: false,
-    reportObject: {},
-    reportList: [],
-    metadata: {},
-    process: [], // process to run finish
-    sessionProcess: [],
-    notificationProcess: [],
-    inRequestMetadata: [],
-    reportViewList: [],
-    totalResponse: 0,
-    totalRequest: 0,
-    totalSelection: 0,
-    errorSelection: 0,
-    successSelection: 0
-  },
+  state: initStateProcessControl,
   mutations: {
     // Add process in execution
     addInExecution(state, payload) {
@@ -49,8 +52,8 @@ const processControl = {
     addStartedProcess(state, payload) {
       state.process.push(payload)
     },
-    dataResetCacheProcess(state, payload) {
-      state.process = payload
+    resetStateProcessControl(state) {
+      state = initStateProcessControl
     },
     /**
      *
@@ -66,7 +69,7 @@ const processControl = {
     setReportValues(state, payload) {
       state.reportObject = payload
       if (state.reportList.some(report => report.instanceUuid === payload.instanceUuid)) {
-        var reportIndex = state.reportList.findIndex(report => report.instanceUuid === payload.instanceUuid)
+        const reportIndex = state.reportList.findIndex(report => report.instanceUuid === payload.instanceUuid)
         state.reportList.splice(reportIndex, 1, payload)
       } else {
         state.reportList.push(payload)
@@ -77,16 +80,6 @@ const processControl = {
     },
     changeFormatReport(state, payload) {
       state.reportFormat = payload
-    },
-    clearProcessControl(state) {
-      state.inExecution = [] // process not response from server
-      state.reportObject = {}
-      state.reportList = []
-      state.metadata = {}
-      state.process = [] // process to run finish
-      state.sessionProcess = []
-      state.notificationProcess = []
-      state.inRequestMetadata = []
     },
     setReportViewsList(state, payload) {
       state.reportViewList.push(payload)
@@ -109,12 +102,25 @@ const processControl = {
   },
   actions: {
     // Supported Actions for it
-    startProcess({ commit, state, dispatch, getters, rootGetters }, params) {
+    startProcess({ commit, state, dispatch, getters, rootGetters }, {
+      parentUuid,
+      containerUuid,
+      panelType,
+      action,
+      parametersList,
+      reportFormat,
+      isProcessTableSelection,
+      isActionDocument,
+      tableNameUuidSelection,
+      recordUuidSelection,
+      menuParentUuid,
+      routeToDelete
+    }) {
       return new Promise((resolve, reject) => {
-        // TODO: Add support to evaluate params to send
-        // const samePocessInExecution = getters.getInExecution(params.containerUuid)
+        // TODO: Add support to evaluate parameters list to send
+        // const samePocessInExecution = getters.getInExecution(containerUuid)
         // exists some call to executed process with container uuid
-        // if (samePocessInExecution && !params.isProcessTableSelection) {
+        // if (samePocessInExecution && !isProcessTableSelection) {
         //   return reject({
         //     error: 0,
         //     message: `In this process (${samePocessInExecution.name}) there is already an execution in progress.`
@@ -125,11 +131,11 @@ const processControl = {
         let selection = []
         let allData = {}
         let tab, tableName, recordId
-        if (params.panelType) {
-          if (params.panelType === 'browser') {
-            allData = getters.getDataRecordAndSelection(params.containerUuid)
+        if (panelType) {
+          if (panelType === 'browser') {
+            allData = getters.getDataRecordAndSelection(containerUuid)
             selection = rootGetters.getSelectionToServer({
-              containerUuid: params.containerUuid,
+              containerUuid,
               selection: allData.selection
             })
             if (selection.length < 1) {
@@ -139,26 +145,24 @@ const processControl = {
               })
               return reject({
                 error: 0,
-                message: `Required selection data record to run this process (${params.action.name})`
+                message: `Required selection data record to run this process (${action.name})`
               })
             }
           }
-          if (params.panelType === 'window') {
+          if (panelType === 'window') {
             const contextMenu = getters.getRecordUuidMenu
-            if (params.isProcessTableSelection) {
-              tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
-              tableName = params.tableNameUuidSelection
-              recordId = params.recordUuidSelection
+            tab = rootGetters.getTab(parentUuid, containerUuid)
+            if (isProcessTableSelection) {
+              tableName = tableNameUuidSelection
+              recordId = recordUuidSelection
             } else {
               if (contextMenu.processTable) {
-                tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
                 tableName = contextMenu.tableName
                 recordId = contextMenu.valueRecord
               } else {
-                tab = rootGetters.getTab(params.parentUuid, params.containerUuid)
                 tableName = tab.tableName
                 const field = rootGetters.getFieldFromColumnName({
-                  containerUuid: params.containerUuid,
+                  containerUuid,
                   columnName: `${tableName}_ID`
                 })
                 recordId = field.value
@@ -167,58 +171,62 @@ const processControl = {
           }
         }
         // get info metadata process
-        const processDefinition = !isEmptyValue(params.isActionDocument) ? params.action : rootGetters.getProcess(params.action.uuid)
-        let reportType = params.reportFormat
+        const processDefinition = !isEmptyValue(isActionDocument) ? action : rootGetters.getProcess(action.uuid)
+        let reportType = reportFormat
         const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
 
-        showNotification({
-          title: language.t('notifications.processing'),
-          message: processDefinition.name,
-          summary: processDefinition.description,
-          type: 'info'
-        })
+        const isSession = !isEmptyValue(getToken())
+        let procesingMessage = {
+          close: () => false
+        }
+        if (isSession) {
+          procesingMessage = showNotification({
+            title: language.t('notifications.processing'),
+            message: processDefinition.name,
+            summary: processDefinition.description,
+            type: 'info'
+          })
+        }
         const timeInitialized = (new Date()).getTime()
-        let processResult
-        if (!isEmptyValue(params.isActionDocument)) {
+        let processResult = {
+          // panel attributes from where it was executed
+          parentUuid,
+          containerUuid,
+          panelType,
+          lastRun: timeInitialized,
+          parametersList,
+          logs: [],
+          isError: false,
+          isProcessing: true,
+          summary: '',
+          resultTableName: '',
+          output: {
+            uuid: '',
+            name: '',
+            description: '',
+            fileName: '',
+            output: '',
+            outputStream: '',
+            reportType: ''
+          }
+        }
+        if (!isEmptyValue(isActionDocument)) {
           processResult = {
-            // panel attributes from where it was executed
-            parentUuid: params.parentUuid,
-            containerUuid: params.containerUuid,
-            panelType: params.panelType,
-            lastRun: timeInitialized,
-            processUuid: params.action.uuid,
-            processId: params.action.id,
+            ...processResult,
+            processUuid: action.uuid,
+            processId: action.id,
             processName: 'Procesar Orden',
-            parameters: params.parametersList,
-            isError: false,
-            isProcessing: true,
-            summary: '',
-            resultTableName: '',
-            logs: [],
-            output: {
-              uuid: '',
-              name: '',
-              description: '',
-              fileName: '',
-              output: '',
-              outputStream: '',
-              reportType: ''
-            }
+            parameters: parametersList
           }
         } else {
-          const timeInitialized = (new Date()).getTime()
           // Run process on server and wait for it for notify
           // uuid of process
           processResult = {
-          // panel attributes from where it was executed
-            parentUuid: params.parentUuid,
-            containerUuid: params.containerUuid,
-            panelType: params.panelType,
-            menuParentUuid: params.menuParentUuid,
-            processIdPath: params.routeToDelete.path,
-            printFormatUuid: params.action.printFormatUuid,
+            ...processResult,
+            menuParentUuid,
+            processIdPath: routeToDelete.path,
+            printFormatUuid: action.printFormatUuid,
             // process attributes
-            lastRun: timeInitialized,
             action: processDefinition.name,
             name: processDefinition.name,
             description: processDefinition.description,
@@ -227,43 +235,37 @@ const processControl = {
             processId: processDefinition.id,
             processName: processDefinition.processName,
             parameters: finalParameters,
-            isError: false,
-            isProcessing: true,
-            isReport: processDefinition.isReport,
-            summary: '',
-            resultTableName: '',
-            logs: [],
-            output: {
-              uuid: '',
-              name: '',
-              description: '',
-              fileName: '',
-              output: '',
-              outputStream: '',
-              reportType: ''
-            }
+            isReport: processDefinition.isReport
           }
         }
         commit('addInExecution', processResult)
-        if (params.panelType === 'window') {
+        if (panelType === 'window') {
           reportType = 'pdf'
-        } else if (params.panelType === 'browser') {
+        } else if (panelType === 'browser') {
           if (allData.record.length <= 100) {
             // close view if is browser.
             router.push({ path: '/dashboard' })
-            dispatch('tagsView/delView', params.routeToDelete)
+            dispatch('tagsView/delView', routeToDelete)
             // delete data associate to browser
             dispatch('deleteRecordContainer', {
-              viewUuid: params.containerUuid
+              viewUuid: containerUuid
             })
           }
         } else {
           // close view if is process, report.
           router.push({ path: '/dashboard' })
-          dispatch('tagsView/delView', params.routeToDelete)
+          dispatch('tagsView/delView', routeToDelete)
+
+          // reset panel and set defalt isShowedFromUser
+          if (!processDefinition.isReport) {
+            dispatch('resetPanelToNew', {
+              containerUuid,
+              panelType
+            })
+          }
         }
-        if (params.isProcessTableSelection) {
-          var windowSelectionProcess = getters.getProcessSelect
+        if (isProcessTableSelection) {
+          const windowSelectionProcess = getters.getProcessSelect
           windowSelectionProcess.selection.forEach(selection => {
             Object.assign(processResult, {
               selection: selection.UUID,
@@ -275,9 +277,9 @@ const processControl = {
               runProcess({
                 uuid: processDefinition.uuid,
                 id: processDefinition.id,
-                reportType: reportType,
-                parameters: isEmptyValue(finalParameters) ? params.parametersList : finalParameters,
-                selection: selection,
+                reportType,
+                parametersList: isEmptyValue(finalParameters) ? parametersList : finalParameters,
+                selectionsList: selection,
                 tableName: windowSelectionProcess.tableName,
                 recordId: selection[windowSelectionProcess.tableName]
               })
@@ -422,17 +424,14 @@ const processControl = {
                   const countResponse = state.totalResponse + 1
                   commit('setTotalResponse', countResponse)
                   if (state.totalResponse === state.totalRequest) {
-                    // showNotification({
-                    //   title: language.t('notifications.succesful'),
-                    //   message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
-                    //   type: 'success'
-                    // })
-                    const processMessage = {
-                      title: language.t('notifications.succesful'),
-                      message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
-                      type: 'success'
+                    if (isSession) {
+                      showNotification({
+                        title: language.t('notifications.succesful'),
+                        message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
+                        type: 'success'
+                      })
                     }
-                    showNotification(processMessage)
+
                     commit('setTotalRequest', 0)
                     commit('setTotalResponse', 0)
                     commit('setSuccessSelection', 0)
@@ -446,7 +445,7 @@ const processControl = {
                   commit('addNotificationProcess', processResult)
                   commit('addStartedProcess', processResult)
                   commit('deleteInExecution', {
-                    containerUuid: params.containerUuid
+                    containerUuid
                   })
                 })
             }
@@ -456,15 +455,15 @@ const processControl = {
             uuid: processDefinition.uuid,
             id: processDefinition.id,
             reportType,
-            parameters: isEmptyValue(finalParameters) ? params.parametersList : finalParameters,
-            selection,
+            parametersList: isEmptyValue(finalParameters) ? parametersList : finalParameters,
+            selectionsList: selection,
             tableName,
             recordId
           })
             .then(runProcessResponse => {
               const { instanceUuid, output } = runProcessResponse
               let logList = []
-              if (runProcessResponse.logsList) {
+              if (!isEmptyValue(runProcessResponse.logsList)) {
                 logList = runProcessResponse.logsList
               }
 
@@ -537,7 +536,7 @@ const processControl = {
                       }
                     })
                 } else {
-                  var index = contextMenuMetadata.actions.findIndex(action => action.option === 'printFormat')
+                  const index = contextMenuMetadata.actions.findIndex(action => action.option === 'printFormat')
                   if (index !== -1) {
                     contextMenuMetadata.actions[index] = printFormatList
                   }
@@ -580,8 +579,8 @@ const processControl = {
                 logs: logList,
                 output
               })
-              dispatch('setReportTypeToShareLink', processResult.output.reportType)
               resolve(processResult)
+              dispatch('setReportTypeToShareLink', processResult.output.reportType)
             })
             .catch(error => {
               Object.assign(processResult, {
@@ -594,17 +593,17 @@ const processControl = {
             })
             .finally(() => {
               if (!processResult.isError) {
-                if (params.panelType === 'window') {
+                if (panelType === 'window') {
                   // TODO: Add conditional to indicate when update record
                   dispatch('updateRecordAfterRunProcess', {
-                    parentUuid: params.parentUuid,
-                    containerUuid: params.containerUuid,
-                    tab: tab
+                    parentUuid,
+                    containerUuid,
+                    tab
                   })
-                } else if (params.panelType === 'browser') {
+                } else if (panelType === 'browser') {
                   if (allData.record.length >= 100) {
                     dispatch('getBrowserSearch', {
-                      containerUuid: params.containerUuid
+                      containerUuid
                     })
                   }
                 }
@@ -613,11 +612,12 @@ const processControl = {
               commit('addNotificationProcess', processResult)
               dispatch('finishProcess', {
                 processOutput: processResult,
-                routeToDelete: params.routeToDelete
+                procesingMessage,
+                routeToDelete
               })
 
               commit('deleteInExecution', {
-                containerUuid: params.containerUuid
+                containerUuid
               })
 
               dispatch('setProcessTable', {
@@ -633,30 +633,40 @@ const processControl = {
       })
     },
     // Supported to process selection
-    selectionProcess({ commit, state, dispatch, getters, rootGetters }, params) {
+    selectionProcess({ commit, state, dispatch, getters, rootGetters }, {
+      parentUuid,
+      containerUuid,
+      panelType,
+      action,
+      isProcessTableSelection,
+      menuParentUuid,
+      routeToDelete
+    }) {
       // get info metadata process
-      const processDefinition = rootGetters.getProcess(params.action.uuid)
-      var reportType = 'pdf'
+      const processDefinition = rootGetters.getProcess(action.uuid)
+      const reportType = 'pdf'
       const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
-
-      showNotification({
-        title: language.t('notifications.processing'),
-        message: processDefinition.name,
-        summary: processDefinition.description,
-        type: 'info'
-      })
+      const isSession = !isEmptyValue(getToken())
+      if (isSession) {
+        showNotification({
+          title: language.t('notifications.processing'),
+          message: processDefinition.name,
+          summary: processDefinition.description,
+          type: 'info'
+        })
+      }
       const timeInitialized = (new Date()).getTime()
       // Run process on server and wait for it for notify
-      if (params.isProcessTableSelection) {
-        var windowSelectionProcess = getters.getProcessSelect
+      if (isProcessTableSelection) {
+        const windowSelectionProcess = getters.getProcessSelect
         windowSelectionProcess.selection.forEach(selection => {
-          var processResult = {
+          const processResult = {
             // panel attributes from where it was executed
-            parentUuid: params.parentUuid,
-            containerUuid: params.containerUuid,
-            panelType: params.panelType,
-            menuParentUuid: params.menuParentUuid,
-            processIdPath: params.routeToDelete.path,
+            parentUuid,
+            containerUuid,
+            panelType,
+            menuParentUuid,
+            processIdPath: routeToDelete.path,
             // process attributes
             lastRun: timeInitialized,
             action: processDefinition.name,
@@ -692,14 +702,14 @@ const processControl = {
             return runProcess({
               uuid: processDefinition.uuid,
               id: processDefinition.id,
-              reportType: reportType,
-              parameters: finalParameters,
-              selection: selection,
+              reportType,
+              parametersList: finalParameters,
+              selectionsList: selection,
               tableName: windowSelectionProcess.tableName,
               recordId: selection[windowSelectionProcess.tableName]
             })
               .then(response => {
-                var output = {
+                let output = {
                   uuid: '',
                   name: '',
                   description: '',
@@ -722,7 +732,7 @@ const processControl = {
                     reportType: responseOutput.reporttype
                   }
                 }
-                var logList = []
+                let logList = []
                 if (response.getLogsList) {
                   logList = response.getLogsList.map(itemLog => {
                     return {
@@ -741,7 +751,7 @@ const processControl = {
                   ResultTableName: response.resulttablename,
                   lastRun: response.lastRun,
                   logs: logList,
-                  output: output
+                  output
                 })
                 dispatch('setReportTypeToShareLink', processResult.output.reportType)
                 if (processResult.isError) {
@@ -754,12 +764,13 @@ const processControl = {
                 const countResponse = state.totalResponse + 1
                 commit('setTotalResponse', countResponse)
                 if (state.totalResponse === state.totalRequest) {
-                  var processMessage = {
-                    title: language.t('notifications.succesful'),
-                    message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
-                    type: 'success'
+                  if (isSession) {
+                    showNotification({
+                      title: language.t('notifications.succesful'),
+                      message: language.t('notifications.totalProcess') + countResponse + language.t('notifications.error') + state.errorSelection + language.t('notifications.succesful') + state.successSelection + language.t('notifications.processExecuted'),
+                      type: 'success'
+                    })
                   }
-                  showNotification(processMessage)
                   commit('setTotalRequest', 0)
                   commit('setTotalResponse', 0)
                   commit('setSuccessSelection', 0)
@@ -773,7 +784,7 @@ const processControl = {
                 commit('addNotificationProcess', processResult)
                 commit('addStartedProcess', processResult)
                 commit('deleteInExecution', {
-                  containerUuid: params.containerUuid
+                  containerUuid
                 })
               })
               .catch(error => {
@@ -782,7 +793,7 @@ const processControl = {
                   message: error.message,
                   isProcessing: false
                 })
-                console.warn(`Error running the process ${error}.`)
+                console.warn(`Error running the process. Code ${error.code}: ${error.message}.`)
               })
           }
         })
@@ -834,23 +845,27 @@ const processControl = {
     },
     /**
      * Show modal dialog with process/report, tab (sequence) metadata
-     * @param {object} params
+     * @param {String} type of panel or panelType ('process', 'report', 'window')
+     * @param {Object} action
      */
-    setShowDialog({ state, commit, dispatch, rootGetters }, params) {
+    setShowDialog({ state, commit, dispatch, rootGetters }, {
+      type,
+      action
+    }) {
       const panels = ['process', 'report', 'window']
-      if (params.action && (panels.includes(params.type) || panels.includes(params.action.panelType))) {
+      if (action && (panels.includes(type) || panels.includes(action.panelType))) {
         // show some process loaded in store
         if (state.metadata && !isEmptyValue(state.metadata.containerUuid) &&
-        state.metadata.containerUuid === params.action.containerUuid) {
+        state.metadata.containerUuid === action.containerUuid) {
           commit('setShowDialog', true)
           return
         }
-        const panel = rootGetters.getPanel(params.action.containerUuid)
+        const panel = rootGetters.getPanel(action.containerUuid)
         if (panel === undefined) {
           dispatch('getPanelAndFields', {
-            parentUuid: params.action.parentUuid,
-            containerUuid: isEmptyValue(params.action.uuid) ? params.action.containerUuid : params.action.uuid,
-            panelType: params.action.panelType
+            parentUuid: action.parentUuid,
+            containerUuid: isEmptyValue(action.uuid) ? action.containerUuid : action.uuid,
+            panelType: action.panelType
           })
             .then(response => {
               commit('setMetadata', response)
@@ -864,58 +879,67 @@ const processControl = {
       }
       commit('setShowDialog', false)
     },
-    finishProcess({ commit }, parameters) {
-      var processMessage = {
-        name: parameters.processOutput.processName,
+    finishProcess({ commit }, {
+      processOutput,
+      routeToDelete,
+      procesingMessage
+    }) {
+      const processMessage = {
+        name: processOutput.processName,
         title: language.t('notifications.succesful'),
         message: language.t('notifications.processExecuted'),
         type: 'success',
-        logs: parameters.processOutput.logs,
-        summary: parameters.processOutput.summary
+        logs: processOutput.logs,
+        summary: processOutput.summary
       }
-      var errorMessage = !isEmptyValue(parameters.processOutput.message) ? parameters.processOutput.message : language.t('notifications.error')
+      const errorMessage = !isEmptyValue(processOutput.message) ? processOutput.message : language.t('notifications.error')
       // TODO: Add isReport to type always 'success'
-      if (parameters.processOutput.isError || isEmptyValue(parameters.processOutput.processId) || isEmptyValue(parameters.processOutput.instanceUuid)) {
+      if (processOutput.isError || isEmptyValue(processOutput.processId) || isEmptyValue(processOutput.instanceUuid)) {
         processMessage.title = language.t('notifications.error')
         processMessage.message = errorMessage
         processMessage.type = 'error'
-        parameters.processOutput.isError = true
+        processOutput.isError = true
       }
-      if (parameters.processOutput.isReport && !parameters.processOutput.isError) {
+      if (processOutput.isReport && !processOutput.isError) {
         // open report viewer with report response
-        if (isEmptyValue(parameters.processOutput.menuParentUuid)) {
-          parameters.processOutput.menuParentUuid = parameters.processOutput.processUuid
+        let menuParentUuid = routeToDelete.params.menuParentUuid
+        if (isEmptyValue(menuParentUuid)) {
+          menuParentUuid = processOutput.menuParentUuid
         }
 
         let tableName
-        if (parameters.processOutput.option && !isEmptyValue(parameters.processOutput.option)) {
-          if (parameters.processOutput.option === 'drillTable') {
-            tableName = parameters.processOutput.tableName
+        if (processOutput.option && !isEmptyValue(processOutput.option)) {
+          if (processOutput.option === 'drillTable') {
+            tableName = processOutput.tableName
           }
         }
+
         router.push({
           name: 'Report Viewer',
           params: {
-            processId: parameters.processOutput.processId,
-            instanceUuid: parameters.processOutput.instanceUuid,
-            fileName: isEmptyValue(parameters.processOutput.output.fileName) ? parameters.processOutput.fileName : parameters.processOutput.output.fileName,
-            menuParentUuid: parameters.processOutput.menuParentUuid,
-            tableName: tableName
+            processId: processOutput.processId,
+            instanceUuid: processOutput.instanceUuid,
+            fileName: isEmptyValue(processOutput.output.fileName) ? processOutput.fileName : processOutput.output.fileName,
+            menuParentUuid,
+            tableName
           }
         })
       }
+      const isSession = !isEmptyValue(getToken())
+      if (isSession) {
+        showNotification(processMessage)
+      }
+      if (!isEmptyValue(procesingMessage)) {
+        procesingMessage.close()
+      }
 
-      showNotification(processMessage)
-      commit('addStartedProcess', parameters.processOutput)
-      commit('setReportValues', parameters.processOutput)
+      commit('addStartedProcess', processOutput)
+      commit('setReportValues', processOutput)
     },
     changeFormatReport({ commit }, reportFormat) {
-      if (reportFormat !== undefined) {
+      if (!isEmptyValue(reportFormat)) {
         commit('changeFormatReport', reportFormat)
       }
-    },
-    clearProcessControl({ commit }) {
-      commit('clearProcessControl')
     }
   },
   getters: {

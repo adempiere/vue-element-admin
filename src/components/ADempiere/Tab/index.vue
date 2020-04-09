@@ -17,6 +17,7 @@
           :metadata="tabAttributes"
           :group-tab="tabAttributes.tabGroup"
           :panel-type="panelType"
+          :is-showed-record-navigation="windowMetadata.isShowedRecordNavigation"
         />
       </el-tab-pane>
     </template>
@@ -33,16 +34,15 @@ export default {
     MainPanel
   },
   mixins: [tabMixin],
+  data() {
+    return {
+      currentTab: this.$route.query.tabParent
+    }
+  },
   computed: {
-    getWindow() {
-      return this.$store.getters.getWindow(this.windowUuid)
-    },
-    // if tabs children is showed or closed
-    isShowedTabsChildren() {
-      return this.getWindow.isShowedTabsChildren
-    },
     tabParentStyle() {
-      if (this.isShowedTabsChildren) {
+      // if tabs children is showed or closed
+      if (this.windowMetadata.isShowedTabsChildren) {
         return {
           height: '100%',
           overflow: 'hidden'
@@ -55,11 +55,12 @@ export default {
     }
   },
   watch: {
-    // TODO: Remove watchers of action, and pased as props from window
-    '$route.query.action'(actionValue) {
+    '$route.query.tabParent'(actionValue) {
       if (this.isEmptyValue(actionValue) || actionValue === 'create-new') {
         this.currentTab = '0'
+        return
       }
+      this.currentTab = actionValue
     },
     currentTab(newValue, oldValue) {
       if (newValue !== oldValue) {
@@ -74,6 +75,19 @@ export default {
         })
         this.$route.meta.tabUuid = this.tabUuid
       }
+    },
+    tabUuid(value) {
+      this.setCurrentTab()
+    }
+  },
+  methods: {
+    setCurrentTab() {
+      this.$store.dispatch('setCurrentTab', {
+        parentUuid: this.windowUuid,
+        containerUuid: this.tabUuid,
+        window: this.windowMetadata
+      })
+      this.$route.meta.tabUuid = this.tabUuid
     }
   }
 }

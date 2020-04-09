@@ -5,6 +5,7 @@
     :parent-uuid="parentUuid"
     :container-uuid="containerUuid"
     :panel-type="panelType"
+    :table-name="tableName"
     :is-report="isReport"
     :last-parameter="lastParameter"
     :report-format="reportFormat"
@@ -31,6 +32,10 @@ export default {
       required: true
     },
     panelType: {
+      type: String,
+      default: undefined
+    },
+    tableName: {
       type: String,
       default: undefined
     },
@@ -106,7 +111,7 @@ export default {
   .container-submenu-mobile {
     position: absolute;
     height: 39px !important;
-    width: 39px !important;
+    width: 55px !important;
     right: 0;
     top: 0;
   }

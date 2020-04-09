@@ -52,14 +52,19 @@ export default {
     getterDataParentTab() {
       return this.$store.getters.getDataRecordAndSelection(this.firstTabUuid)
     },
-    getterIsLoadRecordParent() {
-      return this.getterDataParentTab.isLoaded
-    },
-    getterIsLoadContextParent() {
-      return this.getterDataParentTab.isLoadedContext
+    isReadyFromGetData() {
+      const { isLoaded, isLoadedContext } = this.getterDataParentTab
+      return !this.getDataSelection.isLoaded && isLoaded && isLoadedContext
     }
   },
   watch: {
+    '$route.query.tabChild'(actionValue) {
+      if (this.isEmptyValue(actionValue)) {
+        this.currentTabChild = '0'
+        return
+      }
+      this.currentTabChild = actionValue
+    },
     // Current TabChildren
     currentTabChild(newValue, oldValue) {
       if (newValue !== oldValue) {
@@ -75,20 +80,21 @@ export default {
       }
     },
     // Refrest the records of the TabChildren
-    getDataSelection(value) {
-      if (!value.isLoaded && this.getterIsLoadContextParent && this.getterIsLoadRecordParent) {
-        this.getDataTable()
-      }
-    },
-    // Load parent tab context
-    getterIsLoadContextParent(value) {
-      if (value && !this.getDataSelection.isLoaded && this.getterIsLoadRecordParent) {
+    isReadyFromGetData(value) {
+      if (value) {
         this.getDataTable()
       }
     }
   },
-  mounted() {
+  created() {
     this.setCurrentTabChild()
+    const currentIndex = parseInt(this.currentTabChild, 10)
+    this.tabUuid = this.tabsList[currentIndex].uuid
+  },
+  mounted() {
+    if (this.isReadyFromGetData) {
+      this.getDataTable()
+    }
   },
   methods: {
     setCurrentTabChild() {
