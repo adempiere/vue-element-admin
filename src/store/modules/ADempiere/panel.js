@@ -792,7 +792,6 @@ const panel = {
               }
             }
           } else {
-            console.log(fieldsEmpty)
             showMessage({
               message: language.t('notifications.mandatoryFieldMissing') + fieldsEmpty,
               type: 'info'
