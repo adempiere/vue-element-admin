@@ -19,12 +19,9 @@ export default {
   data() {
     return {
       metadata: {
-        isActive: true,
-        isDisplayed: true,
-        isDisplayedFromLogic: true,
-        isShowedFromUser: true,
-        componentPath: 'FieldText',
-        name: 'Test Field'
+        name: 'Test Field',
+        displayType: 14,
+        isCustomField: true
       }
     }
   }
