@@ -75,7 +75,7 @@ import operatorComparison from '@/components/ADempiere/Field/popover/operatorCom
 import translated from '@/components/ADempiere/Field/popover/translated'
 import calculator from '@/components/ADempiere/Field/popover/calculator'
 import { DEFAULT_SIZE, FIELD_DISPLAY_SIZES } from '@/components/ADempiere/Field/fieldSize'
-import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
+import { evalutateTypeField, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
 
 /**
@@ -317,6 +317,25 @@ export default {
   created() {
     // assined field with prop
     this.field = this.metadataField
+    if (this.field.isCustomField) {
+      let componentReference = evalutateTypeField(this.field.displayType, true)
+      if (this.isEmptyValue(componentReference)) {
+        componentReference = {
+          type: 'FieldText',
+          alias: ['Text']
+        }
+      }
+      this.field = {
+        ...this.metadataField,
+        isActive: true,
+        isDisplayed: true,
+        isDisplayedFromLogic: true,
+        isShowedFromUser: true,
+        //
+        componentPath: componentReference.type,
+        referenceType: componentReference.alias[0]
+      }
+    }
   },
   methods: {
     showMessage,
