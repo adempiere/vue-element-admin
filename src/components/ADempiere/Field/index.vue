@@ -317,7 +317,7 @@ export default {
   created() {
     // assined field with prop
     this.field = this.metadataField
-    if (this.field.isCustomField) {
+    if (this.field.isCustomField && !this.field.componentPath) {
       let componentReference = evalutateTypeField(this.field.displayType, true)
       if (this.isEmptyValue(componentReference)) {
         componentReference = {
@@ -332,8 +332,7 @@ export default {
         isDisplayedFromLogic: true,
         isShowedFromUser: true,
         //
-        componentPath: componentReference.type,
-        referenceType: componentReference.alias[0]
+        componentPath: componentReference.type
       }
     }
   },

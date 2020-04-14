@@ -625,13 +625,13 @@ export default {
           cell = cell.getTime()
         }
         // replace number timestamp value for date
-        return formatDate(cell, field.referenceType)
+        return formatDate(cell, field.displayType)
       } else if (field.componentPath === 'FieldNumber') {
         if (this.isEmptyValue(row[field.columnName])) {
           return undefined
         }
         return this.formatNumber({
-          referenceType: field.referenceType,
+          displayType: field.displayType,
           number: row[field.columnName]
         })
       } else if (field.componentPath === 'FieldSelect' && this.isEmptyValue(row['DisplayColumn_' + field.columnName]) && row[field.columnName] === 0) {
@@ -969,7 +969,7 @@ export default {
           return
         }
         const field = this.fieldsList.find(field => field.columnName === columnItem.property)
-        if (!FIELDS_QUANTITY.includes(field.referenceType)) {
+        if (!FIELDS_QUANTITY.includes(field.displayType)) {
           sums[index] = ''
           return
         }
@@ -985,7 +985,7 @@ export default {
             return prev
           }, 0)
           sums[index] = this.formatNumber({
-            referenceType: field.referenceType,
+            displayType: field.displayType,
             number: total
           })
         }
@@ -993,10 +993,10 @@ export default {
 
       return sums
     },
-    formatNumber({ referenceType, number }) {
+    formatNumber({ displayType, number }) {
       let fixed = 0
       // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(referenceType)) {
+      if (FIELDS_DECIMALS.includes(displayType)) {
         fixed = 2
       }
       return new Intl.NumberFormat().format(number.toFixed(fixed))

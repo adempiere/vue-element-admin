@@ -119,7 +119,7 @@ export const menuTableMixin = {
     },
     isFieldsQuantity() {
       const fieldsQuantity = this.getterFieldList.filter(fieldItem => {
-        return FIELDS_QUANTITY.includes(fieldItem.referenceType)
+        return FIELDS_QUANTITY.includes(fieldItem.displayType)
       }).length
       return !fieldsQuantity
     },

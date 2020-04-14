@@ -58,7 +58,7 @@ export const CHART = {
   type: 'FieldText',
   support: false,
   description: 'Chart',
-  valueType: 'INTEGER',
+  valueType: 'STRING',
   alias: ['Chart']
 }
 
@@ -459,6 +459,6 @@ export const FIELD_READ_ONLY_FORM = [
   }
 ]
 
-export const FIELDS_DECIMALS = ['Amount', 'Costs+Prices', 'Number', 'Quantity']
+export const FIELDS_DECIMALS = [NUMBER.id, QUANTITY.id, COSTS_PLUS_PRICES.id]
 
-export const FIELDS_QUANTITY = ['Amount', 'Costs+Prices', 'Integer', 'Number', 'Quantity']
+export const FIELDS_QUANTITY = [NUMBER.id, QUANTITY.id, INTEGER.id, COSTS_PLUS_PRICES.id]

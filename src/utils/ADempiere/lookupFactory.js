@@ -2,10 +2,12 @@
 // note that it can be used for create meta-data for lookups
 // Field component: this component is created dinamically from meta-data and can be used for
 // many form incluyed Window/Tab/Fields, Process and Smart Browsers
+// The aproach for this file is allows define field type manual and allows get metadata from server
 // Exists many attributes fro handle behavior of field, the follow is a example:
 // General:
 // - columnName:
 // - name:
+// - help
 // - inTable:
 // - isAdvancedQuery:
 // - isMandatory:

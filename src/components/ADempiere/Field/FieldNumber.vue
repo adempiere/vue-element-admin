@@ -11,7 +11,7 @@
       :disabled="isDisabled"
       :precision="precision"
       controls-position="right"
-      :class="'display-type-' + cssClass"
+      :class="'display-type-amount'"
       @change="preHandleChange"
       @shortkey.native="changeValue"
       @blur="changeValue"
@@ -56,14 +56,9 @@ export default {
       }
       return Number(this.metadata.valueMin)
     },
-    cssClass() {
-      return this.metadata.referenceType
-        .split(/(?=[A-Z])/)
-        .join('-').toLowerCase()
-    },
     precision() {
       // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(this.metadata.referenceType)) {
+      if (FIELDS_DECIMALS.includes(this.metadata.displayType)) {
         return 2
       }
       return undefined
