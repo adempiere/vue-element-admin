@@ -303,11 +303,10 @@ export default {
       return false
     },
     isContextInfo() {
-      if (this.isAdvancedQuery) {
+      if (!this.isAdvancedQuery) {
         return false
       }
-      return (this.field.contextInfo && this.field.contextInfo.isActive) ||
-        (this.field.reference && this.field.reference.windowsList.length)
+      return (this.field.contextInfo && this.field.contextInfo.isActive) || (this.field.reference && this.field.reference.windowsList.length)
     }
   },
   watch: {

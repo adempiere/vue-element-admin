@@ -251,7 +251,7 @@ import IconElement from '@/components/ADempiere/IconElement'
 import { formatDate } from '@/filters/ADempiere'
 import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere/dictionaryUtils'
-import { FIELDS_DECIMALS, FIELDS_QUANTITY, FIELD_READ_ONLY_FORM } from '@/components/ADempiere/Field/references'
+import { FIELDS_DECIMALS, FIELDS_QUANTITY, FIELD_READ_ONLY_FORM } from '@/utils/ADempiere/references'
 import { fieldIsDisplayed } from '@/utils/ADempiere'
 import evaluator from '@/utils/ADempiere/evaluator'
 

@@ -22,7 +22,7 @@
 
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
-import { FIELDS_DECIMALS } from '@/components/ADempiere/Field/references'
+import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
 
 export default {
   name: 'FieldNumber',
