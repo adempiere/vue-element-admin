@@ -39,7 +39,7 @@
 // - isEncrypted
 // - fieldLength
 // Select:
-// - isSelectCreated (creado desde la ui para busquedas avanzadas de multiples valores)
+// - isSelectCreated (created from ui for multi-selection)
 // - reference.query
 // - reference.directQuery
 // - reference.tableName
