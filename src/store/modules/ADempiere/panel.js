@@ -63,7 +63,7 @@ const panel = {
       let count = 0
 
       if (params.fieldList) {
-        params.fieldList.forEach(itemField => {
+        params.fieldList.forEach((itemField, index, listFields) => {
           if (itemField.isKey) {
             keyColumn = itemField.columnName
           }
@@ -92,6 +92,19 @@ const panel = {
                 containerUuid: params.uuid,
                 columnName: itemField.columnName,
                 value: itemField.value
+              })
+            }
+
+            //  Get dependent fields
+            if (!isEmptyValue(itemField.parentFieldsList) && itemField.isActive) {
+              itemField.parentFieldsList.forEach(parentColumnName => {
+                const parentField = listFields.find(parentFieldItem => {
+                  return parentFieldItem.columnName === parentColumnName &&
+                    parentColumnName !== itemField.columnName
+                })
+                if (parentField) {
+                  parentField.dependentFieldsList.push(itemField.columnName)
+                }
               })
             }
           }

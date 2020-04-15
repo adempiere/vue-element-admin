@@ -286,21 +286,6 @@ const window = {
 
             let isTabsChildren = false
             if (!isAdvancedQuery) {
-              //  Get dependent fields
-              fieldsList
-                .forEach((field, index, list) => {
-                  if (field.parentFieldsList.length && field.isActive) {
-                    field.parentFieldsList.forEach(parentColumnName => {
-                      const parentField = list.find(parentField => {
-                        return parentField.columnName === parentColumnName && parentColumnName !== field.columnName
-                      })
-                      if (parentField) {
-                        parentField.dependentFieldsList.push(field.columnName)
-                      }
-                    })
-                  }
-                })
-
               const window = getters.getWindow(parentUuid)
               isTabsChildren = Boolean(window.tabsListChildren.length)
             }

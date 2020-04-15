@@ -279,21 +279,6 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
         return field
       })
     fieldDefinitionList = fieldDefinitionList.concat(fieldsRangeList)
-
-    //  Get dependent fields
-    fieldDefinitionList
-      .forEach((field, index, list) => {
-        if (field.isActive && field.parentFieldsList.length) {
-          field.parentFieldsList.forEach(parentColumnName => {
-            const parentField = list.find(itemParentField => {
-              return itemParentField.columnName === parentColumnName && parentColumnName !== field.columnName
-            })
-            if (parentField) {
-              parentField.dependentFieldsList.push(field.columnName)
-            }
-          })
-        }
-      })
   }
 
   //  Default Action

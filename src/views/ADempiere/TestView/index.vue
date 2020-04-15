@@ -116,7 +116,10 @@ export default {
         name: 'Only Name',
         displayType: TEXT.id,
         containerUuid: this.panelUuid,
-        additionalAttributes,
+        additionalAttributes: {
+          ...additionalAttributes,
+          displayLogic: '@URL@!""'
+        },
         sequence
       }))
 
@@ -152,6 +155,7 @@ export default {
         additionalAttributes,
         sequence
       }))
+
       this.metadataList = fieldsList
     }
   }

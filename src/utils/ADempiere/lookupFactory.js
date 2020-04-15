@@ -49,6 +49,9 @@
 
 import REFERENCES, { TEXT } from '@/utils/ADempiere/references'
 import { getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
+import { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
+import evaluator from '@/utils/ADempiere/evaluator'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 export function createField({
   containerUuid,
@@ -80,14 +83,43 @@ export function createField({
     isDisplayedFromLogic: true,
     isShowedFromUser: true,
     reference: {
-      query: query,
-      directQuery: directQuery,
-      tableName: tableName,
-      keyColumnName: keyColumnName,
-      displayColumn: displayColumn
+      query,
+      directQuery,
+      tableName,
+      keyColumnName,
+      displayColumn
     },
     componentPath: REFERENCES.find(reference => reference.id === displayType).type
   }
+
+  // get parsed parent fields list
+  metadata.parentFieldsList = getParentFields(metadata)
+
+  // evaluate logics
+  const setEvaluateLogics = {
+    parentUuid: metadata.parentUuid,
+    containerUuid: metadata.containerUuid,
+    context: getContext
+  }
+  if (!isEmptyValue(metadata.displayLogic)) {
+    metadata.isDisplayedFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: metadata.displayLogic
+    })
+  }
+  if (!isEmptyValue(metadata.mandatoryLogic)) {
+    metadata.isMandatoryFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: metadata.mandatoryLogic
+    })
+  }
+  if (!isEmptyValue(metadata.readOnlyLogic)) {
+    metadata.isReadOnlyFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: metadata.readOnlyLogic
+    })
+  }
+
   // Special cases
   // Please if you need use a special case remember that already exists many implementations
   // switch (displayType) {
