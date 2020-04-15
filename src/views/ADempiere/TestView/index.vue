@@ -82,7 +82,7 @@ export default {
         panelType: this.panelType,
         containerUuid: this.panelUuid
       }
-      console.log(additionalAttributes)
+
       let sequence = 10
       // URL
       fieldsList.push(createField({
