@@ -1,7 +1,7 @@
 import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
 import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
-import REFERENCES, { FIELD_NOT_SHOWED } from '@/utils/ADempiere/references'
+import REFERENCES, { FIELDS_HIDDEN } from '@/utils/ADempiere/references'
 import { FIELD_DISPLAY_SIZES, DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import language from '@/lang'
 
@@ -220,7 +220,7 @@ export function generateField({
   }
 
   // hidden field type button
-  const notShowedField = FIELD_NOT_SHOWED.find(itemField => {
+  const notShowedField = FIELDS_HIDDEN.find(itemField => {
     return field.displayType === itemField.id
   })
   if (notShowedField) {

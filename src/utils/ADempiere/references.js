@@ -72,6 +72,7 @@ export const COLOR = {
   alias: ['Color']
 }
 
+// Cost or Prices
 export const COSTS_PLUS_PRICES = {
   id: 37,
   type: 'FieldNumber',
@@ -372,73 +373,29 @@ const REFERENCES = [
   URL,
   YES_NO
 ]
-
 export default REFERENCES
 
-export const FIELD_RANGE = [
-  {
-    id: 12,
-    type: 'Amount',
-    description: 'Number with 4 decimals',
-    alias: ['Amount']
-  },
-  {
-    id: 37,
-    type: 'Costs+Prices',
-    description: 'Costs + Prices (minimum currency precision but if exists more)',
-    alias: ['Costs+Prices', 'CostsPrices', 'Cost Prices']
-  },
-  {
-    id: 15,
-    type: 'Date',
-    description: 'Date mm/dd/yyyy',
-    alias: ['Date']
-  },
-  {
-    id: 16,
-    type: 'DateTime',
-    description: 'Date with time',
-    alias: ['DateTime', 'Date Time', 'Date+Time']
-  },
-  {
-    id: 11,
-    type: 'Integer',
-    description: '10 Digit numeric',
-    alias: ['Integer']
-  },
-  {
-    id: 22,
-    type: 'Number',
-    description: 'Float Number',
-    alias: ['Number']
-  },
-  {
-    id: 29,
-    type: 'Quantity',
-    description: 'Quantity data type',
-    alias: ['Quantity']
-  },
-  {
-    id: 24,
-    type: 'Time',
-    description: 'Time',
-    alias: ['Time']
-  }
+export const FIELDS_RANGE = [
+  NUMBER,
+  COSTS_PLUS_PRICES,
+  DATE,
+  DATE_PLUS_TIME,
+  INTEGER,
+  FLOAT,
+  QUANTITY,
+  TIME
 ]
-
-export const FIELD_NOT_SHOWED = [
-  {
-    id: 28,
-    type: 'Button',
-    description: 'Command Button - starts a process',
-    alias: ['Button']
-  }
+/**
+ * Fields not showed in panel's
+ */
+export const FIELDS_HIDDEN = [
+  BUTTON
 ]
 
 /**
  * Fields with this column name, changed all fields is read only
  */
-export const FIELD_READ_ONLY_FORM = [
+export const FIELDS_READ_ONLY_FORM = [
   {
     columnName: 'IsActive', // column name of field
     defaultValue: true, // default value when loading

@@ -56,6 +56,7 @@ const panel = {
   },
   actions: {
     addPanel({ commit, dispatch, getters }, params) {
+      const { panelType } = params
       let keyColumn = ''
       let selectionColumn = []
       let identifierColumns = []
@@ -77,15 +78,15 @@ const panel = {
             })
           }
 
-          if (params.panelType === 'table' || params.isAdvancedQuery) {
+          if (panelType === 'table' || params.isAdvancedQuery) {
             itemField.isShowedFromUser = false
             if (count < 2 && itemField.isSelectionColumn && itemField.sequence >= 10) {
               itemField.isShowedFromUser = true
               count++
             }
           } else {
-            if (['browser', 'process', 'report'].includes(params.panelType) ||
-              params.panelType === 'window' && params.isParentTab) {
+            if (['browser', 'process', 'report', 'test'].includes(panelType) ||
+              panelType === 'window' && params.isParentTab) {
               dispatch('setContext', {
                 parentUuid: params.parentUuid,
                 containerUuid: params.uuid,
@@ -97,7 +98,7 @@ const panel = {
         })
 
         let orderBy = 'sequence'
-        if ((params.panelType === 'window' && !params.isParentTab) || params.panelType === 'browser') {
+        if ((panelType === 'window' && !params.isParentTab) || panelType === 'browser') {
           orderBy = 'seqNoGrid'
         }
         params.fieldList = assignedGroup({
@@ -125,6 +126,7 @@ const panel = {
       params.isShowedTableOptionalColumns = false
 
       commit('addPanel', params)
+      return params
     },
     /**
      * Used by components/fields/filterFields

@@ -27,6 +27,7 @@
 // - tableName:
 // Date and Time:
 // - isRange
+// - vFormat
 // - valueTo
 // - valueMax
 // - valueMin
@@ -47,6 +48,7 @@
 // - defaultValue
 
 import REFERENCES, { TEXT } from '@/utils/ADempiere/references'
+import { getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
 
 export function createField({
   containerUuid,
@@ -54,17 +56,21 @@ export function createField({
   columnName,
   name,
   isMandatory = false,
-  isReadOnly = false
+  isReadOnly = false,
+  sequence = 10,
+  additionalAttributes = {}
 }) {
   const metadata = {
+    ...getFieldTemplate(additionalAttributes),
     isCustomField: true,
-    containerUuid: containerUuid,
-    columnName: columnName,
-    name: name,
-    displayType: displayType,
+    containerUuid,
+    columnName,
+    name,
+    displayType,
+    sequence,
     isActive: true,
-    isMandatory: isMandatory,
-    isReadOnly: isReadOnly,
+    isMandatory,
+    isReadOnly,
     isDisplayed: true,
     isDisplayedFromLogic: true,
     isShowedFromUser: true,
