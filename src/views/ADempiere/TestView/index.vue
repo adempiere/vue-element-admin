@@ -30,7 +30,7 @@
 <script>
 import Field from '@/components/ADempiere/Field'
 import { createField } from '@/utils/ADempiere/lookupFactory'
-import { URL, TEXT, NUMBER, INTEGER, TEXT_LONG } from '@/utils/ADempiere/references'
+import { URL, TEXT, NUMBER, INTEGER, TEXT_LONG, TABLE_DIR } from '@/utils/ADempiere/references'
 
 export default {
   name: 'TestView',
@@ -94,6 +94,21 @@ export default {
         sequence
       }))
 
+      // Table direct
+      // To be define
+      sequence = sequence + 10
+      fieldsList.push(createField({
+        columnName: 'C_Currency_ID',
+        name: 'Currency',
+        displayType: TABLE_DIR.id,
+        tableName: 'C_Currency',
+        keyColumn: 'C_Currency.C_Currency_ID',
+        directQuery: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency WHERE C_Currency.C_Currency_ID=?',
+        query: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency ORDER BY 3',
+        additionalAttributes,
+        sequence
+      }))
+
       sequence = sequence + 10
       // Text
       fieldsList.push(createField({
@@ -137,14 +152,6 @@ export default {
         additionalAttributes,
         sequence
       }))
-      // Table direct
-      // To be define
-      // fieldsList.push(createField({
-      //   columnName: 'C_Country',
-      //   name: 'Country',
-      //   displayType: TABLE_DIR.id,
-      //   additionalAttributes
-      // }))
       this.metadataList = fieldsList
     }
   }

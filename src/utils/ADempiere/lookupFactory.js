@@ -41,9 +41,9 @@
 // - fieldLength
 // Select:
 // - isSelectCreated (created from ui for multi-selection)
-// - reference.query
-// - reference.directQuery
-// - reference.tableName
+// - query
+// - directQuery
+// - tableName
 // - displayColumn
 // - defaultValue
 
@@ -58,6 +58,11 @@ export function createField({
   isMandatory = false,
   isReadOnly = false,
   sequence = 10,
+  query,
+  directQuery,
+  tableName,
+  keyColumnName,
+  displayColumn,
   additionalAttributes = {}
 }) {
   const metadata = {
@@ -74,6 +79,13 @@ export function createField({
     isDisplayed: true,
     isDisplayedFromLogic: true,
     isShowedFromUser: true,
+    reference: {
+      query: query,
+      directQuery: directQuery,
+      tableName: tableName,
+      keyColumnName: keyColumnName,
+      displayColumn: displayColumn
+    },
     componentPath: REFERENCES.find(reference => reference.id === displayType).type
   }
   // Special cases
