@@ -47,77 +47,63 @@
 // - displayColumn
 // - defaultValue
 
-import REFERENCES, { TEXT } from '@/utils/ADempiere/references'
-import { getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
-import { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
-import evaluator from '@/utils/ADempiere/evaluator'
+import { TEXT } from '@/utils/ADempiere/references'
+import { evalutateTypeField } from '@/utils/ADempiere/dictionaryUtils'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import evaluator, { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
+import FIELDS_DISPLAY_SIZES, { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 
 export function createField({
+  parentUuid,
   containerUuid,
-  displayType = TEXT.id,
-  columnName,
-  name,
-  isMandatory = false,
-  isReadOnly = false,
-  sequence = 10,
-  query,
-  directQuery,
   tableName,
-  keyColumnName,
-  displayColumn,
-  additionalAttributes = {}
+  columnName,
+  definition = {}
 }) {
-  const metadata = {
-    ...getFieldTemplate(additionalAttributes),
-    isCustomField: true,
-    containerUuid,
-    columnName,
-    name,
-    displayType,
-    sequence,
-    isActive: true,
-    isMandatory,
-    isReadOnly,
-    isDisplayed: true,
-    isDisplayedFromLogic: true,
-    isShowedFromUser: true,
-    reference: {
-      query,
-      directQuery,
-      tableName,
-      keyColumnName,
-      displayColumn
-    },
-    componentPath: REFERENCES.find(reference => reference.id === displayType).type
-  }
+  if (!isEmptyValue(definition)) {
+    if (isEmptyValue(definition.displayType)) {
+      definition.displayType = TEXT.id
+    }
+    if (isEmptyValue(definition.isActive)) {
+      definition.isActive = true
+    }
+    if (isEmptyValue(definition.isDisplayed)) {
+      definition.isDisplayed = true
+    }
+    if (isEmptyValue(definition.isDisplayedFromLogic)) {
+      definition.isDisplayedFromLogic = true
+    }
+    if (isEmptyValue(definition.isReadOnly)) {
+      definition.isReadOnly = false
+    }
 
-  // get parsed parent fields list
-  metadata.parentFieldsList = getParentFields(metadata)
+    if (isEmptyValue(definition.isMandatory)) {
+      definition.isMandatory = false
+    }
+    if (isEmptyValue(definition.sequence)) {
+      definition.sequence = 0
+      if (definition.isDisplayed) {
+        definition.sequence = 10
+      }
+    }
 
-  // evaluate logics
-  const setEvaluateLogics = {
-    parentUuid: metadata.parentUuid,
-    containerUuid: metadata.containerUuid,
-    context: getContext
-  }
-  if (!isEmptyValue(metadata.displayLogic)) {
-    metadata.isDisplayedFromLogic = evaluator.evaluateLogic({
-      ...setEvaluateLogics,
-      logic: metadata.displayLogic
-    })
-  }
-  if (!isEmptyValue(metadata.mandatoryLogic)) {
-    metadata.isMandatoryFromLogic = evaluator.evaluateLogic({
-      ...setEvaluateLogics,
-      logic: metadata.mandatoryLogic
-    })
-  }
-  if (!isEmptyValue(metadata.readOnlyLogic)) {
-    metadata.isReadOnlyFromLogic = evaluator.evaluateLogic({
-      ...setEvaluateLogics,
-      logic: metadata.readOnlyLogic
-    })
+    let reference = {}
+    if (!isEmptyValue(definition.directQuery) || !isEmptyValue(definition.query)) {
+      reference = {
+        directQuery: definition.directQuery,
+        query: definition.query,
+        tableName: definition.tableName || undefined,
+        keyColumnName: definition.keyColumnName || undefined,
+        validationCode: definition.validationCode || undefined,
+        windowsList: definition.windowsList || []
+      }
+      delete definition.directQuery
+      delete definition.query
+      delete definition.tableName
+      delete definition.validationCode
+      delete definition.windowsList
+    }
+    definition.reference = reference
   }
 
   // Special cases
@@ -126,5 +112,129 @@ export function createField({
   //   case TEXT.id:
   //     break
   // }
-  return metadata
+
+  return getFieldTemplate({
+    ...definition,
+    isCustomField: true,
+    isShowedFromUser: true,
+    parentUuid,
+    containerUuid,
+    columnName,
+    tableName
+  })
+}
+
+// Default template for injected fields
+export function getFieldTemplate(attributesOverwrite) {
+  let displayType = 10
+  if (!isEmptyValue(attributesOverwrite.displayType)) {
+    displayType = attributesOverwrite.displayType
+  }
+
+  const componentReference = evalutateTypeField(displayType)
+  const referenceType = componentReference.alias[0]
+
+  let sizeFieldFromType = FIELDS_DISPLAY_SIZES.find(item => {
+    return item.type === componentReference.type
+  })
+  if (isEmptyValue(sizeFieldFromType)) {
+    sizeFieldFromType = {
+      type: referenceType,
+      size: DEFAULT_SIZE.size
+    }
+  }
+
+  const fieldTemplateMetadata = {
+    id: 0,
+    uuid: '',
+    name: '',
+    description: '',
+    help: '',
+    columnName: '',
+    fieldGroup: {
+      name: '',
+      fieldGroupType: ''
+    },
+    displayType,
+    componentPath: componentReference.type,
+    referenceType,
+    isFieldOnly: false,
+    isRange: false,
+    isSameLine: false,
+    sequence: 0,
+    seqNoGrid: 0,
+    isIdentifier: 0,
+    isKey: false,
+    isSelectionColumn: false,
+    isUpdateable: true,
+    formatPattern: undefined,
+    VFormat: undefined,
+    value: undefined,
+    valueTo: undefined,
+    defaultValue: undefined,
+    parsedDefaultValue: undefined,
+    defaultValueTo: undefined,
+    parsedDefaultValueTo: undefined,
+    valueMin: undefined,
+    valueMax: undefined,
+    //
+    isDisplayed: false,
+    isActive: true,
+    isMandatory: false,
+    isReadOnly: false,
+    isDisplayedFromLogic: undefined,
+    isReadOnlyFromLogic: undefined,
+    isMandatoryFromLogic: undefined,
+    // browser attributes
+    callout: undefined,
+    isQueryCriteria: false,
+    displayLogic: undefined,
+    mandatoryLogic: undefined,
+    readOnlyLogic: undefined,
+    parentFieldsList: undefined,
+    dependentFieldsList: [],
+    reference: {
+      tableName: '',
+      keyColumnName: '',
+      query: '',
+      directQuery: '',
+      validationCode: '',
+      windowsList: []
+    },
+    contextInfo: undefined,
+    isShowedFromUser: false,
+    isFixedTableColumn: false,
+    sizeFieldFromType,
+    ...attributesOverwrite
+  }
+
+  // get parsed parent fields list
+  fieldTemplateMetadata.parentFieldsList = getParentFields(fieldTemplateMetadata)
+
+  // evaluate logics
+  const setEvaluateLogics = {
+    parentUuid: fieldTemplateMetadata.parentUuid,
+    containerUuid: fieldTemplateMetadata.containerUuid,
+    context: getContext
+  }
+  if (!isEmptyValue(fieldTemplateMetadata.displayLogic)) {
+    fieldTemplateMetadata.isDisplayedFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: fieldTemplateMetadata.displayLogic
+    })
+  }
+  if (!isEmptyValue(fieldTemplateMetadata.mandatoryLogic)) {
+    fieldTemplateMetadata.isMandatoryFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: fieldTemplateMetadata.mandatoryLogic
+    })
+  }
+  if (!isEmptyValue(fieldTemplateMetadata.readOnlyLogic)) {
+    fieldTemplateMetadata.isReadOnlyFromLogic = evaluator.evaluateLogic({
+      ...setEvaluateLogics,
+      logic: fieldTemplateMetadata.readOnlyLogic
+    })
+  }
+
+  return fieldTemplateMetadata
 }

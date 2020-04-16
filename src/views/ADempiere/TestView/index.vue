@@ -2,22 +2,21 @@
   <div class="wrapper">
     <el-form
       v-if="isLoaded"
-      key="panel-loaded"
+      key="form-loaded"
       label-position="top"
       label-width="200px"
     >
-      <el-row
-        v-for="(metadata) in metadataList"
-        :key="metadata.columnName"
-      >
+      <el-row>
         <field
+          v-for="(metadata) in metadataList"
+          :key="metadata.columnName"
           :metadata-field="metadata"
         />
       </el-row>
     </el-form>
     <div
       v-else
-      key="panel-loading"
+      key="form-loading"
       v-loading="!isLoaded"
       :element-loading-text="$t('notifications.loading')"
       element-loading-spinner="el-icon-loading"
@@ -43,7 +42,7 @@ export default {
       panelMetadata: {},
       isLoaded: false,
       panelUuid: 'Test-View',
-      panelType: 'test'
+      panelType: 'custom'
     }
   },
   computed: {
@@ -78,82 +77,91 @@ export default {
     },
     setFieldsList() {
       const fieldsList = []
-      const additionalAttributes = {
-        panelType: this.panelType,
-        containerUuid: this.panelUuid
-      }
 
       let sequence = 10
       // URL
       fieldsList.push(createField({
-        columnName: 'URL',
-        name: 'Web',
-        displayType: URL.id,
         containerUuid: this.panelUuid,
-        additionalAttributes,
-        sequence
+        columnName: 'URL',
+        definition: {
+          name: 'Web',
+          displayType: URL.id,
+          panelType: this.panelType,
+          sequence
+        }
       }))
 
       // Table direct
       // To be define
       sequence = sequence + 10
       fieldsList.push(createField({
+        containerUuid: this.panelUuid,
         columnName: 'C_Currency_ID',
-        name: 'Currency',
-        displayType: TABLE_DIR.id,
         tableName: 'C_Currency',
-        keyColumn: 'C_Currency.C_Currency_ID',
-        directQuery: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency WHERE C_Currency.C_Currency_ID=?',
-        query: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency ORDER BY 3',
-        additionalAttributes,
-        sequence
+        definition: {
+          name: 'Currency',
+          displayType: TABLE_DIR.id,
+          panelType: this.panelType,
+          keyColumn: 'C_Currency.C_Currency_ID',
+          directQuery: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency WHERE C_Currency.C_Currency_ID=?',
+          query: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency ORDER BY 3',
+          sequence
+        }
       }))
 
       sequence = sequence + 10
       // Text
       fieldsList.push(createField({
-        columnName: 'Name',
-        name: 'Only Name',
-        displayType: TEXT.id,
         containerUuid: this.panelUuid,
-        additionalAttributes: {
-          ...additionalAttributes,
-          displayLogic: '@URL@!""'
-        },
-        sequence
+        columnName: 'Name',
+        definition: {
+          name: 'Only Name',
+          displayType: TEXT.id,
+          panelType: this.panelType,
+          displayLogic: '@URL@!""',
+          sequence
+        }
       }))
 
       sequence = sequence + 10
       // Amount
       fieldsList.push(createField({
-        columnName: 'Amount',
-        name: 'Amount for it',
-        displayType: NUMBER.id,
         containerUuid: this.panelUuid,
-        additionalAttributes,
-        sequence
+        columnName: 'Amount',
+        definition: {
+          name: 'Amount for it',
+          displayType: NUMBER.id,
+          panelType: this.panelType,
+          readOnlyLogic: '@C_Currency_ID@<>""',
+          sequence
+        }
       }))
 
       sequence = sequence + 10
       // Integer
       fieldsList.push(createField({
-        columnName: 'SeqNo',
-        name: 'Sequence for record',
-        displayType: INTEGER.id,
         containerUuid: this.panelUuid,
-        additionalAttributes,
-        sequence
+        columnName: 'SeqNo',
+        definition: {
+          name: 'Sequence for record',
+          displayType: INTEGER.id,
+          panelType: this.panelType,
+          mandatoryLogic: '@URL@!""',
+          sequence
+        }
       }))
 
       sequence = sequence + 10
       // Text Long
       fieldsList.push(createField({
-        columnName: 'Description',
-        name: 'Only Description',
-        displayType: TEXT_LONG.id,
         containerUuid: this.panelUuid,
-        additionalAttributes,
-        sequence
+        columnName: 'Description',
+        definition: {
+          name: 'Only Description',
+          displayType: TEXT_LONG.id,
+          panelType: this.panelType,
+          sequence
+        }
       }))
 
       this.metadataList = fieldsList

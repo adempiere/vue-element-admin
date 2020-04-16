@@ -85,7 +85,7 @@ const panel = {
               count++
             }
           } else {
-            if (['browser', 'process', 'report', 'test'].includes(panelType) ||
+            if (['browser', 'process', 'report', 'custom'].includes(panelType) ||
               panelType === 'window' && params.isParentTab) {
               dispatch('setContext', {
                 parentUuid: params.parentUuid,

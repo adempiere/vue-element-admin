@@ -6,7 +6,8 @@ import { showMessage } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
 import router from '@/router'
-import { generateField, getFieldTemplate } from '@/utils/ADempiere/dictionaryUtils'
+import { generateField } from '@/utils/ADempiere/dictionaryUtils'
+import { getFieldTemplate } from '@/utils/ADempiere/lookupFactory'
 
 const initStateWindow = {
   window: [],
