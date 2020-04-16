@@ -56,7 +56,6 @@ import FIELDS_DISPLAY_SIZES, { DEFAULT_SIZE } from '@/components/ADempiere/Field
 export function createField({
   parentUuid,
   containerUuid,
-  tableName,
   columnName,
   definition = {}
 }) {
@@ -119,8 +118,7 @@ export function createField({
     isShowedFromUser: true,
     parentUuid,
     containerUuid,
-    columnName,
-    tableName
+    columnName
   })
 }
 
