@@ -28,8 +28,8 @@
 
 <script>
 import Field from '@/components/ADempiere/Field'
-import { createField } from '@/utils/ADempiere/lookupFactory'
-import { URL, TEXT, NUMBER, INTEGER, TEXT_LONG, TABLE_DIR } from '@/utils/ADempiere/references'
+import { createField, createFieldDictionary } from '@/utils/ADempiere/lookupFactory'
+import { URL, TEXT, NUMBER, INTEGER, TEXT_LONG, TABLE_DIRECT } from '@/utils/ADempiere/references'
 
 export default {
   name: 'TestView',
@@ -90,17 +90,56 @@ export default {
           sequence
         }
       }))
-
+      // From Field UUID
+      createFieldDictionary({
+        containerUuid: this.panelUuid,
+        fieldUuid: '8ceabe8a-fb40-11e8-a479-7a0060f0aa01'
+      })
+        .then(metadata => {
+          fieldsList.push(metadata)
+        }).catch(error => {
+          console.warn(`LookupFactory: Get Field From Server (State) - Error ${error.code}: ${error.message}.`)
+        })
+      // From Column UUID
+      createFieldDictionary({
+        containerUuid: this.panelUuid,
+        columnUuid: '8b4bbb7e-fb40-11e8-a479-7a0060f0aa01'
+      })
+        .then(metadata => {
+          fieldsList.push(metadata)
+        }).catch(error => {
+          console.warn(`LookupFactory: Get Field From Server (State) - Error ${error.code}: ${error.message}.`)
+        })
+      // From Element Column Name
+      createFieldDictionary({
+        containerUuid: this.panelUuid,
+        elementColumnName: 'M_RMA_ID'
+      })
+        .then(metadata => {
+          fieldsList.push(metadata)
+        }).catch(error => {
+          console.warn(`LookupFactory: Get Field From Server (State) - Error ${error.code}: ${error.message}.`)
+        })
+      // From Table and Column Name
+      createFieldDictionary({
+        containerUuid: this.panelUuid,
+        tableName: 'C_BPartner',
+        columnName: 'PaymentRule'
+      })
+        .then(metadata => {
+          fieldsList.push(metadata)
+        }).catch(error => {
+          console.warn(`LookupFactory: Get Field From Server (State) - Error ${error.code}: ${error.message}.`)
+        })
       // Table direct
       // To be define
       sequence = sequence + 10
       fieldsList.push(createField({
         containerUuid: this.panelUuid,
         columnName: 'C_Currency_ID',
-        tableName: 'C_Currency',
         definition: {
           name: 'Currency',
-          displayType: TABLE_DIR.id,
+          displayType: TABLE_DIRECT.id,
           panelType: this.panelType,
           keyColumn: 'C_Currency.C_Currency_ID',
           directQuery: 'SELECT C_Currency.C_Currency_ID,NULL,C_Currency.ISO_Code,C_Currency.IsActive FROM C_Currency WHERE C_Currency.C_Currency_ID=?',

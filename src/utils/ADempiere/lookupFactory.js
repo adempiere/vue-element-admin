@@ -47,12 +47,117 @@
 // - displayColumn
 // - defaultValue
 
-import { TEXT } from '@/utils/ADempiere/references'
+import { TEXT, TABLE_DIRECT } from '@/utils/ADempiere/references'
 import { evalutateTypeField } from '@/utils/ADempiere/dictionaryUtils'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator, { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
 import FIELDS_DISPLAY_SIZES, { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
+import store from '@/store'
 
+// Create a Field from UUID based on server meta-data
+export function createFieldDictionary({
+  containerUuid,
+  fieldUuid,
+  columnUuid,
+  elementUuid,
+  elementColumnName,
+  tableName,
+  columnName
+}) {
+  let field
+  if (fieldUuid) {
+    field = store.getters.getFieldFromUuid(fieldUuid)
+  } else if (columnUuid) {
+    field = store.getters.getFieldFromColumnUuid(columnUuid)
+  } else if (elementUuid) {
+    field = store.getters.getFieldFromElementUuid(elementUuid)
+  } if (elementColumnName) {
+    field = store.getters.getFieldFromElementColumnName(elementColumnName)
+  } else if (tableName && columnName) {
+    field = store.getters.getFieldFromElementColumnName({
+      tableName,
+      columnName
+    })
+  }
+  if (!isEmptyValue(field)) {
+    return getFactoryFromField({ containerUuid, field })
+  }
+  return new Promise(resolve => {
+    store.dispatch('getFieldFromServer', {
+      fieldUuid,
+      columnUuid,
+      elementUuid,
+      elementColumnName,
+      tableName,
+      columnName
+    })
+      .then(response => {
+        resolve(getFactoryFromField({
+          containerUuid: containerUuid,
+          field: response
+        }))
+      }).catch(error => {
+        console.warn(`LookupFactory: Get Field From Server (State) - Error ${error.code}: ${error.message}.`)
+      })
+  })
+}
+
+// Convert field getted from server to factory
+function getFactoryFromField({
+  containerUuid,
+  field
+}) {
+  return createField({
+    containerUuid: containerUuid,
+    columnName: field.columnName,
+    definition: {
+      displayType: field.displayType,
+      tableName: field.reference.tableName,
+      directQuery: field.directQuery,
+      query: field.reference.query,
+      keyColumnName: field.reference.keyColumnName,
+      validationCode: field.reference.validationCode,
+      windowsList: field.reference.windowsList,
+      id: field.id,
+      uuid: field.uuid,
+      name: field.name,
+      description: field.description,
+      help: field.help,
+      fieldGroup: field.fieldGroup,
+      isFieldOnly: field.isFieldOnly,
+      isRange: field.isRange,
+      isSameLine: field.isSameLine,
+      sequence: field.sequence,
+      seqNoGrid: field.seqNoGrid,
+      isIdentifier: field.isIdentifier,
+      isKey: field.isKey,
+      isSelectionColumn: field.isSelectionColumn,
+      isUpdateable: field.isUpdateable,
+      formatPattern: field.formatPattern,
+      vFormat: field.vFormat,
+      defaultValue: field.defaultValue,
+      defaultValueTo: field.defaultValueTo,
+      valueMin: field.valueMin,
+      valueMax: field.valueMax,
+      isActive: field.isActive,
+      isMandatory: field.isMandatory,
+      isReadOnly: field.isReadOnly,
+      isDisplayedFromLogic: field.isDisplayedFromLogic,
+      isReadOnlyFromLogic: field.isReadOnlyFromLogic,
+      isMandatoryFromLogic: field.isMandatoryFromLogic,
+      callout: field.callout,
+      isQueryCriteria: field.isQueryCriteria,
+      displayLogic: field.displayLogic,
+      mandatoryLogic: field.mandatoryLogic,
+      readOnlyLogic: field.readOnlyLogic,
+      parentFieldsList: field.parentFieldsList,
+      dependentFieldsList: field.dependentFieldsList,
+      contextInfo: field.contextInfo
+    }
+  })
+}
+
+// Create a field, it assumed that you define all behavior from source code
 export function createField({
   parentUuid,
   containerUuid,
@@ -62,6 +167,10 @@ export function createField({
   if (!isEmptyValue(definition)) {
     if (isEmptyValue(definition.displayType)) {
       definition.displayType = TEXT.id
+    } else if (definition.displayType === TABLE_DIRECT.id &&
+      isEmptyValue(definition.tableName) &&
+      columnName.indexOf('_ID') > 0) {
+      definition.tableName = columnName.replace('_ID', '')
     }
     if (isEmptyValue(definition.isActive)) {
       definition.isActive = true
@@ -104,18 +213,19 @@ export function createField({
     }
     definition.reference = reference
   }
-
-  // Special cases
-  // Please if you need use a special case remember that already exists many implementations
+  // if(isLookup()) {
+  //
+  // }
+  // // Special cases
+  // // Please if you need use a special case remember that already exists many implementations
   // switch (displayType) {
   //   case TEXT.id:
   //     break
   // }
-
   return getFieldTemplate({
     ...definition,
-    isCustomField: true,
     isShowedFromUser: true,
+    isCustomField: true,
     parentUuid,
     containerUuid,
     columnName

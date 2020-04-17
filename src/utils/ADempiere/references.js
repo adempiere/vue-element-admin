@@ -273,7 +273,7 @@ export const TABLE = {
 }
 
 // Table Dir
-export const TABLE_DIR = {
+export const TABLE_DIRECT = {
   id: 19,
   type: 'FieldSelect',
   support: true,
@@ -332,6 +332,19 @@ export const YES_NO = {
   alias: ['YesNo', 'Yes No', 'Yes-No']
 }
 
+// Some helper methods
+export function isLookup(displayType) {
+  return displayType === LIST.id ||
+  displayType === TABLE.id ||
+  displayType === TABLE_DIRECT.id ||
+  displayType === SEARCH.id ||
+  displayType === ACCOUNT_ELEMENT.id ||
+  displayType === LOCATION_ADDRESS.id ||
+  displayType === LOCATOR_WAREHOUSE.id ||
+  displayType === PRODUCT_ATTRIBUTE.id ||
+  displayType === RESOURCE_ASSIGNMENT.id
+}
+
 /**
  * All references
  * {number} id: Identifiert to field reference
@@ -366,7 +379,7 @@ const REFERENCES = [
   SEARCH,
   CHAR,
   TABLE,
-  TABLE_DIR,
+  TABLE_DIRECT,
   TEXT,
   TEXT_LONG,
   TIME,
