@@ -50,27 +50,6 @@ export default {
     this.getPanel()
   },
   methods: {
-    getPanel() {
-      const panel = this.getterPanel
-      if (panel) {
-        this.metadataList = panel.fieldList
-        this.isLoaded = true
-      } else {
-        this.setFieldsList()
-        this.$store.dispatch('addPanel', {
-          ...this.metadata,
-          uuid: this.metadata.containerUuid,
-          panelType: this.panelType,
-          fieldList: this.metadataList
-        })
-          .then(responsePanel => {
-            this.metadataList = responsePanel.fieldList
-          })
-          .finally(() => {
-            this.isLoaded = true
-          })
-      }
-    },
     setFieldsList() {
       const fieldsList = []
       let sequence = 10
