@@ -14,7 +14,7 @@ export default {
   },
   data() {
     return {
-      metadataList: [],
+      fieldsList: [],
       panelMetadata: {},
       isLoaded: false,
       panelType: 'custom'
@@ -25,35 +25,108 @@ export default {
       return this.$store.getters.getPanel(this.metadata.containerUuid)
     }
   },
+  created() {
+    this.getPanel()
+  },
   methods: {
     createFieldFromDefinition,
     createFieldFromDictionary,
-    getPanel() {
+    async getPanel() {
       const panel = this.getterPanel
       if (panel) {
-        this.metadataList = panel.fieldList
+        this.fieldsList = panel.fieldList
         this.isLoaded = true
       } else {
-        this.setFieldsList()
+        await this.generateFieldsList()
         this.$store.dispatch('addPanel', {
           ...this.metadata,
           uuid: this.metadata.containerUuid,
           panelType: this.panelType,
-          fieldList: this.metadataList
+          fieldList: this.fieldsList
         })
           .then(responsePanel => {
-            this.metadataList = responsePanel.fieldList
+            this.fieldsList = responsePanel.fieldList
 
             this.$store.dispatch('changeFormAttribute', {
               containerUuid: this.metadata.containerUuid,
               attributeName: 'fieldList',
-              attributeValue: this.metadataList
+              attributeValue: this.fieldsList
             })
           })
           .finally(() => {
             this.isLoaded = true
           })
       }
+    },
+    generateFieldsList() {
+      let sequence = 0
+      const incrementSequence = () => {
+        sequence = sequence + 10
+        return sequence
+      }
+
+      return new Promise(resolve => {
+        const additionalAttributes = {
+          containerUuid: this.metadata.containerUuid,
+          panelType: this.panelType
+        }
+
+        const fieldsListFromDictionary = []
+        const fieldsListFromMetadata = []
+
+        this.fieldsList.forEach(fieldElement => {
+          if (fieldElement.isFromDictionary) {
+            // set sequence
+            if (fieldElement.overwriteDefinition) {
+              if (this.isEmptyValue(fieldElement.overwriteDefinition.sequence)) {
+                fieldElement.overwriteDefinition.sequence = incrementSequence()
+              }
+            } else {
+              fieldElement.overwriteDefinition = {}
+              fieldElement.overwriteDefinition.sequence = incrementSequence()
+            }
+
+            fieldsListFromDictionary.push(
+              this.createFieldFromDictionary({
+                ...fieldElement,
+                ...additionalAttributes
+              })
+            )
+          } else {
+            // set sequence
+            if (fieldElement.definition) {
+              if (this.isEmptyValue(fieldElement.definition.sequence)) {
+                fieldElement.definition.sequence = incrementSequence()
+              }
+            } else {
+              fieldElement.definition = {}
+              fieldElement.definition.sequence = incrementSequence()
+            }
+
+            fieldsListFromMetadata.push(
+              this.createFieldFromDefinition({
+                ...fieldElement,
+                ...additionalAttributes
+              })
+            )
+          }
+        })
+        let fieldsList = fieldsListFromMetadata
+
+        if (this.isEmptyValue(fieldsListFromDictionary)) {
+          this.fieldsList = fieldsList
+          resolve(fieldsList)
+          this.isLoaded = true
+        } else {
+          Promise.all(fieldsListFromDictionary)
+            .then(responsefields => {
+              fieldsList = fieldsList.concat(responsefields)
+              resolve(fieldsList)
+              this.fieldsList = fieldsList
+              this.isLoaded = true
+            })
+        }
+      })
     }
   }
 }
