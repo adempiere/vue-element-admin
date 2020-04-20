@@ -8,9 +8,9 @@
     >
       <el-row>
         <field
-          v-for="(metadata) in fieldsList"
-          :key="metadata.columnName"
-          :metadata-field="metadata"
+          v-for="(metadataField) in fieldsList"
+          :key="metadataField.columnName"
+          :metadata-field="metadataField"
         />
       </el-row>
     </el-form>
