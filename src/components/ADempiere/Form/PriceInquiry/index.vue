@@ -8,9 +8,10 @@
     >
       <el-row>
         <field
-          v-for="(metadataField) in fieldsList"
-          :key="metadataField.columnName"
-          :metadata-field="metadataField"
+          v-for="(field) in fieldsList"
+          :key="field.columnName"
+          :metadata-field="field"
+          :v-model="field.value"
         />
       </el-row>
     </el-form>
@@ -29,6 +30,8 @@
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import fieldsList from './fieldsList.js'
+import { getProductPrice } from '@/api/ADempiere/pos'
+import { showMessage } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'TestView',
@@ -36,6 +39,53 @@ export default {
   data() {
     return {
       fieldsList
+    }
+  },
+  mounted() {
+    this.subscribeChanges()
+  },
+  methods: {
+    subscribeChanges() {
+      this.$store.subscribe((mutation, state) => {
+        if (mutation.type === 'changeFieldValue' && mutation.payload.field.columnName === 'ProductValue') {
+          getProductPrice({
+            searchValue: mutation.payload.newValue,
+            priceListUuid: '9e45c1ea-cdb1-11e9-9aa9-0242ac110002'
+          })
+            .then(productPrice => {
+              this.fieldsList.forEach(field => {
+                switch (field.columnName) {
+                  // Name
+                  case 'ProductName':
+                    field.value = productPrice.product.name
+                    break
+                  // Description
+                  case 'ProductDescription':
+                    field.value = productPrice.product.description
+                    break
+                  // Price List
+                  // case 'PriceList':
+                  //   break
+                  // // Tax Amount
+                  // case 'TaxAmt':
+                  //   break
+                  // // Total
+                  // case 'GrandTotal':
+                  //   break
+                }
+              })
+              // this.fieldsList.find(field => field.columnName === 'ProductName').value = productPrice.product.name
+              // this.fieldsList.find(field => field.columnName === 'ProductDescription').value = productPrice.product.description
+            })
+            .catch(error => {
+              console.log(error)
+              showMessage({
+                type: 'error',
+                message: error.message
+              })
+            })
+        }
+      })
     }
   }
 }
