@@ -31,6 +31,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import fieldsList from './fieldsList.js'
 import { getProductPrice } from '@/api/ADempiere/pos'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 export default {
   name: 'TestView',
@@ -48,12 +49,10 @@ export default {
       this.$store.subscribe((mutation, state) => {
         if (mutation.type === 'changeFieldValue' && mutation.payload.field.columnName === 'ProductValue') {
           getProductPrice({
-            searchValue: mutation.payload.newValue,
-            priceListUuid: '9e45c1ea-cdb1-11e9-9aa9-0242ac110002'
+            searchValue: mutation.payload.newValue
           })
             .then(productPrice => {
-              const { product } = productPrice
-
+              const { product, taxRate } = productPrice
               this.fieldsList.forEach(field => {
                 switch (field.columnName) {
                   // Name
@@ -65,14 +64,19 @@ export default {
                     field.value = product.description
                     break
                   // Price List
-                  // case 'PriceList':
-                  //   break
+                  case 'PriceList':
+                    field.value = productPrice.priceList
+                    break
                   // // Tax Amount
-                  // case 'TaxAmt':
-                  //   break
+                  case 'TaxAmt':
+                    if (taxRate !== undefined) {
+                      field.value = this.getTaxAmount(productPrice.priceList, taxRate.rate)
+                    }
+                    break
                   // // Total
-                  // case 'GrandTotal':
-                  //   break
+                  case 'GrandTotal':
+                    field.value = this.getGrandTotal(productPrice.priceList, taxRate.rate)
+                    break
                 }
               })
             })
@@ -85,6 +89,18 @@ export default {
             })
         }
       })
+    },
+    getTaxAmount(priceList, taxRate) {
+      if (isEmptyValue(priceList) || isEmptyValue(taxRate)) {
+        return 0
+      }
+      return (priceList * taxRate) / 100
+    },
+    getGrandTotal(priceList, taxRate) {
+      if (isEmptyValue(priceList)) {
+        return 0
+      }
+      return priceList + this.getTaxAmount(priceList, taxRate)
     }
   }
 }
