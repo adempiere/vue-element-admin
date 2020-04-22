@@ -48,6 +48,7 @@ export default {
     subscribeChanges() {
       this.$store.subscribe((mutation, state) => {
         if (mutation.type === 'changeFieldValue' && mutation.payload.field.columnName === 'ProductValue') {
+          this.clearFields()
           getProductPrice({
             searchValue: mutation.payload.newValue
           })
@@ -81,7 +82,6 @@ export default {
               })
             })
             .catch(error => {
-              console.log(error)
               this.$message({
                 type: 'error',
                 message: error.message
@@ -101,7 +101,26 @@ export default {
         return 0
       }
       return priceList + this.getTaxAmount(priceList, taxRate)
+    },
+    clearFields() {
+      this.fieldsList.filter(field => field.columnName !== 'ProductValue').forEach(field => {
+        field.value = undefined
+      })
     }
   }
 }
 </script>
+<style scoped>
+  .el-input.is-disabled .el-input__inner {
+      color: #606266 !important;
+      font-size: 250%;
+  }
+  .el-input__inner {
+      color: #606266 !important;
+      font-size: 250%;
+  }
+  .el-textarea.is-disabled .el-textarea__inner {
+    color: #606266 !important;
+    font-size: 250%;
+  }
+</style>
