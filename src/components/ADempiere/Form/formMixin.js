@@ -17,7 +17,7 @@ export default {
       fieldsList: [],
       panelMetadata: {},
       isLoaded: false,
-      panelType: 'custom'
+      panelType: 'form'
     }
   },
   computed: {
@@ -68,6 +68,7 @@ export default {
       return new Promise(resolve => {
         const additionalAttributes = {
           containerUuid: this.metadata.containerUuid,
+          isEvaluateValueChanges: false,
           panelType: this.panelType
         }
 

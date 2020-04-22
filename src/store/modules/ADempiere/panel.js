@@ -85,7 +85,7 @@ const panel = {
               count++
             }
           } else {
-            if (['browser', 'process', 'report', 'custom'].includes(panelType) ||
+            if (['browser', 'process', 'report', 'form'].includes(panelType) ||
               panelType === 'window' && params.isParentTab) {
               dispatch('setContext', {
                 parentUuid: params.parentUuid,
@@ -630,7 +630,7 @@ const panel = {
         }
 
         // the field has not changed, then the action is broken
-        if (newValue === field.value && isEmptyValue(displayColumn) && !isAdvancedQuery) {
+        if (newValue === field.value && isEmptyValue(displayColumn) && field.isEvaluateValueChanges) {
           resolve()
           return
         }

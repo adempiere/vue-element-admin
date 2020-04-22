@@ -170,7 +170,7 @@ export function createFieldFromDefinition({
   parentUuid,
   containerUuid,
   columnName,
-  panelType = 'custom',
+  panelType = 'form',
   definition = {}
 }) {
   if (!isEmptyValue(definition)) {

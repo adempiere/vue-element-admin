@@ -31,7 +31,6 @@
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import fieldsList from './fieldsList.js'
 import { getProductPrice } from '@/api/ADempiere/pos'
-import { showMessage } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'TestView',
@@ -53,15 +52,17 @@ export default {
             priceListUuid: '9e45c1ea-cdb1-11e9-9aa9-0242ac110002'
           })
             .then(productPrice => {
+              const { product } = productPrice
+
               this.fieldsList.forEach(field => {
                 switch (field.columnName) {
                   // Name
                   case 'ProductName':
-                    field.value = productPrice.product.name
+                    field.value = product.name
                     break
                   // Description
                   case 'ProductDescription':
-                    field.value = productPrice.product.description
+                    field.value = product.description
                     break
                   // Price List
                   // case 'PriceList':
@@ -74,12 +75,10 @@ export default {
                   //   break
                 }
               })
-              // this.fieldsList.find(field => field.columnName === 'ProductName').value = productPrice.product.name
-              // this.fieldsList.find(field => field.columnName === 'ProductDescription').value = productPrice.product.description
             })
             .catch(error => {
               console.log(error)
-              showMessage({
+              this.$message({
                 type: 'error',
                 message: error.message
               })
