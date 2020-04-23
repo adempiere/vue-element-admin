@@ -7,7 +7,8 @@ export default [
     isFromDictionary: true,
     overwriteDefinition: {
       size: 24,
-      sequence: 10
+      sequence: 10,
+      cssClassName: 'price-inquiry'
     }
   },
   // Product Name
@@ -17,7 +18,8 @@ export default [
     overwriteDefinition: {
       size: 24,
       sequence: 20,
-      isReadOnly: true
+      isReadOnly: true,
+      cssClassName: 'price-inquiry'
     }
   },
   // Product Description
@@ -28,7 +30,8 @@ export default [
       size: 24,
       sequence: 30,
       displayType: TEXT.id,
-      isReadOnly: true
+      isReadOnly: true,
+      cssClassName: 'price-inquiry'
     }
   },
   // Price List
@@ -38,7 +41,9 @@ export default [
     overwriteDefinition: {
       size: 16,
       sequence: 40,
-      isReadOnly: true
+      isReadOnly: true,
+      cssClassName: 'price-inquiry',
+      help: '0.00'
     }
   },
   // Tax Amount
@@ -48,7 +53,9 @@ export default [
     overwriteDefinition: {
       size: 8,
       sequence: 50,
-      isReadOnly: true
+      isReadOnly: true,
+      cssClassName: 'price-inquiry',
+      help: '0.00'
     }
   },
   // Total
@@ -59,7 +66,8 @@ export default [
       size: 24,
       sequence: 60,
       isReadOnly: true,
-      cssClassName: 'form-grand-total'
+      cssClassName: 'price-inquiry',
+      help: '0.00'
     }
   }
 ]

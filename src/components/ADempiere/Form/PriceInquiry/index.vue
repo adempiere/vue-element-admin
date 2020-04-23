@@ -109,26 +109,10 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-  .el-input.is-disabled .el-input__inner {
-    color: #606266 !important;
-    font-size: 250%;
-  }
-  .el-input__inner {
-    color: #606266 !important;
-    font-size: 250%;
-  }
-  .el-textarea.is-disabled .el-textarea__inner {
-    color: #606266 !important;
-    font-size: 250%;
-  }
-</style>
 <style lang="scss">
-  .form-grand-total {
+  .price-inquiry {
     input {
-      color: #000 !important;
-      background-color: #fff !important;
+      color: #606266 !important;
       font-size: 200% !important;
     }
   }
