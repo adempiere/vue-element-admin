@@ -58,7 +58,8 @@ export default [
     overwriteDefinition: {
       size: 24,
       sequence: 60,
-      isReadOnly: true
+      isReadOnly: true,
+      cssClassName: 'form-grand-total'
     }
   }
 ]

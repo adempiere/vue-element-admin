@@ -31,10 +31,9 @@
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import fieldsList from './fieldsList.js'
 import { getProductPrice } from '@/api/ADempiere/pos'
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 export default {
-  name: 'TestView',
+  name: 'PriceInquiry',
   mixins: [formMixin],
   data() {
     return {
@@ -91,13 +90,13 @@ export default {
       })
     },
     getTaxAmount(priceList, taxRate) {
-      if (isEmptyValue(priceList) || isEmptyValue(taxRate)) {
+      if (this.isEmptyValue(priceList) || this.isEmptyValue(taxRate)) {
         return 0
       }
       return (priceList * taxRate) / 100
     },
     getGrandTotal(priceList, taxRate) {
-      if (isEmptyValue(priceList)) {
+      if (this.isEmptyValue(priceList)) {
         return 0
       }
       return priceList + this.getTaxAmount(priceList, taxRate)
@@ -110,17 +109,27 @@ export default {
   }
 }
 </script>
+
 <style scoped>
   .el-input.is-disabled .el-input__inner {
-      color: #606266 !important;
-      font-size: 250%;
+    color: #606266 !important;
+    font-size: 250%;
   }
   .el-input__inner {
-      color: #606266 !important;
-      font-size: 250%;
+    color: #606266 !important;
+    font-size: 250%;
   }
   .el-textarea.is-disabled .el-textarea__inner {
     color: #606266 !important;
     font-size: 250%;
+  }
+</style>
+<style lang="scss">
+  .form-grand-total {
+    input {
+      color: #000 !important;
+      background-color: #fff !important;
+      font-size: 200% !important;
+    }
   }
 </style>
