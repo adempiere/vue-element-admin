@@ -40,45 +40,34 @@ export default {
       fieldsList
     }
   },
-  mounted() {
-    this.subscribeChanges()
+  created() {
+    this.unsubscribe = this.subscribeChanges()
+  },
+  beforeDestroy() {
+    this.unsubscribe()
   },
   methods: {
     subscribeChanges() {
-      this.$store.subscribe((mutation, state) => {
+      return this.$store.subscribe((mutation, state) => {
         if (mutation.type === 'changeFieldValue' && mutation.payload.field.columnName === 'ProductValue') {
-          this.clearFields()
+          // cleans all values except column name 'ProductValue'
+          this.setValues({ withOutColumnNames: ['ProductValue'] })
           getProductPrice({
             searchValue: mutation.payload.newValue
           })
             .then(productPrice => {
               const { product, taxRate } = productPrice
-              this.fieldsList.forEach(field => {
-                switch (field.columnName) {
-                  // Name
-                  case 'ProductName':
-                    field.value = product.name
-                    break
-                  // Description
-                  case 'ProductDescription':
-                    field.value = product.description
-                    break
-                  // Price List
-                  case 'PriceList':
-                    field.value = productPrice.priceList
-                    break
-                  // // Tax Amount
-                  case 'TaxAmt':
-                    if (taxRate !== undefined) {
-                      field.value = this.getTaxAmount(productPrice.priceList, taxRate.rate)
-                    }
-                    break
-                  // // Total
-                  case 'GrandTotal':
-                    field.value = this.getGrandTotal(productPrice.priceList, taxRate.rate)
-                    break
-                }
-              })
+
+              const values = {
+                ProductName: product.name,
+                ProductDescription: product.description,
+                PriceList: productPrice.priceList,
+                TaxAmt: this.getTaxAmount(productPrice.priceList, taxRate.rate),
+                GrandTotal: this.getGrandTotal(productPrice.priceList, taxRate.rate)
+              }
+
+              // set new values except column name 'ProductValue'
+              this.setValues({ values, withOutColumnNames: ['ProductValue'] })
             })
             .catch(error => {
               this.$message({
@@ -100,11 +89,6 @@ export default {
         return 0
       }
       return priceList + this.getTaxAmount(priceList, taxRate)
-    },
-    clearFields() {
-      this.fieldsList.filter(field => field.columnName !== 'ProductValue').forEach(field => {
-        field.value = undefined
-      })
     }
   }
 }

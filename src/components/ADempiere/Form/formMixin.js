@@ -60,7 +60,10 @@ export default {
     },
     generateFieldsList() {
       let sequence = 0
-      const incrementSequence = () => {
+      const incrementSequence = (newValue) => {
+        if (newValue) {
+          sequence = newValue
+        }
         sequence = sequence + 10
         return sequence
       }
@@ -81,6 +84,8 @@ export default {
             if (fieldElement.overwriteDefinition) {
               if (this.isEmptyValue(fieldElement.overwriteDefinition.sequence)) {
                 fieldElement.overwriteDefinition.sequence = incrementSequence()
+              } else {
+                incrementSequence(fieldElement.overwriteDefinition.sequence)
               }
             } else {
               fieldElement.overwriteDefinition = {}
@@ -98,6 +103,8 @@ export default {
             if (fieldElement.definition) {
               if (this.isEmptyValue(fieldElement.definition.sequence)) {
                 fieldElement.definition.sequence = incrementSequence()
+              } else {
+                incrementSequence(fieldElement.definition.sequence)
               }
             } else {
               fieldElement.definition = {}
@@ -127,6 +134,23 @@ export default {
               this.isLoaded = true
             })
         }
+      })
+    },
+    setValue({ columnName, value }) {
+      this.$store.dispatch('notifyFieldChange', {
+        containerUuid: this.metadata.containerUuid,
+        panelType: this.metadata.panelType,
+        columnName,
+        newValue: value
+      })
+    },
+    setValues({ values = {}, withOutColumnNames = [] }) {
+      this.$store.dispatch('notifyPanelChange', {
+        containerUuid: this.metadata.containerUuid,
+        panelType: this.metadata.panelType,
+        newValues: values,
+        withOutColumnNames,
+        isChangedAllValues: true
       })
     }
   }
