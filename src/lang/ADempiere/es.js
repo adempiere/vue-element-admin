@@ -12,6 +12,8 @@ export default {
     profile: 'Perfil',
     ProcessActivity: 'Histórico Procesos',
     Role: 'Rol',
+    Company: 'Compañia',
+    Warehouse: 'Almacén',
     ReportViewer: 'Visor de Reportes'
   },
   notifications: {

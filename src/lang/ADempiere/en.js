@@ -12,6 +12,8 @@ export default {
     profile: 'Profile',
     ProcessActivity: 'Process Logs',
     Role: 'Role',
+    Company: 'Company',
+    Warehouse: 'Warehouse',
     ReportViewer: 'Report Viewer'
   },
   notifications: {
