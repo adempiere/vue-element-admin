@@ -71,7 +71,7 @@ export default {
             })
             .catch(error => {
               this.$message({
-                type: 'error',
+                type: 'info',
                 message: error.message
               })
             })

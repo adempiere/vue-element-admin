@@ -136,7 +136,9 @@ export default {
         }
       })
     },
-    setValue({ columnName, value }) {
+    // Set value for one field from panel
+    // use example: setValue('ProductName', 'Patio Fun')
+    setValue(columnName, value) {
       this.$store.dispatch('notifyFieldChange', {
         containerUuid: this.metadata.containerUuid,
         panelType: this.metadata.panelType,
@@ -144,6 +146,8 @@ export default {
         newValue: value
       })
     },
+    //  Set values for all list of columns
+    // Use example: setValues(values)
     setValues({ values = {}, withOutColumnNames = [] }) {
       this.$store.dispatch('notifyPanelChange', {
         containerUuid: this.metadata.containerUuid,
