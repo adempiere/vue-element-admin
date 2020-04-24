@@ -15,7 +15,7 @@
         :disabled="isEmptyValue(role.uuid)"
       />
     </el-select>
-    {{ $t('route.Company') }}
+    {{ $t('route.Client') }}
     <el-select
       v-model="organizationUuid"
       :filterable="!isMobile"

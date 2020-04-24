@@ -12,7 +12,7 @@ export default {
     profile: 'Profile',
     ProcessActivity: 'Process Logs',
     Role: 'Role',
-    Company: 'Company',
+    Client: 'Client',
     Warehouse: 'Warehouse',
     ReportViewer: 'Report Viewer'
   },
