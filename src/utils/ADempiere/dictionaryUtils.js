@@ -1,8 +1,7 @@
 import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
 import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
-import REFERENCES, { FIELDS_HIDDEN } from '@/utils/ADempiere/references'
-import FIELDS_DISPLAY_SIZES, { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
+import REFERENCES, { DEFAULT_SIZE, FIELDS_HIDDEN } from '@/utils/ADempiere/references'
 import language from '@/lang'
 
 /**
@@ -160,8 +159,9 @@ export function generateField({
     isSOTrxMenu,
     // displayed attributes
     componentPath: componentReference.type,
-    isSupport: componentReference.support,
+    isSupported: componentReference.isSupported,
     referenceType,
+    size: componentReference.size || DEFAULT_SIZE,
     displayColumn: undefined, // link to value from selects and table
     // value attributes
     value: String(parsedDefaultValue).trim() === '' ? undefined : parsedDefaultValue,
@@ -191,18 +191,6 @@ export function generateField({
     // popover's
     isNumericField,
     isTranslatedField
-  }
-
-  // Sizes from panel and groups
-  field.sizeFieldFromType = FIELDS_DISPLAY_SIZES.find(item => {
-    return item.type === field.componentPath
-  })
-  if (field.sizeFieldFromType === undefined) {
-    console.warn(`Field size no found: ${field.name} type: ${field.componentPath}.`)
-    field.sizeFieldFromType = {
-      type: field.componentPath,
-      size: DEFAULT_SIZE.size
-    }
   }
 
   // Overwrite some values

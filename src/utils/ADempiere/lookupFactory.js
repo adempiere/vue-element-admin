@@ -47,11 +47,10 @@
 // - displayColumn
 // - defaultValue
 
-import { TEXT, TABLE_DIRECT } from '@/utils/ADempiere/references'
+import { DEFAULT_SIZE, TEXT, TABLE_DIRECT } from '@/utils/ADempiere/references'
 import { evalutateTypeField } from '@/utils/ADempiere/dictionaryUtils'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator, { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
-import FIELDS_DISPLAY_SIZES, { DEFAULT_SIZE } from '@/components/ADempiere/Field/fieldSize'
 import store from '@/store'
 
 // Create a Field from UUID based on server meta-data
@@ -244,7 +243,11 @@ export function getFieldTemplate(overwriteDefinition) {
   const referenceType = componentReference.alias[0]
 
   // set size from displayed, max 24
-  let size = DEFAULT_SIZE.size
+  let size = DEFAULT_SIZE
+  if (!isEmptyValue(componentReference.size)) {
+    size = componentReference.size
+  }
+  // rewrite size default size field
   if (!isEmptyValue(overwriteDefinition.size)) {
     size = overwriteDefinition.size
     delete overwriteDefinition.size
@@ -257,18 +260,6 @@ export function getFieldTemplate(overwriteDefinition) {
         xl: size
       }
     }
-  } else {
-    const sizeComponent = FIELDS_DISPLAY_SIZES.find(item => {
-      return item.type === componentReference.type
-    })
-    if (!isEmptyValue(sizeComponent)) {
-      size = sizeComponent.size
-    }
-  }
-
-  const sizeFieldFromType = {
-    type: referenceType,
-    size
   }
 
   const fieldTemplateMetadata = {
@@ -284,6 +275,7 @@ export function getFieldTemplate(overwriteDefinition) {
     },
     displayType,
     componentPath: componentReference.type,
+    size,
     referenceType,
     isFieldOnly: false,
     isRange: false,
@@ -331,7 +323,6 @@ export function getFieldTemplate(overwriteDefinition) {
     contextInfo: undefined,
     isShowedFromUser: false,
     isFixedTableColumn: false,
-    sizeFieldFromType,
     ...overwriteDefinition
   }
 
