@@ -45,10 +45,10 @@ export default {
   },
   computed: {
     operatorsList() {
-      const { conditionsList } = FIELD_OPERATORS_LIST.find(item => {
+      const { operatorsList } = FIELD_OPERATORS_LIST.find(item => {
         return item.type === this.fieldAttributes.componentPath
       })
-      return conditionsList
+      return operatorsList || []
     }
   },
   watch: {
@@ -61,13 +61,13 @@ export default {
     }
   },
   methods: {
-    changeOperator(value) {
+    changeOperator(operatorValue) {
       this.$store.dispatch('changeFieldAttribure', {
         containerUuid: this.fieldAttributes.containerUuid,
         columnName: this.fieldAttributes.columnName,
         isAdvancedQuery: true,
         attributeName: 'operator',
-        attributeValue: value
+        attributeValue: operatorValue
       })
     },
     /**

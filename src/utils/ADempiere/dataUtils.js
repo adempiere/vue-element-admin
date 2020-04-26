@@ -1,70 +1,94 @@
 
-export const OPERATOR_EQUAL = {
+const OPERATOR_EQUAL = {
   operator: 'EQUAL',
   symbol: '='
 }
 
-export const OPERATOR_NOT_EQUAL = {
+const OPERATOR_NOT_EQUAL = {
   operator: 'NOT_EQUAL',
   symbol: '<>'
 }
 
-export const OPERATOR_LIKE = {
+const OPERATOR_LIKE = {
   operator: 'LIKE',
   symbol: '%'
 }
 
-export const OPERATOR_NOT_LIKE = {
-  operator: 'LIKE',
+const OPERATOR_NOT_LIKE = {
+  operator: 'NOT_LIKE',
   symbol: '!%'
 }
 
-export const OPERATOR_GREATER = {
+const OPERATOR_GREATER = {
   operator: 'GREATER',
   symbol: '>'
 }
 
-export const OPERATOR_GREATER_EQUAL = {
+const OPERATOR_GREATER_EQUAL = {
   operator: 'GREATER_EQUAL',
   symbol: '>='
 }
 
-export const OPERATOR_LESS = {
+const OPERATOR_LESS = {
   operator: 'LESS',
   symbol: '<'
 }
 
-export const OPERATOR_LESS_EQUAL = {
+const OPERATOR_LESS_EQUAL = {
   operator: 'LESS_EQUAL',
   symbol: '<='
 }
 
-export const OPERATOR_BETWEEN = {
+const OPERATOR_BETWEEN = {
   operator: 'BETWEEN',
   symbol: '>-<'
 }
 
-export const OPERATOR_NOT_NULL = {
-  operator: 'NOT_NULL',
-  symbol: ''
-}
-
-export const OPERATOR_NULL = {
+const OPERATOR_NULL = {
   operator: 'NULL',
   symbol: ''
 }
 
-export const OPERATOR_IN = {
+const OPERATOR_NOT_NULL = {
+  operator: 'NOT_NULL',
+  symbol: ''
+}
+
+const OPERATOR_IN = {
   operator: 'IN',
   symbol: '()'
 }
 
-export const OPERATOR_NOT_IN = {
+const OPERATOR_NOT_IN = {
   operator: 'NOT_IN',
   symbol: '!()'
 }
 
-export const OPERATORS = [
+const STANDARD_OPERATORS_LIST = [
+  OPERATOR_EQUAL.operator,
+  OPERATOR_NOT_EQUAL.operator,
+  OPERATOR_NULL.operator,
+  OPERATOR_NOT_NULL.operator
+]
+
+const MULTIPLE_OPERATORS_LIST = [
+  OPERATOR_IN.operator,
+  OPERATOR_NOT_IN.operator
+]
+
+const TEXT_OPERATORS_LIST = [
+  OPERATOR_LIKE.operator,
+  OPERATOR_NOT_LIKE.operator
+]
+
+const RANGE_OPERATORS_LIST = [
+  OPERATOR_GREATER.operator,
+  OPERATOR_GREATER_EQUAL.operator,
+  OPERATOR_LESS.operator,
+  OPERATOR_LESS_EQUAL.operator
+]
+
+export const OPERATORS_LIST = [
   OPERATOR_EQUAL,
   OPERATOR_NOT_EQUAL,
   OPERATOR_LIKE,
@@ -79,156 +103,92 @@ export const OPERATORS = [
   OPERATOR_NOT_IN
 ]
 
+export const OPERATORS_FIELD_AMOUNT = {
+  type: 'FieldAmount',
+  isRange: true,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...RANGE_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_DATE = {
+  type: 'FieldDate',
+  isRange: true,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...RANGE_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_NUMBER = {
+  type: 'FieldNumber',
+  isRange: true,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...RANGE_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_SELECT = {
+  type: 'FieldSelect',
+  isRange: false,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_TEXT = {
+  type: 'FieldText',
+  isRange: false,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...TEXT_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_TEXT_LONG = {
+  type: 'FieldTextLong',
+  isRange: false,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...TEXT_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_TIME = {
+  type: 'FieldTime',
+  isRange: true,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST,
+    ...RANGE_OPERATORS_LIST,
+    ...MULTIPLE_OPERATORS_LIST
+  ]
+}
+
+export const OPERATORS_FIELD_YES_NO = {
+  type: 'FieldYesNo',
+  isRange: false,
+  operatorsList: [
+    ...STANDARD_OPERATORS_LIST
+  ]
+}
+
 // Components associated with search type
 export const FIELD_OPERATORS_LIST = [
-  {
-    type: 'FieldAmount',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_GREATER.operator,
-      OPERATOR_GREATER_EQUAL.operator,
-      OPERATOR_LESS.operator,
-      OPERATOR_LESS_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldBinary',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldButton',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldDate',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_GREATER.operator,
-      OPERATOR_GREATER_EQUAL.operator,
-      OPERATOR_LESS.operator,
-      OPERATOR_LESS_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldImage',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldNumber',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_GREATER.operator,
-      OPERATOR_GREATER_EQUAL.operator,
-      OPERATOR_LESS.operator,
-      OPERATOR_LESS_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldSelect',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldText',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_LIKE.operator,
-      OPERATOR_NOT_LIKE.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldTextLong',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_LIKE.operator,
-      OPERATOR_NOT_LIKE.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldTime',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_GREATER.operator,
-      OPERATOR_GREATER_EQUAL.operator,
-      OPERATOR_LESS.operator,
-      OPERATOR_LESS_EQUAL.operator,
-      OPERATOR_IN.operator,
-      OPERATOR_NOT_IN.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  },
-  {
-    type: 'FieldYesNo',
-    isRange: false,
-    conditionsList: [
-      OPERATOR_EQUAL.operator,
-      OPERATOR_NOT_EQUAL.operator,
-      OPERATOR_NULL.operator,
-      OPERATOR_NOT_NULL.operator
-    ]
-  }
+  OPERATORS_FIELD_AMOUNT,
+  OPERATORS_FIELD_DATE,
+  OPERATORS_FIELD_NUMBER,
+  OPERATORS_FIELD_SELECT,
+  OPERATORS_FIELD_TEXT,
+  OPERATORS_FIELD_TEXT_LONG,
+  OPERATORS_FIELD_TEXT_LONG,
+  OPERATORS_FIELD_TIME,
+  OPERATORS_FIELD_YES_NO
 ]
