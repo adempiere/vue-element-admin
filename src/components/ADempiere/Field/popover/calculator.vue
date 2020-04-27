@@ -298,7 +298,8 @@ export default {
       }
     },
     isDisabled(row, column) {
-      const isInteger = ['Integer', 'ID'].includes(this.fieldAttributes.referenceType)
+      // Integet or ID
+      const isInteger = [11, 13].includes(this.fieldAttributes.displayType)
       const value = row[column.property].value
       if (isInteger && value === ',') {
         return true

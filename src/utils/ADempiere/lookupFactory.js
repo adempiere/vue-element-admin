@@ -240,7 +240,6 @@ export function getFieldTemplate(overwriteDefinition) {
   }
 
   const componentReference = evalutateTypeField(displayType)
-  const referenceType = componentReference.alias[0]
 
   // set size from displayed, max 24
   let size = DEFAULT_SIZE
@@ -274,9 +273,8 @@ export function getFieldTemplate(overwriteDefinition) {
       fieldGroupType: ''
     },
     displayType,
-    componentPath: componentReference.type,
+    componentPath: componentReference.componentPath,
     size,
-    referenceType,
     isFieldOnly: false,
     isRange: false,
     isSameLine: false,

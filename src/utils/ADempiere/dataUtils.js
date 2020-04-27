@@ -104,7 +104,7 @@ export const OPERATORS_LIST = [
 ]
 
 export const OPERATORS_FIELD_AMOUNT = {
-  type: 'FieldAmount',
+  componentPath: 'FieldAmount',
   isRange: true,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -114,7 +114,7 @@ export const OPERATORS_FIELD_AMOUNT = {
 }
 
 export const OPERATORS_FIELD_DATE = {
-  type: 'FieldDate',
+  componentPath: 'FieldDate',
   isRange: true,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -124,7 +124,7 @@ export const OPERATORS_FIELD_DATE = {
 }
 
 export const OPERATORS_FIELD_NUMBER = {
-  type: 'FieldNumber',
+  componentPath: 'FieldNumber',
   isRange: true,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -134,7 +134,7 @@ export const OPERATORS_FIELD_NUMBER = {
 }
 
 export const OPERATORS_FIELD_SELECT = {
-  type: 'FieldSelect',
+  componentPath: 'FieldSelect',
   isRange: false,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -143,7 +143,7 @@ export const OPERATORS_FIELD_SELECT = {
 }
 
 export const OPERATORS_FIELD_TEXT = {
-  type: 'FieldText',
+  componentPath: 'FieldText',
   isRange: false,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -153,7 +153,7 @@ export const OPERATORS_FIELD_TEXT = {
 }
 
 export const OPERATORS_FIELD_TEXT_LONG = {
-  type: 'FieldTextLong',
+  componentPath: 'FieldTextLong',
   isRange: false,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -163,7 +163,7 @@ export const OPERATORS_FIELD_TEXT_LONG = {
 }
 
 export const OPERATORS_FIELD_TIME = {
-  type: 'FieldTime',
+  componentPath: 'FieldTime',
   isRange: true,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST,
@@ -173,14 +173,14 @@ export const OPERATORS_FIELD_TIME = {
 }
 
 export const OPERATORS_FIELD_YES_NO = {
-  type: 'FieldYesNo',
+  componentPath: 'FieldYesNo',
   isRange: false,
   operatorsList: [
     ...STANDARD_OPERATORS_LIST
   ]
 }
 
-// Components associated with search type
+// Components associated with search componentPath
 export const FIELD_OPERATORS_LIST = [
   OPERATORS_FIELD_AMOUNT,
   OPERATORS_FIELD_DATE,

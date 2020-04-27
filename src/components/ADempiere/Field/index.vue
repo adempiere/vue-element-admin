@@ -315,8 +315,7 @@ export default {
       let componentReference = evalutateTypeField(this.field.displayType)
       if (this.isEmptyValue(componentReference)) {
         componentReference = {
-          type: 'FieldText',
-          alias: ['Text']
+          componentPath: 'FieldText'
         }
       }
       this.field = {
@@ -326,7 +325,7 @@ export default {
         isDisplayedFromLogic: true,
         isShowedFromUser: true,
         //
-        componentPath: componentReference.type
+        componentPath: componentReference.componentPath
       }
     }
   },

@@ -243,14 +243,14 @@ export const recursiveTreeSearch = ({
  * Parsed value to component type
  * @param {mixed} value, value to parsed
  * @param {string} fieldType, or componentPath
- * @param {string} referenceType, reference in ADempiere
+ * @param {number} displayType, reference in ADempiere
  * @param {boolean} isMandatory, field is mandatory
  * @param {boolean} isIdentifier, field is ID
  */
 export function parsedValueComponent({
   fieldType,
   value,
-  referenceType,
+  displayType,
   isMandatory = false,
   isIdentifier = false
 }) {
@@ -325,7 +325,8 @@ export function parsedValueComponent({
       if (typeof value === 'boolean') {
         value = value ? 'Y' : 'N'
       }
-      if (referenceType === 'TableDirect' || (referenceType === 'Table' && isIdentifier)) {
+      // Table or Table Direct
+      if (displayType === 18 || (displayType === 19 && isIdentifier)) {
         if (value !== '' && value !== null && value !== undefined) {
           value = Number(value)
         }

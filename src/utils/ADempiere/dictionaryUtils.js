@@ -24,7 +24,6 @@ export function generateField({
   }
 
   const componentReference = evalutateTypeField(fieldToGenerate.displayType)
-  const referenceType = componentReference.alias[0]
   let isDisplayedFromLogic = fieldToGenerate.isDisplayed
   let isMandatoryFromLogic = false
   let isReadOnlyFromLogic = false
@@ -32,7 +31,7 @@ export function generateField({
   let parsedDefaultValue = fieldToGenerate.defaultValue
   let parsedDefaultValueTo = fieldToGenerate.defaultValueTo
   let operator = 'EQUAL'
-  let isNumericField = componentReference.type === 'FieldNumber'
+  let isNumericField = componentReference.componentPath === 'FieldNumber'
   let isTranslatedField = fieldToGenerate.isTranslated
   if (moreAttributes.isAdvancedQuery) {
     isNumericField = false
@@ -40,7 +39,7 @@ export function generateField({
     parsedDefaultValue = undefined
     parsedDefaultValueTo = undefined
 
-    if (['FieldText', 'FieldTextLong'].includes(componentReference.type)) {
+    if (['FieldText', 'FieldTextLong'].includes(componentReference.componentPath)) {
       operator = 'LIKE'
     }
   } else {
@@ -75,9 +74,9 @@ export function generateField({
     }
 
     parsedDefaultValue = parsedValueComponent({
-      fieldType: componentReference.type,
+      fieldType: componentReference.componentPath,
       value: parsedDefaultValue,
-      referenceType,
+      displayType: fieldToGenerate.displayType,
       isMandatory: fieldToGenerate.isMandatory,
       isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
@@ -118,9 +117,9 @@ export function generateField({
     }
 
     parsedDefaultValueTo = parsedValueComponent({
-      fieldType: componentReference.type,
+      fieldType: componentReference.componentPath,
       value: parsedDefaultValueTo,
-      referenceType,
+      displayType: fieldToGenerate.displayType,
       isMandatory: fieldToGenerate.isMandatory,
       isIdentifier: fieldToGenerate.columnName.includes('_ID')
     })
@@ -158,9 +157,8 @@ export function generateField({
     ...moreAttributes,
     isSOTrxMenu,
     // displayed attributes
-    componentPath: componentReference.type,
+    componentPath: componentReference.componentPath,
     isSupported: componentReference.isSupported,
-    referenceType,
     size: componentReference.size || DEFAULT_SIZE,
     displayColumn: undefined, // link to value from selects and table
     // value attributes

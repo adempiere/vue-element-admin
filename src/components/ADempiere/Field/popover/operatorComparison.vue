@@ -3,7 +3,7 @@
     <el-popover
       ref="operatorComarison"
       placement="top"
-      width="200"
+      width="230"
       trigger="click"
     >
       <span class="custom-tittle-popover">
@@ -46,7 +46,7 @@ export default {
   computed: {
     operatorsList() {
       const { operatorsList } = FIELD_OPERATORS_LIST.find(item => {
-        return item.type === this.fieldAttributes.componentPath
+        return item.componentPath === this.fieldAttributes.componentPath
       })
       return operatorsList || []
     }

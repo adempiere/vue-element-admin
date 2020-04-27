@@ -49,7 +49,8 @@ export default {
     typeTextBox() {
       // String, Url, FileName...
       let typeInput = 'text'
-      if (this.metadata.referenceType === 'Text') {
+      // Display Type 'Text'
+      if (this.metadata.displayType === 14) {
         typeInput = 'textarea'
       }
       if (this.metadata.isEncrypted) {

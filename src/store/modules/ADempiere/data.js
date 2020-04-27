@@ -230,7 +230,8 @@ const data = {
                 return
               }
               // always the values for these types of fields are integers
-              if (['TableDirect'].includes(itemField.referenceType)) {
+              // Table or Table Direct
+              if ([18, 19].includes(itemField.diplayType)) {
                 valueGetDisplayColumn = parseInt(valueGetDisplayColumn, 10)
               } else {
                 if (!isNaN(valueGetDisplayColumn)) {
