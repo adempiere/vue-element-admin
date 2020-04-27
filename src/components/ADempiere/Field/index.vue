@@ -19,7 +19,7 @@
     >
       <template slot="label">
         <operator-comparison
-          v-if="isAdvancedQuery"
+          v-if="field.isComparisonField"
           key="is-field-operator-comparison"
           :field-attributes="fieldAttributes"
           :field-value="field.value"

@@ -2,6 +2,7 @@ import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
 import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
 import REFERENCES, { DEFAULT_SIZE, FIELDS_HIDDEN } from '@/utils/ADempiere/references'
+import { FIELD_OPERATORS_LIST } from '@/utils/ADempiere/dataUtils'
 import language from '@/lang'
 
 /**
@@ -33,11 +34,24 @@ export function generateField({
   let operator = 'EQUAL'
   let isNumericField = componentReference.componentPath === 'FieldNumber'
   let isTranslatedField = fieldToGenerate.isTranslated
+  let isComparisonField = false // to list operators comparison
+  let operatorsList = []
   if (moreAttributes.isAdvancedQuery) {
     isNumericField = false
     isTranslatedField = false
     parsedDefaultValue = undefined
     parsedDefaultValueTo = undefined
+
+    // set field operators list
+    isComparisonField = !['FieldBinary', 'FieldButton', 'FieldImage'].includes(componentReference.componentPath)
+    if (isComparisonField) {
+      const operatorsField = FIELD_OPERATORS_LIST.find(item => {
+        return item.componentPath === componentReference.componentPath
+      })
+      if (operatorsField) {
+        operatorsList = operatorsField.operatorsList
+      }
+    }
 
     if (['FieldText', 'FieldTextLong'].includes(componentReference.componentPath)) {
       operator = 'LIKE'
@@ -186,7 +200,9 @@ export function generateField({
     operator, // current operator
     oldOperator: undefined, // old operator
     defaultOperator: operator,
+    operatorsList,
     // popover's
+    isComparisonField,
     isNumericField,
     isTranslatedField
   }

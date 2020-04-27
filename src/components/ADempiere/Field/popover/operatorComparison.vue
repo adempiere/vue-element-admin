@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span v-if="fieldAttributes.isComparisonField">
     <el-popover
       ref="operatorComarison"
       placement="top"
@@ -14,7 +14,7 @@
         @change="changeOperator"
       >
         <el-option
-          v-for="(item, key) in operatorsList"
+          v-for="(item, key) in fieldAttributes.operatorsList"
           :key="key"
           :value="item"
           :label="$t('operators.' + item)"
@@ -28,8 +28,6 @@
 </template>
 
 <script>
-import { FIELD_OPERATORS_LIST } from '@/utils/ADempiere/dataUtils'
-
 export default {
   name: 'FieldOperatorComparison',
   props: {
@@ -41,14 +39,6 @@ export default {
   data() {
     return {
       value: this.fieldAttributes.operator
-    }
-  },
-  computed: {
-    operatorsList() {
-      const { operatorsList } = FIELD_OPERATORS_LIST.find(item => {
-        return item.componentPath === this.fieldAttributes.componentPath
-      })
-      return operatorsList || []
     }
   },
   watch: {
