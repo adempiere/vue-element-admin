@@ -50,7 +50,8 @@ export default {
       if (isEmptyValue(this.metadata.fileName)) {
         return () => import('@/components/ADempiere/Dashboard/calendar')
       }
-      return () => import(`@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
+      return () => import('@/components/ADempiere/Dashboard/' + this.metadata.fileName)
+      // return () => import(`@/components/ADempiere/Dashboard/${this.metadata.fileName}`)
     }
   }
 }

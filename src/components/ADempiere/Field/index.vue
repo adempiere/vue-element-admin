@@ -127,9 +127,9 @@ export default {
         return () => import('@/components/ADempiere/Field/FieldText')
       }
       if (this.isSelectCreated) {
-        return () => import(`@/components/ADempiere/Field/FieldSelectMultiple`)
+        return () => import('@/components/ADempiere/Field/FieldSelectMultiple')
       }
-      return () => import(`@/components/ADempiere/Field/${this.field.componentPath}`)
+      return () => import('@/components/ADempiere/Field/' + this.field.componentPath)
     },
     fieldAttributes() {
       return {

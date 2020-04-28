@@ -19,7 +19,7 @@ export default {
     componentRender() {
       return () => {
         return new Promise(resolve => {
-          import(`@/components/ADempiere/Form/${this.metadata.fileName}`)
+          import('@/components/ADempiere/Form/' + this.metadata.fileName)
             .then(formFile => {
               resolve(formFile)
             })
