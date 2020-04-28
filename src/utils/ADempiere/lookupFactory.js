@@ -47,7 +47,7 @@
 // - displayColumn
 // - defaultValue
 
-import { DEFAULT_SIZE, TEXT, TABLE_DIRECT } from '@/utils/ADempiere/references'
+import { CHAR, DEFAULT_SIZE, TEXT, TABLE_DIRECT } from '@/utils/ADempiere/references'
 import { evalutateTypeField } from '@/utils/ADempiere/dictionaryUtils'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator, { getContext, getParentFields } from '@/utils/ADempiere/contextUtils'
@@ -234,7 +234,7 @@ export function createFieldFromDefinition({
 
 // Default template for injected fields
 export function getFieldTemplate(overwriteDefinition) {
-  let displayType = 10
+  let displayType = CHAR.id // String reference (10)
   if (!isEmptyValue(overwriteDefinition.displayType)) {
     displayType = overwriteDefinition.displayType
   }

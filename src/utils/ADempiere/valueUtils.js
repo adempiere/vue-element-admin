@@ -1,3 +1,5 @@
+import { TABLE, TABLE_DIRECT } from '@/utils/ADempiere/references'
+
 /**
  * Checks if value is empty. Deep-checks arrays and objects
  * Note: isEmpty([]) == true, isEmpty({}) == true,
@@ -325,8 +327,8 @@ export function parsedValueComponent({
       if (typeof value === 'boolean') {
         value = value ? 'Y' : 'N'
       }
-      // Table or Table Direct
-      if (displayType === 18 || (displayType === 19 && isIdentifier)) {
+      // Table (18) or Table Direct (19)
+      if (displayType === TABLE.id || (displayType === TABLE_DIRECT.id && isIdentifier)) {
         if (value !== '' && value !== null && value !== undefined) {
           value = Number(value)
         }

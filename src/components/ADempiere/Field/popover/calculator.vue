@@ -79,6 +79,8 @@
 </template>
 
 <script>
+import { ID, INTEGER } from '@/utils/ADempiere/references'
+
 export default {
   name: 'FieldCalc',
   props: {
@@ -298,8 +300,8 @@ export default {
       }
     },
     isDisabled(row, column) {
-      // Integet or ID
-      const isInteger = [11, 13].includes(this.fieldAttributes.displayType)
+      // Integer or ID
+      const isInteger = [ID.id, INTEGER.id].includes(this.fieldAttributes.displayType)
       const value = row[column.property].value
       if (isInteger && value === ',') {
         return true
