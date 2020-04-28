@@ -2,9 +2,9 @@
   <el-container
     key="form-loaded"
     class="view-base"
-    style="height: 84vh;"
+    style="height: 87vh;!important"
   >
-    <el-header style="height: 39px;">
+    <el-header height="10%">
       <context-menu
         :menu-parent-uuid="$route.meta.parentUuid"
         :container-uuid="metadata.containerUuid"
@@ -17,7 +17,6 @@
           <el-card
             v-if="isLoaded"
             class="content-collapse"
-            :style="isEmptyValue(metadata.fieldList) ? 'height: 75vh !important;' : ''"
           >
             <h3 class="warn-content text-center">
               <el-popover

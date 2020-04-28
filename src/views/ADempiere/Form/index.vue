@@ -3,9 +3,9 @@
     v-if="isLoaded"
     key="form-loaded"
     class="view-base"
-    style="height: 84vh;"
+    style="height: 86vh;"
   >
-    <el-header style="height: 39px;">
+    <el-header style="height: 39px; background: white;">
       <context-menu
         :menu-parent-uuid="$route.meta.parentUuid"
         :container-uuid="formUuid"
@@ -41,6 +41,7 @@
             <form-panel
               :metadata="{
                 ...formMetadata,
+                fileName: 'VPOS',
                 title: formTitle
               }"
             />
