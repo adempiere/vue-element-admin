@@ -225,7 +225,7 @@ export default {
     tagsView: 'Habilitar Tags-View',
     fixedHeader: 'Encabezado fijo',
     sidebarLogo: 'Logotipo de la barra lateral',
-    menuContext: 'Habilitar información de contexto'
+    contextMenu: 'Mostrar Menu de Contexto'
   },
   profile: {
     aboutMe: 'Sobre Mi',

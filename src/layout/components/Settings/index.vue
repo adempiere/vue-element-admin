@@ -14,8 +14,8 @@
       </div>
 
       <div class="drawer-item">
-        <span>{{ $t('settings.menuContext') }}</span>
-        <el-switch v-model="ShowInfoContext" class="drawer-switch" />
+        <span>{{ $t('settings.contextMenu') }}</span>
+        <el-switch v-model="showMenuContext" class="drawer-switch" />
       </div>
 
       <div class="drawer-item">
@@ -63,13 +63,13 @@ export default {
         })
       }
     },
-    ShowInfoContext: {
+    showMenuContext: {
       get() {
-        return this.$store.state.settings.ShowInfoContext
+        return this.$store.state.settings.showMenuContext
       },
       set(val) {
         this.$store.dispatch('settings/changeSetting', {
-          key: 'ShowInfoContext',
+          key: 'showMenuContext',
           value: val
         })
       }
