@@ -157,13 +157,11 @@ export default {
         isChangedAllValues: true
       })
     },
-    addAction() {
+    addAction(name, action) {
       this.$store.dispatch('addAction', {
-        name: 'example',
-        processName: 'epale',
-        type: 'dataAction',
-        action: 'ToNew',
-        containerUuid: 'containerUuid'
+        name: name,
+        action: action,
+        containerUuid: this.metadata.containerUuid
       })
     }
   }
