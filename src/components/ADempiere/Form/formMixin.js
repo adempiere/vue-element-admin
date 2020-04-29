@@ -156,6 +156,15 @@ export default {
         withOutColumnNames,
         isChangedAllValues: true
       })
+    },
+    addAction() {
+      this.$store.dispatch('addAction', {
+        name: 'example',
+        processName: 'epale',
+        type: 'dataAction',
+        action: 'ToNew',
+        containerUuid: 'containerUuid'
+      })
     }
   }
 }
