@@ -14,9 +14,6 @@
 </template>
 
 <script>
-import ContextMenuDesktop from '@/components/ADempiere/ContextMenu/contextMenuDesktop'
-// import ContextMenuMobile from '@/components/ADempiere/ContextMenu/contextMenuMobile'
-
 export default {
   name: 'ContextMenu',
   props: {
@@ -65,14 +62,10 @@ export default {
       return this.$store.state.app.device === 'mobile'
     },
     templateDevice() {
-      let template = 'contextMenuDesktop'
       if (this.isMobile) {
-        template = 'contextMenuMobile'
-        const contextMenuMobile = import('@/components/ADempiere/ContextMenu/' + template)
-        return contextMenuMobile
+        return () => import('@/components/ADempiere/ContextMenu/contextMenuMobile')
       }
-      return ContextMenuDesktop
-      // return () => require(`@/components/ADempiere/ContextMenu/${template}`)
+      return () => import('@/components/ADempiere/ContextMenu/contextMenuDesktop')
     }
   }
 }
