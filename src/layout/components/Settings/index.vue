@@ -14,6 +14,11 @@
       </div>
 
       <div class="drawer-item">
+        <span>{{ $t('settings.menuContext') }}</span>
+        <el-switch v-model="ShowInfoContext" class="drawer-switch" />
+      </div>
+
+      <div class="drawer-item">
         <span>{{ $t('settings.fixedHeader') }}</span>
         <el-switch v-model="fixedHeader" class="drawer-switch" />
       </div>
@@ -54,6 +59,17 @@ export default {
       set(val) {
         this.$store.dispatch('settings/changeSetting', {
           key: 'tagsView',
+          value: val
+        })
+      }
+    },
+    ShowInfoContext: {
+      get() {
+        return this.$store.state.settings.ShowInfoContext
+      },
+      set(val) {
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'ShowInfoContext',
           value: val
         })
       }
