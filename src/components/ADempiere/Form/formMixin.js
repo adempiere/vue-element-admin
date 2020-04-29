@@ -157,10 +157,10 @@ export default {
         isChangedAllValues: true
       })
     },
-    addAction(name, action) {
+    addAction(action) {
       this.$store.dispatch('addAction', {
-        name: name,
-        action: action,
+        name: action.name,
+        action: action.action,
         containerUuid: this.metadata.containerUuid
       })
     }
