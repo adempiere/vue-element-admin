@@ -8,7 +8,7 @@ const state = {
   showSettings: showSettings,
   tagsView: tagsView,
   fixedHeader: fixedHeader,
-  showMenuContext: true,
+  showContextMenu: true,
   sidebarLogo: sidebarLogo
 }
 

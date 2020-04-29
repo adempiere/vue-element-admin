@@ -250,7 +250,7 @@ export default {
     tagsView: 'Open Tags-View',
     fixedHeader: 'Fixed Header',
     sidebarLogo: 'Sidebar Logo',
-    contextMenu: 'Show Context Information'
+    showContextMenu: 'Show Context Information'
   },
   profile: {
     aboutMe: 'About Me',
