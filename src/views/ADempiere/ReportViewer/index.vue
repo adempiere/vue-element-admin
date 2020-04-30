@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLoading" key="report-viewer-loaded" style="min-height: inherit;">
     <context-menu
-      v-if="ShowInfoContext"
+      v-if="showContextMenu"
       :container-uuid="reportResult.processUuid"
       :panel-type="panelType"
       :is-report="true"
@@ -113,7 +113,7 @@ export default {
   },
   computed: {
     // TODO: Add get metadata from server to open report view from link
-    ShowInfoContext() {
+    showContextMenu() {
       return this.$store.state.settings.showContextMenu
     },
     getterProcess() {

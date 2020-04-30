@@ -59,7 +59,7 @@
                   <Split v-shortkey="['f8']" direction="vertical" @onDrag="onDrag" @shortkey.native="handleChangeShowedRecordNavigation(!isShowedRecordNavigation)">
                     <SplitArea :size="sizeAreaStyle" :style="splitAreaStyle">
                       <el-header
-                        v-if="ShowInfoContext"
+                        v-if="showContextMenu"
                         :style="isWorkflowBarStatus ? 'height: 45px; background: #F5F7FA' : 'height: 40px'"
                       >
                         <el-container>
@@ -343,7 +343,7 @@ export default {
     next()
   },
   computed: {
-    ShowInfoContext() {
+    showContextMenu() {
       return this.$store.state.settings.showContextMenu
     },
     defaultPorcentSplitPane() {
