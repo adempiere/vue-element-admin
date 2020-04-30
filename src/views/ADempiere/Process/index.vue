@@ -90,7 +90,7 @@ export default {
   },
   computed: {
     ShowInfoContext() {
-      return this.$store.state.settings.ShowInfoContext
+      return this.$store.state.settings.showContextMenu
     },
     getterProcess() {
       return this.$store.getters.getPanel(this.processUuid)

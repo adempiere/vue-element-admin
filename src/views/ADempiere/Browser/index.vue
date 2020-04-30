@@ -106,7 +106,7 @@ export default {
   },
   computed: {
     ShowInfoContext() {
-      return this.$store.state.settings.ShowInfoContext
+      return this.$store.state.settings.showContextMenu
     },
     getterBrowser() {
       return this.$store.getters.getBrowser(this.browserUuid)

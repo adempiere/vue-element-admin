@@ -83,7 +83,7 @@ export default {
   },
   computed: {
     ShowInfoContext() {
-      return this.$store.state.settings.ShowInfoContext
+      return this.$store.state.settings.showContextMenu
     },
     formTitle() {
       return this.formMetadata.name || this.$route.meta.title

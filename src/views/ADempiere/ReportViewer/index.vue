@@ -114,7 +114,7 @@ export default {
   computed: {
     // TODO: Add get metadata from server to open report view from link
     ShowInfoContext() {
-      return this.$store.state.settings.ShowInfoContext
+      return this.$store.state.settings.showContextMenu
     },
     getterProcess() {
       return this.$store.getters.getProcessById(this.$route.params.processId)

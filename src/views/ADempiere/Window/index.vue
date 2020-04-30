@@ -344,7 +344,7 @@ export default {
   },
   computed: {
     ShowInfoContext() {
-      return this.$store.state.settings.ShowInfoContext
+      return this.$store.state.settings.showContextMenu
     },
     defaultPorcentSplitPane() {
       if (this.isShowedRecordPanel) {
