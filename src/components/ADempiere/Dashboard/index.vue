@@ -55,7 +55,9 @@ export default {
         case 'userfavorites':
           dashboard = () => import('@/components/ADempiere/Dashboard/userfavorites')
           break
-        case 'calendar':
+        case 'docstatus':
+          dashboard = () => import('@/components/ADempiere/Dashboard/docstatus')
+          break
         default:
           dashboard = () => import('@/components/ADempiere/Dashboard/calendar')
           break
