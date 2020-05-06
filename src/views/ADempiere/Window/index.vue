@@ -104,7 +104,7 @@
                           </el-card>
                         </div>
                         <div style="right: 0%; top: 40%; position: absolute;">
-                          <el-button v-show="!showContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+                          <el-button v-show="!getterShowContainerInfo && !isMobile" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
                         </div>
                         <div class="small-4 columns">
                           <div class="wrapper">
@@ -124,11 +124,11 @@
                             />
                           </div>
                         </div>
-                        <modal-dialog
+                        <!-- <modal-dialog
                           v-if="isShowProcess"
                           :parent-uuid="windowUuid"
                           :container-uuid="windowMetadata.currentTabUuid"
-                        />
+                        /> -->
                         <div class="small-4 columns">
                           <div class="w">
                             <div class="open-left" />
@@ -174,13 +174,13 @@
             </split-pane>
           </el-aside>
         </SplitArea>
-        <SplitArea :size="showContainerInfo ? isSize : 0">
+        <SplitArea :size="getterShowContainerInfo ? isSize : 0">
           <el-main>
             <div :class="isCloseInfo">
-              <el-button v-show="showContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
+              <el-button v-show="getterShowContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
             <transition name="slide-fade">
-              <span v-if="showContainerInfo">
+              <span v-if="getterShowContainerInfo">
                 <el-card class="box-card">
                   <tab-info
                     :info-process-uuid="windowUuid"
@@ -215,7 +215,7 @@ import TabChildren from '@/components/ADempiere/Tab/tabChildren'
 // When supporting the processes, smart browser and reports,
 // the submenu and sticky must be placed in the layout
 import ContextMenu from '@/components/ADempiere/ContextMenu'
-import ModalDialog from '@/components/ADempiere/Dialog'
+// import ModalDialog from '@/components/ADempiere/Dialog'
 import DataTable from '@/components/ADempiere/DataTable'
 import splitPane from 'vue-splitpane'
 // Workflow
@@ -231,7 +231,7 @@ export default {
     ContextMenu,
     DataTable,
     splitPane,
-    ModalDialog,
+    // ModalDialog,
     WorkflowStatusBar,
     TabInfo
   },
@@ -250,7 +250,6 @@ export default {
       isPanel: false,
       activeName: '',
       activeInfo: 'listChatEntries',
-      showContainerInfo: false,
       // TODO: Manage attribute with store
       isShowedRecordPanel: false
     }
@@ -304,13 +303,13 @@ export default {
       return 'container-info'
     },
     isSize() {
-      if (this.isMobile && this.showContainerInfo) {
+      if (this.isMobile && this.getterShowContainerInfo) {
         return 98
       }
       return 50
     },
     sizePanel() {
-      if (this.showContainerInfo) {
+      if (this.getterShowContainerInfo) {
         if (this.isMobile) {
           return 2
         }
@@ -500,7 +499,7 @@ export default {
   },
   watch: {
     $route(value) {
-      if (this.showContainerInfo) {
+      if (this.getterShowContainerInfo) {
         this.$store.dispatch(this.activeInfo, {
           tableName: this.$route.params.tableName,
           recordId: this.$route.params.recordId
@@ -529,8 +528,7 @@ export default {
       }
     },
     conteInfo() {
-      this.showContainerInfo = !this.showContainerInfo
-      if (this.showContainerInfo) {
+      if (this.getterShowContainerInfo) {
         const tableName = this.getTableName
         const recordId = this.getRecord[tableName + '_ID']
         this.$store.dispatch('listWorkflowLogs', {

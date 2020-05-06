@@ -1,6 +1,47 @@
 <template>
   <el-tabs v-model="activeInfo" @tab-click="handleClick">
     <el-tab-pane
+      :label="$t('window.containerInfo.associatedProcesses')"
+      :name="$t('window.containerInfo.associatedProcesses')"
+    >
+      <el-scrollbar>
+        <el-timeline
+          v-for="(action, index) in tabProcess"
+          :key="index"
+        >
+          <el-timeline-item>
+            <el-card class="box-card">
+              <span> {{ action.name }} </span>
+              <el-button type="success" icon="el-icon-s-tools" size="mini" circle style="float: right" @click="runAction(action)" />
+              <el-button type="primary" :icon="currentProcess !== index ? 'el-icon-arrow-down' : 'el-icon-arrow-up'" size="mini" circle style="float: right; margin-right: 5px;" @click="abrir(index, action)" />
+              <el-container v-if="currentProcess === index" style="max-height: 38vh;">
+                <el-main style="height: auto;">
+                  <main-panel
+                    v-if="!isEmptyValue(modalMetadata.fieldList)"
+                    key="main-panel"
+                    :parent-uuid="infoProcessUuid"
+                    :container-uuid="modalMetadata.uuid"
+                    :metadata="modalMetadata"
+                    :panel-type="modalMetadata.panelType"
+                  />
+                  <p v-else> {{ modalMetadata.description }} </p>
+                </el-main>
+                <!-- <el-footer>
+                  <el-button
+                    type="primary"
+                    style="float: right;"
+                    @click="runAction(action)"
+                  >
+                    {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
+                  </el-button> -->
+                <!-- </el-footer> -->
+              </el-container>
+            </el-card>
+          </el-timeline-item>
+        </el-timeline>
+      </el-scrollbar>
+    </el-tab-pane>
+    <!-- <el-tab-pane
       v-if="!isEmptyValue(tabProcess)"
       :name="$t('window.containerInfo.associatedProcesses')"
     >
@@ -12,13 +53,13 @@
         <el-collapse
           v-for="(action, index) in tabProcess"
           :key="index"
-          v-model="activeName"
+          v-model="nameProcess"
           accordion
           @change="handleChangeProcess(action)"
         >
           <el-collapse-item
             :title="action.name"
-            :name="index"
+            :name="action.name"
             :disabled="isEmptyValue(record)"
           >
             <el-card>
@@ -48,7 +89,7 @@
           </el-collapse-item>
         </el-collapse>
       </div>
-    </el-tab-pane>
+    </el-tab-pane> -->
     <el-tab-pane
       v-if="panelType === 'window'"
       name="listChatEntries"
@@ -90,6 +131,11 @@
         <workflow-logs />
       </div>
     </el-tab-pane>
+    <el-tab-pane
+      name="listWorkflowLogs"
+    >
+      <associated-Processes />
+    </el-tab-pane>
   </el-tabs>
 </template>
 
@@ -98,6 +144,7 @@
 import ChatEntries from '@/components/ADempiere/ContainerInfo/components/chatEntries'
 import RecordLogs from '@/components/ADempiere/ContainerInfo/components/recordLogs'
 import WorkflowLogs from '@/components/ADempiere/ContainerInfo/components/workflowLogs'
+import AssociatedProcesses from '@/components/ADempiere/ContainerInfo/components/associatedProcesses'
 // Panel Process
 import MainPanel from '@/components/ADempiere/Panel'
 import { showNotification } from '@/utils/ADempiere/notification'
@@ -107,6 +154,7 @@ export default {
     ChatEntries,
     RecordLogs,
     WorkflowLogs,
+    AssociatedProcesses,
     MainPanel
   },
   props: {
@@ -141,11 +189,15 @@ export default {
   },
   data() {
     return {
-      activeName: '',
-      activeInfo: 'listChatEntries'
+      activeInfo: 'listChatEntries',
+      contenido: false,
+      currentProcess: 100
     }
   },
   computed: {
+    isShowProcess() {
+      return this.$store.getters.getShowProcess.process
+    },
     getIsWorkflowLog() {
       if (this.isEmptyValue(this.$store.getters.getWorkflow)) {
         return false
@@ -205,6 +257,37 @@ export default {
         return this.getterContextMenu
       }
       return this.getterContextMenuBrowser
+    },
+    disable() {
+      var disable = this.tabProcess.map(process => {
+        return {
+          epale: process.name,
+          disable: this.$store.getters.isNotReadyForSubmit(process.uuid)
+        }
+      })
+      console.log(disable)
+      return true
+    },
+    listName() {
+      var list = this.tabProcess.map(process => {
+        return process.name
+      })
+      return list
+    },
+    nameProcess() {
+      if (!this.isEmptyValue(this.isShowProcess)) {
+        const name = this.listName.find(element => element === this.isShowProcess.name)
+        return name
+      }
+      return ''
+    }
+  },
+  watch: {
+    nameProcess(value) {
+      const fastAction = this.listName.findIndex(index => index === this.nameProcess)
+      if (fastAction >= 0) {
+        this.currentProcess = fastAction
+      }
     }
   },
   created() {
@@ -217,9 +300,33 @@ export default {
         recordId: this.record[this.tableName + '_ID']
       })
     }
+    const fastAction = this.listName.findIndex(index => index === this.nameProcess)
+    if (fastAction >= 0) {
+      this.currentProcess = fastAction
+    }
   },
   methods: {
     showNotification,
+    abrir(index, action) {
+      if (this.currentProcess !== index) {
+        this.currentProcess = index
+        if (action.type === 'process') {
+          // open panel with metadata
+          this.$store.dispatch('setShowDialog', {
+            type: action.type,
+            action: {
+              ...action,
+              containerUuid: action.uuid
+            }
+          })
+        }
+      } else {
+        this.currentProcess = 100
+      }
+    },
+    ejecutar() {
+      console.log('ejecutar')
+    },
     handleChangeProcess(action) {
       if (action.type === 'process') {
         // open modal dialog with metadata
