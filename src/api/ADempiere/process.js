@@ -29,7 +29,7 @@ function Instance() {
       }]
  * @param {string}  printFormatUuid
  */
-export function runProcess({ uuid, reportType, tableName, recordId, parametersList = [], selectionsList = [], printFormatUuid }) {
+export function runProcess({ uuid, reportType, tableName, recordId, parametersList, selectionsList, printFormatUuid }) {
   //  Run Process
   return Instance.call(this).requestRunProcess({
     uuid,
