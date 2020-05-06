@@ -133,9 +133,10 @@ const processControl = {
         let tab, tableName, recordId
         if (panelType) {
           if (panelType === 'browser') {
-            allData = getters.getDataRecordAndSelection(containerUuid)
+            var uuid = isEmptyValue(containerUuid) ? parentUuid : containerUuid
+            allData = getters.getDataRecordAndSelection(uuid)
             selection = rootGetters.getSelectionToServer({
-              containerUuid,
+              containerUuid: uuid,
               selection: allData.selection
             })
             if (selection.length < 1) {

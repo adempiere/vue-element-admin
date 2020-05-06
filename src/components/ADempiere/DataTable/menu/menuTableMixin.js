@@ -164,6 +164,7 @@ export const menuTableMixin = {
         action: actionSequence,
         parentRecordUuid: this.$route.query.action
       })
+      this.$store.dispatch('showProcess', true)
     },
     closeMenu() {
       // TODO: Validate to dispatch one action
@@ -216,6 +217,7 @@ export const menuTableMixin = {
           action: processData
         })
       }
+      this.$store.dispatch('showProcess', true)
     },
     showTotals() {
       this.$store.dispatch('changePanelAttributesBoolean', {

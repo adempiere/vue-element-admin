@@ -94,49 +94,13 @@
                           :tabs-list="windowMetadata.tabsListParent"
                           class="tab-window"
                         />
-                        <div v-if="isMobile">
+                        <div v-if="isMobile && panelType === 'windo'">
                           <el-card class="box-card">
-                            <el-tabs v-model="activeInfo" @tab-click="handleClick">
-                              <el-tab-pane
-                                name="listChatEntries"
-                              >
-                                <span slot="label">
-                                  <i class="el-icon-s-comment" />
-                                  {{ $t('window.containerInfo.notes') }}
-                                </span>
-                                <div>
-                                  <chat-entries />
-                                </div>
-                              </el-tab-pane>
-                              <el-tab-pane
-                                name="listRecordLogs"
-                              >
-                                <span slot="label">
-                                  <svg-icon icon-class="tree-table" />
-                                  {{ $t('window.containerInfo.changeLog') }}
-                                </span>
-                                <div
-                                  key="change-log-loaded"
-                                >
-                                  <record-logs />
-                                </div>
-                              </el-tab-pane>
-                              <el-tab-pane
-                                v-if="getIsWorkflowLog"
-                                name="listWorkflowLogs"
-                              >
-                                <span slot="label">
-                                  <i class="el-icon-s-help" />
-                                  {{ $t('window.containerInfo.workflowLog') }}
-                                </span>
-                                <div
-                                  v-if="getIsWorkflowLog"
-                                  key="workflow-log-loaded"
-                                >
-                                  <workflow-logs />
-                                </div>
-                              </el-tab-pane>
-                            </el-tabs>
+                            <tab-info
+                              :window-uuid="windowUuid"
+                              :table-name="getTableName"
+                              :record="getRecord"
+                            />
                           </el-card>
                         </div>
                         <div style="right: 0%; top: 40%; position: absolute;">
@@ -161,6 +125,7 @@
                           </div>
                         </div>
                         <modal-dialog
+                          v-if="isShowProcess"
                           :parent-uuid="windowUuid"
                           :container-uuid="windowMetadata.currentTabUuid"
                         />
@@ -214,56 +179,20 @@
             <div :class="isCloseInfo">
               <el-button v-show="showContainerInfo" type="info" icon="el-icon-info" circle style="float: right;" class="el-button-window" @click="conteInfo" />
             </div>
-            <div id="example-1">
-              <transition name="slide-fade">
-                <p v-if="showContainerInfo">
-                  <el-card class="box-card">
-                    <el-tabs v-model="activeInfo" @tab-click="handleClick">
-                      <el-tab-pane
-                        name="listChatEntries"
-                      >
-                        <span slot="label">
-                          <i class="el-icon-s-comment" />
-                          {{ $t('window.containerInfo.notes') }}
-                        </span>
-                        <div>
-                          <chat-entries />
-                        </div>
-                      </el-tab-pane>
-                      <el-tab-pane
-                        name="listRecordLogs"
-                      >
-                        <span slot="label">
-                          <svg-icon icon-class="tree-table" />
-                          {{ $t('window.containerInfo.changeLog') }}
-                        </span>
-                        <div
-                          v-if="getIsChangeLog"
-                          key="change-log-loaded"
-                        >
-                          <record-logs />
-                        </div>
-                      </el-tab-pane>
-                      <el-tab-pane
-                        v-if="getIsWorkflowLog"
-                        name="listWorkflowLogs"
-                      >
-                        <span slot="label">
-                          <i class="el-icon-s-help" />
-                          {{ $t('window.containerInfo.workflowLog') }}
-                        </span>
-                        <div
-                          v-if="getIsWorkflowLog"
-                          key="workflow-log-loaded"
-                        >
-                          <workflow-logs />
-                        </div>
-                      </el-tab-pane>
-                    </el-tabs>
-                  </el-card>
-                </p>
-              </transition>
-            </div>
+            <transition name="slide-fade">
+              <span v-if="showContainerInfo">
+                <el-card class="box-card">
+                  <tab-info
+                    :info-process-uuid="windowUuid"
+                    :container-uuid="windowMetadata.currentTabUuid"
+                    :table-name="getTableName"
+                    :record="getRecord"
+                    :is-workflow="isWorkflowBarStatus"
+                    :panel-type="panelType"
+                  />
+                </el-card>
+              </span>
+            </transition>
           </el-main>
         </SplitArea>
       </Split>
@@ -289,12 +218,10 @@ import ContextMenu from '@/components/ADempiere/ContextMenu'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import DataTable from '@/components/ADempiere/DataTable'
 import splitPane from 'vue-splitpane'
-// Container Info
-import ChatEntries from '@/components/ADempiere/ContainerInfo/chatEntries'
-import RecordLogs from '@/components/ADempiere/ContainerInfo/recordLogs'
-import WorkflowLogs from '@/components/ADempiere/ContainerInfo/workflowLogs'
 // Workflow
 import WorkflowStatusBar from '@/components/ADempiere/WorkflowStatusBar'
+import { showNotification } from '@/utils/ADempiere/notification'
+import TabInfo from '@//components/ADempiere/ContainerInfo'
 
 export default {
   name: 'WindowView',
@@ -305,10 +232,8 @@ export default {
     DataTable,
     splitPane,
     ModalDialog,
-    ChatEntries,
-    RecordLogs,
-    WorkflowLogs,
-    WorkflowStatusBar
+    WorkflowStatusBar,
+    TabInfo
   },
   props: {
     styleSteps: {
@@ -323,6 +248,7 @@ export default {
       panelType: 'window',
       isLoaded: false,
       isPanel: false,
+      activeName: '',
       activeInfo: 'listChatEntries',
       showContainerInfo: false,
       // TODO: Manage attribute with store
@@ -551,6 +477,25 @@ export default {
         return true
       }
       return false
+    },
+    getterContextMenu() {
+      if (!this.isEmptyValue(this.getterWindow)) {
+        const process = this.$store.getters.getContextMenu(this.getterWindow.currentTabUuid).actions
+        if (process) {
+          return process.filter(menu => {
+            if (menu.type === 'process') {
+              return menu
+            }
+          })
+        }
+      }
+      return []
+    },
+    modalMetadata() {
+      return this.$store.state.processControl.metadata
+    },
+    isShowProcess() {
+      return this.$store.getters.getShowProcess
     }
   },
   watch: {
@@ -575,6 +520,7 @@ export default {
     }
   },
   methods: {
+    showNotification,
     handleResize() {
       const panelRight = document.getElementById('PanelRight')
       if (!this.isEmptyValue(panelRight)) {
@@ -855,6 +801,21 @@ export default {
 }
 </style>
 <style>
+  .el-collapse-item__header {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    height: 48px;
+    color: #000000;
+    line-height: 48px;
+    background-color: #fff;
+    cursor: pointer;
+    border-bottom: 1px solid #e6ebf5;
+    transition: border-bottom-color .3s;
+    outline: none;
+    font-size: 14px;
+    font-weight: 605!important;
+  }
   .el-step.is-simple .el-step__icon-inner {
     font-size: 18px;
     padding-top: 30px;

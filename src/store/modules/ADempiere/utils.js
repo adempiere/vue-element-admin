@@ -18,6 +18,7 @@ const initStateUtils = {
   documentAction: [],
   chatText: '',
   markDown: false,
+  isShowedModalProcess: false,
   openRoute: {
     path: '',
     name: '',
@@ -99,6 +100,9 @@ const utils = {
     resetStateUtils(state) {
       state = initStateUtils
     },
+    showProcess(state, payload) {
+      state.isShowedModalProcess = payload
+    },
     setCurrentRecor(state, payload) {
       state.currentRecord = payload
     }
@@ -164,6 +168,9 @@ const utils = {
     },
     setPanelRight({ commit }, panelRight) {
       commit('setPanelRight', panelRight)
+    },
+    showProcess({ commit }, show) {
+      commit('showProcess', show)
     },
     currentRecord({ commit }, record) {
       commit('setCurrentRecor', record)
@@ -239,6 +246,9 @@ const utils = {
     },
     getPanelRight: (state) => {
       return state.panelRight
+    },
+    getShowProcess: (state) => {
+      return state.isShowedModalProcess
     },
     getCurrentRecord: (state) => {
       return state.currentRecord

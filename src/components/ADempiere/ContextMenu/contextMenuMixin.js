@@ -392,6 +392,7 @@ export const contextMixin = {
     },
     showModal(action) {
       // TODO: Refactor and remove redundant dispatchs
+      this.$store.dispatch('showProcess', true)
       if (action.type === 'process') {
         // Add context from view open in process to opening
         if (action.parentUuidAssociated || action.containerUuidAssociated) {

@@ -65,7 +65,7 @@
   </div>
 </template>
 <script>
-import { MixinInfo } from '@/components/ADempiere/ContainerInfo/mixinInfo'
+import { MixinInfo } from '@/components/ADempiere/ContainerInfo/components/mixinInfo'
 export default {
   name: 'WorkflowLogs',
   mixins: [MixinInfo]

@@ -257,7 +257,8 @@ export default {
         workflowName: 'Nombre de estado del flujo de trabajo',
         timeElapsed: 'Tiempo transcurrido',
         addNote: 'Agregar Nota'
-      }
+      },
+      associatedProcesses: 'Procesos Asociados'
     },
     callout: {
       error: 'Error En Callout'

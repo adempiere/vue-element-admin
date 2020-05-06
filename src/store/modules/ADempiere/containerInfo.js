@@ -65,7 +65,7 @@ const containerInfo = {
           commit('addNote', response)
         })
         .catch(error => {
-          console.warn(`Error getting epale error en guardar: ${error.message}. Code: ${error.code}.`)
+          console.warn(`Error getting error en guardar: ${error.message}. Code: ${error.code}.`)
         })
     },
     isNote({ commit }, params) {
