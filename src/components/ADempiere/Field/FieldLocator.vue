@@ -40,7 +40,7 @@ export default {
       return this.$store.getters['user/getWarehouse']
     },
     warehousesList() {
-      const list = this.$store.getters['user/getWarehouses']
+      return this.$store.getters['user/getWarehouses']
         .map(itemWarehouse => {
           return {
             label: itemWarehouse.name,
@@ -48,29 +48,8 @@ export default {
             children: []
           }
         })
-      list.push({ label: 'HQ', value: 103, children: [] })
-      list.push({ label: 'Fertilizer', value: 50001, children: [] })
-      return list
     }
   },
-  // watch: {
-  //   valueModel(value) {
-  //     if (this.metadata.inTable) {
-  //       if (this.isEmptyValue(value)) {
-  //         value = undefined
-  //       }
-  //       this.value = value
-  //     }
-  //   },
-  //   'metadata.value'(value) {
-  //     if (!this.metadata.inTable) {
-  //       if (this.isEmptyValue(value)) {
-  //         value = undefined
-  //       }
-  //       this.value = value
-  //     }
-  //   }
-  // },
   created() {
     this.options = this.warehousesList
   },
