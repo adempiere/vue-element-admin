@@ -371,7 +371,7 @@ export default {
   },
   methods: {
     focusField() {
-      if (this.field.handleFocus || (this.field.displayed && !this.field.readonly)) {
+      if (this.field.handleRequestFocus || (this.field.displayed && !this.field.readonly)) {
         this.$refs[this.field.columnName].requestFocus()
       }
     }

@@ -709,7 +709,7 @@ export default {
     async setFocus() {
       return new Promise(resolve => {
         const fieldFocus = this.getterFieldList.find(itemField => {
-          if (itemField.handleFocus) {
+          if (itemField.handleRequestFocus) {
             return true
           }
           if (Object.prototype.hasOwnProperty.call(this.$refs, itemField.columnName)) {
