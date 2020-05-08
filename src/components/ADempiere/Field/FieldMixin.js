@@ -18,7 +18,7 @@ export const fieldMixin = {
       value = this.valueModel
     }
     return {
-      value: value
+      value
     }
   },
   computed: {
@@ -37,7 +37,10 @@ export const fieldMixin = {
     }
   },
   methods: {
-    activeFocus() {
+    /**
+     * Set focus if handle focus attribute is true
+     */
+    requestFocus() {
       if (this.$refs[this.metadata.columnName]) {
         this.$refs[this.metadata.columnName].focus()
       }
