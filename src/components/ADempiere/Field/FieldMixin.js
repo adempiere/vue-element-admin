@@ -36,6 +36,11 @@ export const fieldMixin = {
       this.preHandleChange(value)
     }
   },
+  mounted() {
+    if (this.metadata.isAutoFocus || this.metadata.handleFocus) {
+      this.requestFocus()
+    }
+  },
   methods: {
     /**
      * Set focus if handle focus attribute is true
