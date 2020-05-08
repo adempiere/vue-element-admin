@@ -6,8 +6,8 @@ export default [
     columnName: 'URL',
     definition: {
       name: 'Web',
-      isAutoFocus: true, // or handleFocus
-      isAutoSelection: true,
+      handleFocus: true,
+      handleSelection: true,
       displayType: URL.id
     }
   },

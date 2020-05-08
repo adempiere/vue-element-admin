@@ -37,7 +37,7 @@ export const fieldMixin = {
     }
   },
   mounted() {
-    if (this.metadata.isAutoFocus || this.metadata.handleFocus) {
+    if (this.metadata.handleFocus) {
       this.requestFocus()
     }
   },
@@ -59,7 +59,7 @@ export const fieldMixin = {
       this.handleChange(value)
     },
     focusGained(value) {
-      if (this.metadata.isAutoSelection) {
+      if (this.metadata.handleSelection) {
         // select all the content inside the text box
         if (!this.isEmptyValue(value.target.selectionStart) &&
           !this.isEmptyValue(value.target.selectionStart)) {
