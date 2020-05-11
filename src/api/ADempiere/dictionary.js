@@ -1,10 +1,10 @@
-import { getLanguage } from '@/lang/index'
-import { getToken } from '@/utils/auth'
-import Dictionary from '@adempiere/grpc-dictionary-client'
-import { DICTIONARY_ADDRESS } from '@/api/ADempiere/constants'
-
 // Get Instance for connection
 function Instance() {
+  const Dictionary = require('@adempiere/grpc-dictionary-client')
+  const { DICTIONARY_ADDRESS } = require('@/api/ADempiere/constants')
+  const { getLanguage } = require('@/lang/index')
+  const { getToken } = require('@/utils/auth')
+
   return new Dictionary(
     DICTIONARY_ADDRESS,
     getToken(),

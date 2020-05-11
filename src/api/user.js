@@ -1,9 +1,9 @@
-import { getLanguage } from '@/lang/index'
-import Access from '@adempiere/grpc-access-client'
-import { ACCESS_ADDRESS } from '@/api/ADempiere/constants'
-
 // Instance for connection
 function Instance() {
+  const Access = require('@adempiere/grpc-access-client')
+  const { ACCESS_ADDRESS } = require('@/api/ADempiere/constants')
+  const { getLanguage } = require('@/lang/index')
+
   return new Access(
     ACCESS_ADDRESS,
     'Version Epale',
@@ -13,6 +13,8 @@ function Instance() {
 
 // Make login by UserName and password, this function can return user data for show
 export function login(loginValues) {
+  const { getLanguage } = require('@/lang/index')
+
   if (loginValues.role && loginValues.role.trim() !== '') {
     return Instance.call(this).requestLogin({
       userName: loginValues.userName,

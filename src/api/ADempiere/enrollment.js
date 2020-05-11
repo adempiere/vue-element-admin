@@ -1,8 +1,8 @@
-import Enrollment from '@adempiere/grpc-enrollment-client'
-import { ENROLLMENT_ADDRESS } from '@/api/ADempiere/constants'
-
 // Get Instance for connection
 function Instance() {
+  const Enrollment = require('@adempiere/grpc-enrollment-client')
+  const { ENROLLMENT_ADDRESS } = require('@/api/ADempiere/constants')
+
   return new Enrollment(
     ENROLLMENT_ADDRESS,
     3.9,

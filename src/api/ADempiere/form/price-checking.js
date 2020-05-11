@@ -1,10 +1,10 @@
-import { getLanguage } from '@/lang/index'
-import POS from '@adempiere/grpc-pos-client'
-import { BUSINESS_DATA_ADDRESS } from '@/api/ADempiere/constants'
-import { getToken, getCurrentOrganization, getCurrentWarehouse } from '@/utils/auth'
-
 // Get Instance for connection
 function Instance() {
+  const POS = require('@adempiere/grpc-pos-client')
+  const { BUSINESS_DATA_ADDRESS } = require('@/api/ADempiere/constants')
+  const { getLanguage } = require('@/lang/index')
+  const { getToken, getCurrentOrganization, getCurrentWarehouse } = require('@/utils/auth')
+
   return new POS({
     host: BUSINESS_DATA_ADDRESS,
     sessionUuid: getToken(),
