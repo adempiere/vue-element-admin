@@ -11,7 +11,7 @@ export default {
     page404: '404',
     profile: 'Perfil',
     ProcessActivity: 'Histórico Procesos',
-    Role: 'Rol',
+    role: 'Rol',
     organization: 'Organización',
     warehouse: 'Almacén',
     reportViewer: 'Visor de Reportes'

@@ -11,7 +11,7 @@ export default {
     page404: '404',
     profile: 'Profile',
     ProcessActivity: 'Process Logs',
-    Role: 'Role',
+    role: 'Role',
     organization: 'Organization',
     warehouse: 'Warehouse',
     reportViewer: 'Report Viewer'
