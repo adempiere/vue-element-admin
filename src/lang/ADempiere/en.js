@@ -12,9 +12,9 @@ export default {
     profile: 'Profile',
     ProcessActivity: 'Process Logs',
     Role: 'Role',
-    Client: 'Client',
-    Warehouse: 'Warehouse',
-    ReportViewer: 'Report Viewer'
+    organization: 'Organization',
+    warehouse: 'Warehouse',
+    reportViewer: 'Report Viewer'
   },
   notifications: {
     // simplex
