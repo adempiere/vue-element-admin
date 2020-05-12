@@ -46,7 +46,7 @@ export function formatDate(date, isTime = false) {
 }
 
 // Return a format for field depending of reference for him
-export function formatField(value, reference) {
+export function formatField(value, reference, optionalFormat) {
   if (isEmptyValue(value)) {
     return undefined
   }
@@ -57,13 +57,19 @@ export function formatField(value, reference) {
   let formattedValue
   switch (reference) {
     case DATE.id:
-      formattedValue = moment.utc(value).format(getDefaultFormat())
+      formattedValue = moment.utc(value).format(getDateFormat({
+        format: optionalFormat
+      }))
       break
     case DATE_PLUS_TIME.id:
-      formattedValue = moment.utc(value).format(getDefaultFormat(true))
+      formattedValue = moment.utc(value).format(getDateFormat({
+        isTime: true
+      }))
       break
     case TIME.id:
-      formattedValue = moment.utc(value).format(getDefaultFormat(true))
+      formattedValue = moment.utc(value).format(getDateFormat({
+        isTime: true
+      }))
       break
     default:
       formattedValue = value
@@ -72,7 +78,7 @@ export function formatField(value, reference) {
 }
 
 // Get default format without format pattern
-function getDefaultFormat(isTime) {
+export function getDefaultFormat(isTime) {
   return getDateFormat({
     isTime
   })
