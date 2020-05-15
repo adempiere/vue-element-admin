@@ -248,7 +248,6 @@ const utils = {
       return state.panelRight
     },
     getShowProcess: (state) => {
-      console.log(state.isShowedModalProcess)
       return state.isShowedModalProcess
     },
     getCurrentRecord: (state) => {

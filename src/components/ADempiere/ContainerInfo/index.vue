@@ -11,9 +11,20 @@
         >
           <el-timeline-item>
             <el-card class="box-card">
-              <span> {{ action.name }} </span>
-              <el-button type="success" icon="el-icon-s-tools" size="mini" circle style="float: right" @click="runAction(action)" />
-              <el-button type="primary" :icon="currentProcess !== index ? 'el-icon-arrow-down' : 'el-icon-arrow-up'" size="mini" circle style="float: right; margin-right: 5px;" @click="abrir(index, action)" />
+              <el-button
+                type="text"
+                style="color: #000000; text-size-adjust: 12px; font-size: 100%; font-weight: 605!important; width: 90%; text-align: left;"
+                @click="abrir(index, action)"
+              >
+                {{ action.name }}
+              </el-button>
+              <el-button
+                type="primary"
+                :circle="true"
+                icon="el-icon-check"
+                :disabled="currentProcess === index ? !isEmptyValue($store.getters.isNotReadyForSubmit(action.uuid)) : !isEmptyValue(action.parametersList)"
+                @click="runAction(action)"
+              />
               <el-container v-if="currentProcess === index" style="max-height: 38vh;">
                 <el-main style="height: auto;">
                   <main-panel
@@ -26,70 +37,12 @@
                   />
                   <p v-else> {{ modalMetadata.description }} </p>
                 </el-main>
-                <!-- <el-footer>
-                  <el-button
-                    type="primary"
-                    style="float: right;"
-                    @click="runAction(action)"
-                  >
-                    {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
-                  </el-button> -->
-                <!-- </el-footer> -->
               </el-container>
             </el-card>
           </el-timeline-item>
         </el-timeline>
       </el-scrollbar>
     </el-tab-pane>
-    <!-- <el-tab-pane
-      v-if="!isEmptyValue(tabProcess)"
-      :name="$t('window.containerInfo.associatedProcesses')"
-    >
-      <span slot="label">
-        <svg-icon icon-class="component" />
-        {{ $t('window.containerInfo.associatedProcesses') }}
-      </span>
-      <div>
-        <el-collapse
-          v-for="(action, index) in tabProcess"
-          :key="index"
-          v-model="nameProcess"
-          accordion
-          @change="handleChangeProcess(action)"
-        >
-          <el-collapse-item
-            :title="action.name"
-            :name="action.name"
-            :disabled="isEmptyValue(record)"
-          >
-            <el-card>
-              <el-container style="max-height: 38vh;">
-                <el-main style="height: auto;">
-                  <main-panel
-                    v-if="!isEmptyValue(modalMetadata.fieldList)"
-                    key="main-panel"
-                    :parent-uuid="infoProcessUuid"
-                    :container-uuid="modalMetadata.uuid"
-                    :metadata="modalMetadata"
-                    :panel-type="modalMetadata.panelType"
-                  />
-                  <p v-else> {{ modalMetadata.description }} </p>
-                </el-main>
-                <el-footer>
-                  <el-button
-                    type="primary"
-                    style="float: right;"
-                    @click="runAction(action)"
-                  >
-                    {{ $t('components.RunProcess') }} <i class="el-icon-s-tools" />
-                  </el-button>
-                </el-footer>
-              </el-container>
-            </el-card>
-          </el-collapse-item>
-        </el-collapse>
-      </div>
-    </el-tab-pane> -->
     <el-tab-pane
       v-if="panelType === 'window'"
       name="listChatEntries"
@@ -310,16 +263,6 @@ export default {
     abrir(index, action) {
       if (this.currentProcess !== index) {
         this.currentProcess = index
-        if (action.type === 'process') {
-          // open panel with metadata
-          this.$store.dispatch('setShowDialog', {
-            type: action.type,
-            action: {
-              ...action,
-              containerUuid: action.uuid
-            }
-          })
-        }
       } else {
         this.currentProcess = 100
       }
@@ -342,6 +285,16 @@ export default {
     runAction(action) {
       if (action !== undefined) {
         const fieldNotReady = this.panelType === 'browser' ? this.isEmptyValue(this.record) : this.$store.getters.isNotReadyForSubmit(action.uuid)
+        if (action.type === 'process') {
+          // open panel with metadata
+          this.$store.dispatch('setShowDialog', {
+            type: action.type,
+            action: {
+              ...action,
+              containerUuid: action.uuid
+            }
+          })
+        }
         if (!fieldNotReady) {
           this.$store.dispatch('startProcess', {
             action: action, // process metadata
@@ -377,3 +330,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.el-button--medium {
+  padding: 0px;
+  font-size: 20px;
+  border-radius: 4px;
+}
+</style>
