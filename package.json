@@ -44,7 +44,7 @@
     "url": "https://github.com/PanJiaChen/vue-element-admin/issues"
   },
   "dependencies": {
-    "@adempiere/grpc-access-client": "^1.2.0",
+    "@adempiere/grpc-access-client": "^1.2.1",
     "@adempiere/grpc-data-client": "^2.3.4",
     "@adempiere/grpc-dictionary-client": "^1.4.1",
     "@adempiere/grpc-enrollment-client": "^1.1.0",

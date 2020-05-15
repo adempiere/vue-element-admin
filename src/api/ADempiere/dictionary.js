@@ -1,16 +1,5 @@
 // Get Instance for connection
-function Instance() {
-  const Dictionary = require('@adempiere/grpc-dictionary-client')
-  const { DICTIONARY_ADDRESS } = require('@/api/ADempiere/constants')
-  const { getLanguage } = require('@/lang/index')
-  const { getToken } = require('@/utils/auth')
-
-  return new Dictionary(
-    DICTIONARY_ADDRESS,
-    getToken(),
-    getLanguage() || 'en_US'
-  )
-}
+import { DictionaryInstance as Instance } from '@/api/ADempiere/instances.js'
 
 export function getWindow(uuid, isWithTabs = true) {
   return Instance.call(this).requestWindow({

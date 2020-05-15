@@ -1,14 +1,5 @@
 // Get Instance for connection
-function Instance() {
-  const Enrollment = require('@adempiere/grpc-enrollment-client')
-  const { ENROLLMENT_ADDRESS } = require('@/api/ADempiere/constants')
-
-  return new Enrollment(
-    ENROLLMENT_ADDRESS,
-    3.9,
-    'ADempiere-Vue'
-  )
-}
+import { EnrollmentInstance as Instance } from '@/api/ADempiere/instances.js'
 
 /**
  * enroll User
@@ -18,10 +9,10 @@ function Instance() {
  */
 export function enrollmentUser({ name, userName, password, eMail }) {
   return Instance.call(this).enrollUser({
-    name: name,
-    userName: userName,
-    password: password,
-    eMail: eMail
+    name,
+    userName,
+    password,
+    eMail
   })
 }
 

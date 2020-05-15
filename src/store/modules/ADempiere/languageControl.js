@@ -200,7 +200,6 @@ const languageControl = {
         if (translationRecord) {
           return translationRecord.values
         }
-        return {}
       }
       return {}
     }

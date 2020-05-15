@@ -2,26 +2,7 @@
 // please if you want to implement a custom dashboard create a new fielwith api definition
 
 // Get Instance for connection
-function Instance() {
-  const BusinessData = require('@adempiere/grpc-data-client')
-  const { BUSINESS_DATA_ADDRESS } = require('@/api/ADempiere/constants')
-  const { getLanguage } = require('@/lang/index')
-  const { getToken, getCurrentOrganization, getCurrentWarehouse } = require('@/utils/auth')
-
-  return new BusinessData({
-    host: BUSINESS_DATA_ADDRESS,
-    sessionUuid: getToken(),
-    organizationUuid: getCurrentOrganization(),
-    warehouseUuid: getCurrentWarehouse(),
-    language: getLanguage() || 'en_US'
-  })
-}
-
-// Request a Process Activity list
-export function requestListProcessesLogs({ pageToken, pageSize }) {
-  //  Get Process Activity
-  return Instance.call(this).requestListProcessesLogs({ pageToken, pageSize })
-}
+import { BusinessDataInstance as Instance } from '@/api/ADempiere/instances.js'
 
 // Get Recent Items based on selection option
 export function getRecentItems({ pageToken, pageSize }) {
