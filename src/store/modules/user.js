@@ -13,11 +13,12 @@ import {
   removeCurrentWarehouse,
   removeCurrentOrganization
 } from '@/utils/auth'
-import { getOrganizationsList, getWarehousesList } from '@/api/ADempiere/system-core'
+import { getOrganizationsList, getWarehousesList, listLanguages } from '@/api/ADempiere/system-core'
 import router, { resetRouter } from '@/router'
 import { showMessage } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
-import language from '@/lang'
+import { convertDateFormat } from '@/utils/ADempiere/valueFormat'
+import { language, getLanguage } from '@/lang'
 
 const state = {
   token: getToken(),
@@ -31,6 +32,7 @@ const state = {
   organizationsList: [],
   organization: {},
   warehousesList: [],
+  languagesList: [],
   warehouse: {},
   isSession: false,
   sessionInfo: {}
@@ -78,10 +80,32 @@ const mutations = {
   },
   setSessionInfo(state, payload) {
     state.sessionInfo = payload
+  },
+  setLanguagesList: (state, payload) => {
+    state.languagesList = Object.freeze(payload.map(language => {
+      const languageDefinition = {
+        ...language,
+        datePattern: convertDateFormat(language.datePattern),
+        timePattern: convertDateFormat(language.timePattern)
+      }
+      return languageDefinition
+    }))
   }
 }
 
 const actions = {
+  getLanguagesFromServer({ commit }) {
+    return new Promise(resolve => {
+      listLanguages({ pageToke: undefined, pageSize: undefined })
+        .then(languageResponse => {
+          commit('setLanguagesList', languageResponse.languagesList)
+          resolve(languageResponse.languagesList)
+        })
+        .catch(error => {
+          console.warn(`Error getting Languages List: ${error.message}. Code: ${error.code}.`)
+        })
+    })
+  },
   // user login
   login({ commit }, {
     userName,
@@ -99,16 +123,18 @@ const actions = {
           setToken(token)
 
           resolve()
-        }).catch(error => {
+        })
+        .catch(error => {
           reject(error)
         })
     })
   },
   // session info
-  getInfo({ commit, dispatch }, sessionUuid = null) {
+  getSessionInfo({ commit, dispatch }, sessionUuid = null) {
     if (isEmptyValue(sessionUuid)) {
       sessionUuid = getToken()
     }
+
     return new Promise((resolve, reject) => {
       getSessionInfo(sessionUuid)
         .then(responseGetInfo => {
@@ -142,46 +168,10 @@ const actions = {
 
           commit('SET_ROLE', role)
           setCurrentRole(role.uuid)
-          getOrganizationsList({ roleUuid: role.uuid })
-            .then(response => {
-              commit('SET_ORGANIZATIONS_LIST', response.organizationsList)
-              let organization = response.organizationsList.find(item => item.uuid === getCurrentOrganization())
-              if (isEmptyValue(organization)) {
-                organization = response.organizationsList[0]
-              }
-              if (isEmptyValue(organization)) {
-                removeCurrentOrganization()
-                commit('SET_ORGANIZATION', undefined)
-              } else {
-                setCurrentOrganization(organization.uuid)
-                commit('SET_ORGANIZATION', organization)
-              }
-              getWarehousesList({ organizationUuid: getCurrentOrganization() })
-                .then(response => {
-                  commit('SET_WAREHOUSES_LIST', response.warehousesList)
-                  let warehouse = response.warehousesList.find(item => item.uuid === getCurrentWarehouse())
-                  if (isEmptyValue(warehouse)) {
-                    warehouse = response.warehousesList[0]
-                  }
-                  if (isEmptyValue(warehouse)) {
-                    removeCurrentWarehouse()
-                    commit('SET_WAREHOUSE', undefined)
-                  } else {
-                    setCurrentWarehouse(warehouse.uuid)
-                    commit('SET_WAREHOUSE', warehouse)
-                  }
-                })
-                .catch(error => {
-                  console.warn(`Error ${error.code} getting user info value: ${error.message}.`)
-                  reject(error)
-                })
-            })
-            .catch(error => {
-              console.warn(`Error ${error.code} getting user info value: ${error.message}.`)
-              reject(error)
-            })
-          //
+
           resolve(sessionResponse)
+
+          dispatch('getOrganizationsList', role.uuid)
 
           dispatch('getUserInfoFromSession', sessionUuid)
             .catch(error => {
@@ -279,11 +269,43 @@ const actions = {
       resolve()
     })
   },
+  getOrganizationsList({ commit, dispatch }, roleUuid) {
+    if (isEmptyValue(roleUuid)) {
+      roleUuid = getCurrentRole()
+    }
+
+    return getOrganizationsList({ roleUuid })
+      .then(response => {
+        commit('SET_ORGANIZATIONS_LIST', response.organizationsList)
+        let organization = response.organizationsList.find(item => item.uuid === getCurrentOrganization())
+        if (isEmptyValue(organization)) {
+          organization = response.organizationsList[0]
+        }
+        if (isEmptyValue(organization)) {
+          removeCurrentOrganization()
+          organization = undefined
+        } else {
+          setCurrentOrganization(organization.uuid)
+        }
+        commit('SET_ORGANIZATION', organization)
+
+        dispatch('getWarehousesList', organization.uuid)
+      })
+      .catch(error => {
+        console.warn(`Error ${error.code} getting Organizations list: ${error.message}.`)
+      })
+  },
   changeOrganization({ commit, dispatch }, {
     organizationUuid
   }) {
     setCurrentOrganization(organizationUuid)
-    getWarehousesList({ organizationUuid: organizationUuid })
+    dispatch('getWarehousesList', organizationUuid)
+  },
+  getWarehousesList({ commit }, organizationUuid) {
+    if (isEmptyValue(organizationUuid)) {
+      organizationUuid = getCurrentOrganization()
+    }
+    return getWarehousesList({ organizationUuid })
       .then(response => {
         commit('SET_WAREHOUSES_LIST', response.warehousesList)
         let warehouse = response.warehousesList.find(item => item.uuid === getCurrentWarehouse())
@@ -299,7 +321,7 @@ const actions = {
         }
       })
       .catch(error => {
-        console.warn(`Error ${error.code} getting user info value: ${error.message}.`)
+        console.warn(`Error ${error.code} getting Warehouses list: ${error.message}.`)
       })
   },
   changeWarehouse({ commit, state }, {
@@ -348,7 +370,7 @@ const actions = {
         setToken(changeRoleResponse.uuid)
 
         // Update user info and context associated with session
-        dispatch('getInfo', changeRoleResponse.uuid)
+        dispatch('getSessionInfo', changeRoleResponse.uuid)
 
         dispatch('resetStateBusinessData', null, {
           root: true
@@ -382,23 +404,16 @@ const actions = {
             router.addRoutes(response)
           })
       })
-    //  return new Promise(async resolve => {
-    //  const token = role
-    //  commit('SET_TOKEN', token)
-    //  commit('SET_CURRENTROLE',)
-    //  setToken(token)
-    //  const { roles } = await dispatch('getInfo')
-
-    //  generate accessible routes map based on roles
-    //  const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
-
-    //  dynamically add accessible routes
-    //  router.addRoutes(accessRoutes)
-    // })
   }
 }
 
 const getters = {
+  getLanguagesList: (state) => {
+    return state.languagesList
+  },
+  getCurrentLanguageDefinition: (state) => {
+    return state.languagesList.find(definition => definition.languageISO === getLanguage())
+  },
   getRoles: (state) => {
     return state.rolesList
   },

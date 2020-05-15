@@ -112,6 +112,9 @@ const data = {
           isAddRecord,
           isShowNotification
         })
+          .catch(error => {
+            console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
+          })
       } else if (panelType === 'browser') {
         if (!rootGetters.isNotReadyForSubmit(containerUuid)) {
           dispatch('getBrowserSearch', {
@@ -455,7 +458,7 @@ const data = {
       recordUuid,
       recordId
     }) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         getEntity({
           tableName,
           recordUuid,
@@ -465,7 +468,7 @@ const data = {
             resolve(responseGetEntity.values)
           })
           .catch(error => {
-            reject(error)
+            console.warn(`Error Get Entity ${error.message}. Code: ${error.code}.`)
           })
       })
     },
@@ -484,7 +487,8 @@ const data = {
       const {
         parentUuid, containerUuid,
         tableName, query, whereClause, orderByClause, conditionsList = [],
-        isShowNotification = true, isParentTab = true, isAddRecord = false
+        isShowNotification = true, isParentTab = true, isAddRecord = false,
+        isAddDefaultValues = true
       } = parameters
       if (isShowNotification) {
         showMessage({
@@ -515,11 +519,14 @@ const data = {
       })
 
       // gets the default value of the fields (including whether it is empty or undefined)
-      const defaultValues = rootGetters.getParsedDefaultValues({
-        parentUuid: parentUuid,
-        containerUuid: containerUuid,
-        isGetServer: false
-      })
+      let defaultValues = {}
+      if (isAddDefaultValues) {
+        defaultValues = rootGetters.getParsedDefaultValues({
+          parentUuid,
+          containerUuid,
+          isGetServer: false
+        })
+      }
       return getEntitiesList({
         tableName,
         query,
@@ -537,9 +544,10 @@ const data = {
             values.isEdit = false
             values.isSelected = false
             values.isReadOnlyFromRow = false
-
-            if (inEdited.find(itemEdit => itemEdit.UUID === values.UUID)) {
-              values.isEdit = true
+            if (isAddDefaultValues) {
+              if (inEdited.find(itemEdit => itemEdit.UUID === values.UUID)) {
+                values.isEdit = true
+              }
             }
 
             // overwrite default values and sets the values obtained from the

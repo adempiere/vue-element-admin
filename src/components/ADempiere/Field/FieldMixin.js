@@ -18,7 +18,7 @@ export const fieldMixin = {
       value = this.valueModel
     }
     return {
-      value: value
+      value
     }
   },
   computed: {
@@ -36,8 +36,16 @@ export const fieldMixin = {
       this.preHandleChange(value)
     }
   },
+  mounted() {
+    if (this.metadata.handleRequestFocus) {
+      this.requestFocus()
+    }
+  },
   methods: {
-    activeFocus() {
+    /**
+     * Set focus if handle focus attribute is true
+     */
+    requestFocus() {
       if (this.$refs[this.metadata.columnName]) {
         this.$refs[this.metadata.columnName].focus()
       }
@@ -51,7 +59,7 @@ export const fieldMixin = {
       this.handleChange(value)
     },
     focusGained(value) {
-      if (this.metadata.isAutoSelection) {
+      if (this.metadata.handleContentSelection) {
         // select all the content inside the text box
         if (!this.isEmptyValue(value.target.selectionStart) &&
           !this.isEmptyValue(value.target.selectionStart)) {
@@ -82,6 +90,16 @@ export const fieldMixin = {
           containerUuid: this.metadata.containerUuid,
           columnName: this.metadata.columnName,
           value: value.key,
+          keyCode: value.keyCode
+        })
+      }
+    },
+    actionKeyPerformed(value) {
+      if (this.metadata.handleActionKeyPerformed) {
+        this.$store.dispatch('notifyActionKeyPerformed', {
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnName,
+          value: value.target.value,
           keyCode: value.keyCode
         })
       }
@@ -140,6 +158,12 @@ export const fieldMixin = {
           value: newValue
         })
       }
+
+      // if is custom field, set custom handle change value
+      if (this.metadata.isCustomField) {
+        return
+      }
+
       if (this.metadata.inTable) {
         this.$store.dispatch('notifyCellTableChange', {
           ...sendParameters,

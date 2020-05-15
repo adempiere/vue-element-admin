@@ -2,7 +2,7 @@
   <el-container
     key="form-loaded"
     class="view-base"
-    style="height: 84vh;"
+    style="height: max-content!important;"
   >
     <el-header style="height: 39px;">
       <context-menu
@@ -17,7 +17,7 @@
           <el-card
             v-if="isLoaded"
             class="content-collapse"
-            :style="isEmptyValue(metadata.fieldList) ? 'height: 75vh !important;' : ''"
+            :style="isEmptyValue(metadata.fieldList) ? 'height: max-content!important;' : ''"
           >
             <h3 class="warn-content text-center">
               <el-popover
@@ -102,6 +102,21 @@ export default {
   computed: {
     formTitle() {
       return this.metadata.name || this.$route.meta.title
+    }
+  },
+  created() {
+    this.unsubscribe = this.subscribeChanges()
+  },
+  beforeDestroy() {
+    this.unsubscribe()
+  },
+  methods: {
+    subscribeChanges() {
+      return this.$store.subscribe((mutation, state) => {
+        if (mutation.type === 'addActionKeyPerformed') {
+          console.log(mutation)
+        }
+      })
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <el-form>
-    {{ $t('route.Role') }}
+    {{ $t('route.role') }}
     <el-select
       v-model="roleUuid"
       :filterable="!isMobile"
@@ -15,7 +15,7 @@
         :disabled="isEmptyValue(role.uuid)"
       />
     </el-select>
-    {{ $t('route.Client') }}
+    {{ $t('route.organization') }}
     <el-select
       v-model="organizationUuid"
       :filterable="!isMobile"
@@ -30,7 +30,7 @@
         :disabled="isEmptyValue(organization.uuid)"
       />
     </el-select>
-    {{ $t('route.Warehouse') }}
+    {{ $t('route.warehouse') }}
     <el-select
       v-model="warehouseUuid"
       :filterable="!isMobile"
@@ -105,9 +105,11 @@ export default {
         warehouseUuid: this.warehouseUuid
       })
         .then(response => {
+          if (this.$route.name !== 'Dashboard') {
+            this.$router.push({ path: '/' })
+          }
           this.$store.dispatch('listDashboard', response.uuid)
         })
-      this.$router.push({ path: '/' })
     },
     changeOrganization(organizationUuid) {
       this.$store.dispatch('user/changeOrganization', {
@@ -121,7 +123,9 @@ export default {
       })
     },
     getLanguageData() {
-      this.$store.dispatch('getLanguagesFromServer')
+      if (this.isEmptyValue(this.getLanguageList)) {
+        this.$store.dispatch('user/getLanguagesFromServer')
+      }
     }
   }
 }

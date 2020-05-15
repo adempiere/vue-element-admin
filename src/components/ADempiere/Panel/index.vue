@@ -585,6 +585,9 @@ export default {
               })
             }
           })
+          .catch(error => {
+            console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
+          })
       }
     },
     /**
@@ -700,13 +703,18 @@ export default {
         }
       }
       this.setTagsViewTitle(uuidRecord)
-      this.setFocus()
+      if (this.$route.query.action === 'create-new') {
+        this.setFocus()
+      }
       const currentRecord = this.getterDataStore.record.find(record => record.UUID === uuidRecord)
       this.$store.dispatch('currentRecord', currentRecord)
     },
     async setFocus() {
       return new Promise(resolve => {
         const fieldFocus = this.getterFieldList.find(itemField => {
+          if (itemField.handleRequestFocus) {
+            return true
+          }
           if (Object.prototype.hasOwnProperty.call(this.$refs, itemField.columnName)) {
             if (fieldIsDisplayed(itemField) && !itemField.isReadOnly && itemField.isUpdateable && itemField.componentPath !== 'FieldSelect') {
               return true

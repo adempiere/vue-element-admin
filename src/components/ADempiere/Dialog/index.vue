@@ -115,6 +115,9 @@ export default {
               containerUuid: this.modalMetadata.containerUuid,
               isAddRecord: true
             })
+              .catch(error => {
+                console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
+              })
           }
         }
       }
