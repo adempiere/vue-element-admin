@@ -5,11 +5,11 @@
     class="view-base"
     style="height: 86vh;"
   >
-    <modal-dialog
+    <!-- <modal-dialog
       v-if="isShowProcess"
       :container-uuid="browserUuid"
       :panel-type="panelType"
-    />
+    /> -->
     <el-header
       v-if="showContextMenu"
     >
@@ -94,7 +94,7 @@
 import ContextMenu from '@/components/ADempiere/ContextMenu'
 import MainPanel from '@/components/ADempiere/Panel'
 import DataTable from '@/components/ADempiere/DataTable'
-import ModalDialog from '@/components/ADempiere/Dialog'
+// import ModalDialog from '@/components/ADempiere/Dialog'
 import TabInfo from '@/components/ADempiere/ContainerInfo'
 
 export default {
@@ -103,8 +103,8 @@ export default {
     MainPanel,
     DataTable,
     ContextMenu,
-    TabInfo,
-    ModalDialog
+    TabInfo
+    // ModalDialog
   },
   props: {
     isEdit: {

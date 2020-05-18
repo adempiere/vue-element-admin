@@ -61,12 +61,12 @@
         </div>
       </el-col>
     </el-row>
-    <modal-dialog
+    <!-- <modal-dialog
       :metadata="processMetadata"
       :parent-uuid="reportResult.processUuid"
       :report-export-type="reportFormat"
       :panel-type="panelType"
-    />
+    /> -->
   </div>
   <div
     v-else
@@ -81,14 +81,14 @@
 
 <script>
 import ContextMenu from '@/components/ADempiere/ContextMenu'
-import ModalDialog from '@/components/ADempiere/Dialog'
+// import ModalDialog from '@/components/ADempiere/Dialog'
 import { showNotification } from '@/utils/ADempiere/notification'
 
 export default {
   name: 'ReportViewer',
   components: {
-    ContextMenu,
-    ModalDialog
+    ContextMenu
+    // ModalDialog
   },
   data() {
     return {
