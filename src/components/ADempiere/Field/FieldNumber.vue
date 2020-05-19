@@ -29,14 +29,7 @@ export default {
   name: 'FieldNumber',
   mixins: [fieldMixin],
   data() {
-    // value render
-    let value1 = this.metadata.value
-    if (this.metadata.inTable) {
-      value1 = this.valueModel
-    }
-    value1 = this.validateValue(value1)
     return {
-      value1: value1,
       showControls: true,
       operation: '',
       expression: /[\d\/.()%\*\+\-]/gim,
@@ -83,21 +76,8 @@ export default {
       return 'right'
     }
   },
-  watch: {
-    // enable to dataTable records
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = this.validateValue(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = this.validateValue(value)
-      }
-    }
-  },
   methods: {
-    validateValue(value) {
+    parseValue(value) {
       if (this.isEmptyValue(value) || isNaN(value)) {
         return undefined
       }
@@ -120,7 +100,7 @@ export default {
           const newValue = String(this.value).slice(0, -1)
           const result = this.calculationValue(newValue, event)
           if (!this.isEmptyValue(result)) {
-            this.value = this.validateValue(result)
+            this.value = this.parseValue(result)
             this.valueToDisplay = result
             this.isShowed = true
           } else {
@@ -134,7 +114,7 @@ export default {
           const newValue = String(this.value).slice(-1)
           const result = this.calculationValue(newValue, event)
           if (!this.isEmptyValue(result)) {
-            this.value = this.validateValue(result)
+            this.value = this.parseValue(result)
             this.valueToDisplay = result
             this.isShowed = true
           } else {
@@ -148,7 +128,7 @@ export default {
     },
     changeValue() {
       if (!this.isEmptyValue(this.valueToDisplay) && this.valueToDisplay !== '...') {
-        const result = this.validateValue(this.valueToDisplay)
+        const result = this.parseValue(this.valueToDisplay)
         this.preHandleChange(result)
       }
       this.clearVariables()

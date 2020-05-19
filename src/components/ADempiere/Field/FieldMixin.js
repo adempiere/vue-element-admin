@@ -17,6 +17,8 @@ export const fieldMixin = {
     if (this.metadata.inTable) {
       value1 = this.valueModel
     }
+    value1 = this.parseValue(this.valueModel)
+
     return {
       value1
     }

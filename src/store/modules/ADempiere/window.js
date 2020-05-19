@@ -216,7 +216,7 @@ const windowControl = {
             sqlStatement = sqlStatement.query
           }
         }
-        const contextInfo = dispatch.dispatch('getContextInfoValueFromServer', {
+        const contextInfo = dispatch('getContextInfoValueFromServer', {
           parentUuid,
           containerUuid,
           contextInfoUuid: field.contextInfo.uuid,

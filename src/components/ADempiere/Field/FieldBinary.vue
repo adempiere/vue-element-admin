@@ -26,18 +26,6 @@ import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 export default {
   name: 'FieldBinary',
   mixins: [fieldMixin],
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = value
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = value
-      }
-    }
-  },
   methods: {
     handleRemove(file) {
       this.$message.success(`The previously uploaded file has been deleted.`)

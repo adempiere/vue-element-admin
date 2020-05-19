@@ -13,16 +13,12 @@ import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 export default {
   name: 'FieldButton',
   mixins: [fieldMixin],
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = String(value)
+  methods: {
+    parseValue(value) {
+      if (this.isEmptyValue(value)) {
+        value = ''
       }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = String(value)
-      }
+      return String(value)
     }
   }
 }

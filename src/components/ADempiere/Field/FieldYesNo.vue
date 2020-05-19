@@ -32,18 +32,13 @@ export default {
       ]
     }
   },
-  watch: {
-    value(value, oldValue) {
+  methods: {
+    parseValue(value) {
       if (typeof value !== 'boolean') {
         if (value === 'N' || value === 'n') {
           value = false
         }
-        this.value = Boolean(value)
       }
-    }
-  },
-  methods: {
-    parseValue(value) {
       return Boolean(value)
     },
     preHandleChange(value) {

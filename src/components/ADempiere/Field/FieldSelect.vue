@@ -121,16 +121,10 @@ export default {
         }
       }
     },
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = value
-      }
-    },
     'metadata.value'(value) {
       if (!this.metadata.inTable) {
-        if (typeof value === 'boolean') {
-          value = value ? 'Y' : 'N'
-        }
+        value = this.parseValue(value)
+
         if (this.metadata.displayed) {
           if (!this.options.some(option => option.key === value) &&
             !this.isEmptyValue(this.metadata.displayColumn)) {
@@ -194,6 +188,12 @@ export default {
     }
   },
   methods: {
+    parseValue(value) {
+      if (typeof value === 'boolean') {
+        value = value ? 'Y' : 'N'
+      }
+      return value
+    },
     changeBlankOption() {
       if (Number(this.metadata.defaultValue) === -1) {
         this.blankOption = {

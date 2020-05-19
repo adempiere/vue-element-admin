@@ -20,9 +20,6 @@ export default {
   name: 'FieldImage',
   mixins: [fieldMixin],
   methods: {
-    parseValue(value) {
-      return value
-    },
     handleAvatarSuccess(res, file) {
       this.value = URL.createObjectURL(file.raw)
       // TODO: define one method to control change value

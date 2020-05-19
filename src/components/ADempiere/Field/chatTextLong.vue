@@ -59,25 +59,9 @@ export default {
     }
   },
   watch: {
-    valueModel(value, oldValue) {
-      if (this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = ''
-        }
-        this.value = String(value)
-      }
-    },
     clean(value) {
       if (value) {
         this.editor.setValue('')
-      }
-    },
-    'metadata.value'(value, oldValue) {
-      if (!this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = ''
-        }
-        this.value = String(value)
       }
     },
     value(newValue, oldValue) {
@@ -109,6 +93,12 @@ export default {
     this.destroyEditor()
   },
   methods: {
+    parseValue(value) {
+      if (this.isEmptyValue(value)) {
+        value = ''
+      }
+      return String(value)
+    },
     initEditor() {
       this.editor = new Editor({
         el: document.getElementById(this.id),

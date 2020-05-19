@@ -71,25 +71,13 @@ export default {
       return undefined
     }
   },
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = ''
-        }
-        this.value = String(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        if (this.isEmptyValue(value)) {
-          value = ''
-        }
-        this.value = String(value)
-      }
-    }
-  },
   methods: {
+    parseValue(value) {
+      if (this.isEmptyValue(value)) {
+        value = ''
+      }
+      return String(value)
+    },
     validateUrl(e) {
       // Entry pattern, in this case only accepts numbers and letters
       const _Pattern = /^(http[s]?:\/\/(www\.)?|ftp:\/\/(www\.)?|www\.){1}([0-9A-Za-z-\.@:%_\+~#=]+)+((\.[a-zA-Z]{1,5})+)(\/(.)*)?(\?(.)*)?/g

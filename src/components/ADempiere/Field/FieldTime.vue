@@ -46,20 +46,8 @@ export default {
       return -Infinity
     }
   },
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = this.parsedDateValue(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = this.parsedDateValue(value)
-      }
-    }
-  },
   methods: {
-    parsedDateValue(value) {
+    parseValue(value) {
       if (typeof value === 'number') {
         value = new Date(value).toUTCString()
       }
