@@ -8,17 +8,13 @@ import language from '@/lang'
 const browserControl = {
   actions: {
     browserActionPerformed({ dispatch, getters }, {
-      parentUuid,
       containerUuid,
-      tableName,
       columnName,
       field,
       value
     }) {
       console.log({
-        parentUuid,
         containerUuid,
-        tableName,
         columnName,
         field,
         value

@@ -74,6 +74,11 @@ export const fieldMixin = {
     }
   },
   methods: {
+    /**
+     * Parse the value to a new value if required for element-ui component
+     * compatibility where this method is overwritten
+     * @param {mixed} value
+     */
     parseValue(value) {
       return value
     },
@@ -160,7 +165,7 @@ export const fieldMixin = {
         this.$store.dispatch('notifyActionPerformed', {
           containerUuid: this.metadata.containerUuid,
           columnName: this.metadata.columnName,
-          value: value
+          value
         })
       }
 
