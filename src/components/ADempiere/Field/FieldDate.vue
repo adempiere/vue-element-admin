@@ -30,13 +30,7 @@ export default {
   name: 'FieldDate',
   mixins: [fieldMixin],
   data() {
-    // value render
-    let value = this.metadata.value
-    if (this.metadata.inTable) {
-      value = this.valueModel
-    }
     return {
-      value: this.parsedDateValue(value),
       pickerOptionsDate: {
         shortcuts: [{
           text: this.$t('components.date.Today'),
@@ -151,20 +145,8 @@ export default {
       return this.pickerOptionsDate
     }
   },
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = this.parsedDateValue(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = this.parsedDateValue(value)
-      }
-    }
-  },
   methods: {
-    parsedDateValue(value) {
+    parseValue(value) {
       // not return undefined to v-model
       if (this.isEmptyValue(value)) {
         if (['IN', 'NOT_IN'].includes(this.metadata.operator) && this.metadata.isAdvancedQuery) {

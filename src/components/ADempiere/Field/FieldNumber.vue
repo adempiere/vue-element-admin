@@ -30,13 +30,13 @@ export default {
   mixins: [fieldMixin],
   data() {
     // value render
-    let value = this.metadata.value
+    let value1 = this.metadata.value
     if (this.metadata.inTable) {
-      value = this.valueModel
+      value1 = this.valueModel
     }
-    value = this.validateValue(value)
+    value1 = this.validateValue(value1)
     return {
-      value: value,
+      value1: value1,
       showControls: true,
       operation: '',
       expression: /[\d\/.()%\*\+\-]/gim,

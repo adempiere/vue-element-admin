@@ -33,16 +33,6 @@ export default {
     }
   },
   watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = Boolean(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = Boolean(value)
-      }
-    },
     value(value, oldValue) {
       if (typeof value !== 'boolean') {
         if (value === 'N' || value === 'n') {
@@ -50,13 +40,12 @@ export default {
         }
         this.value = Boolean(value)
       }
-      this.preHandleChange('NotSend')
     }
   },
-  mounted() {
-    this.preHandleChange('NotSend') // activate logics
-  },
   methods: {
+    parseValue(value) {
+      return Boolean(value)
+    },
     preHandleChange(value) {
       this.handleChange(value)
       if (!this.metadata.inTable && !this.metadata.isAdvancedQuery) {

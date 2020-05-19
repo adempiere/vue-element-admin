@@ -396,7 +396,7 @@ const panel = {
      * @param {boolean} isSendToServer, indicate if changes send to server
      * @param {boolean} isChangedAllValues, check if it changes all the values of the fields, if it does not exist, set an empty value
      */
-    notifyPanelChange({ dispatch, getters, rootGetters }, {
+    notifyPanelChange({ dispatch, getters, commit, rootGetters }, {
       parentUuid,
       containerUuid,
       newValues = {},
@@ -417,7 +417,7 @@ const panel = {
           fieldList = getters.getFieldsListFromPanel(containerUuid, isAdvancedQuery)
         }
         let fieldsShowed = []
-        const promisessList = []
+        // const promisessList = []
         fieldList.map(async actionField => {
           if (actionField.isShowedFromUser) {
             fieldsShowed.push(actionField.columnName)
@@ -457,55 +457,67 @@ const panel = {
               newValues[`DisplayColumn_${actionField.columnName}`] = lookup.label
             }
           }
-
-          promisessList.push(dispatch('notifyFieldChange', {
-            isSendToServer,
-            isSendCallout,
-            isAdvancedQuery,
-            panelType,
+          // console.log({
+          //   parentUuid,
+          //   containerUuid,
+          //   columnName: actionField.columnName,
+          //   value: newValues[actionField.columnName]
+          // })
+          //  Update field
+          commit('updateValueOfField', {
             parentUuid,
             containerUuid,
             columnName: actionField.columnName,
-            displayColumn: newValues[`DisplayColumn_${actionField.columnName}`],
-            newValue: newValues[actionField.columnName],
-            valueTo: newValues[`${actionField.columnName}_To`],
-            fieldList,
-            field: actionField,
-            withOutColumnNames,
-            isChangedOldValue: true, // defines if set oldValue with newValue instead of current value
-            isChangeMultipleFields
-          }))
+            value: newValues[actionField.columnName]
+          })
+          // promisessList.push(dispatch('notifyFieldChange', {
+          //   isSendToServer,
+          //   isSendCallout,
+          //   isAdvancedQuery,
+          //   panelType,
+          //   parentUuid,
+          //   containerUuid,
+          //   columnName: actionField.columnName,
+          //   displayColumn: newValues[`DisplayColumn_${actionField.columnName}`],
+          //   newValue: newValues[actionField.columnName],
+          //   valueTo: newValues[`${actionField.columnName}_To`],
+          //   fieldList,
+          //   field: actionField,
+          //   withOutColumnNames,
+          //   isChangedOldValue: true, // defines if set oldValue with newValue instead of current value
+          //   isChangeMultipleFields
+          // }))
         })
 
-        Promise.all(promisessList)
-          .then(response => {
-            resolve()
-            const calloutsToExecute = []
-            if (isSendCallout) {
-              response.forEach(item => {
-                if (item && !isEmptyValue(item.field.callout) &&
-                  !withOutColumnNames.includes(item.field.columnName)) {
-                  withOutColumnNames.push(item.field.columnName)
-                  calloutsToExecute.push({
-                    parentUuid,
-                    containerUuid,
-                    tableName: item.tableName,
-                    columnName: item.field.columnName,
-                    callout: item.field.callout,
-                    value: item.newValue,
-                    oldValue: item.field.oldValue,
-                    withOutColumnNames
-                  })
-                }
-              })
-            }
-
-            calloutsToExecute.map(async executeCallout => {
-              await dispatch('getCallout', {
-                ...executeCallout
-              })
-            })
-          })
+        // Promise.all(promisessList)
+        //   .then(response => {
+        //     resolve()
+        //     const calloutsToExecute = []
+        //     if (isSendCallout) {
+        //       response.forEach(item => {
+        //         if (item && !isEmptyValue(item.field.callout) &&
+        //           !withOutColumnNames.includes(item.field.columnName)) {
+        //           withOutColumnNames.push(item.field.columnName)
+        //           calloutsToExecute.push({
+        //             parentUuid,
+        //             containerUuid,
+        //             tableName: item.tableName,
+        //             columnName: item.field.columnName,
+        //             callout: item.field.callout,
+        //             value: item.newValue,
+        //             oldValue: item.field.oldValue,
+        //             withOutColumnNames
+        //           })
+        //         }
+        //       })
+        //     }
+        //
+        //     calloutsToExecute.map(async executeCallout => {
+        //       await dispatch('runCallout', {
+        //         ...executeCallout
+        //       })
+        //     })
+        //   })
 
         // show fields in query
         if (isShowedField && !isEmptyValue(newValues)) {
@@ -540,318 +552,163 @@ const panel = {
         }
       })
     },
-    /**
-     * TODO: Add fieldAttributes
-     * @param {string}  parentUuid
-     * @param {string}  containerUuid
-     * @param {string}  panelType
-     * @param {boolean} isAdvancedQuery
-     * @param {string}  columnName
-     * @param {mixin}   newValue
-     * @param {mixin}   valueTo
-     * @param {string}  displayColumn, only used for lookup
-     * @param {boolean} isSendToServer
-     * @param {boolean} isSendCallout
-     * @param {boolean} isChangedOldValue
-     * @param {array}   withOutColumnNames
-     */
+    // Handle all trigger for a field:
+    // - Display Logic
+    // - Mandatory Logic
+    // - Read Only Logic
+    // - Action for Custom panel from type
     notifyFieldChange({ commit, dispatch, getters }, {
       parentUuid,
       containerUuid,
       panelType = 'window',
-      isAdvancedQuery = false,
+      tableName,
       columnName,
-      newValue,
-      valueTo,
-      displayColumn,
-      isSendToServer = true,
-      isSendCallout = true,
-      isChangedOldValue = false,
-      withOutColumnNames = [],
-      isChangeMultipleFields = false
+      field
     }) {
       // TODO: https://eslint.org/docs/rules/no-async-promise-executor
       // eslint-disable-next-line no-async-promise-executor
       return new Promise(async resolve => {
-        const panel = getters.getPanel(containerUuid, isAdvancedQuery)
-        const { fieldList: fieldsList, tableName } = panel
         // get field
-        const field = fieldsList.find(fieldItem => fieldItem.columnName === columnName)
-
-        if (!(panelType === 'table' || isAdvancedQuery)) {
-          if (!['IN', 'NOT_IN'].includes(field.operator)) {
-            newValue = parsedValueComponent({
-              fieldType: field.componentPath,
-              displayType: field.displayType,
-              value: newValue,
-              isIdentifier: field.columnName.includes('_ID')
-            })
-            if (field.isRange) {
-              valueTo = parsedValueComponent({
-                fieldType: field.componentPath,
-                displayType: field.displayType,
-                value: valueTo,
-                isIdentifier: field.columnName.includes('_ID')
-              })
-            }
-          }
-
-          //  Call context management
-          dispatch('setContext', {
-            parentUuid,
-            containerUuid,
-            columnName,
-            value: newValue
-          })
-          // request context info field
-          if ((!isEmptyValue(field.value) || !isEmptyValue(newValue)) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
-            let isSQL = false
-            let sqlStatement = field.contextInfo.sqlStatement
-            if (sqlStatement.includes('@')) {
-              if (sqlStatement.includes('@SQL=')) {
-                isSQL = true
-              }
-              sqlStatement = parseContext({
-                parentUuid,
-                containerUuid,
-                columnName,
-                value: sqlStatement,
-                isSQL
-              }).value
-              if (isSQL && String(sqlStatement) === '[object Object]') {
-                sqlStatement = sqlStatement.query
-              }
-            }
-            const contextInfo = await dispatch('getContextInfoValueFromServer', {
-              parentUuid,
-              containerUuid,
-              contextInfoUuid: field.contextInfo.uuid,
-              columnName,
-              sqlStatement
-            })
-            if (!isEmptyValue(contextInfo) && !isEmptyValue(contextInfo.messageText)) {
-              field.contextInfo.isActive = true
-              field.contextInfo.messageText.msgText = contextInfo.messageText
-              field.contextInfo.messageText.msgTip = contextInfo.messageTip
-            }
-          }
-
-          //  Change Dependents
-          dispatch('changeDependentFieldsList', {
-            parentUuid,
-            containerUuid,
-            dependentFieldsList: field.dependentFieldsList,
-            fieldsList,
-            isSendToServer
-          })
+        if (!field) {
+          const { fieldsList } = getters.getPanel(containerUuid, false)
+          field = fieldsList.find(fieldItem => fieldItem.columnName === columnName)
         }
+        const value = getters.getValueOfField({
+          containerUuid,
+          columnName
+        })
+        // if (!(panelType === 'table' || isAdvancedQuery)) {
+        //   if (!['IN', 'NOT_IN'].includes(field.operator)) {
+        //     value = parsedValueComponent({
+        //       fieldType: field.componentPath,
+        //       displayType: field.displayType,
+        //       value,
+        //       isIdentifier: field.columnName.includes('_ID')
+        //     })
+        //     if (field.isRange) {
+        //       valueTo = parsedValueComponent({
+        //         fieldType: field.componentPath,
+        //         displayType: field.displayType,
+        //         value: valueTo,
+        //         isIdentifier: field.columnName.includes('_ID')
+        //       })
+        //     }
+        //   }
+        // }
 
         // the field has not changed, then the action is broken
-        if (newValue === field.value && isEmptyValue(displayColumn) && field.isEvaluateValueChanges) {
+        if (value === field.value && field.isEvaluateValueChanges) {
           resolve()
           return
         }
-
-        commit('changeFieldValue', {
-          field,
-          newValue,
-          valueTo,
-          displayColumn,
-          isChangedOldValue
-        })
+        //
         resolve({
+          tableName,
           field,
-          newValue,
-          valueTo,
-          displayColumn,
-          tableName
+          value
         })
 
-        // request callouts
-        if (field.panelType === 'window' && isSendCallout && !isChangeMultipleFields) {
-          if (!withOutColumnNames.includes(field.columnName) && !isEmptyValue(newValue) && !isEmptyValue(field.callout)) {
-            withOutColumnNames.push(field.columnName)
-            dispatch('getCallout', {
-              parentUuid,
-              containerUuid,
-              tableName,
-              columnName: field.columnName,
-              callout: field.callout,
-              value: newValue,
-              oldValue: field.oldValue,
-              valueType: field.valueType,
-              withOutColumnNames
-            })
-          }
-        }
-
-        if (isSendToServer) {
-          if (panelType === 'table' || isAdvancedQuery) {
-            if (field.isShowedFromUser && (field.oldValue !== field.value ||
-              ['NULL', 'NOT_NULL'].includes(field.operator) ||
-              field.operator !== field.oldOperator)) {
-              // change action to advanced query on field value is changed in this panel
-              if (router.currentRoute.query.action !== 'advancedQuery') {
-                router.push({
-                  query: {
-                    ...router.currentRoute.query,
-                    action: 'advancedQuery'
-                  }
-                })
-              }
-              commit('changeField', {
-                field,
-                newField: {
-                  ...field,
-                  oldOperator: field.operator
-                }
-              })
-              dispatch('getObjectListFromCriteria', {
+        // Run specific action
+        dispatch(panelType + 'ActionPerformed', {
+          parentUuid,
+          containerUuid,
+          tableName,
+          field,
+          columnName: field.columnName,
+          value
+        })
+          .then(response => {
+            if (!response || response.changeDependences) {
+              //  Change Dependents
+              dispatch('changeDependentFieldsList', {
                 parentUuid,
                 containerUuid,
-                tableName: panel.tableName,
-                query: panel.query,
-                whereClause: panel.whereClause,
-                conditionsList: getters.getParametersToServer({
-                  containerUuid,
-                  isAdvancedQuery: true,
-                  isEvaluateMandatory: false
-                })
-              })
-                .then(response => {
-                  if (response && response.length) {
-                    dispatch('notifyPanelChange', {
-                      parentUuid,
-                      containerUuid,
-                      isAdvancedQuery: false,
-                      newValues: response[0],
-                      isSendToServer: false,
-                      isSendCallout: true,
-                      panelType: 'window'
-                    })
-                  }
-                })
-                .catch(error => {
-                  console.warn(`Error getting Advanced Query (notifyFieldChange): ${error.message}. Code: ${error.code}.`)
-                })
-            }
-          } else {
-            const fieldsEmpty = getters.getFieldListEmptyMandatory({
-              containerUuid,
-              fieldsList
-            })
-
-            if (isEmptyValue(fieldsEmpty)) {
-              // TODO: refactory for it and change for a standard method
-              if (field.panelType === 'browser' && fieldIsDisplayed(field)) {
-                let isReadyForQuery = true
-                if (field.isSQLValue) {
-                  let awaitForValuesToQuery = panel.awaitForValuesToQuery
-                  awaitForValuesToQuery--
-                  dispatch('changeBrowserAttribute', {
-                    containerUuid,
-                    attributeName: 'awaitForValuesToQuery',
-                    attributeValue: awaitForValuesToQuery
-                  })
-                  if (awaitForValuesToQuery === 0) {
-                    if (panel.isShowedCriteria) {
-                      dispatch('changeBrowserAttribute', {
-                        containerUuid,
-                        attributeName: 'isShowedCriteria',
-                        attributeValue: false
-                      })
-                    }
-                  } else if (awaitForValuesToQuery > 0) {
-                    isReadyForQuery = false
-                  }
-                }
-                if (isReadyForQuery && !field.dependentFieldsList.length) {
-                  dispatch('getBrowserSearch', {
-                    containerUuid,
-                    isClearSelection: true
-                  })
-                }
-              } else if (field.panelType === 'window' && fieldIsDisplayed(field)) {
-                const uuid = getters.getUuid(containerUuid)
-                if (isEmptyValue(uuid)) {
-                  dispatch('createNewEntity', {
-                    parentUuid,
-                    containerUuid
-                  })
-                    .then(() => {
-                      // change old value so that it is not send in the next update
-                      commit('changeFieldValue', {
-                        field,
-                        newValue,
-                        valueTo,
-                        displayColumn,
-                        isChangedOldValue: true
-                      })
-                    })
-                    .catch(error => {
-                      showMessage({
-                        message: error.message,
-                        type: 'error'
-                      })
-                      console.warn(`Create Entity Error ${error.code}: ${error.message}.`)
-                    })
-                } else {
-                  dispatch('updateCurrentEntity', {
-                    containerUuid,
-                    recordUuid: uuid
-                  })
-                    .then(response => {
-                      // change old value so that it is not send in the next update
-                      showMessage({
-                        message: language.t('notifications.updateFields') + field.name,
-                        type: 'success'
-                      })
-                      commit('changeFieldValue', {
-                        field,
-                        newValue,
-                        valueTo,
-                        displayColumn,
-                        isChangedOldValue: true
-                      })
-
-                      // change value in table
-                      dispatch('notifyRowTableChange', {
-                        containerUuid,
-                        row: response,
-                        isEdit: false,
-                        isParent: true
-                      })
-                    })
-                }
-              }
-            } else {
-              showMessage({
-                message: language.t('notifications.mandatoryFieldMissing') + fieldsEmpty,
-                type: 'info'
+                field
               })
             }
-          }
-        }
+          })
+
+        // if (isSendToServer) {
+        //   if (panelType === 'table' || isAdvancedQuery) {
+        //     if (field.isShowedFromUser && (field.oldValue !== field.value ||
+        //       ['NULL', 'NOT_NULL'].includes(field.operator) ||
+        //       field.operator !== field.oldOperator)) {
+        //       // change action to advanced query on field value is changed in this panel
+        //       if (router.currentRoute.query.action !== 'advancedQuery') {
+        //         router.push({
+        //           query: {
+        //             ...router.currentRoute.query,
+        //             action: 'advancedQuery'
+        //           }
+        //         })
+        //       }
+        //       commit('changeField', {
+        //         field,
+        //         newField: {
+        //           ...field,
+        //           oldOperator: field.operator
+        //         }
+        //       })
+        //       dispatch('getObjectListFromCriteria', {
+        //         parentUuid,
+        //         containerUuid,
+        //         tableName: panel.tableName,
+        //         query: panel.query,
+        //         whereClause: panel.whereClause,
+        //         conditionsList: getters.getParametersToServer({
+        //           containerUuid,
+        //           isAdvancedQuery: true,
+        //           isEvaluateMandatory: false
+        //         })
+        //       })
+        //         .then(response => {
+        //           if (response && response.length) {
+        //             dispatch('notifyPanelChange', {
+        //               parentUuid,
+        //               containerUuid,
+        //               isAdvancedQuery: false,
+        //               newValues: response[0],
+        //               isSendToServer: false,
+        //               isSendCallout: true,
+        //               panelType: 'window'
+        //             })
+        //           }
+        //         })
+        //         .catch(error => {
+        //           console.warn(`Error getting Advanced Query (notifyFieldChange): ${error.message}. Code: ${error.code}.`)
+        //         })
+        //     }
+        //   }
+        //   else
+        // {
+        // const fieldsEmpty = getters.getFieldListEmptyMandatory({
+        //   containerUuid,
+        //   fieldsList
+        // })
+        //   if (isEmptyValue(fieldsEmpty)) {
+        //     // TODO: refactory for it and change for a standard method
+        //      else {
+        //     showMessage({
+        //       message: language.t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+        //       type: 'info'
+        //     })
+        //   }
+        // }
+        // }
       })
     },
     changeDependentFieldsList({ commit, dispatch, getters }, {
       parentUuid,
       containerUuid,
-      dependentFieldsList = [],
-      fieldsList = [],
-      isSendToServer
+      field
     }) {
-      if (isEmptyValue(dependentFieldsList)) {
+      if (isEmptyValue(field.dependentFieldsList)) {
         // breaks if there are no field dependencies
         return
       }
-
-      if (!fieldsList.length) {
-        fieldsList = getters.getFieldsListFromPanel(containerUuid)
-      }
-
-      const dependentsList = fieldsList.filter(fieldItem => {
-        return dependentFieldsList.includes(fieldItem.columnName)
+      //  Get all fields
+      const dependentsList = getters.getFieldsListFromPanel(containerUuid).filter(fieldItem => {
+        return field.dependentFieldsList.includes(fieldItem.columnName)
       })
 
       //  Iterate for change logic
@@ -908,15 +765,22 @@ const panel = {
               containerUuid,
               query: defaultValue
             })
-
-            dispatch('notifyFieldChange', {
+            //  Update values for field
+            commit('updateValueOfField', {
               parentUuid,
               containerUuid,
-              isSendToServer,
-              panelType: fieldDependent.panelType,
               columnName: fieldDependent.columnName,
-              newValue
+              value: newValue
             })
+            //
+            // dispatch('notifyFieldChange', {
+            //   parentUuid,
+            //   containerUuid,
+            //   isSendToServer,
+            //   panelType: fieldDependent.panelType,
+            //   columnName: fieldDependent.columnName,
+            //   newValue
+            // })
           }
         }
 

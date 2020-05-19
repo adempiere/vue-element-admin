@@ -19,24 +19,10 @@ import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
 export default {
   name: 'FieldImage',
   mixins: [fieldMixin],
-  data() {
-    return {
-      value: ''
-    }
-  },
-  watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = value
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = value
-      }
-    }
-  },
   methods: {
+    parseValue(value) {
+      return value
+    },
     handleAvatarSuccess(res, file) {
       this.value = URL.createObjectURL(file.raw)
       // TODO: define one method to control change value

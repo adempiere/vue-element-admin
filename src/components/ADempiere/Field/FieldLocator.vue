@@ -25,7 +25,6 @@ export default {
   mixins: [fieldMixin],
   data() {
     return {
-      value: [],
       options: [],
       props: {
         // checkStrictly: true,

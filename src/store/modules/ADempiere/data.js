@@ -744,7 +744,7 @@ const data = {
         if (isSendCallout && !withOutColumnNames.includes(field.columnName) &&
           !isEmptyValue(newValue) && !isEmptyValue(field.callout)) {
           withOutColumnNames.push(field.columnName)
-          dispatch('getCallout', {
+          dispatch('runCallout', {
             parentUuid,
             containerUuid,
             tableName: field.tableName,
