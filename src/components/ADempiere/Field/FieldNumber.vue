@@ -1,6 +1,7 @@
 <template>
   <el-tooltip v-model="isShowed" :manual="true" :content="valueToDisplay" placement="top" effect="light">
     <el-input-number
+      v-if="isFocus"
       :ref="metadata.columnName"
       v-model="value"
       type="number"
@@ -13,8 +14,23 @@
       :controls-position="controlsPosition"
       :class="'display-type-amount ' + metadata.cssClassName"
       @change="preHandleChange"
-      @blur="focusLost"
+      @blur="customFocusLost"
       @focus="focusGained"
+      @keydown.native="keyPressed"
+      @keyup.native="keyReleased"
+    />
+    <el-input
+      v-else
+      :ref="metadata.columnName"
+      v-model="value"
+      :placeholder="metadata.help"
+      :disabled="isDisabled"
+      :precision="precision"
+      :controls="isShowControls"
+      :controls-position="controlsPosition"
+      :class="'display-type-amount ' + metadata.cssClassName"
+      @blur="customFocusLost"
+      @focus="customFocusGained"
       @keydown.native="keyPressed"
       @keyup.native="keyReleased"
     />
@@ -35,9 +51,11 @@ export default {
       value = this.valueModel
     }
     value = this.validateValue(value)
+
     return {
-      value: value,
+      value,
       showControls: true,
+      isFocus: false,
       operation: '',
       expression: /[\d\/.()%\*\+\-]/gim,
       valueToDisplay: '',
@@ -81,6 +99,9 @@ export default {
       }
       // show right controls
       return 'right'
+    },
+    currencyDefinition() {
+      return this.$store.getters['user/getCurrency']
     }
   },
   watch: {
@@ -94,6 +115,14 @@ export default {
       if (!this.metadata.inTable) {
         this.value = this.validateValue(value)
       }
+    },
+    isFocus(value) {
+      if (value) {
+        this.$nextTick()
+          .then(() => {
+            this.$refs[this.metadata.columnName].$el.children[2].firstElementChild.focus()
+          })
+      }
     }
   },
   methods: {
@@ -102,6 +131,16 @@ export default {
         return undefined
       }
       return Number(value)
+    },
+    customFocusGained(event) {
+      console.log('focus', event)
+      this.isFocus = true
+      // this.focusGained(event)
+    },
+    customFocusLost(event) {
+      console.log('blur', event)
+      this.isFocus = false
+      // this.focusLost(event)
     },
     calculateValue(event) {
       const isAllowed = event.key.match(this.expression)

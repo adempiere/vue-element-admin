@@ -45,8 +45,9 @@
   },
   "dependencies": {
     "@adempiere/grpc-access-client": "^1.2.1",
-    "@adempiere/grpc-data-client": "^2.3.4",
-    "@adempiere/grpc-dictionary-client": "^1.4.1",
+    "@adempiere/grpc-core-client": "^1.0.6",
+    "@adempiere/grpc-data-client": "^2.3.5",
+    "@adempiere/grpc-dictionary-client": "^1.4.2",
     "@adempiere/grpc-enrollment-client": "^1.1.0",
     "@adempiere/grpc-pos-client": "^1.2.0",
     "axios": "0.19.2",
@@ -87,7 +88,6 @@
     "xlsx": "0.15.6"
   },
   "devDependencies": {
-    "@adempiere/grpc-core-client": "^1.0.4",
     "@babel/core": "7.9.0",
     "@babel/register": "7.9.0",
     "@vue/cli-plugin-babel": "4.3.1",

@@ -1,3 +1,20 @@
+
+// Get Instance for connection System Core
+export const SystemCoreInstance = () => {
+  const SystemCore = require('@adempiere/grpc-core-client')
+  const { BUSINESS_DATA_ADDRESS } = require('@/api/ADempiere/constants')
+  const { getLanguage } = require('@/lang/index')
+  const { getToken, getCurrentOrganization, getCurrentWarehouse } = require('@/utils/auth')
+
+  return new SystemCore({
+    host: BUSINESS_DATA_ADDRESS,
+    sessionUuid: getToken(),
+    organizationUuid: getCurrentOrganization(),
+    warehouseUuid: getCurrentWarehouse(),
+    language: getLanguage() || 'en_US'
+  })
+}
+
 // Instance for connection Access (or Security)
 export const AccessInstance = () => {
   const Access = require('@adempiere/grpc-access-client')
@@ -34,11 +51,11 @@ export const DictionaryInstance = () => {
   const { getLanguage } = require('@/lang/index')
   const { getToken } = require('@/utils/auth')
 
-  return new Dictionary(
-    DICTIONARY_ADDRESS,
-    getToken(),
-    getLanguage() || 'en_US'
-  )
+  return new Dictionary({
+    host: DICTIONARY_ADDRESS,
+    sessionUuid: getToken(),
+    language: getLanguage() || 'en_US'
+  })
 }
 
 // Instance for connection Enrollment
