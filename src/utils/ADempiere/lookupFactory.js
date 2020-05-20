@@ -90,7 +90,6 @@ export function createFieldFromDictionary({
         columnName
       })
         .then(response => {
-          console.log(response)
           resolve(getFactoryFromField({
             containerUuid,
             field: response,
@@ -101,8 +100,6 @@ export function createFieldFromDictionary({
         })
     })
   }
-  const a = getFactoryFromField({ containerUuid, field })
-  console.log(a)
   return new Promise(resolve => { resolve(getFactoryFromField({ containerUuid, field })) })
 }
 
