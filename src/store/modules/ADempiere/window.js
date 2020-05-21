@@ -58,10 +58,6 @@ const windowControl = {
       value
     }) {
       // console.log({
-      //   parentUuid,
-      //   containerUuid,
-      //   tableName,
-      //   columnName,
       //   field,
       //   value
       // })

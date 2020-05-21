@@ -1,6 +1,8 @@
 import { createEntity, updateEntity } from '@/api/ADempiere/persistence'
 import { showMessage } from '@/utils/ADempiere/notification'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import language from '@/lang'
+
 const persistence = {
   state: {
     persistence: {}
@@ -29,13 +31,14 @@ const persistence = {
     }
   },
   actions: {
-    flushPersistenceQueue({ commit, getters }, {
+    flushPersistenceQueue({ getters }, {
       tableName,
       recordUuid
     }) {
       const attributes = getters.getPersistenceAttributes(tableName)
       if (attributes) {
         if (recordUuid) {
+          // Update existing entity
           updateEntity({
             tableName,
             recordUuid,
@@ -54,7 +57,8 @@ const persistence = {
               })
               console.warn(`Update Entity error: ${error.message}.`)
             })
-        } else { //  Create new
+        } else {
+          // Create new entity
           createEntity({
             tableName,
             attributes
@@ -82,8 +86,10 @@ const persistence = {
     },
     getPersistenceAttributes: (state) => (tableName) => {
       const attributesMap = state.persistence[tableName]
-      if (attributesMap) {
-        return [...attributesMap]
+      if (!isEmptyValue(attributesMap)) {
+        return [
+          attributesMap.values()
+        ]
       }
       return undefined
     }

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 const UUID_KEY = 'UUID'
+
 const value = {
   state: {
     field: {}
@@ -22,13 +23,13 @@ const value = {
     }
   },
   getters: {
-    getValueOfField: (state) => (metadata) => {
-      return state.field[metadata.containerUuid + '_' + metadata.columnName]
+    getValueOfField: (state) => ({ containerUuid, columnName }) => {
+      return state.field[containerUuid + '_' + columnName]
     },
-    getValueOfContainer: (state) => (metadata) => {
-      let value = state.field[metadata.containerUuid + '_' + metadata.columnName]
-      if (!value && metadata.parentUuid) {
-        value = state.field[metadata.parentUuid + '_' + metadata.columnName]
+    getValueOfContainer: (state) => ({ parentUuid, containerUuid, columnName }) => {
+      let value = state.field[containerUuid + '_' + columnName]
+      if (!value && parentUuid) {
+        value = state.field[parentUuid + '_' + columnName]
       }
       return value
     },
