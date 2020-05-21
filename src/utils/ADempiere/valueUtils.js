@@ -6,7 +6,11 @@ import { TABLE, TABLE_DIRECT } from '@/utils/ADempiere/references'
  * @param  {boolean|array|object|number|string|date|map|set|function} value
  * @returns {boolean}
  */
-export { isEmptyValue } from '@/api/ADempiere/system-core'
+export function isEmptyValue(value) {
+  const { isEmptyValue } = require('@/api/ADempiere/system-core')
+
+  return isEmptyValue(value)
+}
 
 export function typeValue(value) {
   if (typeof value === 'undefined' || value == null) {
