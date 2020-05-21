@@ -2,9 +2,9 @@ import Vue from 'vue'
 // Delete when get global context and account context
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 
-const context = {
+const preference = {
   state: {
-    context: {}
+    preference: {}
   },
   mutations: {
     /**
@@ -21,68 +21,96 @@ const context = {
 
         // set context for window
         const keyParent = key + payload.columnName
-        Vue.set(state.context, keyParent, payload.value)
+        Vue.set(state.preference, keyParent, payload.value)
       }
       if (payload.containerUuid) {
         key += payload.containerUuid + '|'
       }
       key += payload.columnName
       // set property to object
-      Vue.set(state.context, key, payload.value)
+      Vue.set(state.preference, key, payload.value)
     },
     setInitialContext(state, objectContext) {
       Object.keys(objectContext).forEach(key => {
-        Vue.set(state.context, key, objectContext[key])
+        Vue.set(state.preference, key, objectContext[key])
       })
     },
+    setMultiplePreference(state, preferenceToSet) {
+      if (!isEmptyValue(state.preference)) {
+        // join and overwrite old values
+        preferenceToSet = {
+          ...state.preference,
+          ...preferenceToSet
+        }
+      }
+
+      state.preference = preferenceToSet
+    },
     dictionaryResetCacheContext(state) {
-      state.context = {}
+      state.preference = {}
     }
   },
   actions: {
     setContext({ commit }, objectValue) {
       commit('setContext', objectValue)
     },
-    setMultipleContext({ commit }, valuesToSetter) {
-      valuesToSetter.forEach(itemToSetter => {
-        commit('setContext', itemToSetter)
-      })
-    },
-    setMultipleContextView({ commit }, {
+    setMultiplePreference({ dispatch }, {
       parentUuid,
       containerUuid,
       values
     }) {
-      Object.keys(values).forEach(key => {
-        commit('setContext', {
-          parentUuid,
-          containerUuid,
-          columnName: key,
-          value: values[key]
-        })
+      let actionToDispatch = 'setMultiplePreferenceObject'
+      if (Object.prototype.toString.call(values) === '[object Map]') {
+        actionToDispatch = 'setMultiplePreferenceMap'
+      }
+      return dispatch(actionToDispatch, {
+        parentUuid,
+        containerUuid,
+        values
       })
     },
-    setMultipleContextObject({ commit }, valuesToSetter) {
-      Object.keys(valuesToSetter).forEach(key => {
-        commit('setContext', {
-          columnName: key,
-          value: valuesToSetter[key]
-        })
-      })
-    },
-    setMultipleContextMap({ commit }, valuesToSetter) {
+    setMultiplePreferenceObject({ commit }, {
+      parentUuid,
+      containerUuid,
+      values
+    }) {
       return new Promise(resolve => {
-        valuesToSetter.forEach((value, key) => {
-          commit('setContext', {
-            columnName: key,
-            value: value
+        if (!isEmptyValue(containerUuid) || !isEmptyValue(parentUuid)) {
+          Object.keys(values).forEach(key => {
+            commit('setContext', {
+              parentUuid,
+              containerUuid,
+              columnName: key,
+              value: values[key]
+            })
           })
-        })
+        } else {
+          commit('setMultiplePreference', values)
+        }
+
         resolve()
       })
     },
-    setInitialContext({ commit }, otherContext = {}) {
-      commit('setInitialContext', otherContext)
+    setMultiplePreferenceMap({ commit }, {
+      parentUuid,
+      containerUuid,
+      values
+    }) {
+      return new Promise(resolve => {
+        if (!isEmptyValue(containerUuid) || !isEmptyValue(parentUuid)) {
+          values.forEach((value, key) => {
+            commit('setContext', {
+              parentUuid,
+              containerUuid,
+              columnName: key,
+              value
+            })
+          })
+        } else {
+          commit('setMultiplePreference', Object.fromEntries(values))
+        }
+        resolve()
+      })
     }
   },
   getters: {
@@ -91,7 +119,7 @@ const context = {
      * @param  {string} containerUuid
      * @param  {string} columnName
      */
-    getContext: (state) => ({ parentUuid, containerUuid, columnName }) => {
+    getPreference: (state) => ({ parentUuid, containerUuid, columnName }) => {
       let key = ''
 
       if (parentUuid) {
@@ -99,7 +127,7 @@ const context = {
 
         // context for window
         const keyParent = key + columnName
-        const valueParent = state.context[keyParent]
+        const valueParent = state.preference[keyParent]
         if (!isEmptyValue(valueParent)) {
           return valueParent
         }
@@ -109,22 +137,22 @@ const context = {
       }
       key += columnName
 
-      return state.context[key]
+      return state.preference[key]
     },
     /**
      * @param {string} parentUuid
      * @param {string} containerUuid
      * @returns {object}
      */
-    getContextView: (state) => ({
+    getPreferenceView: (state) => ({
       parentUuid,
       containerUuid
     }) => {
       // generate context with parent uuid or container uuid associated
       const contextAllContainers = {}
-      Object.keys(state.context).forEach(key => {
+      Object.keys(state.preference).forEach(key => {
         if (key.includes(parentUuid) || key.includes(containerUuid)) {
-          contextAllContainers[key] = state.context[key]
+          contextAllContainers[key] = state.preference[key]
         }
       })
 
@@ -153,26 +181,16 @@ const context = {
 
       return contextContainer
     },
-    getContextAll: (state) => {
-      return state.context
+    getAllPreference: (state) => {
+      return state.preference
     },
-    getContextClientId: (state) => {
-      return parseInt(state.context['#AD_Client_ID'], 10)
+    getPreferenceClientId: (state) => {
+      return parseInt(state.preference['#AD_Client_ID'], 10)
     },
-    getContextOrgId: (state) => {
-      return parseInt(state.context['#AD_Org_ID'], 10)
-    },
-    // Using to read only in data tables
-    getContextIsActive: (state) => (parentUuid) => {
-      return state.context[`${parentUuid}|IsActive`]
-    },
-    getContextProcessing: (state) => (parentUuid) => {
-      return state.context[`${parentUuid}|Processing`]
-    },
-    getContextProcessed: (state) => (parentUuid) => {
-      return state.context[`${parentUuid}|Processed`]
+    getPreferenceOrgId: (state) => {
+      return parseInt(state.preference['#AD_Org_ID'], 10)
     }
   }
 }
 
-export default context
+export default preference

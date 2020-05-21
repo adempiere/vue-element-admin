@@ -395,14 +395,14 @@ export const contextMixin = {
       if (action.type === 'process') {
         // Add context from view open in process to opening
         if (action.parentUuidAssociated || action.containerUuidAssociated) {
-          const contextValues = this.$store.getters.getContextView({
+          const values = this.$store.getters.getContextView({
             parentUuid: action.parentUuidAssociated,
             containerUuid: action.containerUuidAssociated
           })
-          if (!this.isEmptyValue(contextValues)) {
-            this.$store.dispatch('setMultipleContextView', {
+          if (!this.isEmptyValue(values)) {
+            this.$store.dispatch('setMultiplePreference', {
               containerUuid: action.uuid,
-              values: contextValues
+              values
             })
           }
         }

@@ -1,4 +1,4 @@
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { convertBooleanToString, isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import evaluator from '@/utils/ADempiere/evaluator'
 import store from '@/store'
 
@@ -10,7 +10,14 @@ export const getContext = ({
   containerUuid,
   columnName
 }) => {
-  return store.getters.getContext({
+  if (['$', '#', `P|${parentUuid}`, `P|${columnName}`].includes(columnName)) {
+    return store.getters.getPreference({
+      parentUuid,
+      containerUuid,
+      columnName
+    })
+  }
+  return store.getters.getValueOfContainer({
     parentUuid,
     containerUuid,
     columnName
@@ -92,12 +99,6 @@ export function parseContext({
   let outString = ''
 
   let firstIndexTag = inString.indexOf('@')
-  const convertBooleanToString = (booleanValue) => {
-    if (booleanValue) {
-      return 'Y'
-    }
-    return 'N'
-  }
 
   while (firstIndexTag !== -1) {
     outString = outString + inString.substring(0, firstIndexTag) // up to @
@@ -193,47 +194,47 @@ export function getPreference({
   containerUuid,
   columnName
 }) {
-  let retValue
+  let value
   if (isEmptyValue(columnName)) {
     console.warn('Require Context ColumnName')
-    return retValue
+    return value
   }
 
   //        USER PREFERENCES
   // View Preferences
-  if (parentUuid && containerUuid) {
-    retValue = getContext({
+  if (parentUuid) {
+    value = getContext({
       parentUuid: 'P' + parentUuid,
       containerUuid,
-      columnName: columnName
+      columnName
     })
-    if (!isEmptyValue(retValue)) {
-      return retValue
+    if (!isEmptyValue(value)) {
+      return value
     }
   }
 
   //  Global Preferences
-  retValue = getContext({
+  value = getContext({
     columnName: 'P|' + columnName
   })
-  if (!isEmptyValue(retValue)) {
-    return retValue
+  if (!isEmptyValue(value)) {
+    return value
   }
 
   //        SYSTEM PREFERENCES
   // Login setting
   // get # globals context only window
-  retValue = getContext({
+  value = getContext({
     columnName: '#' + columnName
   })
-  if (!isEmptyValue(retValue)) {
-    return retValue
+  if (!isEmptyValue(value)) {
+    return value
   }
 
   //  Accounting setting
-  retValue = getContext({
+  value = getContext({
     columnName: '$' + columnName
   })
 
-  return retValue
+  return value
 } //  getPreference

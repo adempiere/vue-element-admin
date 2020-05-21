@@ -87,6 +87,24 @@ export function clientDateTime(date = null, type = '') {
   return currentDateTime.date + ' ' + currentDateTime.time
 }
 
+export const convertStringToBoolean = (valueToParsed) => {
+  const valueString = String(valueToParsed).trim()
+  if (valueString === 'Y') {
+    return true
+  }
+  if (valueString === 'N') {
+    return false
+  }
+  return valueToParsed
+}
+
+export const convertBooleanToString = (booleanValue) => {
+  if (booleanValue) {
+    return 'Y'
+  }
+  return 'N'
+}
+
 /**
  * Convert a object to array pairs
  * @param {object} objectToConvert, object to convert

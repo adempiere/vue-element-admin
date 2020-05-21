@@ -157,7 +157,9 @@ const actions = {
           // TODO: return #Date as long data type Date (5)
           responseGetInfo.defaultContextMap.set('#Date', new Date())
           // set multiple context
-          dispatch('setMultipleContextMap', responseGetInfo.defaultContextMap, {
+          dispatch('setMultiplePreference', {
+            values: responseGetInfo.defaultContextMap
+          }, {
             root: true
           })
 

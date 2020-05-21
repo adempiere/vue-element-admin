@@ -259,8 +259,8 @@ export default {
     },
     getterContextProcessing() {
       if (this.panelType === 'window' && !this.isAdvancedQuery) {
-        const processing = this.$store.getters.getContextProcessing(this.parentUuid)
-        if (processing === true || processing === 'Y') {
+        const processing = this.$store.getters.getContainerProcessing(this.parentUuid)
+        if (processing) {
           return true
         }
       }
@@ -268,8 +268,8 @@ export default {
     },
     getterContextProcessed() {
       if (this.panelType === 'window' && !this.isAdvancedQuery) {
-        const processed = this.$store.getters.getContextProcessed(this.parentUuid)
-        if (processed === true || processed === 'Y') {
+        const processed = this.$store.getters.getContainerProcessed(this.parentUuid)
+        if (processed) {
           return true
         }
       }

@@ -1,4 +1,6 @@
 import Vue from 'vue'
+import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils'
+
 const UUID_KEY = 'UUID'
 
 const value = {
@@ -47,6 +49,22 @@ const value = {
     },
     getUuidOfContainer: (state) => (containerUuid) => {
       return state.field[containerUuid + '_' + UUID_KEY]
+    },
+    // Using to read only in data tables in Window
+    getContainerIsActive: (state) => (parentUuid) => {
+      const valueIsActive = state.field[`${parentUuid}_IsActive`]
+
+      return convertStringToBoolean(valueIsActive)
+    },
+    getContainerProcessing: (state) => (parentUuid) => {
+      const valueProcessing = state.field[`${parentUuid}_Processing`]
+
+      return convertStringToBoolean(valueProcessing)
+    },
+    getContainerProcessed: (state) => (parentUuid) => {
+      const valueProcessed = state.field[`${parentUuid}_Processed`]
+
+      return convertStringToBoolean(valueProcessed)
     }
   }
 }

@@ -73,7 +73,7 @@ const lookup = {
             parsedDirectQuery: directQuery,
             tableName,
             sessionUuid: getSession(),
-            clientId: rootGetters.getContextClientId
+            clientId: rootGetters.getPreferenceClientId
           })
           return option
         })
@@ -127,7 +127,7 @@ const lookup = {
             tableName,
             parsedQuery,
             sessionUuid: getSession(),
-            clientId: rootGetters.getContextClientId
+            clientId: rootGetters.getPreferenceClientId
           })
           return list
         })
@@ -200,7 +200,7 @@ const lookup = {
         return itemLookup.parsedDirectQuery === parsedDirectQuery &&
           itemLookup.tableName === tableName &&
           itemLookup.sessionUuid === getSession() &&
-          itemLookup.clientId === rootGetters.getContextClientId &&
+          itemLookup.clientId === rootGetters.getPreferenceClientId &&
           itemLookup.value === value
       })
       if (lookupItem) {
@@ -227,7 +227,7 @@ const lookup = {
         return itemLookup.parsedQuery === parsedQuery &&
           itemLookup.tableName === tableName &&
           itemLookup.sessionUuid === getSession() &&
-          itemLookup.clientId === rootGetters.getContextClientId
+          itemLookup.clientId === rootGetters.getPreferenceClientId
       })
       if (lookupList) {
         return lookupList.list

@@ -86,14 +86,13 @@ export const menuTableMixin = {
     },
     isReadOnlyParent() {
       if (this.isPanelWindow) {
-        if (this.$store.getters.getContextIsActive(this.parentUuid) === false) {
+        if (!this.$store.getters.getContainerIsActive(this.parentUuid)) {
           return true
         }
-        if (this.$store.getters.getContextProcessing(this.parentUuid) === true ||
-          this.$store.getters.getContextProcessing(this.parentUuid) === 'Y') {
+        if (this.$store.getters.getContainerProcessing(this.parentUuid)) {
           return true
         }
-        if (this.$store.getters.getContextProcessed(this.parentUuid)) {
+        if (this.$store.getters.getContainerProcessed(this.parentUuid)) {
           return true
         }
       }
