@@ -87,9 +87,7 @@ const persistence = {
     getPersistenceAttributes: (state) => (tableName) => {
       const attributesMap = state.persistence[tableName]
       if (!isEmptyValue(attributesMap)) {
-        return [
-          attributesMap.values()
-        ]
+        return [...attributesMap.values()]
       }
       return undefined
     }
