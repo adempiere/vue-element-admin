@@ -1,7 +1,5 @@
 import { createEntity, updateEntity } from '@/api/ADempiere/persistence'
-import { showMessage } from '@/utils/ADempiere/notification'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
-import language from '@/lang'
 
 const persistence = {
   state: {
@@ -35,49 +33,29 @@ const persistence = {
       tableName,
       recordUuid
     }) {
-      const attributes = getters.getPersistenceAttributes(tableName)
-      if (attributes) {
-        if (recordUuid) {
-          // Update existing entity
-          updateEntity({
-            tableName,
-            recordUuid,
-            attributes
-          })
-            .then(response => {
-              showMessage({
-                message: language.t('notifications.updateSuccessfully'),
-                type: 'success'
-              })
+      return new Promise((resolve, reject) => {
+        const attributes = getters.getPersistenceAttributes(tableName)
+        if (attributes) {
+          if (recordUuid) {
+            // Update existing entity
+            updateEntity({
+              tableName,
+              recordUuid,
+              attributes
             })
-            .catch(error => {
-              showMessage({
-                message: error.message,
-                type: 'error'
-              })
-              console.warn(`Update Entity error: ${error.message}.`)
+              .then(response => resolve(response))
+              .catch(error => reject(error))
+          } else {
+            // Create new entity
+            createEntity({
+              tableName,
+              attributes
             })
-        } else {
-          // Create new entity
-          createEntity({
-            tableName,
-            attributes
-          })
-            .then(response => {
-              showMessage({
-                message: language.t('data.createRecordSuccessful'),
-                type: 'success'
-              })
-            })
-            .catch(error => {
-              showMessage({
-                message: error.message,
-                type: 'error'
-              })
-              console.warn(`Create Entity error: ${error.message}.`)
-            })
+              .then(response => resolve(response))
+              .catch(error => reject(error))
+          }
         }
-      }
+      })
     }
   },
   getters: {

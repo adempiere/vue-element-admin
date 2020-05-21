@@ -73,52 +73,62 @@ const windowControl = {
           columnName: field.columnName
         })
       }
-      // request callouts
-      dispatch('runCallout', {
-        parentUuid: field.parentUuid,
-        containerUuid: field.containerUuid,
-        tableName: field.tableName,
-        columnName: field.columnName,
-        callout: field.callout,
-        oldValue: field.oldValue,
-        valueType: field.valueType,
-        value
-      })
-      //  Context Info
-      dispatch('reloadContextInfo', {
-        field
-      })
-      //  Apply actions for server
-      dispatch('runServerAction', {
-        field,
-        value
+      return new Promise((resolve, reject) => {
+        // request callouts
+        dispatch('runCallout', {
+          parentUuid: field.parentUuid,
+          containerUuid: field.containerUuid,
+          tableName: field.tableName,
+          columnName: field.columnName,
+          callout: field.callout,
+          oldValue: field.oldValue,
+          valueType: field.valueType,
+          value
+        })
+          .then(response => {
+            //  Context Info
+            dispatch('reloadContextInfo', {
+              field
+            })
+            //  Apply actions for server
+            dispatch('runServerAction', {
+              field,
+              value
+            })
+              .then(response => resolve(response))
+              .catch(error => reject(error))
+          })
       })
     },
     runServerAction({ dispatch, getters, commit }, {
       field,
       value
     }) {
-      // For change options
-      if (fieldIsDisplayed(field)) {
-        commit('addChangeToPersistenceQueue', {
-          ...field,
-          value
-        })
-        const emptyFields = getters.getFieldListEmptyMandatory({
-          containerUuid: field.containerUuid
-        })
-        if (!isEmptyValue(emptyFields)) {
-          showMessage({
-            message: language.t('notifications.mandatoryFieldMissing') + emptyFields,
-            type: 'info'
+      return new Promise((resolve, reject) => {
+        // For change options
+        if (fieldIsDisplayed(field)) {
+          commit('addChangeToPersistenceQueue', {
+            ...field,
+            value
           })
-        } else {
-          dispatch('flushPersistenceQueue', {
-            tableName: field.tableName,
-            recordUuid: getters.getUuidOfContainer(field.containerUuid)
+          const emptyFields = getters.getFieldListEmptyMandatory({
+            containerUuid: field.containerUuid
           })
+          if (!isEmptyValue(emptyFields)) {
+            showMessage({
+              message: language.t('notifications.mandatoryFieldMissing') + emptyFields,
+              type: 'info'
+            })
+          } else {
+            dispatch('flushPersistenceQueue', {
+              tableName: field.tableName,
+              recordUuid: getters.getUuidOfContainer(field.containerUuid)
+            })
+              .then(response => resolve(response))
+              .catch(error => reject(error))
+          }
         }
-      }
+      })
     },
     reloadContextInfo({ dispatch, getters }, {
       field

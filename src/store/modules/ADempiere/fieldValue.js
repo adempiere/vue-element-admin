@@ -20,6 +20,18 @@ const value = {
       if (payload.containerUuid) {
         Vue.set(state.field, payload.containerUuid + '_' + payload.columnName, payload.value)
       }
+    },
+    updateValuesOfContainer(state, payload) {
+      payload.attributes.forEach(attribute => {
+        //  Only Parent
+        if (payload.parentUuid) {
+          Vue.set(state.field, payload.parentUuid + '_' + attribute.columnName, attribute.value)
+        }
+        //  Only Container
+        if (payload.containerUuid) {
+          Vue.set(state.field, payload.containerUuid + '_' + attribute.columnName, attribute.value)
+        }
+      })
     }
   },
   getters: {

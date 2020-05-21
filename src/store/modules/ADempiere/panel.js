@@ -387,170 +387,119 @@ const panel = {
         resolve(defaultAttributes)
       })
     },
-    /**
-     * Changed panel when receive or reset panel to new record
-     * @param {string} parentUuid
-     * @param {string} containerUuid
-     * @param {object} fieldList, field list of panel
-     * @param {object} newValues, values to set in panel
-     * @param {boolean} isSendToServer, indicate if changes send to server
-     * @param {boolean} isChangedAllValues, check if it changes all the values of the fields, if it does not exist, set an empty value
-     */
-    notifyPanelChange({ dispatch, getters, commit, rootGetters }, {
+    // Change all values of panel and dispatch actions for each field
+    notifyPanelChange({ commit }, {
       parentUuid,
       containerUuid,
-      newValues = {},
-      isSendToServer = true,
-      isShowedField = false,
-      panelType = 'window',
-      withOutColumnNames = [],
-      isSendCallout = true,
-      isAdvancedQuery = false,
-      isPrivateAccess = false,
-      fieldList = [],
-      isChangeFromCallout = false,
-      isChangeMultipleFields = true,
-      isChangedAllValues = false
+      attributes = []
+      // isSendToServer = true,
+      // isShowedField = false,
+      // panelType = 'window',
+      // withOutColumnNames = [],
+      // isSendCallout = true,
+      // isAdvancedQuery = false,
+      // isPrivateAccess = false,
+      // fieldList = [],
+      // isChangeFromCallout = false,
+      // isChangeMultipleFields = true,
+      // isChangedAllValues = false
     }) {
-      return new Promise(resolve => {
-        if (isEmptyValue(fieldList)) {
-          fieldList = getters.getFieldsListFromPanel(containerUuid, isAdvancedQuery)
-        }
-        let fieldsShowed = []
-        // const promisessList = []
-        fieldList.map(async actionField => {
-          if (actionField.isShowedFromUser) {
-            fieldsShowed.push(actionField.columnName)
-          }
-
-          // Evaluate with hasOwnProperty if exits this value
-          if (!Object.prototype.hasOwnProperty.call(newValues, actionField.columnName)) {
-            if (!isChangedAllValues || withOutColumnNames.includes(actionField.columnName)) {
-              // breaks if this value does not exist or ignore with out column names
-              return
-            }
-            // set empty value and continue
-            newValues[actionField.columnName] = undefined
-          }
-
-          if (isChangeFromCallout &&
-            actionField.componentPath === 'FieldSelect' &&
-            !Object.prototype.hasOwnProperty.call(newValues, `DisplayColumn_${actionField.columnName}`)) {
-            let lookup = rootGetters.getLookupItem({
-              parentUuid,
-              containerUuid,
-              directQuery: actionField.reference.directQuery,
-              tableName: actionField.reference.tableName,
-              value: newValues[actionField.columnName]
-            })
-
-            if (isEmptyValue(lookup) && !isEmptyValue(newValues[actionField.columnName])) {
-              lookup = await dispatch('getLookupItemFromServer', {
-                parentUuid,
-                containerUuid,
-                tableName: actionField.reference.tableName,
-                directQuery: actionField.reference.parsedDirectQuery,
-                value: newValues[actionField.columnName]
-              })
-            }
-            if (!isEmptyValue(lookup)) {
-              newValues[`DisplayColumn_${actionField.columnName}`] = lookup.label
-            }
-          }
-          // console.log({
-          //   parentUuid,
-          //   containerUuid,
-          //   columnName: actionField.columnName,
-          //   value: newValues[actionField.columnName]
-          // })
-          //  Update field
-          commit('updateValueOfField', {
-            parentUuid,
-            containerUuid,
-            columnName: actionField.columnName,
-            value: newValues[actionField.columnName]
-          })
-          // promisessList.push(dispatch('notifyFieldChange', {
-          //   isSendToServer,
-          //   isSendCallout,
-          //   isAdvancedQuery,
-          //   panelType,
-          //   parentUuid,
-          //   containerUuid,
-          //   columnName: actionField.columnName,
-          //   displayColumn: newValues[`DisplayColumn_${actionField.columnName}`],
-          //   newValue: newValues[actionField.columnName],
-          //   valueTo: newValues[`${actionField.columnName}_To`],
-          //   fieldList,
-          //   field: actionField,
-          //   withOutColumnNames,
-          //   isChangedOldValue: true, // defines if set oldValue with newValue instead of current value
-          //   isChangeMultipleFields
-          // }))
-        })
-
-        // Promise.all(promisessList)
-        //   .then(response => {
-        //     resolve()
-        //     const calloutsToExecute = []
-        //     if (isSendCallout) {
-        //       response.forEach(item => {
-        //         if (item && !isEmptyValue(item.field.callout) &&
-        //           !withOutColumnNames.includes(item.field.columnName)) {
-        //           withOutColumnNames.push(item.field.columnName)
-        //           calloutsToExecute.push({
-        //             parentUuid,
-        //             containerUuid,
-        //             tableName: item.tableName,
-        //             columnName: item.field.columnName,
-        //             callout: item.field.callout,
-        //             value: item.newValue,
-        //             oldValue: item.field.oldValue,
-        //             withOutColumnNames
-        //           })
-        //         }
-        //       })
-        //     }
-        //
-        //     calloutsToExecute.map(async executeCallout => {
-        //       await dispatch('runCallout', {
-        //         ...executeCallout
-        //       })
-        //     })
-        //   })
-
-        // show fields in query
-        if (isShowedField && !isEmptyValue(newValues)) {
-          // join column names without duplicating it
-          fieldsShowed = Array.from(new Set([
-            ...fieldsShowed,
-            ...Object.keys(newValues)
-          ]))
-
-          dispatch('changeFieldAttributesBoolean', {
-            containerUuid,
-            attribute: 'isShowedFromUser',
-            valueAttribute: true,
-            fieldsIncludes: fieldsShowed
-          })
-        }
-        if (panelType === 'window') {
-          dispatch('setIsloadContext', {
-            containerUuid
-          })
-          if (isPrivateAccess) {
-            const tableName = rootGetters.getTableNameFromTab(parentUuid, containerUuid)
-            // TODO: Add current id and new id to comparison
-            if (!isEmptyValue(newValues[`${tableName}_ID`])) {
-              dispatch('getPrivateAccessFromServer', {
-                tableName,
-                recordId: newValues[`${tableName}_ID`],
-                userUuid: rootGetters['user/getUserUuid']
-              })
-            }
-          }
-        }
+      console.log({
+        parentUuid,
+        containerUuid,
+        attributes
       })
+      // Update field
+      commit('updateValuesOfContainer', {
+        parentUuid,
+        containerUuid,
+        attributes
+      })
+      // return new Promise(resolve => {
+      //   if (isEmptyValue(fieldList)) {
+      //     fieldList = getters.getFieldsListFromPanel(containerUuid, isAdvancedQuery)
+      //   }
+      //   let fieldsShowed = []
+      //   // const promisessList = []
+      //   fieldList.map(async actionField => {
+      //     if (actionField.isShowedFromUser) {
+      //       fieldsShowed.push(actionField.columnName)
+      //     }
+      //
+      //     // Evaluate with hasOwnProperty if exits this value
+      //     if (!Object.prototype.hasOwnProperty.call(newValues, actionField.columnName)) {
+      //       if (!isChangedAllValues || withOutColumnNames.includes(actionField.columnName)) {
+      //         // breaks if this value does not exist or ignore with out column names
+      //         return
+      //       }
+      //       // set empty value and continue
+      //       newValues[actionField.columnName] = undefined
+      //     }
+      //
+      //     if (isChangeFromCallout &&
+      //       actionField.componentPath === 'FieldSelect' &&
+      //       !Object.prototype.hasOwnProperty.call(newValues, `DisplayColumn_${actionField.columnName}`)) {
+      //       let lookup = rootGetters.getLookupItem({
+      //         parentUuid,
+      //         containerUuid,
+      //         directQuery: actionField.reference.directQuery,
+      //         tableName: actionField.reference.tableName,
+      //         value: newValues[actionField.columnName]
+      //       })
+      //
+      //       if (isEmptyValue(lookup) && !isEmptyValue(newValues[actionField.columnName])) {
+      //         lookup = await dispatch('getLookupItemFromServer', {
+      //           parentUuid,
+      //           containerUuid,
+      //           tableName: actionField.reference.tableName,
+      //           directQuery: actionField.reference.parsedDirectQuery,
+      //           value: newValues[actionField.columnName]
+      //         })
+      //       }
+      //       if (!isEmptyValue(lookup)) {
+      //         newValues[`DisplayColumn_${actionField.columnName}`] = lookup.label
+      //       }
+      //     }
+      //     //  Update field
+      //     commit('updateValueOfField', {
+      //       parentUuid,
+      //       containerUuid,
+      //       columnName: actionField.columnName,
+      //       value: newValues[actionField.columnName]
+      //     })
+      //   })
+      //   // show fields in query
+      //   if (isShowedField && !isEmptyValue(newValues)) {
+      //     // join column names without duplicating it
+      //     fieldsShowed = Array.from(new Set([
+      //       ...fieldsShowed,
+      //       ...Object.keys(newValues)
+      //     ]))
+      //
+      //     dispatch('changeFieldAttributesBoolean', {
+      //       containerUuid,
+      //       attribute: 'isShowedFromUser',
+      //       valueAttribute: true,
+      //       fieldsIncludes: fieldsShowed
+      //     })
+      //   }
+      //   if (panelType === 'window') {
+      //     dispatch('setIsloadContext', {
+      //       containerUuid
+      //     })
+      //     if (isPrivateAccess) {
+      //       const tableName = rootGetters.getTableNameFromTab(parentUuid, containerUuid)
+      //       // TODO: Add current id and new id to comparison
+      //       if (!isEmptyValue(newValues[`${tableName}_ID`])) {
+      //         dispatch('getPrivateAccessFromServer', {
+      //           tableName,
+      //           recordId: newValues[`${tableName}_ID`],
+      //           userUuid: rootGetters['user/getUserUuid']
+      //         })
+      //       }
+      //     }
+      //   }
+      // })
     },
     // Handle all trigger for a field:
     // - Display Logic
@@ -604,12 +553,24 @@ const panel = {
           value
         })
           .then(response => {
-            if (!response || response.changeDependences) {
-              //  Change Dependents
-              dispatch('changeDependentFieldsList', {
-                field
+            if (response) {
+              dispatch('notifyPanelChange', {
+                containerUuid: field.containerUuid,
+                columnName: field.columnName,
+                attributes: response.values
               })
             }
+            //  Change Dependents
+            dispatch('changeDependentFieldsList', {
+              field
+            })
+          })
+          .catch(error => {
+            showMessage({
+              message: error.message,
+              type: 'error'
+            })
+            console.warn(`${field.panelType}ActionPerformed error: ${error.message}.`)
           })
       })
     },
