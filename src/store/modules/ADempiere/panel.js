@@ -392,17 +392,6 @@ const panel = {
       parentUuid,
       containerUuid,
       attributes = []
-      // isSendToServer = true,
-      // isShowedField = false,
-      // panelType = 'window',
-      // withOutColumnNames = [],
-      // isSendCallout = true,
-      // isAdvancedQuery = false,
-      // isPrivateAccess = false,
-      // fieldList = [],
-      // isChangeFromCallout = false,
-      // isChangeMultipleFields = true,
-      // isChangedAllValues = false
     }) {
       console.log({
         parentUuid,
