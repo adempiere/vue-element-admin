@@ -29,14 +29,12 @@ export const fieldMixin = {
     },
     value: {
       get() {
-        // console.log(this.$store)
         return this.$store.getters.getValueOfField({
           containerUuid: this.metadata.containerUuid,
           columnName: this.metadata.columnName
         })
       },
       set(value) {
-        // console.log(value)
         this.$store.commit('updateValueOfField', {
           parentUuid: this.metadata.parentUuid,
           containerUuid: this.metadata.containerUuid,
@@ -174,10 +172,6 @@ export const fieldMixin = {
         return
       }
       this.$store.dispatch('notifyFieldChange', {
-        parentUuid: this.metadata.parentUuid,
-        containerUuid: this.metadata.containerUuid,
-        panelType: this.metadata.panelType,
-        columnName: this.metadata.columnName,
         field: this.metadata
       })
     }

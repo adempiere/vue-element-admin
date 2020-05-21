@@ -558,10 +558,7 @@ const panel = {
     // - Read Only Logic
     // - Action for Custom panel from type
     notifyFieldChange({ commit, dispatch, getters }, {
-      parentUuid,
       containerUuid,
-      panelType = 'window',
-      tableName,
       columnName,
       field
     }) {
@@ -574,8 +571,8 @@ const panel = {
           field = fieldsList.find(fieldItem => fieldItem.columnName === columnName)
         }
         const value = getters.getValueOfField({
-          containerUuid,
-          columnName
+          containerUuid: field.containerUuid,
+          columnName: field.columnName
         })
         // if (!(panelType === 'table' || isAdvancedQuery)) {
         //   if (!['IN', 'NOT_IN'].includes(field.operator)) {
@@ -595,111 +592,28 @@ const panel = {
         //     }
         //   }
         // }
-
-        // the field has not changed, then the action is broken
-        if (value === field.value && field.isEvaluateValueChanges) {
-          resolve()
-          return
-        }
-        //
         resolve({
-          tableName,
+          tableName: field.tableName,
           field,
           value
         })
 
         // Run specific action
-        dispatch(panelType + 'ActionPerformed', {
-          parentUuid,
-          containerUuid,
-          tableName,
+        dispatch(field.panelType + 'ActionPerformed', {
           field,
-          columnName: field.columnName,
           value
         })
           .then(response => {
             if (!response || response.changeDependences) {
               //  Change Dependents
               dispatch('changeDependentFieldsList', {
-                parentUuid,
-                containerUuid,
                 field
               })
             }
           })
-
-        // if (isSendToServer) {
-        //   if (panelType === 'table' || isAdvancedQuery) {
-        //     if (field.isShowedFromUser && (field.oldValue !== field.value ||
-        //       ['NULL', 'NOT_NULL'].includes(field.operator) ||
-        //       field.operator !== field.oldOperator)) {
-        //       // change action to advanced query on field value is changed in this panel
-        //       if (router.currentRoute.query.action !== 'advancedQuery') {
-        //         router.push({
-        //           query: {
-        //             ...router.currentRoute.query,
-        //             action: 'advancedQuery'
-        //           }
-        //         })
-        //       }
-        //       commit('changeField', {
-        //         field,
-        //         newField: {
-        //           ...field,
-        //           oldOperator: field.operator
-        //         }
-        //       })
-        //       dispatch('getObjectListFromCriteria', {
-        //         parentUuid,
-        //         containerUuid,
-        //         tableName: panel.tableName,
-        //         query: panel.query,
-        //         whereClause: panel.whereClause,
-        //         conditionsList: getters.getParametersToServer({
-        //           containerUuid,
-        //           isAdvancedQuery: true,
-        //           isEvaluateMandatory: false
-        //         })
-        //       })
-        //         .then(response => {
-        //           if (response && response.length) {
-        //             dispatch('notifyPanelChange', {
-        //               parentUuid,
-        //               containerUuid,
-        //               isAdvancedQuery: false,
-        //               newValues: response[0],
-        //               isSendToServer: false,
-        //               isSendCallout: true,
-        //               panelType: 'window'
-        //             })
-        //           }
-        //         })
-        //         .catch(error => {
-        //           console.warn(`Error getting Advanced Query (notifyFieldChange): ${error.message}. Code: ${error.code}.`)
-        //         })
-        //     }
-        //   }
-        //   else
-        // {
-        // const fieldsEmpty = getters.getFieldListEmptyMandatory({
-        //   containerUuid,
-        //   fieldsList
-        // })
-        //   if (isEmptyValue(fieldsEmpty)) {
-        //     // TODO: refactory for it and change for a standard method
-        //      else {
-        //     showMessage({
-        //       message: language.t('notifications.mandatoryFieldMissing') + fieldsEmpty,
-        //       type: 'info'
-        //     })
-        //   }
-        // }
-        // }
       })
     },
     changeDependentFieldsList({ commit, dispatch, getters }, {
-      parentUuid,
-      containerUuid,
       field
     }) {
       if (isEmptyValue(field.dependentFieldsList)) {
@@ -707,7 +621,7 @@ const panel = {
         return
       }
       //  Get all fields
-      const dependentsList = getters.getFieldsListFromPanel(containerUuid).filter(fieldItem => {
+      const dependentsList = getters.getFieldsListFromPanel(field.containerUuid).filter(fieldItem => {
         return field.dependentFieldsList.includes(fieldItem.columnName)
       })
 
@@ -718,8 +632,8 @@ const panel = {
         if (!isEmptyValue(fieldDependent.displayLogic)) {
           isDisplayedFromLogic = evaluator.evaluateLogic({
             context: getContext,
-            parentUuid,
-            containerUuid,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
             logic: fieldDependent.displayLogic
           })
         }
@@ -727,8 +641,8 @@ const panel = {
         if (!isEmptyValue(fieldDependent.mandatoryLogic)) {
           isMandatoryFromLogic = evaluator.evaluateLogic({
             context: getContext,
-            parentUuid,
-            containerUuid,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
             logic: fieldDependent.mandatoryLogic
           })
         }
@@ -736,8 +650,8 @@ const panel = {
         if (!isEmptyValue(fieldDependent.readOnlyLogic)) {
           isReadOnlyFromLogic = evaluator.evaluateLogic({
             context: getContext,
-            parentUuid,
-            containerUuid,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
             logic: fieldDependent.readOnlyLogic
           })
         }
@@ -746,29 +660,29 @@ const panel = {
           fieldDependent.defaultValue.includes('@') &&
           !fieldDependent.defaultValue.includes('@SQL=')) {
           defaultValue = parseContext({
-            parentUuid,
-            containerUuid,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
             value: fieldDependent.defaultValue
           }).value
         }
         if (!isEmptyValue(fieldDependent.defaultValue) &&
           fieldDependent.defaultValue.includes('@SQL=')) {
           defaultValue = parseContext({
-            parentUuid,
-            containerUuid,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
             isSQL: true,
             value: fieldDependent.defaultValue
           }).query
           if (defaultValue !== fieldDependent.parsedDefaultValue) {
             const newValue = await dispatch('getValueBySQL', {
-              parentUuid,
-              containerUuid,
+              parentUuid: field.parentUuid,
+              containerUuid: field.containerUuid,
               query: defaultValue
             })
             //  Update values for field
             commit('updateValueOfField', {
-              parentUuid,
-              containerUuid,
+              parentUuid: field.parentUuid,
+              containerUuid: field.containerUuid,
               columnName: fieldDependent.columnName,
               value: newValue
             })
@@ -935,20 +849,18 @@ const panel = {
     // Obtain empty obligatory fields
     getFieldListEmptyMandatory: (state, getters) => ({
       containerUuid,
-      fieldsList = [],
-      row
+      fieldsList
     }) => {
-      if (fieldsList.length <= 0) {
+      if (!fieldsList) {
         fieldsList = getters.getFieldsListFromPanel(containerUuid)
       }
       const fieldsEmpty = []
       // all optionals (not mandatory) fields
       fieldsList.forEach(fieldItem => {
-        let value = fieldItem.value
-        // used when evaluate data in table
-        if (row) {
-          value = row[fieldItem.columnName]
-        }
+        const value = getters.getValueOfField({
+          containerUuid,
+          columnName: fieldItem.columnName
+        })
         if (isEmptyValue(value)) {
           const isMandatory = fieldItem.isMandatory || fieldItem.isMandatoryFromLogic
           if (fieldIsDisplayed(fieldItem) && isMandatory) {
@@ -956,7 +868,6 @@ const panel = {
           }
         }
       })
-
       return fieldsEmpty
     },
     /**

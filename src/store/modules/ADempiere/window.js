@@ -1,6 +1,6 @@
 import { createEntity, updateEntity, deleteEntity, rollbackEntity } from '@/api/ADempiere/persistence'
 import { getReferencesList } from '@/api/ADempiere/values'
-import { convertObjectToArrayPairs, isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 import { showMessage } from '@/utils/ADempiere/notification'
@@ -54,10 +54,6 @@ const windowControl = {
   },
   actions: {
     tableActionPerformed({ dispatch, getters }, {
-      parentUuid,
-      containerUuid,
-      tableName,
-      columnName,
       field,
       value
     }) {
@@ -70,35 +66,23 @@ const windowControl = {
       //   value
       // })
     },
-    windowActionPerformed({ dispatch, getters }, {
-      parentUuid,
-      containerUuid,
-      tableName,
-      columnName,
+    windowActionPerformed({ dispatch, commit, getters }, {
       field,
       value
     }) {
-      // console.log({
-      //   parentUuid,
-      //   containerUuid,
-      //   tableName,
-      //   columnName,
-      //   field,
-      //   value
-      // })
       //  get value from store
       if (!value) {
         value = getters.getValueOfField({
-          containerUuid,
-          columnName
+          containerUuid: field.containerUuid,
+          columnName: field.columnName
         })
       }
       // request callouts
       dispatch('runCallout', {
-        parentUuid,
-        containerUuid,
-        tableName,
-        columnName,
+        parentUuid: field.parentUuid,
+        containerUuid: field.containerUuid,
+        tableName: field.tableName,
+        columnName: field.columnName,
         callout: field.callout,
         oldValue: field.oldValue,
         valueType: field.valueType,
@@ -106,96 +90,47 @@ const windowControl = {
       })
       //  Context Info
       dispatch('reloadContextInfo', {
-        parentUuid,
-        containerUuid,
-        tableName,
-        columnName,
         field
       })
-      // For change options
-      if (fieldIsDisplayed(field)) {
-        dispatch('runServerAction', {
-          parentUuid,
-          containerUuid,
-          tableName,
-          columnName,
-          field
-        })
-      }
+      //  Apply actions for server
+      dispatch('runServerAction', {
+        field,
+        value
+      })
     },
     runServerAction({ dispatch, getters, commit }, {
-      parentUuid,
-      containerUuid,
-      tableName,
-      columnName,
       field,
       value
     }) {
-      const uuid = getters.getValueOfField({
-        containerUuid,
-        columnName: 'UUID'
-      })
-      if (isEmptyValue(uuid)) {
-        dispatch('createNewEntity', {
-          parentUuid,
-          containerUuid
+      // For change options
+      if (fieldIsDisplayed(field)) {
+        commit('addChangeToPersistenceQueue', {
+          ...field,
+          value
         })
-          .then(() => {
-            // change old value so that it is not send in the next update
-            // commit('changeFieldValue', {
-            //   field,
-            //   newValue,
-            //   valueTo,
-            //   displayColumn,
-            //   isChangedOldValue: true
-            // })
-          })
-          .catch(error => {
-            showMessage({
-              message: error.message,
-              type: 'error'
-            })
-            console.warn(`Create Entity Error ${error.code}: ${error.message}.`)
-          })
-      } else {
-        dispatch('updateCurrentEntity', {
-          containerUuid,
-          recordUuid: uuid
+        const emptyFields = getters.getFieldListEmptyMandatory({
+          containerUuid: field.containerUuid
         })
-          .then(response => {
-            // change old value so that it is not send in the next update
-            showMessage({
-              message: language.t('notifications.updateFields') + field.name,
-              type: 'success'
-            })
-            // commit('changeFieldValue', {
-            //   field,
-            //   value,
-            //   valueTo,
-            //   displayColumn,
-            //   isChangedOldValue: true
-            // })
-            // change value in table
-            // dispatch('notifyRowTableChange', {
-            //   containerUuid,
-            //   row: response,
-            //   isEdit: false,
-            //   isParent: true
-            // })
+        if (!isEmptyValue(emptyFields)) {
+          showMessage({
+            message: language.t('notifications.mandatoryFieldMissing') + emptyFields,
+            type: 'info'
           })
+        } else {
+          dispatch('flushPersistenceQueue', {
+            tableName: field.tableName,
+            recordUuid: getters.getUuidOfContainer(field.containerUuid)
+          })
+        }
       }
     },
     reloadContextInfo({ dispatch, getters }, {
-      parentUuid,
-      containerUuid,
-      tableName,
-      columnName,
       field
     }) {
       //  get value from store
       const value = getters.getValueOfField({
-        containerUuid,
-        columnName
+        containerUuid: field.containerUuid,
+        columnName: field.columnName
       })
       // request context info field
       if (!isEmptyValue(value) && !isEmptyValue(field.contextInfo) && !isEmptyValue(field.contextInfo.sqlStatement)) {
@@ -206,9 +141,9 @@ const windowControl = {
             isSQL = true
           }
           sqlStatement = parseContext({
-            parentUuid,
-            containerUuid,
-            columnName,
+            parentUuid: field.parentUuid,
+            containerUuid: field.containerUuid,
+            columnName: field.columnName,
             value: sqlStatement,
             isSQL
           }).value
@@ -217,10 +152,10 @@ const windowControl = {
           }
         }
         const contextInfo = dispatch('getContextInfoValueFromServer', {
-          parentUuid,
-          containerUuid,
+          parentUuid: field.parentUuid,
+          containerUuid: field.containerUuid,
           contextInfoUuid: field.contextInfo.uuid,
-          columnName,
+          columnName: field.columnName,
           sqlStatement
         })
         if (!isEmptyValue(contextInfo) && !isEmptyValue(contextInfo.messageText)) {
@@ -242,111 +177,111 @@ const windowControl = {
         newValues: oldAttributes
       })
     },
-    createNewEntity({ commit, dispatch, getters, rootGetters }, {
-      parentUuid,
-      containerUuid
-    }) {
-      return new Promise((resolve, reject) => {
-        // exists some call to create new record with container uuid
-        if (getters.getInCreate(containerUuid)) {
-          return reject({
-            error: 0,
-            message: `In this panel (${containerUuid}) is a create new record in progress`
-          })
-        }
-
-        const { tableName, fieldList } = rootGetters.getPanel(containerUuid)
-        // delete key from attributes
-        const attributesList = rootGetters.getColumnNamesAndValues({
-          containerUuid,
-          propertyName: 'value',
-          isEvaluateValues: true,
-          isAddDisplayColumn: false
-        })
-
-        commit('addInCreate', {
-          containerUuid,
-          tableName,
-          attributesList
-        })
-        createEntity({
-          tableName,
-          attributesList
-        })
-          .then(createEntityResponse => {
-            const newValues = createEntityResponse.values
-            attributesList.forEach(element => {
-              if (element.columnName.includes('DisplayColumn')) {
-                newValues[element.columnName] = element.value
-              }
-            })
-
-            showMessage({
-              message: language.t('data.createRecordSuccessful'),
-              type: 'success'
-            })
-
-            // update fields with new values
-            dispatch('notifyPanelChange', {
-              parentUuid,
-              containerUuid,
-              newValues,
-              isSendToServer: false
-            })
-            dispatch('addNewRow', {
-              parentUuid,
-              containerUuid,
-              isPanelValues: true,
-              isEdit: false
-            })
-
-            // set data log to undo action
-            const fieldId = fieldList.find(itemField => itemField.isKey)
-            dispatch('setDataLog', {
-              containerUuid,
-              tableName,
-              recordId: fieldId.value, // TODO: Verify performance with tableName_ID
-              recordUuid: newValues.UUID,
-              eventType: 'INSERT'
-            })
-
-            const oldRoute = router.app._route
-            router.push({
-              name: oldRoute.name,
-              params: {
-                ...oldRoute.params
-              },
-              query: {
-                ...oldRoute.query,
-                action: createEntityResponse.uuid
-              }
-            })
-            dispatch('tagsView/delView', oldRoute, true)
-
-            resolve({
-              data: newValues,
-              recordUuid: createEntityResponse.uuid,
-              recordId: createEntityResponse.id,
-              tableName: createEntityResponse.tableName
-            })
-          })
-          .catch(error => {
-            showMessage({
-              message: error.message,
-              type: 'error'
-            })
-            console.warn(`Create Entity error: ${error.message}.`)
-            reject(error)
-          })
-          .finally(() => {
-            commit('deleteInCreate', {
-              containerUuid,
-              tableName,
-              attributesList
-            })
-          })
-      })
-    },
+    // createNewEntity({ commit, dispatch, getters, rootGetters }, {
+    //   parentUuid,
+    //   containerUuid
+    // }) {
+    //   return new Promise((resolve, reject) => {
+    //     // exists some call to create new record with container uuid
+    //     if (getters.getInCreate(containerUuid)) {
+    //       return reject({
+    //         error: 0,
+    //         message: `In this panel (${containerUuid}) is a create new record in progress`
+    //       })
+    //     }
+    //
+    //     const { tableName, fieldList } = rootGetters.getPanel(containerUuid)
+    //     // delete key from attributes
+    //     const attributesList = rootGetters.getColumnNamesAndValues({
+    //       containerUuid,
+    //       propertyName: 'value',
+    //       isEvaluateValues: true,
+    //       isAddDisplayColumn: false
+    //     })
+    //     console.log(attributesList)
+    //     commit('addInCreate', {
+    //       containerUuid,
+    //       tableName,
+    //       attributesList
+    //     })
+    //     createEntity({
+    //       tableName,
+    //       attributesList
+    //     })
+    //       .then(createEntityResponse => {
+    //         const newValues = createEntityResponse.values
+    //         attributesList.forEach(element => {
+    //           if (element.columnName.includes('DisplayColumn')) {
+    //             newValues[element.columnName] = element.value
+    //           }
+    //         })
+    //
+    //         showMessage({
+    //           message: language.t('data.createRecordSuccessful'),
+    //           type: 'success'
+    //         })
+    //
+    //         // update fields with new values
+    //         dispatch('notifyPanelChange', {
+    //           parentUuid,
+    //           containerUuid,
+    //           newValues,
+    //           isSendToServer: false
+    //         })
+    //         dispatch('addNewRow', {
+    //           parentUuid,
+    //           containerUuid,
+    //           isPanelValues: true,
+    //           isEdit: false
+    //         })
+    //
+    //         // set data log to undo action
+    //         const fieldId = fieldList.find(itemField => itemField.isKey)
+    //         dispatch('setDataLog', {
+    //           containerUuid,
+    //           tableName,
+    //           recordId: fieldId.value, // TODO: Verify performance with tableName_ID
+    //           recordUuid: newValues.UUID,
+    //           eventType: 'INSERT'
+    //         })
+    //
+    //         const oldRoute = router.app._route
+    //         router.push({
+    //           name: oldRoute.name,
+    //           params: {
+    //             ...oldRoute.params
+    //           },
+    //           query: {
+    //             ...oldRoute.query,
+    //             action: createEntityResponse.uuid
+    //           }
+    //         })
+    //         dispatch('tagsView/delView', oldRoute, true)
+    //
+    //         resolve({
+    //           data: newValues,
+    //           recordUuid: createEntityResponse.uuid,
+    //           recordId: createEntityResponse.id,
+    //           tableName: createEntityResponse.tableName
+    //         })
+    //       })
+    //       .catch(error => {
+    //         showMessage({
+    //           message: error.message,
+    //           type: 'error'
+    //         })
+    //         console.warn(`Create Entity error: ${error.message}.`)
+    //         reject(error)
+    //       })
+    //       .finally(() => {
+    //         commit('deleteInCreate', {
+    //           containerUuid,
+    //           tableName,
+    //           attributesList
+    //         })
+    //       })
+    //   })
+    // },
     createEntityFromTable({ commit, dispatch, getters, rootGetters }, {
       parentUuid,
       containerUuid,
@@ -449,121 +384,121 @@ const windowControl = {
           })
         })
     },
-    updateCurrentEntity({ dispatch, rootGetters }, {
-      containerUuid,
-      recordUuid = null
-    }) {
-      const panel = rootGetters.getPanel(containerUuid)
-      if (!recordUuid) {
-        recordUuid = rootGetters.getUuid(containerUuid)
-      }
-
-      // TODO: Add support to Binary columns (BinaryData)
-      const columnsToDontSend = ['Account_Acct']
-
-      // attributes or fields
-      let finalAttributes = rootGetters.getColumnNamesAndValues({
-        containerUuid: containerUuid,
-        isEvaluatedChangedValue: true
-      })
-
-      finalAttributes = finalAttributes.filter(itemAttribute => {
-        if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
-          return false
-        }
-        const field = panel.fieldList.find(itemField => itemField.columnName === itemAttribute.columnName)
-        if (!field || !field.isUpdateable || !field.isDisplayed) {
-          return false
-        }
-        return true
-      })
-      return updateEntity({
-        tableName: panel.tableName,
-        recordUuid,
-        attributesList: finalAttributes
-      })
-        .then(updateEntityResponse => {
-          const newValues = updateEntityResponse.values
-          // set data log to undo action
-          // TODO: Verify performance with tableName_ID
-          let recordId = updateEntityResponse.id
-          if (isEmptyValue(recordId)) {
-            recordId = newValues[`${panel.tableName}_ID`]
-          }
-          if (isEmptyValue(recordId)) {
-            const fieldId = panel.fieldList.find(itemField => itemField.isKey)
-            recordId = fieldId.value
-          }
-
-          if (isEmptyValue(recordUuid)) {
-            recordUuid = updateEntityResponse.uuid
-          }
-          if (isEmptyValue(recordUuid)) {
-            recordUuid = newValues.UUID
-          }
-
-          dispatch('setDataLog', {
-            containerUuid,
-            tableName: panel.tableName,
-            recordId,
-            recordUuid,
-            eventType: 'UPDATE'
-          })
-          if (rootGetters.getShowContainerInfo) {
-            dispatch('listRecordLogs', {
-              tableName: panel.tableName,
-              recordId
-            })
-          }
-          return newValues
-        })
-        .catch(error => {
-          showMessage({
-            message: error.message,
-            type: 'error'
-          })
-          console.warn(`Update Entity Error ${error.code}: ${error.message}`)
-        })
-    },
-    updateCurrentEntityFromTable({ rootGetters }, {
-      containerUuid,
-      row
-    }) {
-      const { tableName, fieldList } = rootGetters.getPanel(containerUuid)
-
-      // TODO: Add support to Binary columns (BinaryData)
-      const columnsToDontSend = ['BinaryData', 'isEdit', 'isNew', 'isSendServer']
-
-      // TODO: Evaluate peformance without filter using delete(prop) before convert object to array
-      // attributes or fields
-      let finalAttributes = convertObjectToArrayPairs(row)
-      finalAttributes = finalAttributes.filter(itemAttribute => {
-        if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
-          return false
-        }
-        const field = fieldList.find(itemField => itemField.columnName === itemAttribute.columnName)
-        if (!field || !field.isUpdateable || !field.isDisplayed) {
-          return false
-        }
-        return true
-      })
-
-      return updateEntity({
-        tableName,
-        recordUuid: row.UUID,
-        attributesList: finalAttributes
-      })
-        .then(response => {
-          return response
-        })
-        .catch(error => {
-          showMessage({
-            message: error.message,
-            type: 'error'
-          })
-          console.warn(`Update Entity Table Error ${error.code}: ${error.message}.`)
-        })
-    },
+    // updateCurrentEntity({ dispatch, rootGetters }, {
+    //   containerUuid,
+    //   recordUuid = null
+    // }) {
+    //   const panel = rootGetters.getPanel(containerUuid)
+    //   if (!recordUuid) {
+    //     recordUuid = rootGetters.getUuid(containerUuid)
+    //   }
+    //
+    //   // TODO: Add support to Binary columns (BinaryData)
+    //   const columnsToDontSend = ['Account_Acct']
+    //
+    //   // attributes or fields
+    //   let finalAttributes = rootGetters.getColumnNamesAndValues({
+    //     containerUuid: containerUuid,
+    //     isEvaluatedChangedValue: true
+    //   })
+    //
+    //   finalAttributes = finalAttributes.filter(itemAttribute => {
+    //     if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
+    //       return false
+    //     }
+    //     const field = panel.fieldList.find(itemField => itemField.columnName === itemAttribute.columnName)
+    //     if (!field || !field.isUpdateable || !field.isDisplayed) {
+    //       return false
+    //     }
+    //     return true
+    //   })
+    //   return updateEntity({
+    //     tableName: panel.tableName,
+    //     recordUuid,
+    //     attributesList: finalAttributes
+    //   })
+    //     .then(updateEntityResponse => {
+    //       const newValues = updateEntityResponse.values
+    //       // set data log to undo action
+    //       // TODO: Verify performance with tableName_ID
+    //       let recordId = updateEntityResponse.id
+    //       if (isEmptyValue(recordId)) {
+    //         recordId = newValues[`${panel.tableName}_ID`]
+    //       }
+    //       if (isEmptyValue(recordId)) {
+    //         const fieldId = panel.fieldList.find(itemField => itemField.isKey)
+    //         recordId = fieldId.value
+    //       }
+    //
+    //       if (isEmptyValue(recordUuid)) {
+    //         recordUuid = updateEntityResponse.uuid
+    //       }
+    //       if (isEmptyValue(recordUuid)) {
+    //         recordUuid = newValues.UUID
+    //       }
+    //
+    //       dispatch('setDataLog', {
+    //         containerUuid,
+    //         tableName: panel.tableName,
+    //         recordId,
+    //         recordUuid,
+    //         eventType: 'UPDATE'
+    //       })
+    //       if (rootGetters.getShowContainerInfo) {
+    //         dispatch('listRecordLogs', {
+    //           tableName: panel.tableName,
+    //           recordId
+    //         })
+    //       }
+    //       return newValues
+    //     })
+    //     .catch(error => {
+    //       showMessage({
+    //         message: error.message,
+    //         type: 'error'
+    //       })
+    //       console.warn(`Update Entity Error ${error.code}: ${error.message}`)
+    //     })
+    // },
+    // updateCurrentEntityFromTable({ rootGetters }, {
+    //   containerUuid,
+    //   row
+    // }) {
+    //   const { tableName, fieldList } = rootGetters.getPanel(containerUuid)
+    //
+    //   // TODO: Add support to Binary columns (BinaryData)
+    //   const columnsToDontSend = ['BinaryData', 'isEdit', 'isNew', 'isSendServer']
+    //
+    //   // TODO: Evaluate peformance without filter using delete(prop) before convert object to array
+    //   // attributes or fields
+    //   let finalAttributes = convertObjectToArrayPairs(row)
+    //   finalAttributes = finalAttributes.filter(itemAttribute => {
+    //     if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
+    //       return false
+    //     }
+    //     const field = fieldList.find(itemField => itemField.columnName === itemAttribute.columnName)
+    //     if (!field || !field.isUpdateable || !field.isDisplayed) {
+    //       return false
+    //     }
+    //     return true
+    //   })
+    //
+    //   return updateEntity({
+    //     tableName,
+    //     recordUuid: row.UUID,
+    //     attributesList: finalAttributes
+    //   })
+    //     .then(response => {
+    //       return response
+    //     })
+    //     .catch(error => {
+    //       showMessage({
+    //         message: error.message,
+    //         type: 'error'
+    //       })
+    //       console.warn(`Update Entity Table Error ${error.code}: ${error.message}.`)
+    //     })
+    // },
     /**
      * Update record after run process associated with window
      * @param {string} parentUuid
