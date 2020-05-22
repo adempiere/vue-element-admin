@@ -257,7 +257,7 @@ const processControl = {
 
           // reset panel and set defalt isShowedFromUser
           if (!processDefinition.isReport) {
-            dispatch('resetPanelToNew', {
+            dispatch('setDefaultValues', {
               containerUuid,
               panelType
             })

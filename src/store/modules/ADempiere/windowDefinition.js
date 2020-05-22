@@ -104,7 +104,7 @@ const window = {
               name: language.t('window.newRecord'),
               processName: language.t('window.newRecord'),
               type: 'dataAction',
-              action: 'resetPanelToNew',
+              action: 'setDefaultValues',
               uuidParent: windowUuid,
               disabled: !tab.isInsertRecord || tab.isReadOnly
             }, {

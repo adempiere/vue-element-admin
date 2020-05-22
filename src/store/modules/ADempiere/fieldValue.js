@@ -36,6 +36,19 @@ const value = {
       })
     }
   },
+  actions: {
+    updateValuesOfContainer({ commit }, {
+      parentUuid,
+      containerUuid,
+      attributes = []
+    }) {
+      commit('updateValuesOfContainer', {
+        parentUuid,
+        containerUuid,
+        attributes
+      })
+    }
+  },
   getters: {
     getValueOfField: (state) => ({ containerUuid, columnName }) => {
       return state.field[containerUuid + '_' + columnName]

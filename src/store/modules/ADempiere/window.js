@@ -573,7 +573,7 @@ const windowControl = {
                 if (panel.isParentTab) {
                   // if response is void, go to new record
                   if (responseDataList.length <= 0) {
-                    dispatch('resetPanelToNew', {
+                    dispatch('setDefaultValues', {
                       parentUuid,
                       containerUuid,
                       panelType: 'window',
@@ -684,7 +684,7 @@ const windowControl = {
                   }
                 })
                 // clear fields with default values
-                dispatch('resetPanelToNew', {
+                dispatch('setDefaultValues', {
                   parentUuid,
                   containerUuid
                 })
@@ -835,7 +835,7 @@ const windowControl = {
               })
             } else {
               // this record is missing (Deleted or the query does not include it)
-              dispatch('resetPanelToNew', {
+              dispatch('setDefaultValues', {
                 parentUuid,
                 containerUuid
               })

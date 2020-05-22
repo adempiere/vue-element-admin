@@ -524,6 +524,7 @@ const data = {
         defaultValues = rootGetters.getParsedDefaultValues({
           parentUuid,
           containerUuid,
+          formatToReturn: 'object',
           isGetServer: false
         })
       }

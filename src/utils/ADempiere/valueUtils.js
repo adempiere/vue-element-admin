@@ -89,9 +89,6 @@ export function clientDateTime(date = null, type = '') {
 
 export const convertStringToBoolean = (valueToParsed) => {
   const valueString = String(valueToParsed).trim()
-  if (valueString === 'Y' || valueString === 'true') {
-    return true
-  }
   if (valueString === 'N' || valueString === 'false') {
     return false
   }

@@ -234,7 +234,7 @@ export const contextMixin = {
     actionContextMenu(event) {
       switch (event.srcKey) {
         case 'f2':
-          this.$store.dispatch('resetPanelToNew', {
+          this.$store.dispatch('setDefaultValues', {
             parentUuid: this.parentUuid,
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid,
@@ -437,7 +437,7 @@ export const contextMixin = {
             containerUuid: this.containerUuid,
             recordUuid: this.recordUuid,
             panelType: this.panelType,
-            isNewRecord: action.action === 'resetPanelToNew',
+            isNewRecord: action.action === 'setDefaultValues',
             tableName: action.tableName,
             recordId: action.recordId
           })

@@ -303,7 +303,7 @@ const panel = {
      * @param {array}   fieldList
      * TODO: Evaluate if it is necessary to parse the default values
      */
-    resetPanelToNew({ commit, dispatch, getters }, {
+    setDefaultValues({ commit, dispatch, getters }, {
       parentUuid,
       containerUuid,
       panelType = 'window',
@@ -339,51 +339,45 @@ const panel = {
             type: 'info'
           })
 
-          panel.fieldList.forEach(fieldToBlank => {
-            if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
-              commit('changeFieldValueToNull', {
-                field: fieldToBlank,
-                value: undefined
-              })
-            }
-          })
+          // panel.fieldList.forEach(fieldToBlank => {
+          //   if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
+          //     commit('changeFieldValueToNull', {
+          //       field: fieldToBlank,
+          //       value: undefined
+          //     })
+          //   }
+          // })
 
-          if (panel.isTabsChildren) {
-            // delete records tabs children when change record uuid
-            dispatch('deleteRecordContainer', {
-              viewUuid: parentUuid,
-              withOut: [containerUuid],
-              isNew: true
-            })
-          }
+          // if (panel.isTabsChildren) {
+          //   // delete records tabs children when change record uuid
+          //   dispatch('deleteRecordContainer', {
+          //     viewUuid: parentUuid,
+          //     withOut: [containerUuid],
+          //     isNew: true
+          //   })
+          // }
         }
 
-        dispatch('notifyPanelChange', {
+        dispatch('updateValuesOfContainer', {
           parentUuid,
           containerUuid,
-          panelType,
-          fieldList: panel.fieldList,
-          newValues: defaultAttributes,
-          isSendToServer: false,
-          // if isNewRecord active callouts, if window is closed no send callout
-          isSendCallout: isNewRecord,
-          isPrivateAccess: false
+          attributes: defaultAttributes
         })
-          .then(() => {
-            if (['process', 'report'].includes(panelType)) {
-              const fieldsUser = panel.fieldList.filter(itemField => {
-                return itemField.isShowedFromUserDefault || !isEmptyValue(itemField.value)
-              }).map(itemField => {
-                return itemField.columnName
-              })
+        // .then(() => {
+        //   if (['process', 'report'].includes(panelType)) {
+        //     const fieldsUser = panel.fieldList.filter(itemField => {
+        //       return itemField.isShowedFromUserDefault || !isEmptyValue(itemField.value)
+        //     }).map(itemField => {
+        //       return itemField.columnName
+        //     })
 
-              dispatch('changeFieldShowedFromUser', {
-                containerUuid,
-                fieldsUser,
-                groupField: ''
-              })
-            }
-          })
+        //     dispatch('changeFieldShowedFromUser', {
+        //       containerUuid,
+        //       fieldsUser,
+        //       groupField: ''
+        //     })
+        //   }
+        // })
         resolve(defaultAttributes)
       })
     },
@@ -954,14 +948,14 @@ const panel = {
       parentUuid,
       containerUuid,
       isGetServer = true,
-      fieldsList = []
+      fieldsList = [],
+      formatToReturn = 'array'
     }) => {
       if (isEmptyValue(fieldsList)) {
         fieldsList = getters.getFieldsListFromPanel(containerUuid)
       }
       const attributesObject = {}
-
-      fieldsList
+      const attributesList = fieldsList
         .map(fieldItem => {
           let isSQL = false
           let valueToReturn = fieldItem.parsedDefaultValue
@@ -970,8 +964,8 @@ const panel = {
               isSQL = true
             }
             valueToReturn = parseContext({
-              parentUuid: parentUuid,
-              containerUuid: containerUuid,
+              parentUuid,
+              containerUuid,
               columnName: fieldItem.columnName,
               value: fieldItem.defaultValue,
               isSQL
@@ -1005,6 +999,9 @@ const panel = {
             isSQL
           }
         })
+      if (formatToReturn === 'array') {
+        return attributesList
+      }
       return attributesObject
     },
     getFieldsIsDisplayed: (state, getters) => (containerUuid) => {
