@@ -387,21 +387,24 @@ export default {
           if (Object.prototype.hasOwnProperty.call(route.query, fieldItem.columnName) && !fieldItem.isAdvancedQuery) {
             fieldItem.isShowedFromUser = true
             fieldItem.value = parsedValueComponent({
-              fieldType: fieldItem.componentPath,
+              componentPath: fieldItem.componentPath,
+              columnName: fieldItem.columnName,
               value: route.query[fieldItem.columnName],
               displayType: fieldItem.displayType,
               isIdentifier: fieldItem.columnName.includes('_ID')
             })
             if (String(route.query.isAdvancedQuery) === String(fieldItem.isAdvancedQuery)) {
               fieldItem.value = parsedValueComponent({
-                fieldType: fieldItem.componentPath,
+                componentPath: fieldItem.componentPath,
+                columnName: fieldItem.columnName,
                 value: route.query[fieldItem.columnName],
                 displayType: fieldItem.displayType,
                 isIdentifier: fieldItem.columnName.includes('_ID')
               })
               if (fieldItem.isRange && this.$route.query[`${fieldItem.columnName}_To`]) {
                 fieldItem.valueTo = parsedValueComponent({
-                  fieldType: fieldItem.componentPath,
+                  componentPath: fieldItem.componentPath,
+                  columnName: fieldItem.componentPath,
                   value: route.query[`${fieldItem.columnName}_To`],
                   displayType: fieldItem.displayType,
                   isIdentifier: fieldItem.columnName.includes('_ID')
@@ -456,13 +459,15 @@ export default {
 
               if (route.query.action === 'advancedQuery' && fieldItem.isAdvancedQuery) {
                 this.dataRecords[fieldItem.columnName] = parsedValueComponent({
-                  fieldType: fieldItem.componentPath,
+                  componentPath: fieldItem.componentPath,
+                  columnName: fieldItem.columnName,
                   value: route.query[fieldItem.columnName],
                   isIdentifier: fieldItem.columnName.includes('_ID')
                 })
                 if (fieldItem.isRange && route.query[`${fieldItem.columnName}_To`]) {
                   this.dataRecords[fieldItem.columnName] = parsedValueComponent({
-                    fieldType: fieldItem.componentPath,
+                    componentPath: fieldItem.componentPath,
+                    columnName: fieldItem.columnName,
                     value: route.query[`${fieldItem.columnName}_To`],
                     isIdentifier: fieldItem.columnName.includes('_ID')
                   })

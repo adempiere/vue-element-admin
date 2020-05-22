@@ -88,7 +88,8 @@ export function generateField({
     }
 
     parsedDefaultValue = parsedValueComponent({
-      fieldType: componentReference.componentPath,
+      componentPath: componentReference.componentPath,
+      columnName: fieldToGenerate.columnName,
       value: parsedDefaultValue,
       displayType: fieldToGenerate.displayType,
       isMandatory: fieldToGenerate.isMandatory,
@@ -132,7 +133,8 @@ export function generateField({
       }
 
       parsedDefaultValueTo = parsedValueComponent({
-        fieldType: componentReference.componentPath,
+        componentPath: componentReference.componentPath,
+        columnName: fieldToGenerate.columnName,
         value: parsedDefaultValueTo,
         displayType: fieldToGenerate.displayType,
         isMandatory: fieldToGenerate.isMandatory,

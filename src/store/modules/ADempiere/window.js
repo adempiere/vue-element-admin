@@ -477,7 +477,7 @@ const windowControl = {
     //
     //   // TODO: Evaluate peformance without filter using delete(prop) before convert object to array
     //   // attributes or fields
-    //   let finalAttributes = convertObjectToArrayPairs(row)
+    //   let finalAttributes = convertObjectToKeyValue({ object: row })
     //   finalAttributes = finalAttributes.filter(itemAttribute => {
     //     if (columnsToDontSend.includes(itemAttribute.columnName) || itemAttribute.columnName.includes('DisplayColumn')) {
     //       return false

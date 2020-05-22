@@ -18,6 +18,7 @@
 import { fieldIsDisplayed } from '@/utils/ADempiere'
 import { FIELDS_READ_ONLY_FORM } from '@/utils/ADempiere/references'
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils.js'
 
 export default {
   name: 'FieldYesNo',
@@ -34,12 +35,7 @@ export default {
   },
   methods: {
     parseValue(value) {
-      if (typeof value !== 'boolean') {
-        if (value === 'N' || value === 'n') {
-          value = false
-        }
-      }
-      return Boolean(value)
+      return convertStringToBoolean(value)
     },
     preHandleChange(value) {
       this.handleChange(value)

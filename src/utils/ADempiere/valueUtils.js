@@ -252,28 +252,33 @@ export const recursiveTreeSearch = ({
 /**
  * Parsed value to component type
  * @param {mixed} value, value to parsed
- * @param {string} fieldType, or componentPath
+ * @param {string} componentPath
  * @param {number} displayType, reference in ADempiere
  * @param {boolean} isMandatory, field is mandatory
  * @param {boolean} isIdentifier, field is ID
  */
 export function parsedValueComponent({
-  fieldType,
+  componentPath,
   value,
+  columnName,
   displayType,
   isMandatory = false,
   isIdentifier = false
 }) {
   const isEmpty = isEmptyValue(value)
   if (isEmpty && !isMandatory) {
-    if (fieldType === 'FieldYesNo') {
+    if (componentPath === 'FieldYesNo') {
+      if (columnName === 'IsActive') {
+        return true
+      }
+      // Processing, Processed, and any other columnName, return false by default
       return Boolean(value)
     }
     return undefined
   }
   var returnValue
 
-  switch (fieldType) {
+  switch (componentPath) {
     // data type Number
     case 'FieldNumber':
       if (isEmpty) {

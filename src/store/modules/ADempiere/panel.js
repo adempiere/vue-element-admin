@@ -526,14 +526,16 @@ const panel = {
         // if (!(panelType === 'table' || isAdvancedQuery)) {
         //   if (!['IN', 'NOT_IN'].includes(field.operator)) {
         //     value = parsedValueComponent({
-        //       fieldType: field.componentPath,
+        //       componentPath: field.componentPath,
+        //       columnName: field.columnName,
         //       displayType: field.displayType,
         //       value,
         //       isIdentifier: field.columnName.includes('_ID')
         //     })
         //     if (field.isRange) {
         //       valueTo = parsedValueComponent({
-        //         fieldType: field.componentPath,
+        //         componentPath: field.componentPath,
+        //         columnName: field.columnName,
         //         displayType: field.displayType,
         //         value: valueTo,
         //         isIdentifier: field.columnName.includes('_ID')
@@ -983,7 +985,8 @@ const panel = {
           }
 
           valueToReturn = parsedValueComponent({
-            fieldType: fieldItem.componentPath,
+            componentPath: fieldItem.componentPath,
+            columnName: fieldItem.columnName,
             displayType: fieldItem.displayType,
             isMandatory: fieldItem.isMandatory,
             value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn,
@@ -1161,7 +1164,8 @@ const panel = {
               values = value.map(itemValue => {
                 const isMandatory = !isAdvancedQuery && (parameterItem.isMandatory || parameterItem.isMandatoryFromLogic)
                 return parsedValueComponent({
-                  fieldType: parameterItem.componentPath,
+                  componentPath: parameterItem.componentPath,
+                  columnName: parameterItem.columnName,
                   value: itemValue,
                   displayType: parameterItem.displayType,
                   isMandatory,
