@@ -680,27 +680,19 @@ export default {
     },
     changePanelRecord(uuidRecord) {
       if (!['create-new', 'reference', 'advancedQuery', 'criteria', 'listRecords'].includes(uuidRecord)) {
-        const recordSelected = this.getterDataStore.record.find(record => record.UUID === uuidRecord)
-        if (recordSelected) {
-          this.dataRecords = recordSelected
-          this.$store.dispatch('notifyPanelChange', {
-            parentUuid: this.parentUuid,
-            containerUuid: this.containerUuid,
-            newValues: this.dataRecords,
-            isSendToServer: false,
-            isSendCallout: false,
-            fieldList: this.fieldList,
-            panelType: this.panelType
-          }).then(() => {
-            if (this.getterPanel.isTabsChildren) {
-              // delete records tabs children when change record uuid
-              this.$store.dispatch('deleteRecordContainer', {
-                viewUuid: this.parentUuid,
-                withOut: [this.containerUuid]
-              })
-            }
-          })
-        }
+        this.$store.dispatch('seekRecord', {
+          parentUuid: this.parentUuid,
+          containerUuid: this.containerUuid,
+          recordUuid: uuidRecord
+        }).then(() => {
+          if (this.getterPanel.isTabsChildren) {
+            // delete records tabs children when change record uuid
+            this.$store.dispatch('deleteRecordContainer', {
+              viewUuid: this.parentUuid,
+              withOut: [this.containerUuid]
+            })
+          }
+        })
       }
       this.setTagsViewTitle(uuidRecord)
       if (this.$route.query.action === 'create-new') {

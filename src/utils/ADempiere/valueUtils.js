@@ -112,11 +112,15 @@ export const convertBooleanToString = (booleanValue) => {
  * @param {string} nameValue, name from value in pairs
  * @returns {array} [ { nameKey: key, nameValue: value } ]
  */
-export function convertObjectToArrayPairs(objectToConvert, nameKey = 'columnName', nameValue = 'value') {
-  return Object.keys(objectToConvert).map(key => {
+export function convertObjectToKeyValue({
+  object,
+  keyName = 'columnName',
+  valueName = 'value'
+}) {
+  return Object.keys(object).map(key => {
     const returnPairs = {}
-    returnPairs[nameKey] = key
-    returnPairs[nameValue] = objectToConvert[key]
+    returnPairs[keyName] = key
+    returnPairs[valueName] = object[key]
     return returnPairs
   })
 }
@@ -127,14 +131,14 @@ export function convertObjectToArrayPairs(objectToConvert, nameKey = 'columnName
  * @param {string} nameKey, name from key in pairs
  * @param {string} nameValue, name from value in pairs
  */
-export function convertArrayPairsToObject({
-  arrayToConvert,
-  nameKey = 'columnName',
-  nameValue = 'value'
+export function convertArrayKeyValueObject({
+  array,
+  keyName = 'columnName',
+  valueName = 'value'
 }) {
   const result = {}
-  arrayToConvert.forEach(element => {
-    result[element[nameKey]] = element[nameValue]
+  array.forEach(element => {
+    result[element[keyName]] = element[valueName]
   })
 
   return result
