@@ -1,4 +1,5 @@
 import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue } from './valueUtils'
 
 // This class is used for evaluate a conditional
 // format := {expression} [{logic} {expression}]<br>
@@ -29,7 +30,7 @@ class evaluator {
     defaultReturned = false
   }) {
     // empty logic
-    if (['undefined', 'null', ''].includes(String(logic.trim()))) {
+    if (isEmptyValue(logic)) {
       return defaultReturned
     }
     const st = logic.trim().replace('\n', '')
@@ -98,7 +99,7 @@ class evaluator {
     logic
   }) {
     // not context info, not logic
-    if (['undefined', 'null', ''].includes(String(logic.trim()))) {
+    if (isEmptyValue(logic)) {
       return defaultReturned
     }
 
@@ -142,14 +143,14 @@ class evaluator {
         columnName: first
       })
       // in context exists this column name
-      if (['undefined', 'null', ''].includes(String(value.trim()))) {
+      if (isEmptyValue(value)) {
       // console.info(`.The column ${first} not exists in context.`)
         return defaultReturned
       }
       firstEval = value // replace with it's value
     }
 
-    if (['undefined', 'null', ''].includes(String(firstEval.trim()))) {
+    if (isEmptyValue(firstEval)) {
       return defaultReturned
     }
     if (typeof firstEval === 'string') {
@@ -242,7 +243,7 @@ class evaluator {
    */
   static parseDepends(parseString) {
     const listFields = []
-    if (['undefined', 'null', ''].includes(String(parseString.trim()))) {
+    if (isEmptyValue(parseString)) {
       // return array empty
       return listFields
     }

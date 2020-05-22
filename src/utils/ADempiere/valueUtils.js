@@ -89,17 +89,17 @@ export function clientDateTime(date = null, type = '') {
 
 export const convertStringToBoolean = (valueToParsed) => {
   const valueString = String(valueToParsed).trim()
-  if (valueString === 'Y') {
+  if (valueString === 'Y' || valueString === 'true') {
     return true
   }
-  if (valueString === 'N') {
+  if (valueString === 'N' || valueString === 'false') {
     return false
   }
-  return valueToParsed
+  return Boolean(valueToParsed)
 }
 
 export const convertBooleanToString = (booleanValue) => {
-  if (booleanValue) {
+  if (booleanValue || booleanValue === 'true') {
     return 'Y'
   }
   return 'N'
@@ -290,12 +290,10 @@ export function parsedValueComponent({
 
     // data type Boolean
     case 'FieldYesNo':
-      if (value === 'false' || value === 'N') {
-        value = false
-      } else if (typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'query')) {
+      if (typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'query')) {
         returnValue = value
       }
-      returnValue = Boolean(value)
+      returnValue = convertStringToBoolean(value)
       break
 
     // data type String
@@ -330,7 +328,7 @@ export function parsedValueComponent({
         value = undefined
       }
       if (typeof value === 'boolean') {
-        value = value ? 'Y' : 'N'
+        value = convertBooleanToString(value)
       }
       // Table (18) or Table Direct (19)
       if (displayType === TABLE_DIRECT.id || (displayType === TABLE.id && isIdentifier)) {
