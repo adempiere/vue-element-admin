@@ -227,7 +227,8 @@ export default {
           isWithRecord = !this.isEmptyValue(this.field.recordUuid)
         }
 
-        return (!this.field.isUpdateable && isWithRecord) || (isUpdateableAllFields || this.field.isReadOnlyFromForm)
+        return (!this.field.isUpdateable && isWithRecord) ||
+          (isUpdateableAllFields || this.field.isReadOnlyFromForm)
       } else if (this.field.panelType === 'browser') {
         if (this.inTable) {
           // browser result
@@ -247,8 +248,8 @@ export default {
     },
     isSelectCreated() {
       return this.isAdvancedQuery &&
-        !['FieldBinary', 'FieldDate', 'FieldSelect', 'FieldYesNo'].includes(this.field.componentPath) &&
-        ['IN', 'NOT_IN'].includes(this.field.operator)
+        ['IN', 'NOT_IN'].includes(this.field.operator) &&
+        !['FieldBinary', 'FieldDate', 'FieldSelect', 'FieldYesNo'].includes(this.field.componentPath)
     },
     getWidth() {
       return this.$store.getters.getWidthLayout
@@ -343,7 +344,8 @@ export default {
       if (!this.isAdvancedQuery) {
         return false
       }
-      return (this.field.contextInfo && this.field.contextInfo.isActive) || (this.field.reference && this.field.reference.windowsList.length)
+      return (this.field.contextInfo && this.field.contextInfo.isActive) ||
+        (this.field.reference && this.field.reference.windowsList.length)
     }
   },
   watch: {
@@ -388,6 +390,7 @@ export default {
     font-weight: bold;
     float: left;
   }
+
   /**
    * Separation between elements (item) of the form
    */
@@ -396,6 +399,7 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
   }
+
   /**
    * Reduce the spacing between the form element and its label
    */

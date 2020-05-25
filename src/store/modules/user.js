@@ -297,7 +297,7 @@ const actions = {
         console.warn(`Error ${error.code} getting Organizations list: ${error.message}.`)
       })
   },
-  changeOrganization({ commit, dispatch }, {
+  changeOrganization({ dispatch }, {
     organizationUuid
   }) {
     setCurrentOrganization(organizationUuid)

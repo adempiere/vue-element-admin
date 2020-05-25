@@ -1077,8 +1077,7 @@ export default {
       }
     }
   }
-</style>
-<style>
+
   .el-table .warning-row {
     background: rgba(161, 250, 223, 0.945);
   }

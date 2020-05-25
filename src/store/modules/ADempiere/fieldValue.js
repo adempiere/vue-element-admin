@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils'
+import { convertStringToBoolean, isEmptyValue } from '@/utils/ADempiere/valueUtils'
 
 const UUID_KEY = 'UUID'
 
@@ -54,8 +54,10 @@ const value = {
       return state.field[containerUuid + '_' + columnName]
     },
     getValueOfContainer: (state) => ({ parentUuid, containerUuid, columnName }) => {
+      // get in tab level
       let value = state.field[containerUuid + '_' + columnName]
-      if (!value && parentUuid) {
+      if (isEmptyValue(value) && parentUuid) {
+        // get in window level
         value = state.field[parentUuid + '_' + columnName]
       }
       return value

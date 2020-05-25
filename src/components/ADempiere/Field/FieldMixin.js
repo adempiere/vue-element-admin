@@ -39,18 +39,19 @@ export const fieldMixin = {
           parentUuid: this.metadata.parentUuid,
           containerUuid: this.metadata.containerUuid,
           columnName: this.metadata.columnName,
-          value: value
+          value
         })
       }
     }
   },
   async created() {
-    if (this.metadata.isSQLValue && (this.isEmptyValue(this.metadata.value) || this.metadata.value.isSQL || isNaN(this.metadata.value))) {
+    if (this.metadata.isSQLValue && (this.isEmptyValue(this.metadata.value) || this.metadata.value.isSQL)) {
       const value = await this.$store.dispatch('getValueBySQL', {
         parentUuid: this.metadata.parentUuid,
         containerUuid: this.metadata.containerUuid,
         query: this.metadata.defaultValue
       })
+      // set value and change into store
       this.preHandleChange(value)
     }
   },
@@ -172,6 +173,7 @@ export const fieldMixin = {
         return
       }
       this.$store.dispatch('notifyFieldChange', {
+        containerUuid: this.metadata.containerUuid,
         field: this.metadata
       })
     }

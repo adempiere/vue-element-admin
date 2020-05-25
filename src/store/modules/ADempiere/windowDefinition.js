@@ -248,7 +248,7 @@ const window = {
       panelMetadata,
       isAdvancedQuery = false
     }) {
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
         getTabMetadata(containerUuid)
           .then(tabResponse => {
             const additionalAttributes = {
@@ -335,7 +335,8 @@ const window = {
               message: language.t('login.unexpectedError'),
               type: 'error'
             })
-            console.warn(`Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`)
+            console.warn(`Get Dictionary Tab (State Window) - Error ${error.code}: ${error.message}.`, error)
+            reject(error)
           })
       })
     },
