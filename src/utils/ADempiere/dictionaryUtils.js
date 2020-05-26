@@ -493,24 +493,32 @@ export function sortFields({
 
 /**
  * Determinate if field is displayed
- * @param {boolean} field.isActive
- * @param {boolean} field.isDisplayed
- * @param {boolean} field.isDisplayedFromLogic
- * @param {boolean} field.isQueryCriteria
- * @param {string}  field.panelType
+ * @param {boolean} isActive
+ * @param {boolean} isDisplayed
+ * @param {boolean} isDisplayedFromLogic
+ * @param {boolean} isQueryCriteria
+ * @param {string}  panelType
  * @returns {boolean}
  */
-export function fieldIsDisplayed(field) {
-  // if is Advanced Query
-  if (field.panelType === 'table') {
-    return field.isDisplayed && field.isDisplayedFromLogic
+export function fieldIsDisplayed({
+  panelType,
+  isActive,
+  isDisplayed,
+  isDisplayedFromLogic,
+  isQueryCriteria
+}) {
+  // Verify if field is active
+  if (!isActive) {
+    return false
   }
-  const isBrowserDisplayed = field.isQueryCriteria // browser query criteria
-  const isWindowDisplayed = field.isDisplayed && field.isDisplayedFromLogic // window, process and report, browser result
-  const isDisplayedView = (field.panelType === 'browser' && isBrowserDisplayed) || (field.panelType !== 'browser' && isWindowDisplayed)
 
-  //  Verify for displayed and is active
-  return field.isActive && isDisplayedView
+  // browser query criteria
+  if (panelType === 'browser') {
+    return isQueryCriteria
+  }
+
+  // window, table (advanced query), process and report, browser (table) result
+  return isDisplayed && isDisplayedFromLogic
 }
 
 // Convert action to action name for route

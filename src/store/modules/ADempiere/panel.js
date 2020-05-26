@@ -303,7 +303,7 @@ const panel = {
      * @param {array}   fieldList
      * TODO: Evaluate if it is necessary to parse the default values
      */
-    setDefaultValues({ commit, dispatch, getters }, {
+    setDefaultValues({ dispatch, getters }, {
       parentUuid,
       containerUuid,
       panelType = 'window',
@@ -324,16 +324,18 @@ const panel = {
         if (panelType === 'window' && isNewRecord) {
           // redirect to create new record
           const oldRoute = router.app._route
-          router.push({
-            name: oldRoute.name,
-            params: {
-              ...oldRoute.params
-            },
-            query: {
-              ...oldRoute.query,
-              action: 'create-new'
-            }
-          })
+          if (!(oldRoute.query && oldRoute.query.action === 'create-new')) {
+            router.push({
+              name: oldRoute.name,
+              params: {
+                ...oldRoute.params
+              },
+              query: {
+                ...oldRoute.query,
+                action: 'create-new'
+              }
+            })
+          }
           showMessage({
             message: language.t('data.createNewRecord'),
             type: 'info'
@@ -391,9 +393,7 @@ const panel = {
         parentUuid,
         containerUuid,
         attributes: convertObjectToKeyValue({
-          object: getters.getDataRecordAndSelection(containerUuid).record.find(record => record.UUID === recordUuid),
-          keyName: 'columnName',
-          valueName: 'value'
+          object: getters.getDataRecordAndSelection(containerUuid).record.find(record => record.UUID === recordUuid)
         })
       })
     },
@@ -500,7 +500,7 @@ const panel = {
     // - Mandatory Logic
     // - Read Only Logic
     // - Action for Custom panel from type
-    notifyFieldChange({ commit, dispatch, getters }, {
+    notifyFieldChange({ dispatch, getters }, {
       containerUuid,
       columnName,
       field

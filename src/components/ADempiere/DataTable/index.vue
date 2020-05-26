@@ -666,24 +666,15 @@ export default {
         return true
       }
       if (fieldIsDisplayed(field)) {
-        // const fieldReadOnlyAllForm = FIELDS_READ_ONLY_FORM.filter(item => {
-        //   return item.isChangedAllForm &&
-        //     Object.prototype.hasOwnProperty.call(row, item.columnName)
-        // })
-        // // columnName: Processed, Processing
-        // if (fieldReadOnlyAllForm.length) {
-        //   const isReadOnlyAllRow = Boolean(fieldReadOnlyAllForm.find(item => row[item.columnName] === item.valueIsReadOnlyForm))
-        //   return isReadOnlyAllRow
-        // }
-
         // columnName: IsActive
         const fieldReadOnlyForm = FIELDS_READ_ONLY_FORM.find(item => {
           return !item.isChangedAllForm &&
+            // columnName: IsActive, Processed, Processing
             Object.prototype.hasOwnProperty.call(row, item.columnName)
         })
         if (fieldReadOnlyForm) {
-          const isReadOnlyRow = row[fieldReadOnlyForm.columnName] === fieldReadOnlyForm.valueIsReadOnlyForm && field.columnName !== fieldReadOnlyForm.columnName
-          return isReadOnlyRow
+          return field.columnName !== fieldReadOnlyForm.columnName &&
+            row[fieldReadOnlyForm.columnName] === fieldReadOnlyForm.valueIsReadOnlyForm
         }
       }
       return false

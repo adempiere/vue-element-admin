@@ -213,10 +213,7 @@ export default {
         if (this.field.isAlwaysUpdateable) {
           return false
         }
-        if (this.field.isProcessingContext) {
-          return true
-        }
-        if (this.field.isProcessedContext) {
+        if (this.field.isProcessingContext || this.field.isProcessedContext) {
           return true
         }
 

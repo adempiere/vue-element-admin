@@ -1,6 +1,7 @@
 import FieldDefinition from '@/components/ADempiere/Field'
 import FilterFields from '@/components/ADempiere/Panel/filterFields'
-import { fieldIsDisplayed, parsedValueComponent } from '@/utils/ADempiere'
+import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils.js'
+import { convertObjectToKeyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils.js'
 
 export const mainPanelMixin = {
   name: 'MainPanelMixin',
@@ -81,19 +82,13 @@ export const mainPanelMixin = {
     },
     getContainerProcessing() {
       if (this.panelType === 'window' && !this.isAdvancedQuery) {
-        const processing = this.$store.getters.getContainerProcessing(this.parentUuid)
-        if (processing) {
-          return true
-        }
+        return this.$store.getters.getContainerProcessing(this.parentUuid)
       }
       return false
     },
     getContainerProcessed() {
       if (this.panelType === 'window' && !this.isAdvancedQuery) {
-        const processed = this.$store.getters.getContainerProcessed(this.parentUuid)
-        if (processed) {
-          return true
-        }
+        return this.$store.getters.getContainerProcessed(this.parentUuid)
       }
       return false
     },
@@ -352,83 +347,21 @@ export const mainPanelMixin = {
           criteria: parameters.criteria
         })
           .then(response => {
+            let action = 'create-new'
+            let params = this.$route.params
             if (response.length && !parameters.isNewRecord) {
               this.dataRecords = response[0]
               const recordId = this.dataRecords[`${this.metadata.tableName}_ID`]
-
-              if (this.$route.query.action === 'criteria') {
-                this.$router.push({
-                  name: this.$route.name,
-                  query: {
-                    ...this.$route.query,
-                    action: this.dataRecords.UUID
-                  },
-                  params: {
-                    ...this.$route.params,
-                    tableName: this.metadata.tableName,
-                    recordId
-                  }
-                }).catch(error => {
-                  console.info(`Panel Component: ${error.name}, ${error.message}`)
-                })
-
-                this.$store.dispatch('notifyPanelChange', {
-                  parentUuid: this.parentUuid,
-                  containerUuid: this.containerUuid,
-                  newValues: this.dataRecords,
-                  isSendToServer: false,
-                  isSendCallout: false,
-                  fieldList: this.fieldList,
-                  panelType: this.panelType
-                })
-              } else if (this.$route.query.action === 'reference') {
-                this.$router.push({
-                  name: this.$route.name,
-                  query: {
-                    ...this.$route.query
-                  },
-                  params: {
-                    ...this.$route.params,
-                    tableName: this.metadata.tableName,
-                    recordId
-                  }
-                }).catch(error => {
-                  console.info(`Panel Component: ${error.name}, ${error.message}`)
-                })
-
-                this.$store.dispatch('notifyPanelChange', {
-                  parentUuid: this.parentUuid,
-                  containerUuid: this.containerUuid,
-                  newValues: this.dataRecords,
-                  isSendToServer: false,
-                  isSendCallout: false,
-                  fieldList: this.fieldList,
-                  panelType: this.panelType
-                })
+              params = {
+                ...params,
+                tableName: this.metadata.tableName,
+                recordId
+              }
+              if (this.$route.query.action === 'reference') {
+                action = 'reference'
               } else {
-                this.$router.push({
-                  query: {
-                    ...this.$route.query,
-                    action: this.dataRecords.UUID
-                  },
-                  params: {
-                    ...this.$route.params,
-                    tableName: this.metadata.tableName,
-                    recordId
-                  }
-                }).catch(error => {
-                  console.info(`Panel Component: ${error.name}, ${error.message}`)
-                })
-
-                this.$store.dispatch('notifyPanelChange', {
-                  parentUuid: this.parentUuid,
-                  containerUuid: this.containerUuid,
-                  newValues: this.dataRecords,
-                  isSendToServer: false,
-                  isSendCallout: false,
-                  fieldList: this.fieldList,
-                  panelType: this.panelType
-                })
+                // 'criteria'
+                action = this.dataRecords.UUID
               }
               let viewTitle = ''
               if (this.$route.query && !this.isEmptyValue(this.$route.query.action)) {
@@ -436,14 +369,34 @@ export const mainPanelMixin = {
               }
               this.setTagsViewTitle(viewTitle)
               this.isLoadRecord = true
+            }
+
+            this.$router.push({
+              name: this.$route.name,
+              params,
+              query: {
+                ...this.$route.query,
+                action
+              }
+            }).catch(error => {
+              console.info(`Panel Component: ${error.name}, ${error.message}`)
+            })
+
+            if (action === 'create-new') {
+              this.$store.dispatch('setDefaultValues', {
+                panelType: this.panelType,
+                parentUuid: this.parentUuid,
+                containerUuid: this.containerUuid,
+                isNewRecord: true
+              })
             } else {
-              this.$router.push({
-                query: {
-                  ...this.$route.query,
-                  action: 'create-new'
-                }
-              }).catch(error => {
-                console.info(`Panel Component: ${error.name}, ${error.message}`)
+              const attributes = convertObjectToKeyValue({
+                object: this.dataRecords
+              })
+              this.$store.dispatch('notifyPanelChange', {
+                parentUuid: this.parentUuid,
+                containerUuid: this.containerUuid,
+                attributes
               })
             }
           })

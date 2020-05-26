@@ -27,6 +27,7 @@
 
 <script>
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import { convertBooleanToString } from '@/utils/ADempiere/valueUtils.js'
 
 /**
  * This component is a lookup type field, use as a replacement for fields:
@@ -190,7 +191,8 @@ export default {
   methods: {
     parseValue(value) {
       if (typeof value === 'boolean') {
-        value = value ? 'Y' : 'N'
+        // value ? 'Y' : 'N'
+        value = convertBooleanToString(value)
       }
       return value
     },
