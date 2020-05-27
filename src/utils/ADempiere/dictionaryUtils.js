@@ -178,6 +178,7 @@ export function generateField({
     isSupported: componentReference.isSupported,
     size: componentReference.size || DEFAULT_SIZE,
     displayColumn: undefined, // link to value from selects and table
+    displayColumnName: `DisplayColumn_${fieldToGenerate.columnName}`, // key to display column
     // value attributes
     value: String(parsedDefaultValue).trim() === '' ? undefined : parsedDefaultValue,
     oldValue: parsedDefaultValue,

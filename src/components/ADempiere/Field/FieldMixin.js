@@ -61,16 +61,16 @@ export const fieldMixin = {
     }
   },
   watch: {
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = this.parseValue(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = this.parseValue(value)
-      }
-    }
+    // valueModel(value) {
+    //   if (this.metadata.inTable) {
+    //     this.value = this.parseValue(value)
+    //   }
+    // },
+    // 'metadata.value'(value) {
+    //   if (!this.metadata.inTable) {
+    //     this.value = this.parseValue(value)
+    //   }
+    // }
   },
   methods: {
     /**

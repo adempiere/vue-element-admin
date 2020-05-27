@@ -16,22 +16,34 @@ const value = {
     updateValueOfField(state, payload) {
       //  Only Parent
       if (payload.parentUuid) {
-        Vue.set(state.field, payload.parentUuid + '_' + payload.columnName, payload.value)
+        const keyParent = payload.parentUuid + '_' + payload.columnName
+        if (payload.value !== state.field[keyParent]) {
+          Vue.set(state.field, keyParent, payload.value)
+        }
       }
       //  Only Container
       if (payload.containerUuid) {
-        Vue.set(state.field, payload.containerUuid + '_' + payload.columnName, payload.value)
+        const keyContainer = payload.containerUuid + '_' + payload.columnName
+        if (payload.value !== state.field[keyContainer]) {
+          Vue.set(state.field, keyContainer, payload.value)
+        }
       }
     },
     updateValuesOfContainer(state, payload) {
       payload.attributes.forEach(attribute => {
         //  Only Parent
         if (payload.parentUuid) {
-          Vue.set(state.field, payload.parentUuid + '_' + attribute.columnName, attribute.value)
+          const keyParent = payload.parentUuid + '_' + attribute.columnName
+          if (attribute.value !== state.field[keyParent]) {
+            Vue.set(state.field, keyParent, attribute.value)
+          }
         }
         //  Only Container
         if (payload.containerUuid) {
-          Vue.set(state.field, payload.containerUuid + '_' + attribute.columnName, attribute.value)
+          const keyContainer = payload.containerUuid + '_' + attribute.columnName
+          if (attribute.value !== state.field[keyContainer]) {
+            Vue.set(state.field, keyContainer, attribute.value)
+          }
         }
       })
     }
