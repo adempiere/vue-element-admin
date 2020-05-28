@@ -432,7 +432,7 @@ const panel = {
       //
       //     if (isChangeFromCallout &&
       //       actionField.componentPath === 'FieldSelect' &&
-      //       !Object.prototype.hasOwnProperty.call(newValues, `DisplayColumn_${actionField.columnName}`)) {
+      //       !Object.prototype.hasOwnProperty.call(newValues, actionField.displayColumnName)) {
       //       let lookup = rootGetters.getLookupItem({
       //         parentUuid,
       //         containerUuid,
@@ -451,7 +451,7 @@ const panel = {
       //         })
       //       }
       //       if (!isEmptyValue(lookup)) {
-      //         newValues[`DisplayColumn_${actionField.columnName}`] = lookup.label
+      //         newValues[actionField.displayColumnName] = lookup.label
       //       }
       //     }
       //     //  Update field
@@ -911,9 +911,10 @@ const panel = {
 
           // Add display columns if field has value
           if (fieldItem[propertyName] && fieldItem.displayColumn) {
-            attributesObject[`DisplayColumn_${fieldItem.columnName}`] = fieldItem.displayColumn
+            // TODO: Verify displayColumn attribute, or get dispay column to fieldValue store
+            attributesObject[fieldItem.displayColumnName] = fieldItem.displayColumn
             displayColumnsList.push({
-              columnName: `DisplayColumn_${fieldItem.columnName}`,
+              columnName: fieldItem.displayColumnName,
               value: fieldItem.displayColumn
             })
           }
@@ -990,7 +991,8 @@ const panel = {
 
           // add display column to default
           if (fieldItem.componentPath === 'FieldSelect' && fieldItem.value === valueToReturn) {
-            attributesObject[`DisplayColumn_${fieldItem.columnName}`] = fieldItem.displayColumn
+            // TODO: Verify displayColumn attribute, or get dispay column to fieldValue store
+            attributesObject[fieldItem.displayColumnName] = fieldItem.displayColumn
           }
 
           return {

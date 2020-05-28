@@ -186,7 +186,7 @@
                       :in-table="true"
                       :metadata-field="{
                         ...fieldAttributes,
-                        displayColumn: scope.row['DisplayColumn_' + fieldAttributes.columnName],
+                        displayColumn: scope.row[fieldAttributes.displayColumnName],
                         tableIndex: scope.$index,
                         rowKey: scope.row[getterPanel.keyColumn],
                         keyColumn: getterPanel.keyColumn,
@@ -616,7 +616,7 @@ export default {
      */
     displayedValue(row, field) {
       if (typeof row[field.columnName] === 'boolean') {
-        // replace boolean true-false value for 'Yes' or 'Not'
+        // replace boolean true-false value for 'Yes' or 'Not' ('Si' or 'No' for spanish)
         return row[field.columnName] ? this.$t('components.switchActiveText') : this.$t('components.switchInactiveText')
       } else if (field.componentPath === 'FieldDate' || field.componentPath === 'FieldTime') {
         let cell = row[field.columnName]
@@ -633,10 +633,12 @@ export default {
           displayType: field.displayType,
           number: row[field.columnName]
         })
-      } else if (field.componentPath === 'FieldSelect' && this.isEmptyValue(row['DisplayColumn_' + field.columnName]) && row[field.columnName] === 0) {
+      } else if (field.componentPath === 'FieldSelect' &&
+        this.isEmptyValue(row[field.displayColumnName]) &&
+        row[field.columnName] === 0) {
         return field.defaultValue
       }
-      return row['DisplayColumn_' + field.columnName] || row[field.columnName]
+      return row[field.displayColumnName] || row[field.columnName]
     },
     rowCanBeEdited(record, fieldAttributes) {
       if (!this.isParent) {

@@ -139,7 +139,7 @@ export const contextMixin = {
       })
       return value.map(fieldItem => {
         if (fieldItem.componentPath === 'FieldSelect') {
-          return 'DisplayColumn_' + fieldItem.columnName
+          return fieldItem.displayColumnName
         }
         return fieldItem.columnName
       })
