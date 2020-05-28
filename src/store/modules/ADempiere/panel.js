@@ -303,7 +303,7 @@ const panel = {
      * @param {array}   fieldList
      * TODO: Evaluate if it is necessary to parse the default values
      */
-    setDefaultValues({ dispatch, getters }, {
+    setDefaultValues({ commit, dispatch, getters }, {
       parentUuid,
       containerUuid,
       panelType = 'window',
@@ -341,6 +341,12 @@ const panel = {
             type: 'info'
           })
 
+          defaultAttributes.forEach(attribute => {
+            commit('addChangeToPersistenceQueue', {
+              ...attribute,
+              containerUuid
+            })
+          })
           // panel.fieldList.forEach(fieldToBlank => {
           //   if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
           //     commit('changeFieldValueToNull', {
@@ -998,6 +1004,7 @@ const panel = {
           return {
             columnName: fieldItem.columnName,
             value: valueToReturn,
+            valueType: fieldItem.valueType,
             isSQL
           }
         })

@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { getEntity, getEntitiesList } from '@/api/ADempiere/persistence'
 import { getDefaultValueFromServer, getContextInfoValueFromServer } from '@/api/ADempiere/values'
 import { getPrivateAccessFromServer, lockPrivateAccessFromServer, unlockPrivateAccessFromServer } from '@/api/ADempiere/private-access'

@@ -1,4 +1,9 @@
-import { createEntity, updateEntity, deleteEntity, rollbackEntity } from '@/api/ADempiere/persistence'
+import {
+  createEntity,
+  updateEntity,
+  deleteEntity,
+  rollbackEntity
+} from '@/api/ADempiere/persistence'
 import { getReferencesList } from '@/api/ADempiere/values'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
 import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
@@ -62,7 +67,7 @@ const windowControl = {
       //   value
       // })
     },
-    windowActionPerformed({ dispatch, commit, getters }, {
+    windowActionPerformed({ dispatch, getters }, {
       field,
       value
     }) {
@@ -85,7 +90,7 @@ const windowControl = {
           valueType: field.valueType,
           value
         })
-          .then(response => {
+          .then(() => {
             //  Context Info
             dispatch('reloadContextInfo', {
               field
@@ -120,11 +125,28 @@ const windowControl = {
               type: 'info'
             })
           } else {
+            const recordUuid = getters.getUuidOfContainer(field.containerUuid)
             dispatch('flushPersistenceQueue', {
+              containerUuid: field.containerUuid,
               tableName: field.tableName,
-              recordUuid: getters.getUuidOfContainer(field.containerUuid)
+              recordUuid
             })
-              .then(response => resolve(response))
+              .then(response => {
+                resolve(response)
+                if (isEmptyValue(recordUuid)) {
+                  const oldRoute = router.app._route
+                  router.push({
+                    name: oldRoute.name,
+                    params: {
+                      ...oldRoute.params
+                    },
+                    query: {
+                      ...oldRoute.query,
+                      action: response.uuid
+                    }
+                  })
+                }
+              })
               .catch(error => reject(error))
           }
         }

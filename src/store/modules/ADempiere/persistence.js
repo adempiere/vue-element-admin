@@ -1,5 +1,5 @@
-import { createEntity, updateEntity } from '@/api/ADempiere/persistence'
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { createEntity, updateEntity } from '@/api/ADempiere/persistence.js'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 
 const persistence = {
   state: {
@@ -12,16 +12,16 @@ const persistence = {
       }
     },
     addChangeToPersistenceQueue(state, {
-      tableName,
+      containerUuid,
       columnName,
       valueType,
       value
     }) {
-      if (!state.persistence[tableName]) {
-        state.persistence[tableName] = new Map()
+      if (isEmptyValue(state.persistence[containerUuid])) {
+        state.persistence[containerUuid] = new Map()
       }
       // Set value
-      state.persistence[tableName].set(columnName, {
+      state.persistence[containerUuid].set(columnName, {
         columnName,
         valueType,
         value
@@ -30,11 +30,12 @@ const persistence = {
   },
   actions: {
     flushPersistenceQueue({ getters }, {
+      containerUuid,
       tableName,
       recordUuid
     }) {
       return new Promise((resolve, reject) => {
-        const attributes = getters.getPersistenceAttributes(tableName)
+        const attributes = getters.getPersistenceAttributes(containerUuid)
         if (attributes) {
           if (recordUuid) {
             // Update existing entity
@@ -62,10 +63,12 @@ const persistence = {
     getPersistenceMap: (state) => (tableName) => {
       return state.persistence[tableName]
     },
-    getPersistenceAttributes: (state) => (tableName) => {
-      const attributesMap = state.persistence[tableName]
+    getPersistenceAttributes: (state) => (containerUuid) => {
+      const attributesMap = state.persistence[containerUuid]
       if (!isEmptyValue(attributesMap)) {
-        return [...attributesMap.values()]
+        return [
+          ...attributesMap.values()
+        ]
       }
       return undefined
     }
