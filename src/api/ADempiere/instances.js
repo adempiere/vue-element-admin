@@ -1,4 +1,3 @@
-
 // Get Instance for connection System Core
 export const SystemCoreInstance = () => {
   const SystemCore = require('@adempiere/grpc-core-client')
