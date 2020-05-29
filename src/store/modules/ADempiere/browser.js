@@ -9,21 +9,14 @@ const browserControl = {
   actions: {
     browserActionPerformed({ dispatch, getters }, {
       containerUuid,
-      columnName,
       field,
       value
     }) {
-      console.log({
-        containerUuid,
-        columnName,
-        field,
-        value
-      })
       const fieldsEmpty = getters.getFieldListEmptyMandatory({
         containerUuid,
         fieldsList: getters.getFieldsListFromPanel(containerUuid)
       })
-      if (isEmptyValue(fieldsEmpty)) {
+      if (!isEmptyValue(fieldsEmpty)) {
         showMessage({
           message: language.t('notifications.mandatoryFieldMissing') + fieldsEmpty,
           type: 'info'

@@ -8,7 +8,7 @@ import { BusinessDataInstance as Instance } from '@/api/ADempiere/instances.js'
  * @param {string} directQuery
  * @param {string|number} value
  */
-export function reuestLookup({
+export function requestLookup({
   tableName,
   directQuery,
   value

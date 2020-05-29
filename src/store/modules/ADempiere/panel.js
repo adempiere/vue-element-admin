@@ -56,7 +56,7 @@ const panel = {
   },
   actions: {
     addPanel({ commit, dispatch, getters }, params) {
-      const { panelType } = params
+      const { panelType, uuid: containerUuid } = params
       let keyColumn = ''
       let selectionColumn = []
       let identifierColumns = []
@@ -88,7 +88,7 @@ const panel = {
           if (['browser', 'process', 'report', 'form', 'table'].includes(panelType) || (panelType === 'window' && params.isParentTab)) {
             dispatch('setContext', {
               parentUuid: params.parentUuid,
-              containerUuid: params.uuid,
+              containerUuid,
               columnName: itemField.columnName,
               value: itemField.value
             })
@@ -136,6 +136,15 @@ const panel = {
       params.isShowedTableOptionalColumns = false
 
       commit('addPanel', params)
+
+      if (!['form', 'table'].includes(panelType)) {
+        dispatch('setDefaultValues', {
+          parentUuid: params.parentUuid,
+          containerUuid,
+          panelType
+        })
+      }
+
       return params
     },
     /**
@@ -551,6 +560,7 @@ const panel = {
 
         // Run specific action
         dispatch(field.panelType + 'ActionPerformed', {
+          containerUuid: field.containerUuid,
           field,
           value
         })
