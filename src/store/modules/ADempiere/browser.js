@@ -23,6 +23,7 @@ const browserControl = {
         })
         return
       }
+
       // Validate if a field is called and visible
       if (fieldIsDisplayed(field)) {
         let isReadyForQuery = true

@@ -63,7 +63,7 @@ export function generateField({
         ...moreAttributes,
         columnName: fieldToGenerate.columnName,
         value: parsedDefaultValue,
-        isSOTrxMenu: isSOTrxMenu
+        isSOTrxMenu
       }).value
     }
 

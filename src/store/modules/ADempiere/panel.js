@@ -5,10 +5,10 @@
 // - Window: Just need storage tab and fields
 // - Process & Report: Always save a panel and parameters
 // - Smart Browser: Can have a search panel, table panel and process panel
-import { isEmptyValue, parsedValueComponent, convertObjectToKeyValue } from '@/utils/ADempiere/valueUtils'
-import evaluator, { getContext, parseContext } from '@/utils/ADempiere/contextUtils'
-import { showMessage } from '@/utils/ADempiere/notification'
-import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
+import { isEmptyValue, parsedValueComponent, convertObjectToKeyValue } from '@/utils/ADempiere/valueUtils.js'
+import evaluator, { getContext, parseContext, specialColumns } from '@/utils/ADempiere/contextUtils.js'
+import { showMessage } from '@/utils/ADempiere/notification.js'
+import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils.js'
 import router from '@/router'
 import language from '@/lang'
 
@@ -324,15 +324,17 @@ const panel = {
           resolve()
           return
         }
+
+        const oldRoute = router.app._route
         const defaultAttributes = getters.getParsedDefaultValues({
           parentUuid,
           containerUuid,
+          isSOTrxMenu: oldRoute.meta.isSOTrx,
           fieldsList: panel.fieldList
         })
 
         if (panelType === 'window' && isNewRecord) {
           // redirect to create new record
-          const oldRoute = router.app._route
           if (!(oldRoute.query && oldRoute.query.action === 'create-new')) {
             router.push({
               name: oldRoute.name,
@@ -510,11 +512,13 @@ const panel = {
       //   }
       // })
     },
-    // Handle all trigger for a field:
-    // - Display Logic
-    // - Mandatory Logic
-    // - Read Only Logic
-    // - Action for Custom panel from type
+    /**
+     * Handle all trigger for a field:
+     * - Display Logic
+     * - Mandatory Logic
+     * - Read Only Logic
+     * - Action for Custom panel from type
+    */
     notifyFieldChange({ dispatch, getters }, {
       containerUuid,
       columnName,
@@ -735,8 +739,8 @@ const panel = {
         newPanel[attributeName] = attributeValue
       }
       commit('changePanel', {
-        panel: panel,
-        newPanel: newPanel
+        panel,
+        newPanel
       })
     },
     /**
@@ -862,7 +866,7 @@ const panel = {
     },
     getUuid: (state, getters) => (containerUuid) => {
       const fieldUuid = getters.getColumnNamesAndValues({
-        containerUuid: containerUuid,
+        containerUuid,
         isObjectReturn: true,
         isAddDisplayColumn: true
       })
@@ -965,6 +969,7 @@ const panel = {
       parentUuid,
       containerUuid,
       isGetServer = true,
+      isSOTrxMenu,
       fieldsList = [],
       formatToReturn = 'array'
     }) => {
@@ -974,36 +979,52 @@ const panel = {
       const attributesObject = {}
       const attributesList = fieldsList
         .map(fieldItem => {
+          const { columnName, defaultValue } = fieldItem
           let isSQL = false
           let valueToReturn = fieldItem.parsedDefaultValue
-          if (String(fieldItem.defaultValue).includes('@')) {
-            if (String(fieldItem.defaultValue).includes('@SQL=') && isGetServer) {
+          const isSpeciaColumn = specialColumns.includes(columnName) || specialColumns.includes(fieldItem.elementName)
+
+          if (String(defaultValue).includes('@') || isSpeciaColumn) {
+            if (String(defaultValue).includes('@SQL=') && isGetServer) {
               isSQL = true
             }
             valueToReturn = parseContext({
               parentUuid,
               containerUuid,
-              columnName: fieldItem.columnName,
-              value: fieldItem.defaultValue,
+              columnName,
+              value: defaultValue,
+              isSOTrxMenu,
               isSQL
             })
+            if (isEmptyValue(valueToReturn.value) &&
+              !isEmptyValue(fieldItem.elementName)) {
+              valueToReturn = parseContext({
+                parentUuid,
+                containerUuid,
+                columnName: fieldItem.elementName,
+                value: defaultValue,
+                isSOTrxMenu,
+                isSQL
+              })
+            }
+
             if (typeof valueToReturn === 'object') {
               valueToReturn = {
                 ...valueToReturn,
-                defaultValue: fieldItem.defaultValue
+                defaultValue
               }
             }
           }
 
           valueToReturn = parsedValueComponent({
             componentPath: fieldItem.componentPath,
-            columnName: fieldItem.columnName,
+            columnName,
             displayType: fieldItem.displayType,
             isMandatory: fieldItem.isMandatory,
             value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn,
-            isIdentifier: fieldItem.columnName.includes('_ID')
+            isIdentifier: columnName.includes('_ID')
           })
-          attributesObject[fieldItem.columnName] = valueToReturn
+          attributesObject[columnName] = valueToReturn
 
           // add display column to default
           if (fieldItem.componentPath === 'FieldSelect' && fieldItem.value === valueToReturn) {
@@ -1012,7 +1033,7 @@ const panel = {
           }
 
           return {
-            columnName: fieldItem.columnName,
+            columnName,
             value: valueToReturn,
             valueType: fieldItem.valueType,
             isSQL
