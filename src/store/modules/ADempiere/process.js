@@ -406,7 +406,9 @@ const processControl = {
                     logs: logList,
                     output
                   })
-                  dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                  if (!isEmptyValue(processResult.output)) {
+                    dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                  }
                   commit('addNotificationProcess', processResult)
                   resolve(processResult)
                 })
@@ -586,7 +588,9 @@ const processControl = {
                 output
               })
               resolve(processResult)
-              dispatch('setReportTypeToShareLink', processResult.output.reportType)
+              if (!isEmptyValue(processResult.output)) {
+                dispatch('setReportTypeToShareLink', processResult.output.reportType)
+              }
             })
             .catch(error => {
               Object.assign(processResult, {
@@ -759,7 +763,9 @@ const processControl = {
                   logs: logList,
                   output
                 })
-                dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                if (!isEmptyValue(processResult.output)) {
+                  dispatch('setReportTypeToShareLink', processResult.output.reportType)
+                }
                 if (processResult.isError) {
                   const countError = state.errorSelection + 1
                   commit('setErrorSelection', countError)
