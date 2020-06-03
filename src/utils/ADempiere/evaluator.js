@@ -1,5 +1,5 @@
-import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils'
-import { isEmptyValue } from './valueUtils'
+import { convertStringToBoolean } from '@/utils/ADempiere/valueFormat.js'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 
 // This class is used for evaluate a conditional
 // format := {expression} [{logic} {expression}]<br>

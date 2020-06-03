@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import { convertStringToBoolean, isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
+import { convertStringToBoolean } from '@/utils/ADempiere/valueFormat.js'
 
 const UUID_KEY = 'UUID'
 
@@ -31,18 +32,20 @@ const value = {
     },
     updateValuesOfContainer(state, payload) {
       payload.attributes.forEach(attribute => {
+        const { value, columnName } = attribute
+
         //  Only Parent
         if (payload.parentUuid) {
-          const keyParent = payload.parentUuid + '_' + attribute.columnName
-          if (attribute.value !== state.field[keyParent]) {
-            Vue.set(state.field, keyParent, attribute.value)
+          const keyParent = payload.parentUuid + '_' + columnName
+          if (value !== state.field[keyParent]) {
+            Vue.set(state.field, keyParent, value)
           }
         }
         //  Only Container
         if (payload.containerUuid) {
-          const keyContainer = payload.containerUuid + '_' + attribute.columnName
-          if (attribute.value !== state.field[keyContainer]) {
-            Vue.set(state.field, keyContainer, attribute.value)
+          const keyContainer = payload.containerUuid + '_' + columnName
+          if (value !== state.field[keyContainer]) {
+            Vue.set(state.field, keyContainer, value)
           }
         }
       })
@@ -73,6 +76,63 @@ const value = {
         value = state.field[parentUuid + '_' + columnName]
       }
       return value
+    },
+    /**
+     * Get values and column's name as key (without parent uuid or container
+     * uuid), from a view (container)
+     * @param {string} parentUuid
+     * @param {string} containerUuid
+     * @returns {object|array}
+     */
+    getValueView: (state) => ({
+      parentUuid,
+      containerUuid,
+      format = 'array'
+    }) => {
+      console.log(parentUuid, containerUuid)
+      // generate context with parent uuid or container uuid associated
+      const contextAllContainers = {}
+      Object.keys(state.field).forEach(key => {
+        if (key.includes(parentUuid) || key.includes(containerUuid)) {
+          contextAllContainers[key] = state.field[key]
+        }
+      })
+
+      // generate context only columnName
+      const objectValues = {}
+      const pairsValues = Object.keys(contextAllContainers).map(key => {
+        const value = contextAllContainers[key]
+        if (isEmptyValue(value)) {
+          return
+        }
+        let newKey
+        if (parentUuid) {
+          if (!key.includes(containerUuid)) {
+            newKey = key
+              .replace(`${parentUuid}_`, '')
+              .replace(`${containerUuid}_`, '')
+            // set window parent context
+            objectValues[newKey] = value
+          }
+          // next if is tab context
+          return {
+            columnName: newKey,
+            value
+          }
+        }
+        // set container context (smart browser, process/report, form)
+        newKey = key.replace(`${containerUuid}_`, '')
+        objectValues[newKey] = value
+        return {
+          columnName: newKey,
+          value
+        }
+      })
+
+      if (format === 'array') {
+        return pairsValues
+      }
+      return objectValues
     },
     getUuidOfContainer: (state) => (containerUuid) => {
       return state.field[containerUuid + '_' + UUID_KEY]

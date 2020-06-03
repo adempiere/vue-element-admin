@@ -5,7 +5,8 @@
 // - Window: Just need storage tab and fields
 // - Process & Report: Always save a panel and parameters
 // - Smart Browser: Can have a search panel, table panel and process panel
-import { isEmptyValue, parsedValueComponent, convertObjectToKeyValue } from '@/utils/ADempiere/valueUtils.js'
+import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils.js'
+import { convertObjectToKeyValue } from '@/utils/ADempiere/valueFormat.js'
 import evaluator, { getContext, parseContext, specialColumns } from '@/utils/ADempiere/contextUtils.js'
 import { showMessage } from '@/utils/ADempiere/notification.js'
 import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils.js'

@@ -18,7 +18,7 @@
 import { fieldIsDisplayed } from '@/utils/ADempiere'
 import { FIELDS_READ_ONLY_FORM } from '@/utils/ADempiere/references'
 import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
-import { convertStringToBoolean } from '@/utils/ADempiere/valueUtils.js'
+import { convertStringToBoolean } from '@/utils/ADempiere/valueFormat.js'
 
 export default {
   name: 'FieldYesNo',

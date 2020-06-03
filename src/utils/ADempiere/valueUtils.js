@@ -1,4 +1,5 @@
-import { TABLE, TABLE_DIRECT } from '@/utils/ADempiere/references'
+import { convertStringToBoolean, convertBooleanToString } from '@/utils/ADempiere/valueFormat.js'
+import { TABLE, TABLE_DIRECT } from '@/utils/ADempiere/references.js'
 
 /**
  * Checks if value is empty. Deep-checks arrays and objects
@@ -85,68 +86,6 @@ export function clientDateTime(date = null, type = '') {
     return currentDateTime
   }
   return currentDateTime.date + ' ' + currentDateTime.time
-}
-
-export const convertStringToBoolean = (valueToParsed) => {
-  const valueString = String(valueToParsed).trim()
-  if (valueString === 'N' || valueString === 'false') {
-    return false
-  }
-  return Boolean(valueToParsed)
-}
-
-export const convertBooleanToString = (booleanValue) => {
-  if (booleanValue || booleanValue === 'true') {
-    return 'Y'
-  }
-  return 'N'
-}
-
-/**
- * Convert a object to array pairs
- * @param {object} objectToConvert, object to convert
- * @param {string} nameKey, name from key in pairs
- * @param {string} nameValue, name from value in pairs
- * @returns {array} [ { nameKey: key, nameValue: value } ]
- */
-export function convertObjectToKeyValue({
-  object,
-  keyName = 'columnName',
-  valueName = 'value'
-}) {
-  return Object.keys(object).map(key => {
-    const returnPairs = {}
-    returnPairs[keyName] = key
-    returnPairs[valueName] = object[key]
-    return returnPairs
-  })
-}
-
-/**
- * Convert array pairs of object to simple object { key:value }
- * @param {array} arrayToConvert, object to convert
- * @param {string} nameKey, name from key in pairs
- * @param {string} nameValue, name from value in pairs
- */
-export function convertArrayKeyValueObject({
-  array,
-  keyName = 'columnName',
-  valueName = 'value'
-}) {
-  const result = {}
-  array.forEach(element => {
-    result[element[keyName]] = element[valueName]
-  })
-
-  return result
-}
-
-export function convertHasMapToObject(hasMapToConvert) {
-  const result = {}
-  hasMapToConvert.forEach((value, key) => {
-    result[key] = value
-  })
-  return result
 }
 
 export function convertFieldListToShareLink(fieldList) {

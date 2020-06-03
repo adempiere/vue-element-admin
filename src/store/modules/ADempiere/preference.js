@@ -119,7 +119,11 @@ const preference = {
      * @param  {string} containerUuid
      * @param  {string} columnName
      */
-    getPreference: (state) => ({ parentUuid, containerUuid, columnName }) => {
+    getPreference: (state) => ({
+      parentUuid,
+      containerUuid,
+      columnName
+    }) => {
       let key = ''
 
       if (parentUuid) {
@@ -138,48 +142,6 @@ const preference = {
       key += columnName
 
       return state.preference[key]
-    },
-    /**
-     * @param {string} parentUuid
-     * @param {string} containerUuid
-     * @returns {object}
-     */
-    getPreferenceView: (state) => ({
-      parentUuid,
-      containerUuid
-    }) => {
-      // generate context with parent uuid or container uuid associated
-      const contextAllContainers = {}
-      Object.keys(state.preference).forEach(key => {
-        if (key.includes(parentUuid) || key.includes(containerUuid)) {
-          contextAllContainers[key] = state.preference[key]
-        }
-      })
-
-      // generate context only columnName
-      const contextContainer = {}
-      Object.keys(contextAllContainers).forEach(key => {
-        if (isEmptyValue(contextAllContainers[key])) {
-          return
-        }
-        let newKey
-        if (parentUuid) {
-          if (!key.includes(containerUuid)) {
-            newKey = key
-              .replace(`${parentUuid}|`, '')
-              .replace(`${containerUuid}|`, '')
-            // set window parent context
-            contextContainer[newKey] = contextAllContainers[key]
-          }
-          // next if is tab context
-          return
-        }
-        // set container context (smart browser, process/report)
-        newKey = key.replace(`${containerUuid}|`, '')
-        contextContainer[newKey] = contextAllContainers[key]
-      })
-
-      return contextContainer
     },
     getAllPreference: (state) => {
       return state.preference

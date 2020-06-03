@@ -1,7 +1,8 @@
 import FieldDefinition from '@/components/ADempiere/Field'
 import FilterFields from '@/components/ADempiere/Panel/filterFields'
 import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils.js'
-import { convertObjectToKeyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils.js'
+import { parsedValueComponent } from '@/utils/ADempiere/valueUtils.js'
+import { convertObjectToKeyValue } from '@/utils/ADempiere/valueFormat.js'
 
 export const mainPanelMixin = {
   name: 'MainPanelMixin',

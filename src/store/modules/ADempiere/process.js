@@ -101,6 +101,13 @@ const processControl = {
     }
   },
   actions: {
+    processActionPerformed({ commit }, {
+      containerUuid,
+      field,
+      value
+    }) {
+
+    },
     // Supported Actions for it
     startProcess({ commit, state, dispatch, getters, rootGetters }, {
       parentUuid,
@@ -855,19 +862,19 @@ const processControl = {
       if (action && (panels.includes(type) || panels.includes(action.panelType))) {
         // show some process loaded in store
         if (state.metadata && !isEmptyValue(state.metadata.containerUuid) &&
-        state.metadata.containerUuid === action.containerUuid) {
+          state.metadata.containerUuid === action.containerUuid) {
           commit('setShowDialog', true)
           return
         }
         const panel = rootGetters.getPanel(action.containerUuid)
-        if (panel === undefined) {
+        if (isEmptyValue(panel)) {
           dispatch('getPanelAndFields', {
             parentUuid: action.parentUuid,
             containerUuid: isEmptyValue(action.uuid) ? action.containerUuid : action.uuid,
             panelType: action.panelType
           })
-            .then(response => {
-              commit('setMetadata', response)
+            .then(responsePanel => {
+              commit('setMetadata', responsePanel)
               commit('setShowDialog', true)
             })
         } else {
