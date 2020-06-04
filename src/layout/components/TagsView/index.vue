@@ -24,8 +24,8 @@
         </router-link>
       </draggable>
       <router-link
-        v-else
         v-for="tag in visitedViews"
+        v-else
         ref="tag"
         :key="tag.path"
         :class="isActive(tag)?'active':''"
@@ -104,9 +104,6 @@ export default {
         return route.path === this.$route.path
       }
       return route.name === this.$route.name
-    },
-    isAffix(tag) {
-      return tag.meta && tag.meta.affix
     },
     isAffix(tag) {
       return tag.meta && tag.meta.affix
