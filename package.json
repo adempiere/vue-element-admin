@@ -3,6 +3,12 @@
   "version": "4.2.1",
   "description": "A magical vue admin. An out-of-box UI solution for enterprise applications. Newest development stack of vue. Lots of awesome features",
   "author": "Pan <panfree23@gmail.com>",
+  "contributors": [
+    {
+      "name": "Edwin Betancourt",
+      "url": "https://github.com/EdwinBetanc0urt/"
+    }
+  ],
   "license": "GPL-3.0-or-later",
   "scripts": {
     "start": "vue-cli-service serve",
