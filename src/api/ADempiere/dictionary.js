@@ -11,7 +11,7 @@ export function getWindow(uuid, isWithTabs = true) {
 
 export function getProcess(uuid, isConvertedMetadata = true) {
   return Instance.call(this).requestProcess({
-    uuid: uuid,
+    uuid,
     isConvertedMetadata,
     isConvertedFields: true
   })

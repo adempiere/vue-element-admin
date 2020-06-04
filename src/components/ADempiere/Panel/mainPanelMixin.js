@@ -76,6 +76,8 @@ export const mainPanelMixin = {
     },
     panelAttributes() {
       return {
+        recordUuid: this.uuidRecord,
+        optionCRUD: this.optionCRUD,
         isShowedRecordNavigation: this.isShowedRecordNavigation,
         isProcessingContext: this.getContainerProcessing,
         isProcessedContext: this.getContainerProcessed
@@ -411,6 +413,7 @@ export const mainPanelMixin = {
      * be grouped after having the order
      * @param {array} fieldsList
      * @return {array} groupsList
+     * TODO: Save into store to dont regenerate
      */
     sortAndGroup(fieldsList) {
       if (this.isEmptyValue(fieldsList)) {
@@ -455,6 +458,7 @@ export const mainPanelMixin = {
         }
         groupFields.activeFields = fieldsDisplayed.length
       })
+
       return groupsList
     },
     setTagsViewTitle(actionValue) {
@@ -519,7 +523,10 @@ export const mainPanelMixin = {
             return true
           }
           if (Object.prototype.hasOwnProperty.call(this.$refs, itemField.columnName)) {
-            if (fieldIsDisplayed(itemField) && !itemField.isReadOnly && itemField.isUpdateable && itemField.componentPath !== 'FieldSelect') {
+            if (fieldIsDisplayed(itemField) &&
+              !itemField.isReadOnly &&
+              itemField.isUpdateable &&
+              itemField.componentPath !== 'FieldSelect') {
               return true
             }
           }

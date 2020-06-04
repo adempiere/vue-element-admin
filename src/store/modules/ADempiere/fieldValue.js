@@ -84,7 +84,7 @@ const value = {
      * @param {string} containerUuid
      * @returns {object|array}
      */
-    getValueView: (state) => ({
+    getValuesView: (state) => ({
       parentUuid,
       containerUuid,
       format = 'array'
@@ -105,26 +105,26 @@ const value = {
         if (isEmptyValue(value)) {
           return
         }
-        let newKey
+        let columnName
         if (parentUuid) {
           if (!key.includes(containerUuid)) {
-            newKey = key
+            columnName = key
               .replace(`${parentUuid}_`, '')
               .replace(`${containerUuid}_`, '')
             // set window parent context
-            objectValues[newKey] = value
+            objectValues[columnName] = value
           }
           // next if is tab context
           return {
-            columnName: newKey,
+            columnName,
             value
           }
         }
         // set container context (smart browser, process/report, form)
-        newKey = key.replace(`${containerUuid}_`, '')
-        objectValues[newKey] = value
+        columnName = key.replace(`${containerUuid}_`, '')
+        objectValues[columnName] = value
         return {
-          columnName: newKey,
+          columnName,
           value
         }
       })

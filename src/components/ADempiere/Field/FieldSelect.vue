@@ -109,6 +109,7 @@ export default {
     value: {
       get() {
         const value = this.$store.getters.getValueOfField({
+          parentUuid: this.metadata.parentUuid,
           containerUuid: this.metadata.containerUuid,
           columnName: this.metadata.columnName
         })

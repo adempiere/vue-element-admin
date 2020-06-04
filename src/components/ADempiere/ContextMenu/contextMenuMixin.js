@@ -395,15 +395,15 @@ export const contextMixin = {
       if (action.type === 'process') {
         // Add context from view open in process to opening
         if (action.parentUuidAssociated || action.containerUuidAssociated) {
-          const values = this.$store.getters.getValueView({
+          const attributes = this.$store.getters.getValuesView({
             parentUuid: action.parentUuidAssociated,
             containerUuid: action.containerUuidAssociated
           })
 
-          if (!this.isEmptyValue(values)) {
+          if (!this.isEmptyValue(attributes)) {
             this.$store.dispatch('updateValuesOfContainer', {
               containerUuid: action.uuid,
-              values
+              attributes
             })
           }
         }

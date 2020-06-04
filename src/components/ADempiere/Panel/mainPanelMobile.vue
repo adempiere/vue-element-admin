@@ -38,9 +38,7 @@
                     :key="subKey"
                     :metadata-field="{
                       ...fieldAttributes,
-                      ...panelAttributes,
-                      optionCRUD,
-                      recordUuid: uuidRecord
+                      ...panelAttributes
                     }"
                     :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                     :in-group="!isShowedRecordNavigation"
@@ -87,9 +85,7 @@
                         :key="subKey"
                         :metadata-field="{
                           ...fieldAttributes,
-                          ...panelAttributes,
-                          optionCRUD,
-                          recordUuid: uuidRecord
+                          ...panelAttributes
                         }"
                         :record-data-fields="isAdvancedQuery ? undefined : dataRecords[fieldAttributes.columnName]"
                         :in-group="isPanelWindow && fieldGroups.length > 1"
