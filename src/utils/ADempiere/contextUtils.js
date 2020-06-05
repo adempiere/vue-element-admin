@@ -1,4 +1,5 @@
-import { convertBooleanToString, isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
+import { convertBooleanToString } from '@/utils/ADempiere/valueFormat.js'
 import evaluator from '@/utils/ADempiere/evaluator'
 import store from '@/store'
 

@@ -114,7 +114,7 @@ const processControl = {
       containerUuid,
       panelType,
       action,
-      parametersList,
+      parametersList = [],
       reportFormat,
       isProcessTableSelection,
       isActionDocument,
@@ -179,7 +179,12 @@ const processControl = {
         // get info metadata process
         const processDefinition = !isEmptyValue(isActionDocument) ? action : rootGetters.getProcess(action.uuid)
         let reportType = reportFormat
-        const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
+
+        if (isEmptyValue(parametersList)) {
+          parametersList = rootGetters.getParametersToServer({
+            containerUuid: processDefinition.uuid
+          })
+        }
 
         const isSession = !isEmptyValue(getToken())
         let procesingMessage = {
@@ -240,7 +245,7 @@ const processControl = {
             processUuid: processDefinition.uuid,
             processId: processDefinition.id,
             processName: processDefinition.processName,
-            parameters: finalParameters,
+            parameters: parametersList,
             isReport: processDefinition.isReport
           }
         }
@@ -284,7 +289,7 @@ const processControl = {
                 uuid: processDefinition.uuid,
                 id: processDefinition.id,
                 reportType,
-                parametersList: isEmptyValue(finalParameters) ? parametersList : finalParameters,
+                parametersList,
                 selectionsList: selection,
                 tableName: windowSelectionProcess.tableName,
                 recordId: selection[windowSelectionProcess.tableName]
@@ -463,7 +468,7 @@ const processControl = {
             uuid: processDefinition.uuid,
             id: processDefinition.id,
             reportType,
-            parametersList: isEmptyValue(finalParameters) ? parametersList : finalParameters,
+            parametersList,
             selectionsList: selection,
             tableName,
             recordId
@@ -649,13 +654,18 @@ const processControl = {
       panelType,
       action,
       isProcessTableSelection,
+      parametersList = [],
       menuParentUuid,
       routeToDelete
     }) {
       // get info metadata process
       const processDefinition = rootGetters.getProcess(action.uuid)
       const reportType = 'pdf'
-      const finalParameters = rootGetters.getParametersToServer({ containerUuid: processDefinition.uuid })
+      if (isEmptyValue(parametersList)) {
+        parametersList = rootGetters.getParametersToServer({
+          containerUuid: processDefinition.uuid
+        })
+      }
       const isSession = !isEmptyValue(getToken())
       if (isSession) {
         showNotification({
@@ -686,7 +696,7 @@ const processControl = {
             processUuid: processDefinition.uuid,
             processId: processDefinition.id,
             processName: processDefinition.processName,
-            parameters: finalParameters,
+            parameters: parametersList,
             isError: false,
             isProcessing: true,
             isReport: processDefinition.isReport,
@@ -713,7 +723,7 @@ const processControl = {
               uuid: processDefinition.uuid,
               id: processDefinition.id,
               reportType,
-              parametersList: finalParameters,
+              parametersList,
               selectionsList: selection,
               tableName: windowSelectionProcess.tableName,
               recordId: selection[windowSelectionProcess.tableName]

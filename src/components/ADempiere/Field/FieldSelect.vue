@@ -116,10 +116,12 @@ export default {
         let label = this.findLabel(value)
         if (!label) {
           label = this.displayColumn
+          /* eslint-disable */
           this.optionsList.push({
             key: value,
             label
           })
+          /* eslint-disable */
         }
         return value
       },

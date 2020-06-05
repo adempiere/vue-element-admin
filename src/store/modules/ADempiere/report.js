@@ -33,6 +33,13 @@ const reportControl = {
     }
   },
   actions: {
+    reportActionPerformed({ commit }, {
+      containerUuid,
+      field,
+      value
+    }) {
+
+    },
     requestPrintFormats({ commit }, {
       processId,
       processUuid,
