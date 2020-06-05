@@ -326,7 +326,7 @@ export function generateProcess({ processToGenerate, containerUuidAssociated = u
     isDirectPrint: processToGenerate.isDirectPrint
   }
 
-  processToGenerate.reportExportTypeList.forEach(actionValue => {
+  processToGenerate.reportExportTypesList.forEach(actionValue => {
     //  Push values
     summaryAction.childs.push({
       name: `${language.t('components.ExportTo')} (${actionValue.name})`,

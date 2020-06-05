@@ -25,12 +25,22 @@ const browser = {
     }
   },
   actions: {
+    /**
+     * Get Smart Browser metadata from server
+     * @param {string} containerUuid
+     * @param {number} browserId
+     * @param {object} routeToDelete, route to close in tagView when fail
+     */
     getBrowserFromServer({ commit, dispatch }, {
       containerUuid,
+      browserId,
       routeToDelete
     }) {
       return new Promise(resolve => {
-        getBrowserMetadata(containerUuid)
+        getBrowserMetadata({
+          uuid: containerUuid,
+          id: browserId
+        })
           .then(browserResponse => {
             const panelType = 'browser'
             const additionalAttributes = {
