@@ -1,5 +1,5 @@
 
-export const fieldMixin = {
+export default {
   props: {
     metadata: {
       type: Object,
@@ -26,6 +26,9 @@ export const fieldMixin = {
   computed: {
     isDisabled() {
       return Boolean(this.metadata.readonly || this.metadata.disabled)
+    },
+    cssClassStyle() {
+      return this.metadata.cssClassName
     },
     value: {
       get() {
@@ -95,7 +98,7 @@ export const fieldMixin = {
      * @param {mixed} value
      */
     preHandleChange(value) {
-      this.handleChange(value)
+      this.handleFieldChange({ value })
     },
     focusGained(value) {
       if (this.metadata.handleContentSelection) {
@@ -158,7 +161,11 @@ export const fieldMixin = {
      * @param {mixed} valueTo, used in end value in range
      * @param {string} label, or displayColumn to show in select
      */
-    handleChange(value, valueTo = undefined, label = undefined) {
+    handleFieldChange({
+      value,
+      valueTo,
+      label
+    }) {
       // Global Action performed
       if (this.metadata.handleActionPerformed) {
         this.$store.dispatch('notifyActionPerformed', {

@@ -93,12 +93,6 @@ export default {
     this.destroyEditor()
   },
   methods: {
-    parseValue(value) {
-      if (this.isEmptyValue(value)) {
-        value = ''
-      }
-      return String(value)
-    },
     initEditor() {
       this.editor = new Editor({
         el: document.getElementById(this.id),

@@ -6,7 +6,7 @@
     :on-remove="handleRemove"
     :on-success="handleSuccess"
     :on-error="handleError"
-    :class="'image-uploader ' + metadata.cssClassName"
+    :class="cssClassStyle"
     action="https://jsonplaceholder.typicode.com/posts/"
     :disabled="isDisabled"
     @change="preHandleChange"
@@ -21,11 +21,16 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 
 export default {
   name: 'FieldBinary',
   mixins: [fieldMixin],
+  computed: {
+    cssClassStyle() {
+      return this.metadata.cssClassName + ' image-uploader'
+    }
+  },
   methods: {
     handleRemove(file) {
       this.$message.success(`The previously uploaded file has been deleted.`)

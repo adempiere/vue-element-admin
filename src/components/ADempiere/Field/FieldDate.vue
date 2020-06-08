@@ -10,7 +10,7 @@
     :start-placeholder="$t('components.dateStartPlaceholder')"
     :end-placeholder="$t('components.dateEndPlaceholder')"
     unlink-panels
-    :class="'date-base ' + metadata.cssClassName"
+    :class="cssClassStyle"
     :readonly="Boolean(metadata.readonly)"
     :disabled="isDisabled"
     :picker-options="pickerOptions"
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import { DATE_PLUS_TIME } from '@/utils/ADempiere/references'
 
 export default {
@@ -110,6 +110,9 @@ export default {
         picker += 'range'
       }
       return picker
+    },
+    cssClassStyle() {
+      return this.metadata.cssClassName + ' custom-field-date'
     },
     /**
      * Parse the date format to be compatible with element-ui
@@ -201,7 +204,7 @@ export default {
         if (Array.isArray(value)) {
           value = value.map(itemValue => new Date(itemValue))
         }
-        this.handleChange(value)
+        this.handleFieldChange({ value })
         return
       }
 
@@ -220,14 +223,17 @@ export default {
         endValue = new Date(endValue)
       }
 
-      this.handleChange(startValue, endValue)
+      this.handleFieldChange({
+        value: startValue,
+        valueTo: endValue
+      })
     }
   }
 }
 </script>
 
 <style scoped>
-  .date-base {
+  .custom-field-date {
     width: 100% !important;
   }
 </style>

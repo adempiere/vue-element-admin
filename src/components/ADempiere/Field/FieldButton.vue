@@ -8,18 +8,14 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
+import fieldMixinText from '@/components/ADempiere/Field/mixin/mixinFieldText.js'
 
 export default {
   name: 'FieldButton',
-  mixins: [fieldMixin],
-  methods: {
-    parseValue(value) {
-      if (this.isEmptyValue(value)) {
-        value = ''
-      }
-      return String(value)
-    }
-  }
+  mixins: [
+    fieldMixin,
+    fieldMixinText
+  ]
 }
 </script>

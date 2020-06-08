@@ -6,7 +6,7 @@
     :placeholder="metadata.help"
     :loading="isLoading"
     value-key="key"
-    :class="classStyle + ' ' + metadata.cssClassName"
+    :class="cssClassStyle"
     clearable
     :multiple="isSelectMultiple"
     :allow-create="metadata.isSelectCreated"
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import { convertBooleanToString } from '@/utils/ADempiere/valueUtils.js'
 
 /**
@@ -69,8 +69,8 @@ export default {
     isSelectMultiple() {
       return ['IN', 'NOT_IN'].includes(this.metadata.operator) && this.metadata.isAdvancedQuery
     },
-    classStyle() {
-      let styleClass = 'custom-field-select'
+    cssClassStyle() {
+      let styleClass = this.metadata.cssClassName + ' custom-field-select'
       if (this.isSelectMultiple) {
         styleClass += ' custom-field-select-multiple'
       }
@@ -263,7 +263,10 @@ export default {
     preHandleChange(value) {
       const label = this.findLabel(this.value)
       this.displayColumn = label
-      this.handleChange(value, undefined, label)
+      this.handleFieldChange({
+        value,
+        label
+      })
     },
     findLabel(value) {
       const selected = this.optionsList.find(item => item.key === value)
@@ -348,7 +351,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .custom-field-select {
     width: 100%;
   }

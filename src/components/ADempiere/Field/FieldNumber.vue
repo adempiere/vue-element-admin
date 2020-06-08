@@ -11,7 +11,7 @@
       :precision="precision"
       :controls="isShowControls"
       :controls-position="controlsPosition"
-      :class="'display-type-amount ' + metadata.cssClassName"
+      :class="cssClassStyle"
       @change="preHandleChange"
       @blur="focusLost"
       @focus="focusGained"
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
 
 export default {
@@ -38,6 +38,9 @@ export default {
     }
   },
   computed: {
+    cssClassStyle() {
+      return this.metadata.cssClassName + ' custom-field-number'
+    },
     maxValue() {
       if (this.isEmptyValue(this.metadata.valueMax)) {
         return Infinity
@@ -78,7 +81,7 @@ export default {
   },
   methods: {
     parseValue(value) {
-      if (this.isEmptyValue(value) || isNaN(value)) {
+      if (this.isEmptyValue(value)) {
         return undefined
       }
       return Number(value)
@@ -138,14 +141,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
-  /* if is controls width 100% in container */
+<style lang="scss" scoped>
+  /* Show input width 100% in container */
   .el-input-number, .el-input {
     width: 100% !important; /* ADempiere Custom */
   }
 
-  /** Amount reference **/
-  .display-type-amount {
+  /** Align text in right input **/
+  .custom-field-number {
     text-align: right !important;
     input, .el-input__inner {
       text-align: right !important;

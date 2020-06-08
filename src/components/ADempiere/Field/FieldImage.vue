@@ -6,7 +6,7 @@
     :on-success="handleAvatarSuccess"
     :before-upload="beforeAvatarUpload"
     :disabled="isDisabled"
-    :class="'avatar-uploader ' + metadata.cssClassName"
+    :class="cssClassStyle"
   >
     <img v-if="value" :src="value" class="avatar">
     <i v-else class="el-icon-plus avatar-uploader-icon" />
@@ -14,16 +14,21 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 
 export default {
   name: 'FieldImage',
   mixins: [fieldMixin],
+  computed: {
+    cssClassStyle() {
+      return this.metadata.cssClassName + ' custom-field-image'
+    }
+  },
   methods: {
     handleAvatarSuccess(res, file) {
       this.value = URL.createObjectURL(file.raw)
       // TODO: define one method to control change value
-      this.handleChange(this.value)
+      this.handleFieldChange({ value: this.value })
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg'
@@ -41,8 +46,8 @@ export default {
 }
 </script>
 
-<style>
-  .avatar-uploader .el-upload {
+<style scoped>
+  .custom-field-image .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
@@ -50,7 +55,7 @@ export default {
     overflow: hidden;
   }
 
-  .avatar-uploader .el-upload:hover {
+  .custom-field-image .el-upload:hover {
     border-color: #409EFF;
   }
 
