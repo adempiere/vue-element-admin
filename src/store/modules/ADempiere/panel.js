@@ -406,13 +406,18 @@ const panel = {
       containerUuid,
       recordUuid
     }) {
+      const recordRow = getters.getDataRecordAndSelection(containerUuid).record.find(record => record.UUID === recordUuid)
+      let attributes = []
+      if (!isEmptyValue(recordRow)) {
+        attributes = convertObjectToKeyValue({
+          object: recordRow
+        })
+      }
       //  Change Value
       dispatch('notifyPanelChange', {
         parentUuid,
         containerUuid,
-        attributes: convertObjectToKeyValue({
-          object: getters.getDataRecordAndSelection(containerUuid).record.find(record => record.UUID === recordUuid)
-        })
+        attributes
       })
     },
     // Change all values of panel and dispatch actions for each field
@@ -977,8 +982,9 @@ const panel = {
       if (isEmptyValue(fieldsList)) {
         fieldsList = getters.getFieldsListFromPanel(containerUuid)
       }
+      const attributesRangue = []
       const attributesObject = {}
-      const attributesList = fieldsList
+      let attributesList = fieldsList
         .map(fieldItem => {
           const { columnName, defaultValue } = fieldItem
           let isSQL = false
@@ -1017,15 +1023,79 @@ const panel = {
             }
           }
 
+          if (String(valueToReturn) === '[object Object]') {
+            if (!valueToReturn.isSQL) {
+              valueToReturn = valueToReturn.value
+            }
+          }
           valueToReturn = parsedValueComponent({
             componentPath: fieldItem.componentPath,
             columnName,
             displayType: fieldItem.displayType,
             isMandatory: fieldItem.isMandatory,
-            value: String(valueToReturn) === '[object Object]' && valueToReturn.isSQL ? valueToReturn : String(valueToReturn) === '[object Object]' ? valueToReturn.value : valueToReturn,
+            value: valueToReturn,
             isIdentifier: columnName.includes('_ID')
           })
           attributesObject[columnName] = valueToReturn
+
+          if (fieldItem.isRange && fieldItem.componentPath !== 'FieldNumber') {
+            const { columnNameTo, defaultValueTo } = fieldItem
+            let isSQLTo = false
+            let valueTo = fieldItem.parsedDefaultValueTo
+
+            if (String(defaultValueTo).includes('@') || isSpeciaColumn) {
+              if (String(defaultValueTo).includes('@SQL=') && isGetServer) {
+                isSQLTo = true
+              }
+              valueTo = parseContext({
+                parentUuid,
+                containerUuid,
+                columnName,
+                value: defaultValueTo,
+                isSOTrxMenu,
+                isSQL: isSQLTo
+              })
+              if (isEmptyValue(valueTo.value) &&
+                !isEmptyValue(fieldItem.elementNameTo)) {
+                valueTo = parseContext({
+                  parentUuid,
+                  containerUuid,
+                  columnName: fieldItem.elementNameTo,
+                  value: defaultValueTo,
+                  isSOTrxMenu,
+                  isSQL: isSQLTo
+                })
+              }
+
+              if (typeof valueTo === 'object') {
+                valueTo = {
+                  ...valueTo,
+                  defaultValueTo
+                }
+              }
+            }
+            if (String(valueTo) === '[object Object]') {
+              if (!valueTo.isSQL) {
+                valueTo = valueTo.value
+              }
+            }
+            valueTo = parsedValueComponent({
+              componentPath: fieldItem.componentPath,
+              columnName: columnNameTo,
+              displayType: fieldItem.displayType,
+              isMandatory: fieldItem.isMandatory,
+              value: valueTo,
+              isIdentifier: columnNameTo.includes('_ID')
+            })
+
+            attributesObject[columnNameTo] = valueTo
+            attributesRangue.push({
+              columnName: columnNameTo,
+              value: valueTo,
+              valueType: fieldItem.valueType,
+              isSQL: isSQLTo
+            })
+          }
 
           // add display column to default
           if (fieldItem.componentPath === 'FieldSelect' && fieldItem.value === valueToReturn) {
@@ -1041,6 +1111,7 @@ const panel = {
           }
         })
       if (formatToReturn === 'array') {
+        attributesList = attributesList.concat(attributesRangue)
         return attributesList
       }
       return attributesObject
@@ -1122,17 +1193,15 @@ const panel = {
      * @param {Object} row
      * @param {Array<Object>} fieldList
      * @param {Array<String>} withOutColumnNames
-     * @param {Boolean} isEvaluateDisplayed, default value is true
      * @param {Boolean} isEvaluateMandatory, default value is true
      * @param {Boolean} isAdvancedQuery, default value is false
      * @returns {Array<Object>} [{ columname: name key, value: value to send, operator }]
      */
-    getParametersToServer: (state, getters) => ({
+    getParametersToServer: (state, getters, rootState, rootGetters) => ({
       containerUuid,
       row,
       fieldList = [],
       withOutColumnNames = [],
-      isEvaluateDisplayed = true,
       isEvaluateMandatory = true,
       isAdvancedQuery = false
     }) => {
@@ -1144,8 +1213,10 @@ const panel = {
       // filter fields
       let parametersList = fieldList
         .filter(fieldItem => {
+          const { columnName } = fieldItem
+
           // columns to exclude
-          if (withOutColumnNames.includes(fieldItem.columnName)) {
+          if (withOutColumnNames.includes(columnName)) {
             return false
           }
 
@@ -1163,23 +1234,36 @@ const panel = {
           }
 
           // evaluate displayed fields
-          if (isEvaluateDisplayed) {
-            let isDisplayed = fieldIsDisplayed(fieldItem) && (fieldItem.isShowedFromUser || isMandatory)
-            if (isAdvancedQuery) {
-              isDisplayed = fieldItem.isShowedFromUser
+          let isDisplayed = fieldItem.isShowedFromUser
+          if (!isAdvancedQuery) {
+            // window, process, browser, form
+            isDisplayed = fieldIsDisplayed(fieldItem) && (fieldItem.isShowedFromUser || isMandatory)
+          }
+
+          if (isDisplayed) {
+            // from table
+            if (row) {
+              if (!isEmptyValue(row[columnName])) {
+                return true
+              }
+              return false
             }
 
-            if (isDisplayed) {
-              if (row) {
-                if (!isEmptyValue(row[fieldItem.columnName])) {
-                  return true
-                }
-              } else {
-                if (!isEmptyValue(fieldItem.value) || (isAdvancedQuery &&
-                   ['NULL', 'NOT_NULL'].includes(fieldItem.operator))) {
-                  return true
-                }
-              }
+            // from field value
+            const value = rootGetters.getValueOfField({
+              containerUuid,
+              columnName
+            })
+            let valueTo
+            if (fieldItem.isRange && fieldItem.componentPath !== 'FieldNumber') {
+              valueTo = rootGetters.getValueOfField({
+                containerUuid,
+                columnName: fieldItem.columnNameTo
+              })
+            }
+            if (!isEmptyValue(value) || !isEmptyValue(valueTo) || (isAdvancedQuery &&
+              ['NULL', 'NOT_NULL'].includes(fieldItem.operator))) {
+              return true
             }
           }
 
@@ -1189,11 +1273,17 @@ const panel = {
       // conever parameters
       parametersList = parametersList
         .map(parameterItem => {
-          let value = parameterItem.value
-          let valueTo = parameterItem.valueTo
+          const { columnName, isRange } = parameterItem
+          let value
+          let valueTo
           if (row) {
-            value = row[parameterItem.columnName]
-            valueTo = row[`${parameterItem.columnName}_To`]
+            value = row[columnName]
+            valueTo = row[parameterItem.columnNameTo]
+          } else {
+            value = rootGetters.getValueOfField({
+              containerUuid,
+              columnName: columnName
+            })
           }
 
           let values = []
@@ -1203,11 +1293,11 @@ const panel = {
                 const isMandatory = !isAdvancedQuery && (parameterItem.isMandatory || parameterItem.isMandatoryFromLogic)
                 return parsedValueComponent({
                   componentPath: parameterItem.componentPath,
-                  columnName: parameterItem.columnName,
+                  columnName,
                   value: itemValue,
                   displayType: parameterItem.displayType,
                   isMandatory,
-                  isIdentifier: parameterItem.columnName.includes('_ID')
+                  isIdentifier: columnName.includes('_ID')
                 })
               })
             } else {
@@ -1223,11 +1313,16 @@ const panel = {
           }
           // only to fields type Time, Date and DateTime, and is range, with values
           // manage as Array = [value, valueTo]
-          if (parameterItem.isRange && parameterItem.componentPath !== 'FieldNumber') {
+          if (isRange && parameterItem.componentPath !== 'FieldNumber') {
+            valueTo = rootGetters.getValueOfField({
+              containerUuid,
+              columnName: parameterItem.columnNameTo
+            })
             operator = 'LESS_EQUAL' // operand to value is second position of array
             parametersRange.push({
-              columnName: `${parameterItem.columnName}_To`,
+              columnName: parameterItem.columnNameTo,
               operator,
+              isRange,
               valueType: parameterItem.valueType,
               value: valueTo
             })
@@ -1235,10 +1330,10 @@ const panel = {
           }
 
           return {
-            columnName: parameterItem.columnName,
+            columnName,
             value,
             valueType: parameterItem.valueType,
-            isRange: parameterItem.isRange,
+            isRange,
             values,
             operator
           }

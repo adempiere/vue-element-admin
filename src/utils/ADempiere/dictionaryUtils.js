@@ -172,6 +172,8 @@ export function generateField({
   const field = {
     ...fieldToGenerate,
     ...moreAttributes,
+    columnNameTo: undefined,
+    elementNameTo: undefined,
     isSOTrxMenu,
     // displayed attributes
     componentPath: componentReference.componentPath,
@@ -214,9 +216,12 @@ export function generateField({
   // Overwrite some values
   if (field.isRange) {
     field.operator = 'GREATER_EQUAL'
+    field.columnNameTo = `${field.columnName}_To`
+    field.elementNameTo = `${field.elementNameTo}_To`
     if (typeRange) {
       field.uuid = `${field.uuid}_To`
-      field.columnName = `${field.columnName}_To`
+      field.columnName = field.columnNameTo
+      field.elementName = field.elementNameTo
       field.name = `${field.name} To`
       field.value = parsedDefaultValueTo
       field.defaultValue = field.defaultValueTo

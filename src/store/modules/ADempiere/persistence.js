@@ -35,7 +35,7 @@ const persistence = {
       recordUuid
     }) {
       return new Promise((resolve, reject) => {
-        const attributes = getters.getPersistenceAttributes(containerUuid)
+        let attributes = getters.getPersistenceAttributes(containerUuid)
         if (attributes) {
           if (recordUuid) {
             // Update existing entity
@@ -47,6 +47,8 @@ const persistence = {
               .then(response => resolve(response))
               .catch(error => reject(error))
           } else {
+            attributes = attributes.filter(itemAttribute => !isEmptyValue(itemAttribute.value))
+
             // Create new entity
             createEntity({
               tableName,

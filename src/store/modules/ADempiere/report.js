@@ -154,7 +154,9 @@ const reportControl = {
         if (isEmptyValue(printFormatUuid)) {
           printFormatUuid = getters.getDefaultPrintFormat(processUuid).printFormatUuid
         }
-        const parametersList = rootGetters.getParametersToServer({ containerUuid: processUuid })
+        const parametersList = rootGetters.getParametersToServer({
+          containerUuid: processUuid
+        })
         getReportOutput({
           parametersList,
           printFormatUuid,

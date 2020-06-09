@@ -146,6 +146,49 @@ export default {
         return this.pickerOptionsDateRange
       }
       return this.pickerOptionsDate
+    },
+    value: {
+      get() {
+        let value = this.$store.getters.getValueOfField({
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnName
+        })
+        if (!this.metadata.isRange) {
+          return this.parseValue(value)
+        }
+
+        const valueTo = this.$store.getters.getValueOfField({
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnNameTo
+        })
+
+        value = this.parseValue([value, valueTo])
+        return value
+      },
+      set(value) {
+        let startValue = value
+        if (Array.isArray(value)) {
+          startValue = value[0]
+        }
+        this.$store.commit('updateValueOfField', {
+          parentUuid: this.metadata.parentUuid,
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnName,
+          value: startValue
+        })
+        if (!this.metadata.isRange) {
+          return
+        }
+
+        const endValue = value[1]
+
+        this.$store.commit('updateValueOfField', {
+          parentUuid: this.metadata.parentUuid,
+          containerUuid: this.metadata.containerUuid,
+          columnName: this.metadata.columnNameTo,
+          value: endValue
+        })
+      }
     }
   },
   methods: {
@@ -183,7 +226,11 @@ export default {
 
       // generate range value
       if (this.metadata.isRange && !this.metadata.inTable) {
-        let valueTo = this.metadata.valueTo
+        let valueTo // = this.metadata.valueTo
+        if (Array.isArray(value)) {
+          valueTo = value[1]
+          value = value[0]
+        }
         if (typeof valueTo === 'number') {
           valueTo = new Date(valueTo).toUTCString()
         }
@@ -191,6 +238,9 @@ export default {
           valueTo = undefined
         }
         value = [value, valueTo]
+        if (this.isEmptyValue(value[0]) || this.isEmptyValue(value[1])) {
+          value = []
+        }
       }
 
       return value
