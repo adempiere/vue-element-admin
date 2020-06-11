@@ -448,6 +448,9 @@ const getters = {
   getCurrency: (state) => {
     return state.country.currency
   },
+  getCountryLanguage(state) {
+    return state.country.language.replace('_', '-')
+  },
   getLanguagesList: (state) => {
     return state.languagesList
   },
