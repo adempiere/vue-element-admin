@@ -182,7 +182,9 @@ const actions = {
           // TODO: return #Date as long data type Date (5)
           responseGetInfo.defaultContextMap.set('#Date', new Date())
           // set multiple context
-          dispatch('setMultipleContextMap', responseGetInfo.defaultContextMap, {
+          dispatch('setMultiplePreference', {
+            values: responseGetInfo.defaultContextMap
+          }, {
             root: true
           })
 
@@ -329,7 +331,7 @@ const actions = {
         console.warn(`Error ${error.code} getting Organizations list: ${error.message}.`)
       })
   },
-  changeOrganization({ commit, dispatch }, {
+  changeOrganization({ dispatch }, {
     organizationUuid
   }) {
     setCurrentOrganization(organizationUuid)

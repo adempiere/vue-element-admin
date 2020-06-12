@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { getEntity, getEntitiesList } from '@/api/ADempiere/persistence'
 import {
   getDefaultValueFromServer,
@@ -79,9 +78,6 @@ const data = {
     },
     addNewRow(state, payload) {
       payload.data = payload.data.unshift(payload.values)
-    },
-    addDisplayColumn(state, payload) {
-      Vue.set(payload.row, payload.columnName, payload.displayColumn)
     },
     setContextInfoField(state, payload) {
       state.contextInfoField.push(payload)
@@ -212,7 +208,11 @@ const data = {
         if (fieldList.length) {
           fieldList
             // TODO: Evaluate if is field is read only and FieldSelect
-            .filter(itemField => itemField.componentPath === 'FieldSelect' || String(values[itemField.columnName]) === '[object Object]' || itemField.isSQLValue)
+            .filter(itemField => {
+              return itemField.componentPath === 'FieldSelect' ||
+                String(values[itemField.columnName]) === '[object Object]' ||
+                itemField.isSQLValue
+            })
             .map(async itemField => {
               const { columnName, componentPath } = itemField
               let valueGetDisplayColumn = values[columnName]
@@ -220,7 +220,7 @@ const data = {
               if (String(values[columnName]) === '[object Object]') {
                 if (componentPath === 'FieldSelect') {
                   values[columnName] = ' '
-                  values[`DisplayColumn_${columnName}`] = ' '
+                  values[itemField.displayColumnName] = ' '
                 } else if (componentPath === 'FieldNumber') {
                   values[columnName] = 0
                 }
@@ -247,7 +247,9 @@ const data = {
                 }
               }
 
-              if (!isEmptyValue(valueGetDisplayColumn) && String(valueGetDisplayColumn) === '[object Object]' && valueGetDisplayColumn.isSQL) {
+              if (!isEmptyValue(valueGetDisplayColumn) &&
+                String(valueGetDisplayColumn) === '[object Object]' &&
+                valueGetDisplayColumn.isSQL) {
                 // get value from Query
                 valueGetDisplayColumn = await dispatch('getValueBySQL', {
                   parentUuid,
@@ -275,7 +277,7 @@ const data = {
               const option = options.find(itemOption => itemOption.key === valueGetDisplayColumn)
               // if there is a lookup option, assign the display column with the label
               if (option) {
-                values[`DisplayColumn_${columnName}`] = option.label
+                values[itemField.displayColumnName] = option.label
                 // if (isEmptyValue(option.label) && !itemField.isMandatory) {
                 //   values[columnName] = undefined
                 // }
@@ -289,7 +291,7 @@ const data = {
                   columnName: 'Name'
                 })
                 if (!isEmptyValue(nameParent)) {
-                  values[`DisplayColumn_${columnName}`] = nameParent
+                  values[itemField.displayColumnName] = nameParent
                   return
                 }
               }
@@ -301,7 +303,7 @@ const data = {
                 directQuery: itemField.reference.directQuery,
                 value: valueGetDisplayColumn
               })
-              values[`DisplayColumn_${columnName}`] = label
+              values[itemField.displayColumnName] = label
             })
         }
 
@@ -316,26 +318,6 @@ const data = {
       commit('addNewRow', {
         values,
         data: dataStore
-      })
-    },
-    /**
-     * Add or change display column in table of records
-     * @param {string} containerUuid
-     * @param {string} columnName
-     * @param {string} displayColumn
-     */
-    addDisplayColumn({ commit, getters }, {
-      containerUuid,
-      columnName,
-      displayColumn
-    }) {
-      const dataStore = getters.getDataRecordsList(containerUuid)
-      const rowRecord = dataStore.find(itemData => itemData.isNew)
-
-      commit('addDisplayColumn', {
-        row: rowRecord,
-        displayColumn,
-        columnName: `DisplayColumn_${columnName}`
       })
     },
     /**
@@ -534,6 +516,7 @@ const data = {
         defaultValues = rootGetters.getParsedDefaultValues({
           parentUuid,
           containerUuid,
+          formatToReturn: 'object',
           isGetServer: false
         })
       }
@@ -758,7 +741,7 @@ const data = {
         if (isSendCallout && !withOutColumnNames.includes(field.columnName) &&
           !isEmptyValue(newValue) && !isEmptyValue(field.callout)) {
           withOutColumnNames.push(field.columnName)
-          dispatch('getCallout', {
+          dispatch('runCallout', {
             parentUuid,
             containerUuid,
             tableName: field.tableName,
