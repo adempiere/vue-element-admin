@@ -1,6 +1,13 @@
 <template>
-  <el-tooltip v-model="isShowed" :manual="true" :content="valueToDisplay" placement="top" effect="light">
+  <el-tooltip
+    v-model="isShowed"
+    manual
+    :content="valueToDisplay"
+    placement="top"
+    effect="light"
+  >
     <el-input-number
+      v-if="isFocus"
       :ref="metadata.columnName"
       v-model="value"
       type="number"
@@ -11,10 +18,24 @@
       :precision="precision"
       :controls="isShowControls"
       :controls-position="controlsPosition"
-      :class="'display-type-amount ' + metadata.cssClassName"
+      :class="cssClassStyle"
       @change="preHandleChange"
-      @blur="focusLost"
+      @blur="customFocusLost"
       @focus="focusGained"
+      @keydown.native="keyPressed"
+      @keyup.native="keyReleased"
+    />
+    <el-input
+      v-else
+      :ref="metadata.columnName"
+      v-model="displayedValue"
+      :placeholder="metadata.help"
+      :disabled="isDisabled"
+      :precision="precision"
+      :class="'display-type-amount ' + metadata.cssClassName"
+      readonly
+      @blur="customFocusLost"
+      @focus="customFocusGained"
       @keydown.native="keyPressed"
       @keyup.native="keyReleased"
     />
@@ -22,22 +43,16 @@
 </template>
 
 <script>
-import { fieldMixin } from '@/components/ADempiere/Field/FieldMixin'
-import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
+import { FIELDS_CURRENCY, FIELDS_DECIMALS } from '@/utils/ADempiere/references'
 
 export default {
   name: 'FieldNumber',
   mixins: [fieldMixin],
   data() {
-    // value render
-    let value = this.metadata.value
-    if (this.metadata.inTable) {
-      value = this.valueModel
-    }
-    value = this.validateValue(value)
     return {
-      value: value,
       showControls: true,
+      isFocus: false,
       operation: '',
       expression: /[\d\/.()%\*\+\-]/gim,
       valueToDisplay: '',
@@ -45,6 +60,9 @@ export default {
     }
   },
   computed: {
+    cssClassStyle() {
+      return this.metadata.cssClassName + ' custom-field-number'
+    },
     maxValue() {
       if (this.isEmptyValue(this.metadata.valueMax)) {
         return Infinity
@@ -59,8 +77,8 @@ export default {
     },
     precision() {
       // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(this.metadata.displayType)) {
-        return 2
+      if (this.isDecimal) {
+        return this.currencyDefinition.stdPrecision
       }
       return undefined
     },
@@ -81,27 +99,77 @@ export default {
       }
       // show right controls
       return 'right'
+    },
+    isDecimal() {
+      return FIELDS_DECIMALS.includes(this.metadata.displayType)
+    },
+    isCurrency() {
+      return FIELDS_CURRENCY.includes(this.metadata.displayType)
+    },
+    displayedValue() {
+      let value = this.value
+      if (this.isEmptyValue(value)) {
+        value = 0
+      }
+      if (!this.isDecimal) {
+        return value
+      }
+
+      let options = {
+        useGrouping: true,
+        minimumIntegerDigits: 1,
+        minimumFractionDigits: this.precision,
+        maximumFractionDigits: this.precision
+      }
+      let lang
+      if (this.isCurrency) {
+        lang = this.countryLanguage
+        options = {
+          ...options,
+          style: 'currency',
+          currency: this.currencyCode
+        }
+      }
+
+      // TODO: Check the grouping of thousands
+      const formatterInstance = new Intl.NumberFormat(lang, options)
+      return formatterInstance.format(value)
+    },
+    countryLanguage() {
+      return this.$store.getters['user/getCountryLanguage']
+    },
+    currencyCode() {
+      return this.currencyDefinition.iSOCode
+    },
+    currencyDefinition() {
+      return this.$store.getters['user/getCurrency']
     }
   },
   watch: {
-    // enable to dataTable records
-    valueModel(value) {
-      if (this.metadata.inTable) {
-        this.value = this.validateValue(value)
-      }
-    },
-    'metadata.value'(value) {
-      if (!this.metadata.inTable) {
-        this.value = this.validateValue(value)
+    isFocus(value) {
+      if (value) {
+        // focus into input number
+        this.$nextTick()
+          .then(() => {
+            this.$refs[this.metadata.columnName].$el.children[2].firstElementChild.focus()
+          })
       }
     }
   },
   methods: {
-    validateValue(value) {
-      if (this.isEmptyValue(value) || isNaN(value)) {
+    parseValue(value) {
+      if (this.isEmptyValue(value)) {
         return undefined
       }
       return Number(value)
+    },
+    customFocusGained(event) {
+      this.isFocus = true
+      // this.focusGained(event)
+    },
+    customFocusLost(event) {
+      this.isFocus = false
+      // this.focusLost(event)
     },
     calculateValue(event) {
       const isAllowed = event.key.match(this.expression)
@@ -120,7 +188,7 @@ export default {
           const newValue = String(this.value).slice(0, -1)
           const result = this.calculationValue(newValue, event)
           if (!this.isEmptyValue(result)) {
-            this.value = this.validateValue(result)
+            this.value = this.parseValue(result)
             this.valueToDisplay = result
             this.isShowed = true
           } else {
@@ -134,7 +202,7 @@ export default {
           const newValue = String(this.value).slice(-1)
           const result = this.calculationValue(newValue, event)
           if (!this.isEmptyValue(result)) {
-            this.value = this.validateValue(result)
+            this.value = this.parseValue(result)
             this.valueToDisplay = result
             this.isShowed = true
           } else {
@@ -148,7 +216,7 @@ export default {
     },
     changeValue() {
       if (!this.isEmptyValue(this.valueToDisplay) && this.valueToDisplay !== '...') {
-        const result = this.validateValue(this.valueToDisplay)
+        const result = this.parseValue(this.valueToDisplay)
         this.preHandleChange(result)
       }
       this.clearVariables()
@@ -158,14 +226,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
-  /* if is controls width 100% in container */
+<style lang="scss" scoped>
+  /* Show input width 100% in container */
   .el-input-number, .el-input {
     width: 100% !important; /* ADempiere Custom */
   }
 
-  /** Amount reference **/
-  .display-type-amount {
+  /** Align text in right input **/
+  .custom-field-number {
     text-align: right !important;
     input, .el-input__inner {
       text-align: right !important;
