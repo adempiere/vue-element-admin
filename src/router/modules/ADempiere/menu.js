@@ -119,8 +119,8 @@ function getChildFromAction({ menu, index, roleUuid, organizationUuid }) {
  * @author elsiosanchez <elsiosanches@gmail.com>
  * @author Edwin Betancourt <EdwinBetanc0urt@outlook.com>
  * @param {object} menu
- * @param {number} roleUuid
- * @param {number} organizationUuid
+ * @param {string} roleUuid
+ * @param {string} organizationUuid
  */
 function getRouteFromMenuItem({ menu, roleUuid, organizationUuid }) {
   // use component of convertAction
