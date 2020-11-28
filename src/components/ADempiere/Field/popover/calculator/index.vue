@@ -131,9 +131,11 @@ export default {
   },
   methods: {
     sendValue(row, column) {
-      const isAcceptedType = ['result', 'clear'].includes(row[column.property].type)
+      const button = row[column.property]
+      const { value, type } = button
+      const isAcceptedType = ['result', 'clear'].includes(type)
       if (!isAcceptedType && !this.isDisabled(row, column)) {
-        this.isEmptyValue(this.calcValue) ? this.calcValue = row[column.property].value : this.calcValue += row[column.property].value
+        this.isEmptyValue(this.calcValue) ? this.calcValue = value : this.calcValue += value
         const result = this.calculationValue(this.calcValue, event)
         if (!this.isEmptyValue(result)) {
           this.valueToDisplay = result
@@ -141,15 +143,15 @@ export default {
           this.valueToDisplay = '...'
         }
       }
-      if (row[column.property].type === 'clear') {
-        if (row[column.property].value === 'C') {
+      if (type === 'clear') {
+        if (value === 'C') {
           this.calcValue = this.calcValue.slice(0, -1)
-        } else if (row[column.property].value === 'AC') {
+        } else if (value === 'AC') {
           this.calcValue = ''
           this.valueToDisplay = ''
         }
       }
-      if (row[column.property].value === '=') {
+      if (value === '=') {
         this.changeValue()
       }
     },
@@ -212,7 +214,7 @@ export default {
     isDisabled(row, column) {
       // Integer or ID
       const isInteger = [ID.id, INTEGER.id].includes(this.fieldAttributes.displayType)
-      const value = row[column.property].value
+      const { value } = row[column.property]
       if (isInteger && value === ',') {
         return true
       }
@@ -234,46 +236,48 @@ export default {
 </script>
 
 <style>
+  .calculator-input > .el-input__inner,
+  .calculator-input .el-input__inner {
+    border-radius: 0px !important;
+  }
+
   .calculator-input {
     width: 202px;
     font-size: 16px;
     padding-left: 4px;
   }
 
+  /* row color with hover */
 	.el-table--enable-row-hover .el-table__body tr:hover > td {
 		background-color: #ffffff !important;
 	}
+
   .calculator-table .el-table__body-wrapper > table {
     border-spacing: 5px;
   }
+
+  /* Button shadow and border */
   .calculator-table .el-table__body tr > td {
     box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.5);
     border-radius: 5px;
     cursor: pointer;
   }
 
-  .el-table th, .el-table td,
-  .el-table--medium th, .el-table--medium td,
-  .el-table--mini th, .el-table--mini td {
+  .calculator-table th, .calculator-table td,
+  .calculator-table > th, .calculator-table > td {
     padding: 0px !important;
     height: 0px !important;
-    padding-left: 8px !important;
-  }
-
-  .calculator .el-table .cell {
-    padding-right: 5px !important;
-    padding-left: 5px !important;
-  }
-  .calculator .el-table > .cell, .el-table .cell {
     padding-left: 0px !important;
   }
 
-  .calculator-input > .el-input__inner,
-  .calculator-input .el-input__inner {
-    border-radius: 0px !important;
+  .calculator-table .el-table .cell {
+    padding-right: 5px !important;
+    padding-left: 5px !important;
   }
-
-  .calculator .el-table th.is-leaf, .el-table td {
+  .calculator-table .el-table > .cell, .calculator-table .el-table .cell {
+    padding-left: 0px !important;
+  }
+  .calculator-table .el-table th.is-leaf, .el-table td {
     border-bottom: 0px solid #dfe6ec !important;
   }
 </style>
