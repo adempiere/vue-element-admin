@@ -32,7 +32,7 @@ jobs:
       - run: npm i
       - run: npm run build:prod --if-present
       - uses: skx/github-action-publish-binaries@master
-          env:
-            GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
-          with:
-            args: 'dist/*'
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
+        with:
+          args: 'dist/*'
