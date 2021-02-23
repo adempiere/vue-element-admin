@@ -31,9 +31,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm i
       - run: npm run build:prod --if-present
-      - name: Upload dist
-        uses: skx/github-action-publish-binaries@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
-        with:
-          args: 'dist/*'
+      - uses: skx/github-action-publish-binaries@master
+          env:
+            GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
+          with:
+            args: 'dist/*'
