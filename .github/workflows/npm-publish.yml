@@ -1,5 +1,6 @@
 # This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
 # For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+# This file was contributed by Carlos Parada and Yamel Senih from ERP Consultores y Asociados, C.A
 
 name: Node.js Package
 
@@ -30,19 +31,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm i
       - run: npm run build:prod --if-present
+      - name: Upload dist
+        uses: skx/github-action-publish-binaries@master
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+          GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
         with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-      - run: npm i
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          args: 'dist/*'
