@@ -31,7 +31,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm i
       - run: npm run build:prod --if-present
-      - name: Zip Release
       - uses: TheDoctor0/zip-release@0.4.1
         with:
           filename: 'adempiere-vue.zip'
