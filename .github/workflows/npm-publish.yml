@@ -14,8 +14,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
-      - run: npm ci
+          node-version: 14
+      - run: npm i
       - run: npm test
 
   publish-npm:
