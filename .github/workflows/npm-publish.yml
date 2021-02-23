@@ -36,7 +36,7 @@ jobs:
       - uses: TheDoctor0/zip-release@0.4.1
         with:
           filename: 'adempiere-vue.zip'
-          directory: 'dist/'
+          path: 'dist/'
       - uses: skx/github-action-publish-binaries@master
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
