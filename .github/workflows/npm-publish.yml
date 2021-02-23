@@ -2,7 +2,7 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
 # This file was contributed by Carlos Parada and Yamel Senih from ERP Consultores y Asociados, C.A
 
-name: Node.js Package
+name: Publish Dist
 
 on:
   release:
@@ -35,10 +35,10 @@ jobs:
       - run: ls dist/
       - uses: TheDoctor0/zip-release@0.4.1
         with:
-          filename: 'adempiere-vue.zip'
+          filename: 'Adempiere-Vue.zip'
           path: 'dist/'
       - uses: skx/github-action-publish-binaries@master
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_ACCESS }}
         with:
-          args: 'adempiere-vue.zip'
+          args: 'Adempiere-Vue.zip'
