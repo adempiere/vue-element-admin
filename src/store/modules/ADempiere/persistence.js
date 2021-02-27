@@ -3,6 +3,7 @@ import {
   requestUpdateEntity
 } from '@/api/ADempiere/persistence.js'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
+import { LOG_COLUMNS_NAME_LIST } from '@/utils/ADempiere/dataUtils.js'
 
 const persistence = {
   state: {
@@ -38,14 +39,19 @@ const persistence = {
       recordUuid
     }) {
       return new Promise((resolve, reject) => {
-        let attributes = getters.getPersistenceAttributes(containerUuid)
-        if (attributes) {
+        let attributesList = getters.getPersistenceAttributes(containerUuid)
+          .filter(itemField => {
+            // omit send to server (to create or update) columns manage by backend
+            return !LOG_COLUMNS_NAME_LIST.includes(itemField.columnName)
+          })
+
+        if (attributesList) {
           if (recordUuid) {
             // Update existing entity
             requestUpdateEntity({
               tableName,
               recordUuid,
-              attributesList: attributes
+              attributesList
             })
               .then(response => {
                 dispatch('listRecordLogs', {
@@ -57,12 +63,12 @@ const persistence = {
               })
               .catch(error => reject(error))
           } else {
-            attributes = attributes.filter(itemAttribute => !isEmptyValue(itemAttribute.value))
+            attributesList = attributesList.filter(itemAttribute => !isEmptyValue(itemAttribute.value))
 
             // Create new entity
             requestCreateEntity({
               tableName,
-              attributesList: attributes
+              attributesList
             })
               .then(response => resolve(response))
               .catch(error => reject(error))
