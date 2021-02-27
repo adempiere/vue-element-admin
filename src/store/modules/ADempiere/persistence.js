@@ -4,6 +4,8 @@ import {
 } from '@/api/ADempiere/persistence.js'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 import { LOG_COLUMNS_NAME_LIST } from '@/utils/ADempiere/dataUtils.js'
+import language from '@/lang'
+import { showMessage } from '@/utils/ADempiere/notification.js'
 
 const persistence = {
   state: {
@@ -70,7 +72,14 @@ const persistence = {
               tableName,
               attributesList
             })
-              .then(response => resolve(response))
+              .then(response => {
+                showMessage({
+                  message: language.t('data.createRecordSuccessful'),
+                  type: 'success'
+                })
+
+                resolve(response)
+              })
               .catch(error => reject(error))
           }
         }
