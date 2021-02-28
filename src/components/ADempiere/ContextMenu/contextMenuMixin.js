@@ -227,7 +227,6 @@ export default {
     }
   },
   created() {
-    console.info(this.$store.state)
     this.generateContextMenu()
   },
   mounted() {
