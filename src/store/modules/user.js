@@ -46,7 +46,8 @@ const state = {
   warehouse: {},
   isSession: false,
   sessionInfo: {},
-  corporateBrandingImage: ''
+  corporateBrandingImage: '',
+  currentOrganization: 0
 }
 
 const mutations = {
@@ -70,6 +71,9 @@ const mutations = {
   },
   SET_ORGANIZATIONS_LIST: (state, payload) => {
     state.organizationsList = payload
+  },
+  SET_CURRENT_ORGANIZATIONS: (state, payload) => {
+    state.currentOrganization = payload
   },
   SET_ORGANIZATION: (state, organization) => {
     state.organization = organization
@@ -107,13 +111,6 @@ const actions = {
     token
   }) {
     return new Promise((resolve, reject) => {
-      console.log({
-        userName,
-        password,
-        roleUuid,
-        organizationUuid,
-        token
-      })
       login({
         userName,
         password,
@@ -137,6 +134,7 @@ const actions = {
         })
     })
   },
+
   /**
    * Get session info
    * @param {string} sessionUuid as token
@@ -180,6 +178,12 @@ const actions = {
           const { role } = sessionInfo
           commit('SET_ROLE', role)
           setCurrentRole(role.uuid)
+          const currentOrganizationSession = sessionInfo.defaultContext.find(context => {
+            if (context.key === '#AD_Org_ID') {
+              return context
+            }
+          })
+          commit('SET_CURRENT_ORGANIZATIONS', currentOrganizationSession.value)
 
           // wait to establish the client and organization to generate the menu
           await dispatch('getOrganizationsListFromServer', role.uuid)
@@ -209,6 +213,7 @@ const actions = {
         })
     })
   },
+
   /**
    * Get user info
    * @param {string} sessionUuid as token
@@ -226,7 +231,6 @@ const actions = {
             message: 'Verification failed, please Login again.'
           })
         }
-
         // if (isEmptyValue(state.role)) {
         //   const role = responseGetInfo.rolesList.find(itemRole => {
         //     return itemRole.uuid === getCurrentRole()
@@ -251,6 +255,7 @@ const actions = {
       })
     })
   },
+
   // user logout
   logout({ commit, state, dispatch }) {
     const token = state.token
@@ -280,6 +285,7 @@ const actions = {
       })
     })
   },
+
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
@@ -289,6 +295,7 @@ const actions = {
       resolve()
     })
   },
+
   getRolesListFromServer({ commit }, sessionUuid = null) {
     if (isEmptyValue(sessionUuid)) {
       sessionUuid = getToken()
@@ -334,7 +341,8 @@ const actions = {
         })
     })
   },
-  getOrganizationsListFromServer({ commit, dispatch }, roleUuid) {
+
+  getOrganizationsListFromServer({ commit, dispatch, getters }, roleUuid) {
     if (isEmptyValue(roleUuid)) {
       roleUuid = getCurrentRole()
     }
@@ -355,6 +363,14 @@ const actions = {
         } else {
           setCurrentOrganization(organization.uuid)
         }
+        const currentOrganization = getters.getCurrentOrg
+        if (!isEmptyValue(currentOrganization)) {
+          organization = response.organizationsList.find(item => {
+            if (item.id === currentOrganization) {
+              return item
+            }
+          })
+        }
         commit('SET_ORGANIZATION', organization)
         commit('setPreferenceContext', {
           columnName: '#AD_Org_ID',
@@ -369,6 +385,7 @@ const actions = {
         console.warn(`Error ${error.code} getting Organizations list: ${error.message}.`)
       })
   },
+
   changeOrganization({ commit, dispatch, getters }, {
     organizationUuid,
     organizationId,
@@ -436,6 +453,7 @@ const actions = {
         })
       })
   },
+
   getWarehousesList({ commit }, organizationUuid) {
     if (isEmptyValue(organizationUuid)) {
       organizationUuid = getCurrentOrganization()
@@ -469,6 +487,7 @@ const actions = {
         console.warn(`Error ${error.code} getting Warehouses list: ${error.message}.`)
       })
   },
+
   changeWarehouse({ commit, state }, {
     warehouseUuid
   }) {
@@ -484,6 +503,7 @@ const actions = {
       root: true
     })
   },
+
   // dynamically modify permissions
   changeRole({ commit, dispatch }, {
     roleUuid,
@@ -576,6 +596,9 @@ const getters = {
   },
   getIsPersonalLock: (state) => {
     return state.role.isPersonalLock
+  },
+  getCurrentOrg: (state) => {
+    return state.currentOrganization
   }
 }
 
