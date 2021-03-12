@@ -215,12 +215,17 @@ export default {
     /**
      * Export records as .txt into compressed .zip file
      */
-    exporZipRecordTable() {
+    exporZipRecordTable({
+      recordContexMenu = false
+    }) {
       const header = this.getterFieldsListHeader
       const filterVal = this.getterFieldsListValue
       let list = this.getDataSelection
       if (this.getDataSelection.length <= 0) {
         list = this.recordsData
+      }
+      if (recordContexMenu) {
+        list = [this.currentRow]
       }
       const data = this.formatJson(filterVal, list)
 
