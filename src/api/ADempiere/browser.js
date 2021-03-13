@@ -32,9 +32,11 @@ export function requestBrowserSearch({
   nextPageToken: pageToken,
   pageSize
 }) {
+
   const filters = parametersList.map(parameter => {
     return {
-      key: parameter.columnName,
+
+      key: parameter.columnName1,
       value: parameter.value,
       values: parameter.values
     }
