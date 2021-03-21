@@ -155,7 +155,6 @@ function getRouteFromMenuItem({ menu, roleUuid, organizationUuid }) {
 /**
  * Grant visibility to static routes based on current role permissions
  * @author elsiosanchez <elsiosanches@gmail.com>
- * @author Edwin Betancourt <EdwinBetanc0urt@outlook.com>
  * @param {object} staticRoutes static routes
  * @param {object} permiseRole role permissions
  * @returns {object} routes with hidden/show
