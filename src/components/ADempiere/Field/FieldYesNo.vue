@@ -58,7 +58,7 @@ export default {
       if (fieldReadOnlyForm && fieldIsDisplayed(this.metadata)) {
         const fieldsExcludes = []
         // if isChangedAllForm it does not exclude anything, otherwise it excludes this columnName
-        if (fieldReadOnlyForm.isChangedAllForm) {
+        if (!fieldReadOnlyForm.isChangedAllForm) {
           fieldsExcludes.push(this.metadata.columnName)
         }
 
