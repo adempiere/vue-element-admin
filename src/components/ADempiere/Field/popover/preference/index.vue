@@ -16,7 +16,7 @@
             </b>
           </span>
         </div>
-        <div v-if="!isEmptyValue(getDescriptionOfPreference)" class="text item">
+        <div class="text item">
           {{
             getDescriptionOfPreference
           }}
@@ -66,6 +66,14 @@
         <br>
         <el-row>
           <el-col :span="24">
+            <samp style="float: left; padding-right: 10px;">
+              <el-button
+                type="danger"
+                class="custom-button-address-location"
+                icon="el-icon-delete"
+                @click="remove()"
+              />
+            </samp>
             <samp style="float: right; padding-right: 10px;">
               <el-button
                 type="danger"
@@ -98,7 +106,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import filelistPreference from './filelistPreference.js'
 import { createFieldFromDictionary } from '@/utils/ADempiere/lookupFactory'
-import { setPreference } from '@/api/ADempiere/field/preference.js'
+import { setPreference, deletePreference } from '@/api/ADempiere/field/preference.js'
 import { showMessage } from '@/utils/ADempiere/notification.js'
 import language from '@/lang'
 
@@ -143,14 +151,16 @@ export default {
   },
   watch: {
     isActive(value) {
-      this.code = this.$store.getters.getValueOfField({
-        parentUuid: this.sourceField.parentUuid,
-        containerUuid: this.sourceField.containerUuid,
-        columnName: this.sourceField.columnName
-      })
-      // const preferenceValue = this.fieldValue
+      const preferenceValue = this.fieldValue
       if (value && this.isEmptyValue(this.metadataList)) {
         this.setFieldsList()
+      }
+      if (!this.isEmptyValue(preferenceValue)) {
+        if ((typeof preferenceValue !== 'string') && (this.sourceField.componentPath !== 'FieldYesNo')) {
+          this.code = preferenceValue
+        } else {
+          this.code = preferenceValue
+        }
       }
     }
   },
@@ -158,6 +168,33 @@ export default {
     createFieldFromDictionary,
     close() {
       this.$children[0].visible = false
+    },
+    remove() {
+      const isForCurrentUser = this.metadataList.find(field => field.columnName === 'AD_User_ID').value
+      const isForCurrentClient = this.metadataList.find(field => field.columnName === 'AD_Client_ID').value
+      const isForCurrentOrganization = this.metadataList.find(field => field.columnName === 'AD_Org_ID').value
+      const isForCurrentContainer = this.metadataList.find(field => field.columnName === 'AD_Window_ID').value
+      deletePreference({
+        parentUuid: this.sourceField.parentUuid,
+        attribute: this.sourceField.columnName,
+        isForCurrentUser,
+        isForCurrentClient,
+        isForCurrentOrganization,
+        isForCurrentContainer
+      })
+        .then(preference => {
+          showMessage({
+            message: language.t('components.preference.preferenceRemoved')
+          })
+          this.close()
+        })
+        .catch(error => {
+          showMessage({
+            message: error.message,
+            type: 'error'
+          })
+          console.warn(`setPreference error: ${error.message}.`)
+        })
     },
     notSubmitForm(event) {
       event.preventDefault()

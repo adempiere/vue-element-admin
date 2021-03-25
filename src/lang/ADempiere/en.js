@@ -157,7 +157,8 @@ export default {
       no: 'No',
       defaultMessage: 'Applies for this ',
       defaultMessageUser: 'Applies for this ',
-      preferenceIsOk: 'The preference is saved'
+      preferenceIsOk: 'The preference is saved',
+      preferenceRemoved: 'Preference Removed'
     }
   },
   views: {

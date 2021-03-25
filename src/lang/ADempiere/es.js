@@ -157,7 +157,9 @@ export default {
       no: 'No',
       defaultMessage: 'Aplica para Esta ',
       defaultMessageUser: 'Aplica para Este ',
-      preferenceIsOk: 'Preferencia guardada'
+      preferenceIsOk: 'Preferencia guardada',
+      preferenceRemoved: 'Preferencia Eliminada'
+
     }
   },
   views: {
