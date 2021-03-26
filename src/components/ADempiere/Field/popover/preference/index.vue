@@ -20,18 +20,6 @@
           {{
             getDescriptionOfPreference
           }}
-          <template
-            v-for="(index) in fieldsListPreference"
-          >
-            <span
-              v-if="index.value"
-              :key="index.sequence"
-            >
-              {{
-                index.label
-              }}
-            </span>
-          </template>
         </div>
         <br>
         <div class="text item">
@@ -104,7 +92,7 @@
 
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin'
-import filelistPreference from './filelistPreference.js'
+import preferenceFields from './preferenceFields.js'
 import { createFieldFromDictionary } from '@/utils/ADempiere/lookupFactory'
 import { setPreference, deletePreference } from '@/api/ADempiere/field/preference.js'
 import { showMessage } from '@/utils/ADempiere/notification.js'
@@ -127,7 +115,7 @@ export default {
   },
   data() {
     return {
-      filelistPreference,
+      preferenceFields,
       metadataList: [],
       code: '',
       description: [],
@@ -146,7 +134,39 @@ export default {
       })
     },
     getDescriptionOfPreference() {
-      return ''
+      if (this.isEmptyValue(this.metadataList)) {
+        return ''
+      }
+      const forCurrentUser = this.metadataList.find(field => field.columnName === 'AD_User_ID')
+      const forCurrentClient = this.metadataList.find(field => field.columnName === 'AD_Client_ID')
+      const forCurrentOrganization = this.metadataList.find(field => field.columnName === 'AD_Org_ID')
+      const forCurrentContainer = this.metadataList.find(field => field.columnName === 'AD_Window_ID')
+      if (!forCurrentClient) {
+        return ''
+      }
+      //  Create Message
+      var expl = language.t('components.preference.for')//  components.preference.for
+      if (forCurrentClient.value && forCurrentOrganization.value) {
+        expl = expl.concat(language.t('components.preference.clientAndOrganization'))//  components.preference.clientAndOrganization
+      } else if (forCurrentClient.value && !forCurrentOrganization.value) {
+        expl = expl.concat(language.t('components.preference.allOrganizationOfClient'))//  components.preference.allOrganizationOfClient
+      } else if (!forCurrentClient.value && forCurrentOrganization.value) {
+        forCurrentOrganization.value = false
+        expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
+      } else {
+        expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
+      }
+      if (forCurrentUser.value) {
+        expl = expl.concat(language.t('components.preference.thisUser'))//  components.preference.thisUser
+      } else {
+        expl = expl.concat(language.t('components.preference.allUsers'))//  components.preference.allUsers
+      }
+      if (forCurrentContainer.value) {
+        expl = expl.concat(language.t('components.preference.thisWindow'))//  components.preference.thisWindow
+      } else {
+        expl = expl.concat(language.t('components.preference.allWindows'))//  components.preference.allWindows
+      }
+      return expl
     }
   },
   watch: {
@@ -203,7 +223,7 @@ export default {
     setFieldsList() {
       const fieldsList = []
       // Product Code
-      this.filelistPreference.forEach(element => {
+      this.preferenceFields.forEach(element => {
         this.createFieldFromDictionary(element)
           .then(metadata => {
             const data = metadata

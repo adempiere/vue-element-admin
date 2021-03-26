@@ -158,8 +158,15 @@ export default {
       defaultMessage: 'Aplica para Esta ',
       defaultMessageUser: 'Aplica para Este ',
       preferenceIsOk: 'Preferencia guardada',
-      preferenceRemoved: 'Preferencia Eliminada'
-
+      preferenceRemoved: 'Preferencia Eliminada',
+      for: 'Para ',
+      clientAndOrganization: 'esta Compañía y Organización',
+      allOrganizationOfClient: 'todas las Organizaciones de esta Compañía',
+      entireSystem: 'todo el Sistema',
+      thisUser: ', este Usuario',
+      allUsers: ', todos los Usuarios',
+      thisWindow: ' y esta Ventana',
+      allWindows: ' y todas las Ventanas'
     }
   },
   views: {
