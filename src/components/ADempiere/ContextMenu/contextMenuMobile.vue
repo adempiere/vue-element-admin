@@ -12,7 +12,7 @@
           <span style="display: inline-flex;">
             <i v-if="action.type === 'dataAction'" :class="iconAction(action)" />
             <svg-icon v-else icon-class="component" />
-            <b style="font-size: 12px;margin-top: 9% !important;margin-left: 5px;">
+            <b style="font-size: 12px;margin-top: 0% !important;margin-left: 0px;margin-bottom: 10%;">
               {{ action.name }}
             </b>
           </span>
@@ -35,12 +35,12 @@
           >
             <span style="display: inline-flex;">
               <svg-icon :icon-class="relation.meta.icon" />
-              <b style="font-size: 12px;margin-top: 2% !important;margin-left: 5px;">
+              <b style="font-size: 14px;margin-top: 0% !important;margin-left: 5px;">
                 {{ relation.meta.title }}
               </b>
             </span>
             <p
-              style="margin: 0px;font-size: 10px;"
+              style="margin: 0px;font-size: 12px;"
             >
               {{ relation.meta.description }}
             </p>
