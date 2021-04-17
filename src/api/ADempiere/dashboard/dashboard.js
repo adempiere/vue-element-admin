@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // This file is for get all information for dashboard of ADempiere client,
 // please if you want to implement a custom dashboard create a new fielwith api definition
-
 // Get Instance for connection
 import { request } from '@/utils/ADempiere/request'
 
