@@ -1,4 +1,4 @@
-！[移動版和Office版中的首選項]（../resources/preference-desktop-mobile.png "移動版和Office版中的首選項"）
+![移動版和Office版中的首選項]（../resources/preference-desktop-mobile.png "移動版和Office版中的首選項"）
 
 ＃ 組件名稱
 
