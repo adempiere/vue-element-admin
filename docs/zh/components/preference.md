@@ -1,34 +1,33 @@
-# Nombre del Componente 
+！[Preferencia enVersiónMóvily de Escritorio]（../ resources / preference-desktop-mobile.png“ Preferencia enVersiónMóvily de Escritorio”）
 
-Preferencia
+＃組件名稱
 
-## Descripción de lo que hace el componente
+偏愛
 
-El componente **Preferencia**, permite establecer valores que se requieren de preferencia. El registro puede ser cancelado, guardado o eliminado.
+##功能說明
 
-## ¿Dónde se ubica el componente?
+** Preferencia **組件使您可以建立首選值。可以取消，保存或刪除註冊。
 
-Se ubica en los diferentes campos que contienen las ventanas de ADempiere.
+＃＃ 你現在在哪裡？
 
-## ¿Para qué sirve el componente?
+它在包含ADempiere風車的不同領域中無處不在。
 
-Sirve para establecer valores de manera predeterminada en base a la compañía, organización, usuario y ventana.
+##是做什麼用的？
 
-## Funciones u Observaciones del Componente
+它用於根據公司，組織，用戶和粉絲以預定方式建立價值。
 
-Por defecto, el campo contiene de la configuración de preferencia 
-  - **Para todas las Organizaciones de esta Compañía, este Usuario y esta Ventana**
+##功能u觀察
 
-## Imagen del Componente
+默認情況下，該字段包含首選項的配置
+  -**對於該公司的所有組織，該用戶和此Ventana **
 
-![Preferencia en Versión Móvil y de Escritorio](../resources/preference-desktop-mobile.png "Preferencia en Versión Móvil y de Escritorio")
 
-## ¿Cómo se utiliza en la versión de Escritorio?
+##¿在Office版本中如何使用？
 
-En la versión de escritorio se hace clic sobre el campo para visualizar el menú desplegado por el mismo, luego se selecciona la opción "**Preferencia**", para establecer el valor de preferencia requerido.
+在Office版本中，單擊該字段以查看以相同方法顯示的菜單，然後選擇選項“ ** Preferencia **”以建立所需的首選項值。
 
-## ¿Cómo se utiliza en la versión móvil?
+##如何在移動版本中使用它？
 
-En la versión móvil se hace clic sobre el campo para visualizar el menú desplegado por el mismo, luego se selecciona la opción "**Preferencia**", para establecer el valor de preferencia requerido.
+在移動版本中，單擊該字段以查看以相同方法顯示的菜單，然後選擇選項“ ** Preferencia **”，以建立所需的首選項值。
 
-## Datos Técnicos
+＃＃ 技術數據
