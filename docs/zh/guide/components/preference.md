@@ -15,13 +15,6 @@
 
 <img :src="$withBase('/images/components/preference/preference-desktop-mobile.png')" alt="Preferencia en Versión Móvil y de Escritorio" width="800px">
 
-## ADempiere-ZK版本
-
-<img :src="$withBase('/images/components/preference/zk-desktop-version-preference.png')" alt="ZK桌面版本首選項" width="250px">
-
-## ADempiere-Vue版本
-
-<img :src="$withBase('/images/components/preference/preference-desktop-mobile.png')" alt="移動和桌面版本首選項" width="250px">
 
 通過取消選中上面指示的任何檢查，組件的行為在於在創建新記錄時設置所述值。例子：
 
