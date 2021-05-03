@@ -9,11 +9,11 @@
 
 ## ADempiere-ZK版本
 
-<img :src="$withBase('/images/components/preference/zk-desktop-version-preference.png')" alt="Preferencia en Versión de Escritorio ZK" width="250px">
+<img :src="$withBase('/images/components/preference/zk-desktop-version-preference.png')" alt="Preferencia en Versión de Escritorio ZK" width="800px">
 
 ## Versión ADempiere-Vue
 
-<img :src="$withBase('/images/components/preference/preference-desktop-mobile.png')" alt="Preferencia en Versión Móvil y de Escritorio" width="250px">
+<img :src="$withBase('/images/components/preference/preference-desktop-mobile.png')" alt="Preferencia en Versión Móvil y de Escritorio" width="800px">
 
 ## ADempiere-ZK版本
 
@@ -52,3 +52,16 @@
 在移動版本中，單擊該字段以查看其顯示的菜單，然後選擇選項“ **潛在性**”以設置所需的首選項值。
 
 ## 技術數據
+
+
+“偏好設置”對話框寫在以下路徑上：
+
+```bash
+└── src                             # main source code
+    └── components                  # global components
+        └── ADempiere               # ADempiere specific components
+            └── field               # Fields
+                └── contextMenu     # Context Menu for all fields
+                    └── preference  # Preference folder
+
+```
