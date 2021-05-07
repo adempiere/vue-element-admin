@@ -159,25 +159,29 @@ export default {
       }
       //  Create Message
       var expl = language.t('components.preference.for')//  components.preference.for
-      if (forCurrentClient.value && forCurrentOrganization.value) {
-        expl = expl.concat(language.t('components.preference.clientAndOrganization'))//  components.preference.clientAndOrganization
-      } else if (forCurrentClient.value && !forCurrentOrganization.value) {
-        expl = expl.concat(language.t('components.preference.allOrganizationOfClient'))//  components.preference.allOrganizationOfClient
-      } else if (!forCurrentClient.value && forCurrentOrganization.value) {
-        forCurrentOrganization.value = false
-        expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
-      } else {
-        expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
+      if (forCurrentOrganization && forCurrentClient) {
+        if (forCurrentClient.value && forCurrentOrganization.value) {
+          expl = expl.concat(language.t('components.preference.clientAndOrganization'))//  components.preference.clientAndOrganization
+        } else if (forCurrentClient.value && !forCurrentOrganization.value) {
+          expl = expl.concat(language.t('components.preference.allOrganizationOfClient'))//  components.preference.allOrganizationOfClient
+        } else if (!forCurrentClient.value && forCurrentOrganization.value) {
+          forCurrentOrganization.value = false
+          expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
+        } else {
+          expl = expl.concat(language.t('components.preference.entireSystem'))//  components.preference.entireSystem
+        }
       }
-      if (forCurrentUser.value) {
-        expl = expl.concat(language.t('components.preference.thisUser'))//  components.preference.thisUser
-      } else {
-        expl = expl.concat(language.t('components.preference.allUsers'))//  components.preference.allUsers
-      }
-      if (forCurrentContainer.value) {
-        expl = expl.concat(language.t('components.preference.thisWindow'))//  components.preference.thisWindow
-      } else {
-        expl = expl.concat(language.t('components.preference.allWindows'))//  components.preference.allWindows
+      if (forCurrentUser && forCurrentContainer) {
+        if (forCurrentUser.value) {
+          expl = expl.concat(language.t('components.preference.thisUser'))//  components.preference.thisUser
+        } else {
+          expl = expl.concat(language.t('components.preference.allUsers'))//  components.preference.allUsers
+        }
+        if (forCurrentContainer.value) {
+          expl = expl.concat(language.t('components.preference.thisWindow'))//  components.preference.thisWindow
+        } else {
+          expl = expl.concat(language.t('components.preference.allWindows'))//  components.preference.allWindows
+        }
       }
       return expl
     }
@@ -207,6 +211,16 @@ export default {
     close() {
       this.$children[0].visible = false
       this.$store.commit('changeShowRigthPanel', false)
+      if (!this.isEmptyValue(this.$route.query.fieldColumnName)) {
+        this.$router.push({
+          name: this.$route.name,
+          query: {
+            ...this.$route.query,
+            typeAction: '',
+            fieldColumnName: ''
+          }
+        }, () => {})
+      }
     },
     remove() {
       const isForCurrentUser = this.metadataList.find(field => field.columnName === 'AD_User_ID').value

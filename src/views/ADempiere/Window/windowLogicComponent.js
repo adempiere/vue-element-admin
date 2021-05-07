@@ -243,7 +243,7 @@ export default {
       return this.$store.getters.getWindow(this.windowUuid)
     },
     isShowedTabsChildren() {
-      if (this.windowMetadata && this.windowMetadata.isShowedTabsChildren) {
+      if (this.windowMetadata && this.windowMetadata.isShowedTabsChildren && this.isEmptyValue(this.$route.query.typeAction)) {
         return this.windowMetadata.isShowedTabsChildren
       }
       return false
@@ -353,9 +353,17 @@ export default {
             }
           })
       }
+    },
+    getRecord(value) {
+      if (!this.isEmptyValue(this.windowMetadata.currentTab.tableName) && !this.isEmptyValue(value) && (!this.isEmptyValue(this.$route.query) && this.$route.query.typeAction === 'recordAccess')) {
+        this.$store.commit('setRecordAccess', true)
+      }
     }
   },
   created() {
+    if (!this.isEmptyValue(this.currentRecord) && (!this.isEmptyValue(this.$route.query) && this.$route.query.typeAction === 'recordAccess')) {
+      this.$store.commit('setRecordAccess', true)
+    }
     this.getWindow()
     if (this.isShowedRecordNavigation) {
       this.handleResize()
