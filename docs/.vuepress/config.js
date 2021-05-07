@@ -286,6 +286,7 @@ function genComponentSidebar(type = '') {
   const mapArr = [
     '/guide/components/preference.md',
     '/guide/components/record-access.md',
+    '/guide/components/notes.md',
     '/guide/components/information.md'
   ]
   return mapArr.map(i => {
