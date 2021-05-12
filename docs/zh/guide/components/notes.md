@@ -34,7 +34,7 @@
 
 ### 創建筆記
 
-![如何在桌面版本中創建筆記]('/images/components/notes/create-notes-in-desktop-version.gif' "如何在桌面版本中創建筆記")
+<img :src="$withBase('/images/components/notes/create-notes-in-desktop-version.gif')" />
 
 ## 在移動版本中如何使用？
 
@@ -42,4 +42,4 @@
 
 ### 創建筆記
 
-![如何在移動版本中創建註釋]('/images/components/notes/create-notes-in-the-mobile-version.gif' "如何在移動版本中創建註釋")
+<img :src="$withBase('/images/components/notes/create-notes-in-the-mobile-version.gif')" />
