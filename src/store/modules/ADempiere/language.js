@@ -13,7 +13,6 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import { requestUpdateEntity } from '@/api/ADempiere/common/persistence.js'
 import { requestTranslations } from '@/api/ADempiere/actions/translation.js'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
