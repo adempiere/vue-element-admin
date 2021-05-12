@@ -41,5 +41,32 @@
 在移動版本中，它必須位於窗口底部才能查看選項 “**筆記**” 和 “**活動**”, 然後在左側的框中輸入信息。左側框中輸入的信息會自動應用在右側框中，並採用格式。
 
 ### 創建筆記
-
 <img :src="$withBase('/images/components/notes/create-notes-in-the-mobile-version.gif')" />
+
+## 开发者选项
+
+ **注释**面板位于以下路径中。
+
+```bash
+└── src                      # 主要的源代码。
+    └── components           # 全球组件。
+        └── ADempiere        # ADempiere的特定组件。
+            └── ChatEntries  # 主要组件目录说明。
+
+```
+在这里你可以看到一个 [Demo](https://demo-ui.erpya.com/#/7aa4242a-93c0-42d8-92be-8250002d3e3c/d97027fd-4cd5-445e-8fd8-ef5d3f7959b4/window/53418?tabParent=0&action=fa50908e-40f1-11e9-91a1-0242ac140002)
+
+可以在以下路径找到**注释**服务的消费调用:
+```bash
+└─ src                            # 主要的源代码。
+    └─ api                        # 全球服务
+      └─ ADempiere                # ADempiere的具体服务
+            └─ window             # 主要服务目录说明
+
+```
+
+
+从该组件中调用的服务有  <br>
+[POST /adempiere-api/logs/list-entity-chat](https://adempiere.github.io/proxy-adempiere-api/guide/es/default-modules/adempiere-api/user-log.html#post-adempiere-api-logs-list-entity-chats)<br>
+[POST /adempiere-api/logs/list-chat-entries](https://adempiere.github.io/proxy-adempiere-api/guide/es/default-modules/adempiere-api/user-log.html#post-adempiere-api-logs-list-chat-entries)<br>
+[POST /adempiere-api/ui/create-chat-entry](https://adempiere.github.io/proxy-adempiere-api/guide/es)
