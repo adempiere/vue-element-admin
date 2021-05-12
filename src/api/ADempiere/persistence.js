@@ -34,7 +34,7 @@ export function requestCreateEntity({
   })
 
   return request({
-    url: '/common/api/create',
+    url: '/data/create',
     method: 'post',
     data: {
       table_name: tableName,
@@ -69,7 +69,7 @@ export function requestUpdateEntity({
   })
 
   return request({
-    url: '/common/api/update',
+    url: '/data/update',
     method: 'post',
     data: {
       table_name: tableName,
@@ -97,7 +97,7 @@ export function requestDeleteEntity({
   recordUuid
 }) {
   return request({
-    url: '/common/api/delete',
+    url: '/data/delete',
     method: 'post',
     data: {
       table_name: tableName,
@@ -122,7 +122,7 @@ export function rollbackEntity({
   eventType
 }) {
   return request({
-    url: '/common/api/rollback-entity',
+    url: '/data/rollback-entity',
     method: 'post',
     data: {
       table_name: tableName,
@@ -145,7 +145,7 @@ export function requestGetEntity({
   recordUuid
 }) {
   return request({
-    url: '/common/api/entity',
+    url: '/data/entity',
     method: 'get',
     params: {
       table_name: tableName,
@@ -193,9 +193,9 @@ export function requestListEntities({
   })
 
   return request({
-    url: '/common/api/entites',
-    method: 'get',
-    params: {
+    url: '/data/list',
+    method: 'post',
+    data: {
       table_name: tableName,
       // DSL Query
       filters,
@@ -204,7 +204,9 @@ export function requestListEntities({
       query,
       where_clause: whereClause,
       order_by_clause: orderByClause,
-      limit,
+      limit
+    },
+    params: {
       // Page Data
       pageToken,
       pageSize
@@ -215,4 +217,100 @@ export function requestListEntities({
 
       return convertEntityList(entitiesListResponse)
     })
+}
+
+/**
+ * Request translations
+ * @param {string} tableName
+ * @param {string} language
+ * @param {string} recordUuid
+ * @param {number} recordId
+ */
+export function getTranslations({
+  tableName,
+  language,
+  recordUuid,
+  recordId,
+  pageToken,
+  pageSize
+}) {
+  return request({
+    url: '/ui/list-translations',
+    method: 'post',
+    data: {
+      table_name: tableName,
+      id: recordId,
+      uuid: recordUuid
+    },
+    params: {
+      language,
+      // Page Data
+      pageToken,
+      pageSize
+    }
+  })
+    .then(languageListResponse => {
+      const { convertTranslation } = require('@/utils/ADempiere/apiConverts/persistence.js')
+
+      return {
+        nextPageToken: languageListResponse.next_page_token,
+        recordCount: languageListResponse.record_count,
+        translationsList: languageListResponse.records.map(record => {
+          return convertTranslation(record)
+        })
+      }
+    })
+}
+
+// Download a resource from file name
+export function requestResource({ resourceUuid }, callBack = {
+  onData: () => {},
+  onStatus: () => {},
+  onEnd: () => {}
+}) {
+  const stream = request({
+    url: '/resource',
+    method: 'get',
+    params: {
+      resource_uuid: resourceUuid
+    }
+  })
+
+  stream.on('data', (response) => callBack.onData(response))
+  stream.on('status', (status) => callBack.onStatus(status))
+  stream.on('end', (end) => callBack.onEnd(end))
+
+  return stream
+}
+
+/**
+ * Get image with uri request
+ * @author EdwinBetanc0urt <EdwinBetanc0urt@oulook.com>
+ * @author Elsio15 <elsiiosanches@gmail.com>
+ * @param {string} file
+ * @param {number} width
+ * @param {number} height
+ * @param {string} operation fit, resize
+ * @returns {promise} with array buffer in response
+ */
+export function requestImage({
+  file,
+  width,
+  height,
+  operation = 'fit'
+}) {
+  const { getImagePath } = require('@/utils/ADempiere/resource.js')
+
+  const { urn } = getImagePath({
+    file,
+    width,
+    height,
+    operation
+  })
+
+  return request({
+    url: urn,
+    method: 'get',
+    responseType: 'arraybuffer'
+  })
 }
