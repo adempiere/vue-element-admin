@@ -8,7 +8,7 @@ Permite cerrar una pestaña determinada, para ello se debe hacer clic contrario 
 
 ## Versión ADempiere-UI
 
-<img :src="$withBase('/images/components/close-tab/ui-desktop-version-close-tab.png')" alt="Cerrar en Versión Móbvil y de Escritorio" width="800px">
+<img :src="$withBase('/images/components/close-tab/ui-desktop-version-close-tab.png')" alt="Cerrar en Versión Móvil y de Escritorio" width="800px">
 
 ## ¿Dónde se ubica?
 
