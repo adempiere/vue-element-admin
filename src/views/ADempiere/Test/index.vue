@@ -36,25 +36,10 @@
             class="content-collapse"
             :style="isEmptyValue(metadata.fieldsList) ? 'height: max-content !important;' : ''"
           >
-            <h3 class="warn-content text-center">
-              <el-popover
-                v-if="!isEmptyValue(metadata.help)"
-                ref="helpTitle"
-                placement="top-start"
-                :title="formTitle"
-                width="400"
-                trigger="hover"
-              >
-                <div v-html="metadata.help" />
-              </el-popover>
-              <el-button
-                v-popover:helpTitle
-                type="text"
-                class="title text-center"
-              >
-                {{ formTitle }}
-              </el-button>
-            </h3>
+            <title-and-help
+              :name="metadata.name"
+              :help="metadata.help"
+            />
 
             <!-- emulated component form -->
             <div class="wrapper">
@@ -92,11 +77,13 @@
 import formMixin from '@/components/ADempiere/Form/formMixin'
 import fieldsList from './fieldsList.js'
 import ContextMenu from '@/components/ADempiere/ContextMenu'
+import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 
 export default {
   name: 'TestView',
   components: {
-    ContextMenu
+    ContextMenu,
+    TitleAndHelp
   },
   mixins: [formMixin],
   props: {
@@ -115,11 +102,6 @@ export default {
       fieldsList,
       isCustomForm: true,
       unsubscribe: () => {}
-    }
-  },
-  computed: {
-    formTitle() {
-      return this.metadata.name || this.$route.meta.title
     }
   },
   created() {
