@@ -99,9 +99,6 @@ export default {
     },
     getterProcess() {
       return this.$store.getters.getPanel(this.processUuid)
-    },
-    processTitle() {
-      return this.processMetadata.name || this.$route.meta.title
     }
   },
   created() {
@@ -145,9 +142,5 @@ export default {
   .el-card {
     width: 100% !important;
     height: 100% !important;
-  }
-  .content-collapse {
-    padding-left: 20 px !important;
-    padding-top: 50 px !important;
   }
 </style>
