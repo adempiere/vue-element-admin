@@ -1,7 +1,8 @@
 <template>
-  <div>
-    {{ containerUuid }}
-  </div>
+  <component
+    :is="componentRender"
+    :container-uuid="containerUuid"
+  />
 </template>
 
 <script>
@@ -13,12 +14,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -29,16 +30,20 @@ export default {
     containerUuid: {
       type: String,
       required: true
+    },
+    panelType: {
+      type: String
     }
   },
 
   computed: {
     componentRender() {
-      if (['browser','process'].includes(this.panelType)) {
+      if (['browser', 'process'].includes(this.panelType)) {
         return () => import('@/components/ADempiere/PanelDefinition/PanelStandard')
       }
 
-      let panel = () => import('@/components/ADempiere/PanelDefinition/PanelUnsupported')
+      const panel = () => import('@/components/ADempiere/PanelDefinition/PanelUnsupported')
+      /*
       switch (this.panelMetadata.panelType) {
         case 'PanelMaster':
           panel = () => import('@/components/ADempiere/PanelDefinition/FieldBinary')
@@ -58,6 +63,7 @@ export default {
           panel = () => import('@/components/ADempiere/PanelDefinition/PanelTree')
           break
       }
+      */
 
       return panel
     }
