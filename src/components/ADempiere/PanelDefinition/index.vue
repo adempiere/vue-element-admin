@@ -2,6 +2,7 @@
   <component
     :is="componentRender"
     :container-uuid="containerUuid"
+    :panel-metadata="panelMetadata"
   />
 </template>
 
@@ -23,7 +24,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-export default {
+import { defineComponent, computed } from '@vue/composition-api'
+
+export default defineComponent({
   name: 'PanelDefinition',
 
   props: {
@@ -32,13 +35,18 @@ export default {
       required: true
     },
     panelType: {
-      type: String
+      type: String,
+      required: true
     }
   },
 
-  computed: {
-    componentRender() {
-      if (['browser', 'process'].includes(this.panelType)) {
+  setup(props, { root }) {
+    const panelMetadata = computed(() => {
+      return root.$store.getters.getPanel(props.containerUuid)
+    })
+
+    const componentRender = computed(() => {
+      if (['browser', 'process'].includes(props.panelType)) {
         return () => import('@/components/ADempiere/PanelDefinition/PanelStandard')
       }
 
@@ -66,7 +74,12 @@ export default {
       */
 
       return panel
+    })
+
+    return {
+      componentRender,
+      panelMetadata
     }
   }
-}
+})
 </script>
