@@ -314,7 +314,7 @@ export default defineComponent({
       } else {
         visibleForDesktop.value = true
       }
-      console.info(command)
+
       root.$store.commit('changeShowPopoverField', true)
       root.$store.dispatch('setOptionField', {
         ...command,
@@ -436,7 +436,6 @@ export default defineComponent({
     }
     const handleSelect = (key, keyPath) => {
       if (key === root.$t('table.ProcessActivity.zoomIn')) {
-        console.info(props.metadata)
         redirect({
           window: props.metadata.reference.zoomWindows[0]
         })
