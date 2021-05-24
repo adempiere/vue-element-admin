@@ -1,6 +1,6 @@
 // ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
 // Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
-// Contributor(s): Edwin Betancourt edwinBetanc0urt@hotmail.com www.erpya.com
+// Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -101,19 +101,22 @@ export default {
       let component
       switch (this.contextMenuField.name) {
         case this.$t('field.info'):
-          component = () => import('@/components/ADempiere/Field/contextMenuField/contextInfo')
+          component = () => import('@/components/ADempiere/Field/OptionsInField/contextInfo')
           break
         case this.$t('language'):
-          component = () => import('@/components/ADempiere/Field/contextMenuField/translated/index')
+          component = () => import('@/components/ADempiere/Field/OptionsInField/translated')
           break
         case this.$t('field.calculator'):
-          component = () => import('@/components/ADempiere/Field/contextMenuField/calculator')
+          component = () => import('@/components/ADempiere/Field/OptionsInField/calculator')
           break
         case this.$t('field.preference'):
-          component = () => import('@/components/ADempiere/Field/contextMenuField/preference/index')
+          component = () => import('@/components/ADempiere/Field/OptionsInField/preference')
           break
         case this.$t('field.logsField'):
-          component = () => import('@/components/ADempiere/Field/contextMenuField/changeLogs/index')
+          component = () => import('@/components/ADempiere/Field/OptionsInField/changeLogs')
+          break
+        case this.$t('operators.operator'):
+          component = () => import('@/components/ADempiere/Field/OptionsInField/operatorComparison')
           break
       }
       return component
