@@ -150,21 +150,6 @@
               </div>
             </el-button>
           </el-popover>
-          <div v-if="false" class="contents">
-            <div v-if="!option.svg" style="margin-right: 5%;padding-top: 3%;">
-              <i :class="option.icon" style="font-weight: bolder;" />
-            </div>
-            <div v-else style="margin-right: 5%">
-              <svg-icon :icon-class="option.icon" style="margin-right: 5px;" />
-            </div>
-            <div>
-              <span class="contents">
-                <b class="label">
-                  {{ option.name }}
-                </b>
-              </span>
-            </div>
-          </div>
         </el-menu-item>
       </el-submenu>
     </el-menu>
