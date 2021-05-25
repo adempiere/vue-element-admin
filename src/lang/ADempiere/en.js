@@ -380,6 +380,7 @@ export default {
     sequence: 'Sequence'
   },
   operators: {
+    compareSearch: 'Compare the Search',
     operator: 'Comparison operator',
     EQUAL: 'Equal to "="',
     NOT_EQUAL: 'Not equal to "<>"',

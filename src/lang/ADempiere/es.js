@@ -356,6 +356,7 @@ export default {
     sequence: 'Secuencia'
   },
   operators: {
+    compareSearch: 'Comparar la Búsqueda',
     operator: 'Operador de comparación',
     EQUAL: 'Igual a "="',
     NOT_EQUAL: 'Diferente a "<>"',

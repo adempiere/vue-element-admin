@@ -27,17 +27,17 @@
       @change="changeOperator"
     >
       <el-option
-        v-for="(item, key) in fieldAttributes.operatorsList"
+        v-for="(itemOperator, key) in operatorsList"
         :key="key"
-        :value="item"
-        :label="$t('operators.' + item)"
+        :value="itemOperator"
+        :label="$t('operators.' + itemOperator)"
       />
     </el-select>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from '@vue/composition-api'
+import { computed, defineComponent, ref } from '@vue/composition-api'
 
 export default defineComponent({
   name: 'FieldOperatorComparison',
@@ -50,54 +50,70 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
-    const currentOperator = ref(props.fieldAttributes.operator)
+    const operatorsList = ref(props.fieldAttributes.operatorsList)
 
-    const changeOperator = (operatorValue) => {
-      root.$store.dispatch('changeFieldAttribure', {
-        containerUuid: props.fieldAttributes.containerUuid,
-        columnName: props.fieldAttributes.columnName,
-        attributeName: 'operator',
-        attributeValue: operatorValue
+    const currentOperator = computed({
+      get() {
+        const { columnName, containerUuid } = props.fieldAttributes
+
+        const { operator } = root.$store.getters.getFieldFromColumnName({
+          containerUuid,
+          columnName
+        })
+
+        return operator
+      },
+      set(newValue) {
+        const { columnName, containerUuid } = props.fieldAttributes
+
+        root.$store.dispatch('changeFieldAttribure', {
+          containerUuid,
+          columnName,
+          attributeName: 'operator',
+          attributeValue: newValue
+        })
+      }
+    })
+
+    const fieldValue = computed(() => {
+      const { columnName, containerUuid, parentUuid } = props.fieldAttributes
+
+      // main panel values
+      return root.$store.getters.getValueOfField({
+        parentUuid,
+        containerUuid,
+        columnName
+      })
+    })
+
+    /**
+     * @param {mixed} value, main value in component
+     */
+    const handleChange = (value) => {
+      const { columnName, containerUuid } = props.fieldAttributes
+
+      root.$store.dispatch('notifyFieldChange', {
+        containerUuid,
+        field: props.fieldAttributes,
+        columnName,
+        newValue: value
       })
     }
 
     /**
-     * @param {mixed} value, main value in component
-     * @param {mixed} valueTo, used in end value in range
-     * @param {string} label, or displayColumn to show in select
+     * @param {string} operatorValue
      */
-    const handleChange = (value) => {
-      // const sendParameters = {
-      //   parentUuid: props.fieldAttributes.parentUuid,
-      //   containerUuid: props.fieldAttributes.containerUuid,
-      //   field: props.fieldAttributes,
-      //   panelType: props.fieldAttributes.panelType,
-      //   columnName: props.fieldAttributes.columnName,
-      //   newValue: value === 'NotSend'
-      //     ? currentOperator.value
-      //     : value,
-      //   isAdvancedQuery: true,
-      //   isSendToServer: !(value === 'NotSend'),
-      //   isSendCallout: false
-      // }
-
-      // root.$store.dispatch('notifyFieldChange', {
-      //   ...sendParameters,
-      //   isChangedOldValue: props.fieldAttributes.componentPath === 'FieldYesNo' && Boolean(value === 'NotSend')
-      // })
+    const changeOperator = (operatorValue) => {
+      const value = fieldValue.value
+      if (!root.isEmptyValue(value) ||
+        ['NULL', 'NOT_NULL'].includes(operatorValue)) {
+        handleChange(value)
+      }
     }
-
-    // watch('fieldAttributes.operator', (newValue, oldValue) => {
-    //   currentOperator.value = newValue
-    //   if (!root.isEmptyValue(props.fieldAttributes.value) ||
-    //     ['NULL', 'NOT_NULL'].includes(props.fieldAttributes.operator)) {
-    //     handleChange(props.fieldAttributes.value)
-    //   }
-    // })
 
     return {
       currentOperator,
-      handleChange,
+      operatorsList,
       changeOperator
     }
   }
