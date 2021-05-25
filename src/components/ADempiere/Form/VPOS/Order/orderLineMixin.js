@@ -29,27 +29,32 @@ export default {
         lineDescription: {
           columnName: 'LineDescription',
           label: this.$t('form.pos.tableProduct.product'),
-          isNumeric: false
+          isNumeric: false,
+          size: '380'
         },
         currentPrice: {
           columnName: 'CurrentPrice',
           label: this.$t('form.productInfo.price'),
-          isNumeric: true
+          isNumeric: true,
+          size: 'auto'
         },
         quantityOrdered: {
           columnName: 'QtyOrdered',
           label: this.$t('form.pos.tableProduct.quantity'),
-          isNumeric: true
+          isNumeric: true,
+          size: '100px'
         },
         discount: {
           columnName: 'Discount',
           label: '% ' + this.$t('form.pos.order.discount'),
-          isNumeric: true
+          isNumeric: true,
+          size: '110px'
         },
         grandTotal: {
           columnName: 'GrandTotal',
           label: 'Total',
-          isNumeric: true
+          isNumeric: true,
+          size: 'auto'
         }
       },
       currentOrderLine: {
@@ -119,31 +124,27 @@ export default {
       }
     },
     updateOrderLine(line) {
-      let {
-        currentPrice: price,
-        discount: discountRate,
-        quantityOrdered: quantity
-      } = this.currentOrderLine
-
+      let quantity, price, discountRate
+      const currentLine = this.$store.state['pointOfSales/orderLine/index'].line
       switch (line.columnName) {
         case 'QtyEntered':
           quantity = line.value
-          price = line.line.price
-          discountRate = line.line.discountRate
+          price = currentLine.price
+          discountRate = currentLine.discountRate
           break
         case 'PriceEntered':
           price = line.value
-          quantity = line.line.quantity
-          discountRate = line.line.discountRate
+          quantity = currentLine.quantity
+          discountRate = currentLine.discountRate
           break
         case 'Discount':
           discountRate = line.value
-          price = line.line.price
-          quantity = line.line.quantity
+          price = currentLine.price
+          quantity = currentLine.quantity
           break
       }
       requestUpdateOrderLine({
-        orderLineUuid: line.line.uuid,
+        orderLineUuid: currentLine.uuid,
         quantity,
         price,
         discountRate
@@ -154,8 +155,10 @@ export default {
             quantityOrdered: response.quantity,
             discount: response.discountRate
           })
+          this.$store.commit('pin', false)
           this.fillOrderLine(response)
-          this.reloadOrder(true)
+          this.$store.dispatch('reloadOrder', { orderUuid: this.$store.getters.posAttributes.currentPointOfSales.currentOrder.uuid })
+          this.$store.dispatch('currentLine', response)
         })
         .catch(error => {
           console.error(error.message)
@@ -167,11 +170,12 @@ export default {
         })
     },
     deleteOrderLine(lineSelection) {
+      console
       requestDeleteOrderLine({
         orderLineUuid: lineSelection.uuid
       })
         .then(() => {
-          this.reloadOrder(true)
+          this.$store.dispatch('reloadOrder', { orderUuid: this.$store.getters.posAttributes.currentPointOfSales.currentOrder.uuid })
         })
         .catch(error => {
           console.error(error.message)
@@ -203,9 +207,12 @@ export default {
         return this.formatPrice(row.grandTotal, currency)
       }
     },
+    productPrice(price, discount) {
+      return price / discount * 100
+    },
     handleCurrentLineChange(rowLine) {
-      this.$store.dispatch('currentLine', rowLine)
       if (!this.isEmptyValue(rowLine)) {
+        this.$store.dispatch('currentLine', rowLine)
         this.currentOrderLine = rowLine
         this.currentTable = this.listOrderLine.findIndex(item => item.uuid === rowLine.uuid)
         if (this.isEmptyValue(this.currentOrderLine) && !this.isEmptyValue(this.listOrderLine)) {
