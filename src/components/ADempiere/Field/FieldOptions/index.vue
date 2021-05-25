@@ -22,13 +22,13 @@
       v-if="isMobile"
       key="options-mobile"
       size="mini"
-      :hide-on-click="true"
+      hide-on-click
       trigger="click"
-      :style="isMobile ? 'text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width:'+ labelStyle+'%' : ''"
+      :style="'text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width:' + labelStyle + '%'"
       @command="handleCommand"
       @click="false"
     >
-      <div :style="isMobile ? 'display: flex;width: auto;' : 'display: block;'">
+      <div style="display: flex;width: auto;">
         <span :style="metadata.required && isEmptyValue(valueField) ? 'border: aqua; color: #f34b4b' : 'border: aqua;'">
           <span key="is-field-name">
             {{ metadata.name }}
@@ -43,49 +43,22 @@
             v-if="option.enabled"
             :key="key"
             :command="option"
-            :divided="true"
+            divided
           >
-            <el-popover
-              v-if="!isMobile"
-              placement="top"
-              trigger="click"
-              style="padding: 0px;"
-            >
-              <component
-                :is="option.componentRender"
-                v-if="visibleForDesktop"
-                :field-attributes="fieldAttributes"
-                :source-field="fieldAttributes"
-                :field-value="contextMenuField.valueField"
-              />
-              <el-button
-                slot="reference"
-                type="text"
-                style="color: #606266;"
+            <div class="contents">
+              <div
+                v-if="option.svg"
+                key="icon-svg-mobile"
+                style="margin-right: 5%"
               >
-                <div class="contents">
-                  <div v-if="!option.svg" style="margin-right: 5%;padding-top: 3%;">
-                    <i :class="option.icon" style="font-weight: bolder;" />
-                  </div>
-                  <div v-else style="margin-right: 5%">
-                    <svg-icon :icon-class="option.icon" style="margin-right: 5px;" />
-                  </div>
-                  <div>
-                    <span class="contents">
-                      <b class="label">
-                        {{ option.name }}
-                      </b>
-                    </span>
-                  </div>
-                </div>
-              </el-button>
-            </el-popover>
-            <div v-if="isMobile" class="contents">
-              <div v-if="!option.svg" style="margin-right: 5%;padding-top: 3%;">
-                <i :class="option.icon" style="font-weight: bolder;" />
-              </div>
-              <div v-else style="margin-right: 5%">
                 <svg-icon :icon-class="option.icon" style="margin-right: 5px;" />
+              </div>
+              <div
+                v-else
+                key="icon-mobile"
+                style="margin-right: 5%;padding-top: 3%;"
+              >
+                <i :class="option.icon" style="font-weight: bolder;" />
               </div>
               <div>
                 <span class="contents">
@@ -101,11 +74,11 @@
     </el-dropdown>
 
     <el-menu
-      v-else-if="metadata.panelType !== 'form' && !isMobile"
+      v-else-if="!isMobile && metadata.panelType !== 'form'"
       key="options-desktop"
       class="el-menu-demo"
       mode="horizontal"
-      :unique-opened="true"
+      unique-opened
       style="z-index: 0"
       :menu-trigger="triggerMenu"
       @open="handleOpen"
@@ -114,7 +87,7 @@
     >
       <el-submenu index="menu">
         <template slot="title">
-          <div :style="isMobile ? 'display: flex;width: auto;' : 'display: block;'">
+          <div style="display: block;">
             <span :style="metadata.required && isEmptyValue(valueField) ? 'border: aqua; color: #f34b4b' : 'border: aqua;'">
               <span key="is-field-name">
                 {{ metadata.name }}
@@ -128,7 +101,6 @@
           :index="option.name"
         >
           <el-popover
-            v-if="!isMobile"
             placement="top"
             trigger="click"
             style="padding: 0px; max-width: 400px"
@@ -138,19 +110,23 @@
               :is="option.componentRender"
               v-if="visibleForDesktop && showPanelFieldOption"
               :field-attributes="fieldAttributes"
-              :source-field="fieldAttributes"
-              :field-value="contextMenuField.valueField"
+              :field-value="valueField"
             />
             <el-button slot="reference" type="text" style="color: #606266;">
               <div class="contents">
                 <div
-                  v-if="!option.svg"
+                  v-if="option.svg"
+                  key="icon-svg-desktop"
+                  style="margin-right: 5%;; padding-left: 2%;"
+                >
+                  <svg-icon :icon-class="option.icon" style="margin-right: 5px;" />
+                </div>
+                <div
+                  v-else
+                  key="icon-desktop"
                   style="margin-right: 5%;padding-top: 3%;"
                 >
                   <i :class="option.icon" style="font-weight: bolder;" />
-                </div>
-                <div v-else style="margin-right: 5%;; padding-left: 2%;">
-                  <svg-icon :icon-class="option.icon" style="margin-right: 5px;" />
                 </div>
                 <div>
                   <span class="contents">
@@ -174,6 +150,10 @@
 
 <script>
 import { defineComponent, computed, ref, watch } from '@vue/composition-api'
+import {
+  optionsListStandad, optionsListAdvancedQuery,
+  zoomInOptionItem, translateOptionItem, calculatorOptionItem
+} from '@/components/ADempiere/Field/FieldOptions/fieldOptionsList.js'
 import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
 
 export default defineComponent({
@@ -219,17 +199,6 @@ export default defineComponent({
 
     const panelContextMenu = computed(() => {
       return root.$store.state.contextMenu.isShowRightPanel
-    })
-
-    const isContextInfo = computed(() => {
-      const field = props.metadata
-      if (!field.isPanelWindow) {
-        return false
-      }
-      return Boolean(field.contextInfo &&
-        field.contextInfo.isActive) ||
-        Boolean(field.reference &&
-        field.reference.zoomWindows.length)
     })
 
     const showPanelFieldOption = computed(() => {
@@ -316,71 +285,36 @@ export default defineComponent({
       })
     }
 
+    const isContextInfo = computed(() => {
+      const field = props.metadata
+      if (!field.isPanelWindow) {
+        return false
+      }
+
+      return Boolean(field.contextInfo &&
+        field.contextInfo.isActive) ||
+        Boolean(field.reference &&
+        !root.isEmptyValue(field.reference.zoomWindows))
+    })
+
     const optionsList = computed(() => {
-      const infoField = {
-        name: root.$t('field.info'),
-        enabled: true,
-        svg: false,
-        icon: 'el-icon-info',
-        componentRender: () => import('@/components/ADempiere/Field/FieldOptions/contextInfo')
+      const menuOptions = []
+      if (props.metadata.isNumericField) {
+        menuOptions.push(calculatorOptionItem)
       }
+      // infoOption, operatorOption
       if (props.metadata.isAdvancedQuery) {
-        return [
-          infoField,
-          {
-            name: root.$t('operators.operator'),
-            enabled: true,
-            svg: false,
-            icon: 'el-icon-rank',
-            componentRender: () => import('@/components/ADempiere/Field/FieldOptions/operatorComparison')
-          }
-        ]
+        return menuOptions.concat(optionsListAdvancedQuery)
       }
-      const menuOptions = [
-        infoField
-      ]
-      if (!root.isEmptyValue(props.metadata.reference.zoomWindows)) {
-         menuOptions.push({
-          name: root.$t('table.ProcessActivity.zoomIn'),
-          enabled: isContextInfo,
-          svg: false,
-          icon: 'el-icon-files',
-          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/contextInfo')
-        })
+
+      if (isContextInfo) {
+        menuOptions.push(zoomInOptionItem)
       }
-      menuOptions.push({
-          name: root.$t('language'),
-          enabled: props.metadata.isTranslatedField,
-          svg: true,
-          icon: 'language',
-          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/translated')
-        },
-        {
-          name: root.$t('field.calculator'),
-          enabled: props.metadata.isNumericField,
-          recordDataFields: 11, // this.recordDataFields,
-          valueField: valueField.value,
-          svg: false,
-          icon: 'el-icon-s-operation',
-          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/calculator')
-        },
-        {
-          name: root.$t('field.preference'),
-          enabled: true,
-          valueField: valueField.value,
-          svg: false,
-          icon: 'el-icon-notebook-2',
-          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/preference')
-        },
-        {
-          name: root.$t('field.logsField'),
-          enabled: true,
-          valueField: valueField.value,
-          svg: true,
-          icon: 'tree-table',
-          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/changeLogs')
-        })
-        return menuOptions
+      if (props.metadata.isTranslatedField) {
+        menuOptions.push(translateOptionItem)
+      }
+
+      return menuOptions.concat(optionsListStandad)
     })
 
     const openOptionField = computed({
