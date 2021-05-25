@@ -101,22 +101,22 @@ export default {
       let component
       switch (this.contextMenuField.name) {
         case this.$t('field.info'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/contextInfo')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/contextInfo')
           break
         case this.$t('language'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/translated')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/translated')
           break
         case this.$t('field.calculator'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/calculator')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/calculator')
           break
         case this.$t('field.preference'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/preference')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/preference')
           break
         case this.$t('field.logsField'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/changeLogs')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/changeLogs')
           break
         case this.$t('operators.operator'):
-          component = () => import('@/components/ADempiere/Field/OptionsInField/operatorComparison')
+          component = () => import('@/components/ADempiere/Field/FieldOptions/operatorComparison')
           break
       }
       return component

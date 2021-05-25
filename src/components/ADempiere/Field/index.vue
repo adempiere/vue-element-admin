@@ -33,7 +33,7 @@
     >
       <el-form-item>
         <template slot="label">
-          <options-in-field
+          <field-options
             :metadata="fieldAttributes"
           />
         </template>
@@ -61,7 +61,7 @@
 <script>
 import { DEFAULT_SIZE } from '@/utils/ADempiere/references'
 import { evalutateTypeField, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
-import OptionsInField from '@/components/ADempiere/Field/OptionsInField'
+import FieldOptions from '@/components/ADempiere/Field/FieldOptions'
 
 /**
  * This is the base component for linking the components according to the
@@ -71,7 +71,7 @@ export default {
   name: 'FieldDefinition',
 
   components: {
-    OptionsInField
+    FieldOptions
   },
 
   props: {

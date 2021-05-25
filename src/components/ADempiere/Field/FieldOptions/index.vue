@@ -20,6 +20,7 @@
   <div>
     <el-dropdown
       v-if="isMobile"
+      key="options-mobile"
       size="mini"
       :hide-on-click="true"
       trigger="click"
@@ -99,7 +100,18 @@
       </el-dropdown-menu>
     </el-dropdown>
 
-    <el-menu v-else-if="metadata.panelType !== 'form' && !isMobile" class="el-menu-demo" mode="horizontal" :unique-opened="true" style="z-index: 0" :menu-trigger="triggerMenu" @open="handleOpen" @close="handleClose" @select="handleSelect">
+    <el-menu
+      v-else-if="metadata.panelType !== 'form' && !isMobile"
+      key="options-desktop"
+      class="el-menu-demo"
+      mode="horizontal"
+      :unique-opened="true"
+      style="z-index: 0"
+      :menu-trigger="triggerMenu"
+      @open="handleOpen"
+      @close="handleClose"
+      @select="handleSelect"
+    >
       <el-submenu index="menu">
         <template slot="title">
           <div :style="isMobile ? 'display: flex;width: auto;' : 'display: block;'">
@@ -153,28 +165,10 @@
         </el-menu-item>
       </el-submenu>
     </el-menu>
-    <span v-else>
+
+    <span v-else key="options-form">
       {{ metadata.name }}
     </span>
-
-    <!--
-    <el-popover
-      v-if="openOptionField && !isEmptyValue(optionColumnName) && (optionColumnName === metadata.columnName) && showPopoverPath"
-      v-model="openOptionField"
-      placement="top-start"
-      width="400"
-      trigger="click"
-    >
-      <component
-        :is="optionFieldFComponentRender"
-        :field-attributes="metadata"
-        :source-field="metadata"
-        :field-value="valueField"
-      />
-      <el-button slot="reference" type="text" :disabled="true" @click="openOptionField = !openOptionField" />
-    </el-popover>
-    -->
-
   </div>
 </template>
 
@@ -183,7 +177,7 @@ import { defineComponent, computed, ref, watch } from '@vue/composition-api'
 import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
 
 export default defineComponent({
-  name: 'OptionsInField',
+  name: 'FieldOptions',
 
   props: {
     metadata: {
@@ -328,7 +322,7 @@ export default defineComponent({
         enabled: true,
         svg: false,
         icon: 'el-icon-info',
-        componentRender: () => import('@/components/ADempiere/Field/OptionsInField/contextInfo')
+        componentRender: () => import('@/components/ADempiere/Field/FieldOptions/contextInfo')
       }
       if (props.metadata.isAdvancedQuery) {
         return [
@@ -338,7 +332,7 @@ export default defineComponent({
             enabled: true,
             svg: false,
             icon: 'el-icon-rank',
-            componentRender: () => import('@/components/ADempiere/Field/OptionsInField/operatorComparison')
+            componentRender: () => import('@/components/ADempiere/Field/FieldOptions/operatorComparison')
           }
         ]
       }
@@ -351,7 +345,7 @@ export default defineComponent({
           enabled: isContextInfo,
           svg: false,
           icon: 'el-icon-files',
-          componentRender: () => import('@/components/ADempiere/Field/OptionsInField/contextInfo')
+          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/contextInfo')
         })
       }
       menuOptions.push({
@@ -359,7 +353,7 @@ export default defineComponent({
           enabled: props.metadata.isTranslatedField,
           svg: true,
           icon: 'language',
-          componentRender: () => import('@/components/ADempiere/Field/OptionsInField/translated')
+          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/translated')
         },
         {
           name: root.$t('field.calculator'),
@@ -368,7 +362,7 @@ export default defineComponent({
           valueField: valueField.value,
           svg: false,
           icon: 'el-icon-s-operation',
-          componentRender: () => import('@/components/ADempiere/Field/OptionsInField/calculator')
+          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/calculator')
         },
         {
           name: root.$t('field.preference'),
@@ -376,7 +370,7 @@ export default defineComponent({
           valueField: valueField.value,
           svg: false,
           icon: 'el-icon-notebook-2',
-          componentRender: () => import('@/components/ADempiere/Field/OptionsInField/preference')
+          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/preference')
         },
         {
           name: root.$t('field.logsField'),
@@ -384,7 +378,7 @@ export default defineComponent({
           valueField: valueField.value,
           svg: true,
           icon: 'tree-table',
-          componentRender: () => import('@/components/ADempiere/Field/OptionsInField/changeLogs')
+          componentRender: () => import('@/components/ADempiere/Field/FieldOptions/changeLogs')
         })
         return menuOptions
     })
