@@ -321,6 +321,7 @@ export default {
         addNote: 'Add Note'
       }
     },
+    documentStatus: 'Document Status',
     callout: {
       error: 'Error In Callout'
     }

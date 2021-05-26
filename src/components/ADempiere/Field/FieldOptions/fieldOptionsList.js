@@ -84,6 +84,17 @@ export const logsOptionItem = {
   componentRender: () => import('@/components/ADempiere/Field/FieldOptions/changeLogs')
 }
 
+/**
+ * For document status field to workflow
+ */
+export const documentStatusOptionItem = {
+  name: language.t('window.documentStatus'),
+  enabled: true,
+  svg: false,
+  icon: 'el-icon-set-up',
+  componentRender: () => import('@/components/ADempiere/Field/FieldOptions/documentStatus')
+}
+
 export const optionsListStandad = [
   infoOptionItem,
   preferenceOptionItem,

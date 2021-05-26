@@ -31,6 +31,7 @@
       <div style="display: flex;width: auto;">
         <span :style="metadata.required && isEmptyValue(valueField) ? 'border: aqua; color: #f34b4b' : 'border: aqua;'">
           <span key="is-field-name">
+            <!-- label or name of field in mobile -->
             {{ metadata.name }}
           </span>
         </span>
@@ -90,6 +91,7 @@
           <div style="display: block;">
             <span :style="metadata.required && isEmptyValue(valueField) ? 'border: aqua; color: #f34b4b' : 'border: aqua;'">
               <span key="is-field-name">
+                <!-- label or name of field in desktop -->
                 {{ metadata.name }}
               </span>
             </span>
@@ -143,6 +145,7 @@
     </el-menu>
 
     <span v-else key="options-form">
+      <!-- label or name of field in form -->
       {{ metadata.name }}
     </span>
   </div>
@@ -152,7 +155,8 @@
 import { defineComponent, computed, ref, watch } from '@vue/composition-api'
 import {
   optionsListStandad, optionsListAdvancedQuery,
-  zoomInOptionItem, translateOptionItem, calculatorOptionItem
+  documentStatusOptionItem, translateOptionItem,
+  zoomInOptionItem, calculatorOptionItem
 } from '@/components/ADempiere/Field/FieldOptions/fieldOptionsList.js'
 import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
 
@@ -218,19 +222,6 @@ export default defineComponent({
       return root.$store.getters.permission_routes
     })
 
-    const processOrderUuid = computed(() => {
-      return root.$store.getters.getOrders
-    })
-
-    const isDocuemntStatus = computed(() => {
-      if (props.metadata.isPanelWindow && !props.metadata.isAdvancedQuery) {
-        if (props.metadata.columnName === 'DocStatus' && !root.isEmptyValue(processOrderUuid.value)) {
-          return true
-        }
-      }
-      return false
-    })
-
     const redirect = ({ window }) => {
       const viewSearch = recursiveTreeSearch({
         treeData: permissionRoutes.value,
@@ -293,6 +284,23 @@ export default defineComponent({
         !root.isEmptyValue(field.reference.zoomWindows))
     })
 
+    const isDocuemntStatus = computed(() => {
+      if (props.metadata.isPanelWindow && !props.metadata.isAdvancedQuery) {
+        const { parentUuid, containerUuid, columnName } = props.metadata
+        if (columnName === 'DocStatus') {
+          const statusValue = root.$store.getters.getValueOfField({
+            parentUuid,
+            containerUuid,
+            columnName
+          })
+          // if (!root.isEmptyValue(root.$store.getters.getOrders)) {
+          if (!root.isEmptyValue(statusValue)) {
+            return true
+          }
+        }
+      }
+      return false
+    })
     const optionsList = computed(() => {
       const menuOptions = []
       if (props.metadata.isNumericField) {
@@ -303,11 +311,16 @@ export default defineComponent({
         return menuOptions.concat(optionsListAdvancedQuery)
       }
 
-      if (isContextInfo) {
+      if (isContextInfo.value) {
         menuOptions.push(zoomInOptionItem)
       }
-      if (props.metadata.isTranslatedField) {
-        menuOptions.push(translateOptionItem)
+      if (props.metadata.isPanelWindow) {
+        if (props.metadata.isTranslatedField) {
+          menuOptions.push(translateOptionItem)
+        }
+        if (isDocuemntStatus.value) {
+          menuOptions.push(documentStatusOptionItem)
+        }
       }
 
       return menuOptions.concat(optionsListStandad)
