@@ -17,7 +17,7 @@
 import evaluator from '@/utils/ADempiere/evaluator'
 import { isEmptyValue, parsedValueComponent } from '@/utils/ADempiere/valueUtils'
 import { getContext, getParentFields, getPreference, parseContext } from '@/utils/ADempiere/contextUtils'
-import REFERENCES, { DEFAULT_SIZE, FIELDS_HIDDEN } from '@/utils/ADempiere/references'
+import REFERENCES, { ID, DEFAULT_SIZE, FIELDS_HIDDEN } from '@/utils/ADempiere/references'
 import { FIELD_OPERATORS_LIST } from '@/utils/ADempiere/dataUtils'
 import language from '@/lang'
 
@@ -60,6 +60,17 @@ export function generateField({
     isTranslatedField = false
     parsedDefaultValue = undefined
     parsedDefaultValueTo = undefined
+
+    // mandatory, read only and displayed is changed to FilterFields component
+    evaluatedLogics = {
+      isDisplayedFromLogic: true,
+      isMandatoryFromLogic: false,
+      isReadOnlyFromLogic: false
+    }
+    fieldToGenerate.isDisplayed = true
+    fieldToGenerate.isReadOnly = false
+    // Is mandatory to showed available filter fields
+    fieldToGenerate.isMandatory = false
 
     // set field operators list
     isComparisonField = !['FieldBinary', 'FieldButton', 'FieldImage'].includes(componentReference.componentPath)
@@ -460,7 +471,7 @@ export function evalutateTypeField(displayTypeId, isAllInfo = true) {
   if (isAllInfo) {
     return component
   }
-  return component.type
+  return component.componentPath
 }
 
 /**
