@@ -96,7 +96,7 @@
           </div>
         </template>
         <el-menu-item
-          v-for="(option, key) in listOption"
+          v-for="(option, key) in optionsList"
           :key="key"
           :index="option.name"
         >
@@ -212,10 +212,6 @@ export default defineComponent({
         return '50'
       }
       return '110'
-    })
-
-    const contextMenuField = computed(() => {
-      return root.$store.getters.getFieldContextMenu
     })
 
     const permissionRoutes = computed(() => {
@@ -342,10 +338,6 @@ export default defineComponent({
       }
     })
 
-    const listOption = computed(() => {
-      return optionsList.value.filter(option => option.enabled)
-    })
-
     const closePopover = () => {
       root.$router.push({
         name: root.$route.name,
@@ -384,11 +376,12 @@ export default defineComponent({
         }, () => {})
       }
       root.$store.commit('changeShowPopoverField', true)
-      const option = listOption.value.find(option => {
+      const option = optionsList.value.find(option => {
         return option.name === key
       })
       root.$store.dispatch('setOptionField', {
         ...option,
+        valueField: valueField.value,
         fieldAttributes: props.metadata
       })
       triggerMenu.value = 'hover'
@@ -408,7 +401,6 @@ export default defineComponent({
     return {
       isMobile,
       labelStyle,
-      contextMenuField,
       fieldAttributes,
       optionsList,
       closePopover,
@@ -420,7 +412,6 @@ export default defineComponent({
       isDocuemntStatus,
       visibleForDesktop,
       valueField,
-      listOption,
       triggerMenu,
       showPanelFieldOption
     }

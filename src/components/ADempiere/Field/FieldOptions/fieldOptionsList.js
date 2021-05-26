@@ -63,7 +63,6 @@ export const translateOptionItem = {
 export const calculatorOptionItem = {
   name: language.t('field.calculator'),
   enabled: true,
-  // valueField: valueField.value,
   svg: false,
   icon: 'el-icon-s-operation',
   componentRender: () => import('@/components/ADempiere/Field/FieldOptions/calculator')
@@ -72,8 +71,7 @@ export const calculatorOptionItem = {
 export const preferenceOptionItem = {
   name: language.t('field.preference'),
   enabled: true,
-  // valueField: valueField.value,
-  svg: true,
+  svg: false,
   icon: 'el-icon-notebook-2',
   componentRender: () => import('@/components/ADempiere/Field/FieldOptions/preference')
 }
@@ -81,7 +79,6 @@ export const preferenceOptionItem = {
 export const logsOptionItem = {
   name: language.t('field.logsField'),
   enabled: true,
-  // valueField: valueField.value,
   svg: true,
   icon: 'tree-table',
   componentRender: () => import('@/components/ADempiere/Field/FieldOptions/changeLogs')
