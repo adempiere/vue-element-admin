@@ -54,7 +54,7 @@
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
 import FieldDefinition from '@/components/ADempiere/Field'
-import FilterFields from '@/components/ADempiere/Panel/filterFields'
+import FilterFields from '@/components/ADempiere/FilterFields'
 
 export default defineComponent({
   name: 'PanelStandard',
