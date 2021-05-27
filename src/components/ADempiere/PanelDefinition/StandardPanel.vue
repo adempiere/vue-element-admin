@@ -57,7 +57,7 @@ import FieldDefinition from '@/components/ADempiere/Field'
 import FilterFields from '@/components/ADempiere/FilterFields'
 
 export default defineComponent({
-  name: 'PanelStandard',
+  name: 'StandardPanel',
 
   components: {
     FieldDefinition,

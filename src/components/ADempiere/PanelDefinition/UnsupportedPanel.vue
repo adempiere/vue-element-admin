@@ -26,6 +26,8 @@
 import { defineComponent } from '@vue/composition-api'
 
 export default defineComponent({
+  name: 'UnsupportedPanel',
+
   props: {
     containerUuid: {
       required: true,

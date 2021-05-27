@@ -48,10 +48,10 @@ export default defineComponent({
 
     const componentRender = computed(() => {
       if (['browser', 'process'].includes(props.panelType)) {
-        return () => import('@/components/ADempiere/PanelDefinition/PanelStandard')
+        return () => import('@/components/ADempiere/PanelDefinition/StandardPanel')
       }
 
-      const panel = () => import('@/components/ADempiere/PanelDefinition/PanelUnsupported')
+      const panel = () => import('@/components/ADempiere/PanelDefinition/UnsupportedPanel')
       /*
       switch (this.panelMetadata.panelType) {
         case 'PanelMaster':
