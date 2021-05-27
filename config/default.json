@@ -23,7 +23,7 @@
   },
   "betaFunctionality": {
     "window": false,
-    "process": false,
+    "process": true,
     "report": false,
     "smartBrowser": false,
     "form": false
