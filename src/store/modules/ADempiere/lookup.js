@@ -1,6 +1,22 @@
+// ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
+// Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
+// Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import { requestLookup, requestLookupList } from '@/api/ADempiere/window.js'
 import { getToken as getSession } from '@/utils/auth'
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue, convertBooleanToString, typeValue } from '@/utils/ADempiere/valueUtils'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 const initStateLookup = {
@@ -54,9 +70,27 @@ const lookup = {
           isBooleanToString: true
         }).value
       }
+
+      // TODO: Remove this code, it should be fixed in  Proxy API and gRPC-API
       if (parsedDirectQuery.includes('?')) {
-        parsedDirectQuery = directQuery.replace('?', value)
+        let parsedValue = value
+        const type = typeValue(value)
+        // to date convert to timestamp or long value
+        if (type === 'DATE') {
+          parsedValue = value.getTime()
+        }
+        // to boolean convert to Y and N string value
+        if (type === 'BOOLEAN') {
+          parsedValue = convertBooleanToString(value)
+        }
+        // set doble quotes if is string value in query
+        if (typeValue(parsedValue) === 'STRING') {
+          parsedValue = `"${parsedValue}"`
+        }
+
+        parsedDirectQuery = parsedDirectQuery.replace('?', parsedValue)
       }
+
       return requestLookup({
         tableName,
         directQuery: parsedDirectQuery,

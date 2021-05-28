@@ -31,11 +31,9 @@ export function requestLookup({
   directQuery,
   value
 }) {
-  let filters = []
+  const valuesList = []
   if (!isEmptyValue(value)) {
-    filters = [{
-      value
-    }]
+    valuesList.push(value)
   }
   return request({
     url: '/user-interface/window/lookup-item',
@@ -43,7 +41,7 @@ export function requestLookup({
     params: {
       table_name: tableName,
       query: directQuery,
-      filters
+      values_list: valuesList
     }
   })
     .then(respose => {
