@@ -26,9 +26,7 @@
         {{ $t('components.preference.title') }}
         <b>
           {{ fieldAttributes.name }}
-          {{
-            fieldValue
-          }}
+          {{ fieldValue }}
         </b>
       </span>
     </div>
