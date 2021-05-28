@@ -16,7 +16,8 @@
 
 import { requestLookup, requestLookupList } from '@/api/ADempiere/window.js'
 import { getToken as getSession } from '@/utils/auth'
-import { isEmptyValue, convertBooleanToString, typeValue } from '@/utils/ADempiere/valueUtils'
+import { isEmptyValue, typeValue } from '@/utils/ADempiere/valueUtils.js'
+import { convertBooleanToString } from '@/utils/ADempiere/valueFormat.js'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 const initStateLookup = {
