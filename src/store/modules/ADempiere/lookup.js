@@ -86,7 +86,7 @@ const lookup = {
         }
         // set doble quotes if is string value in query
         if (typeValue(parsedValue) === 'STRING') {
-          parsedValue = `"${parsedValue}"`
+          parsedValue = `'${parsedValue}'`
         }
 
         parsedDirectQuery = parsedDirectQuery.replace('?', parsedValue)
