@@ -31,17 +31,13 @@ export function requestLookup({
   directQuery,
   value
 }) {
-  const valuesList = []
-  if (!isEmptyValue(value)) {
-    valuesList.push(value)
-  }
   return request({
     url: '/user-interface/window/lookup-item',
     method: 'get',
     params: {
       table_name: tableName,
       query: directQuery,
-      values_list: valuesList
+      value
     }
   })
     .then(respose => {
