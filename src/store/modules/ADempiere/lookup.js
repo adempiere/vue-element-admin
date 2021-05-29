@@ -72,26 +72,6 @@ const lookup = {
         }).value
       }
 
-      // TODO: Remove this code, it should be fixed in  Proxy API and gRPC-API
-      if (parsedDirectQuery.includes('?')) {
-        let parsedValue = value
-        const type = typeValue(value)
-        // to date convert to timestamp or long value
-        if (type === 'DATE') {
-          parsedValue = value.getTime()
-        }
-        // to boolean convert to Y and N string value
-        if (type === 'BOOLEAN') {
-          parsedValue = convertBooleanToString(value)
-        }
-        // set doble quotes if is string value in query
-        if (typeValue(parsedValue) === 'STRING') {
-          parsedValue = `'${parsedValue}'`
-        }
-
-        parsedDirectQuery = parsedDirectQuery.replace('?', parsedValue)
-      }
-
       return requestLookup({
         tableName,
         directQuery: parsedDirectQuery,

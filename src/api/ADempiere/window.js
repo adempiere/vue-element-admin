@@ -16,7 +16,6 @@
 
 // Get Instance for connection
 import { request } from '@/utils/ADempiere/request'
-
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 
 /**
@@ -31,13 +30,17 @@ export function requestLookup({
   directQuery,
   value
 }) {
+  const filters = [{
+    value
+  }]
+
   return request({
     url: '/user-interface/window/lookup-item',
     method: 'get',
     params: {
       table_name: tableName,
       query: directQuery,
-      value
+      filters
     }
   })
     .then(respose => {
