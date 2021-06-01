@@ -50,6 +50,12 @@ export default {
           isNumeric: true,
           size: '110px'
         },
+        convertamount: {
+          columnName: 'GrandTotal',
+          label: this.$t('form.pos.collect.convertAmount'),
+          isNumeric: true,
+          size: '150px'
+        },
         grandTotal: {
           columnName: 'GrandTotal',
           label: 'Total',

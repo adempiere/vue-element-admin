@@ -444,7 +444,7 @@ export default {
         pending: 'Pendiente',
         payment: 'Pago',
         change: 'Cambio',
-        convertAmount: 'Convertir Cantidad',
+        convertAmount: 'Convertir Monto',
         fullPayment: 'Cobro Completo',
         TenderType: {
           directDeposit: 'Depósito Directo',

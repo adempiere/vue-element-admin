@@ -67,7 +67,7 @@
                   @click="checkclosePin(pin, field.columnName)"
                 />
               </span>
-              <el-button slojt="reference" type="text" disabled />
+              <el-button slot="reference" type="text" disabled />
             </el-popover>
             <field
               v-if="field.columnName === 'Discount'"
