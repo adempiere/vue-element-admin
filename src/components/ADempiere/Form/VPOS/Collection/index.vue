@@ -108,6 +108,7 @@
             :currency="pointOfSalesCurrency"
             :list-types-payment="fieldsList[2]"
             :is-loaded="isLoadedPayments"
+            :list-payment-type="fieldsPaymentType"
           />
           <div
             v-else
@@ -480,6 +481,9 @@ export default {
           return currency
         }
       })
+    },
+    fieldsPaymentType() {
+      return this.fieldsList[2]
     }
   },
   watch: {
@@ -532,6 +536,18 @@ export default {
           containerUuid: this.containerUuid,
           columnName: 'PayAmt',
           value: this.pending
+        })
+      }
+    },
+    fieldsPaymentType(value) {
+      const displayPaymentType = this.$store.getters.getValueOfField({
+        containerUuid: 'Collection',
+        columnName: 'DisplayColumn_PaymentType'
+      })
+      if (!this.isEmptyValue(value.reference) && this.isEmptyValue(displayPaymentType)) {
+        this.$store.dispatch('getLookupListFromServer', {
+          tableName: value.reference.tableName,
+          query: value.reference.query
         })
       }
     }
