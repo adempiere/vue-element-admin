@@ -479,7 +479,7 @@ export default {
       price: 'Precio',
       taxAmount: 'Monto de Impuesto',
       grandTotal: 'Total General',
-      grandTotalConverted: 'Gran Total Convertido',
+      grandTotalConverted: 'Grand Total Convertido',
       quantityAvailable: 'Cantidad Disponible',
       upc: 'Código de Barras'
     }
