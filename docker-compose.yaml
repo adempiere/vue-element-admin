@@ -62,6 +62,9 @@ services:
       - VS_ENV=dev
       - INDEX=vue_storefront_catalog
       - RESTORE_DB=N
+      - REDIS_HOST=adempiere-redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
     ports:
       - 8085:8085
 
@@ -70,7 +73,7 @@ services:
     container_name: adempiere-frontend
     stdin_open: true
     tty: true
-    environment: 
+    environment:
       - API_URL=http://adempiere-proxy:8085
     ports:
       - 9526:80
