@@ -20,6 +20,7 @@ import { getContext, getParentFields, getPreference, parseContext } from '@/util
 import REFERENCES, { DEFAULT_SIZE, FIELDS_HIDDEN } from '@/utils/ADempiere/references'
 import { FIELD_OPERATORS_LIST } from '@/utils/ADempiere/dataUtils'
 import language from '@/lang'
+import { config } from '@/utils/ADempiere/config'
 
 /**
  * Generate field to app
@@ -614,11 +615,17 @@ export function convertAction(action) {
       actionAttributes.name = 'process'
       actionAttributes.icon = 'component'
       actionAttributes.component = () => import('@/views/ADempiere/Process')
+      if (config.betaFunctionality.process) {
+        actionAttributes.component = () => import('@/views/ADempiere/ProcessView')
+      }
       break
     case 'R':
       actionAttributes.name = 'report'
       actionAttributes.icon = 'skill'
       actionAttributes.component = () => import('@/views/ADempiere/Process')
+      if (config.betaFunctionality.process) {
+        actionAttributes.component = () => import('@/views/ADempiere/ProcessView')
+      }
       break
     case 'S':
       actionAttributes.name = 'browser'
