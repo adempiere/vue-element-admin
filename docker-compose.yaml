@@ -71,6 +71,9 @@ services:
   vue-app:
     image: erpya/adempiere-vue
     container_name: adempiere-frontend
+    depends_on:
+      - api-rest
+      - grpc-backend
     stdin_open: true
     tty: true
     environment:
@@ -81,6 +84,9 @@ services:
   e-commerce:
     image: erpya/adempiere-ecommerce
     container_name: adempiere-ecommerce
+    depends_on:
+      - api-rest
+      - grpc-backend
     stdin_open: true
     tty: true
     environment:
