@@ -186,7 +186,7 @@ export default {
         //   // cleans all values except column name 'ProductValue'
         //   this.search = mutation.payload.value
         //   if (!this.isEmptyValue(this.search) && this.search.length >= 4) {
-        //     fetchProductPrice({
+        //     getProductPrice({
         //       searchValue: mutation.payload.value
         //     })
         //       .then(productPrice => {

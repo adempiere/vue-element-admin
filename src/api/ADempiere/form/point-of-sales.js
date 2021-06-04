@@ -20,10 +20,10 @@ import { config } from '@/utils/ADempiere/config'
 import { isEmptyValue } from '@/utils/ADempiere'
 
 /**
- * method in api/price-checking.js as fetchProductPrice
+ * method in api/price-checking.js as getProductPrice
  * @author elsiosanchez <elsiosanches@gmail.com>
  */
-export { fetchProductPrice as findProduct } from '@/api/ADempiere/form/price-checking.js'
+export { getProductPrice as findProduct } from '@/api/ADempiere/form/price-checking.js'
 export { requestGetConversionRate } from '@/api/ADempiere/system-core.js'
 
 // List Point of sales

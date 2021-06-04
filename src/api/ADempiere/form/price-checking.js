@@ -20,7 +20,7 @@ import { request } from '@/utils/ADempiere/request'
 import { config } from '@/utils/ADempiere/config'
 
 // List Point of sales
-export function fetchProductPrice({
+export function getProductPrice({
   searchValue,
   upc,
   value,
