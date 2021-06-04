@@ -640,6 +640,9 @@ export function convertAction(action) {
       actionAttributes.name = 'window'
       actionAttributes.icon = 'tab'
       actionAttributes.component = () => import('@/views/ADempiere/Window')
+      if (config.betaFunctionality.window) {
+        actionAttributes.component = () => import('@/views/ADempiere/WindowView')
+      }
       break
     case 'X':
       actionAttributes.name = 'form'
