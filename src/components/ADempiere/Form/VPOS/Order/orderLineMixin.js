@@ -20,7 +20,6 @@ import {
   requestDeleteOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
 import { formatPercent } from '@/utils/ADempiere/valueFormat.js'
-import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 import { showMessage } from '@/utils/ADempiere/notification.js'
 
 export default {
@@ -221,7 +220,7 @@ export default {
         currencyToUuid: value.uuid
       })
         .then(response => {
-          if (!isEmptyValue(response.currencyTo)) {
+          if (!this.isEmptyValue(response.currencyTo)) {
             const currency = {
               ...response.currencyTo,
               amountConvertion: response.divideRate,
