@@ -86,9 +86,7 @@ export default {
   created() {
     const currentCurrency = this.$store.getters.posAttributes.listPointOfSales.find(pos =>
       pos.priceList.currency.uuid !== this.$store.getters.posAttributes.currentPointOfSales.priceList.currency.uuid)
-    // return console.log(currentCurrency.priceList.currency.uuid)
     this.totalAmountConverted(currentCurrency.priceList.currency)
-    // console.log(currentCurrency.priceList.currency.iSOCode)
   },
   methods: {
     formatPercent,
@@ -216,7 +214,6 @@ export default {
       return [year, month, day].join('-')
     },
     totalAmountConverted(value) {
-      // return console.log(value.uuid)
       this.$store.dispatch('conversionDivideRate', {
         conversionTypeUuid: this.currentPointOfSales.conversionTypeUuid,
         currencyFromUuid: this.pointOfSalesCurrency.uuid,
