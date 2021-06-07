@@ -158,7 +158,6 @@ export default {
       return this.$store.state['pointOfSales/orderLine/index'].validatePin
     }
   },
-
   watch: {
     showField(value) {
       this.visible = false
