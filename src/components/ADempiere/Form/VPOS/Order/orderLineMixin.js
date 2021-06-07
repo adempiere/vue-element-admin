@@ -86,7 +86,9 @@ export default {
   created() {
     const currentCurrency = this.$store.getters.posAttributes.listPointOfSales.find(pos =>
       pos.priceList.currency.uuid !== this.$store.getters.posAttributes.currentPointOfSales.priceList.currency.uuid)
-    this.totalAmountConverted(currentCurrency.priceList.currency.uuid)
+    // return console.log(currentCurrency.priceList.currency.uuid)
+    this.totalAmountConverted(currentCurrency.priceList.currency)
+    // console.log(currentCurrency.priceList.currency.iSOCode)
   },
   methods: {
     formatPercent,
@@ -214,11 +216,12 @@ export default {
       return [year, month, day].join('-')
     },
     totalAmountConverted(value) {
+      // return console.log(value.uuid)
       this.$store.dispatch('conversionDivideRate', {
         conversionTypeUuid: this.currentPointOfSales.conversionTypeUuid,
         currencyFromUuid: this.pointOfSalesCurrency.uuid,
         conversionDate: this.formatDate2(new Date()),
-        currencyToUuid: value
+        currencyToUuid: value.uuid
       })
         .then(response => {
           if (!isEmptyValue(response.currencyTo)) {
@@ -228,6 +231,9 @@ export default {
               multiplyRate: response.multiplyRate
             }
             this.totalAmountConvertedLine = currency
+          } else {
+            this.totalAmountConvertedLine.multiplyRate = '1'
+            this.totalAmountConvertedLine.iSOCode = value.iSOCode
           }
         })
         .catch(error => {
@@ -238,6 +244,12 @@ export default {
             showClose: true
           })
         })
+    },
+    getTotalAmount(basePrice, multiplyRate) {
+      if (this.isEmptyValue(basePrice) || this.isEmptyValue(multiplyRate)) {
+        return 0
+      }
+      return (basePrice * multiplyRate)
     },
     /**
      * Show the correct display format
@@ -259,8 +271,7 @@ export default {
       } else if (columnName === 'GrandTotal') {
         return this.formatPrice(row.grandTotal, currency)
       } else if (columnName === 'ConvertedAmount') {
-        var suma = row.grandTotal * this.totalAmountConvertedLine.multiplyRate
-        return this.formatPrice(suma, this.totalAmountConvertedLine.iSOCode)
+        return this.formatPrice(this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate), this.totalAmountConvertedLine.iSOCode)
       }
     },
     productPrice(price, discount) {
