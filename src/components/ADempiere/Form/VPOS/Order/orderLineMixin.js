@@ -85,7 +85,7 @@ export default {
   created() {
     const currentCurrency = this.$store.getters.posAttributes.listPointOfSales.find(pos =>
       pos.priceList.currency.uuid !== this.$store.getters.posAttributes.currentPointOfSales.priceList.currency.uuid)
-    this.totalAmountConverted(currentCurrency.priceList.currency)
+    this.convertedAmountAsTotal(currentCurrency.priceList.currency)
   },
   methods: {
     formatPercent,
@@ -200,23 +200,10 @@ export default {
           })
         })
     },
-    formatDate2(date) {
-      let month = '' + (date.getMonth() + 1)
-      let day = '' + date.getDate()
-      const year = date.getFullYear()
-      if (month.length < 2) {
-        month = '0' + month
-      }
-      if (day.length < 2) {
-        day = '0' + day
-      }
-      return [year, month, day].join('-')
-    },
-    totalAmountConverted(value) {
+    convertedAmountAsTotal(value) {
       this.$store.dispatch('conversionDivideRate', {
         conversionTypeUuid: this.currentPointOfSales.conversionTypeUuid,
         currencyFromUuid: this.pointOfSalesCurrency.uuid,
-        conversionDate: this.formatDate2(new Date()),
         currencyToUuid: value.uuid
       })
         .then(response => {
