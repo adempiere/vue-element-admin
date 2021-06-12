@@ -18,20 +18,45 @@
 
 <template>
   <div v-if="isLoaded" key="window-loaded">
-    <context-menu
-      :menu-parent-uuid="$route.meta.parentUuid"
-      :parent-uuid="windowUuid"
-      :container-uuid="windowMetadata.currentTabUuid"
-      :table-name="windowMetadata.currentTab.tableName"
-      :panel-type="panelType"
-      :is-insert-record="windowMetadata.currentTab.isInsertRecord"
-    />
+    <el-container style="height: 86vh;">
+      <el-aside width="100%">
 
-    <component
-      :is="renderWindowComponent"
-      :window-metadata="windowMetadata"
-      :window-uuid="windowUuid"
-    />
+        <context-menu
+          :menu-parent-uuid="$route.meta.parentUuid"
+          :parent-uuid="windowUuid"
+          :container-uuid="windowMetadata.currentTabUuid"
+          :table-name="windowMetadata.currentTab.tableName"
+          :panel-type="panelType"
+          :is-insert-record="windowMetadata.currentTab.isInsertRecord"
+        />
+
+        <split-pane :default-percent="splitPosition" split="vertical">
+          <template slot="paneL">
+            <div class="left-container">
+              <el-aside width="100%">
+                <div style="height: 100%;">
+
+                  <record-navigation
+                    :parent-uuid="windowUuid"
+                    :container-uuid="windowMetadata.currentTabUuid"
+                  />
+
+                </div>
+              </el-aside>
+            </div>
+          </template>
+
+          <template slot="paneR">
+            <component
+              :is="renderWindowComponent"
+              :window-metadata="windowMetadata"
+              :window-uuid="windowUuid"
+            />
+          </template>
+        </split-pane>
+
+      </el-aside>
+    </el-container>
   </div>
   <div
     v-else
@@ -47,12 +72,16 @@
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
 import ContextMenu from '@/components/ADempiere/ContextMenu'
+import RecordNavigation from '@/components/ADempiere/RecordNavigation'
+import SplitPane from 'vue-splitpane'
 
 export default defineComponent({
   name: 'WindowView',
 
   components: {
-    ContextMenu
+    ContextMenu,
+    SplitPane,
+    RecordNavigation
   },
 
   setup(props, { root }) {
@@ -60,6 +89,7 @@ export default defineComponent({
     const windowUuid = root.$route.meta.uuid
     const isLoaded = ref(false)
     const windowMetadata = ref({})
+    const splitPosition = ref(50)
 
     const generateWindow = (window) => {
       windowMetadata.value = window
@@ -110,9 +140,11 @@ export default defineComponent({
     getWindow()
 
     return {
+      splitPosition,
       panelType,
       windowUuid,
       windowMetadata,
+      // computed
       getterWindow,
       renderWindowComponent,
       isLoaded

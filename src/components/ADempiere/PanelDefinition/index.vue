@@ -20,6 +20,7 @@
   <component
     :is="componentRender"
     :container-uuid="containerUuid"
+    :panel-type="panelType"
     :panel-metadata="panelMetadata"
   />
 </template>
@@ -31,6 +32,10 @@ export default defineComponent({
   name: 'PanelDefinition',
 
   props: {
+    parentUuid: {
+      type: String,
+      default: undefined
+    },
     containerUuid: {
       type: String,
       required: true
@@ -38,6 +43,10 @@ export default defineComponent({
     panelType: {
       type: String,
       required: true
+    },
+    isAdvancedQuery: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -47,37 +56,45 @@ export default defineComponent({
     })
 
     const componentRender = computed(() => {
-      if (['browser', 'process'].includes(props.panelType)) {
+      if (['browser', 'process', 'table', 'window'].includes(props.panelType)) {
         return () => import('@/components/ADempiere/PanelDefinition/StandardPanel')
       }
 
       const panel = () => import('@/components/ADempiere/PanelDefinition/UnsupportedPanel')
-      /*
-      switch (this.panelMetadata.panelType) {
-        case 'PanelMaster':
-          panel = () => import('@/components/ADempiere/PanelDefinition/FieldBinary')
-          break
-        case 'PanelDocument':
-          panel = () => import('@/components/ADempiere/PanelDefinition/FieldButton')
-          break
-        case 'PanelSequence':
-          panel = () => import('@/components/ADempiere/PanelDefinition/FieldColor')
-          break
-        // search
-        case 'PanelAdvanced':
-          panel = () => import('@/components/ADempiere/PanelDefinition/PanelAdvanced')
-          break
-        // Tree As Menu
-        case 'PanelTree':
-          panel = () => import('@/components/ADempiere/PanelDefinition/PanelTree')
-          break
-      }
-      */
 
       return panel
     })
 
+    /**
+     * Get the tab object with all its attributes as well as
+     * the fields it contains
+     */
+    const getPanel = () => {
+      let panel = panelMetadata.value
+      if (root.isEmptyValue(panel) || !panel.fieldsList) {
+        if (props.containerUuid.includes('table_')) {
+          const containerUuid = props.containerUuid.replace('table_', '')
+          panel = root.$store.getters.getPanel(containerUuid)
+        }
+
+        root.$store.dispatch('getPanelAndFields', {
+          parentUuid: props.parentUuid,
+          containerUuid: props.containerUuid,
+          panelType: props.panelType,
+          panelMetadata: panel,
+          isAdvancedQuery: props.isAdvancedQuery
+        }).then(panelResponse => {
+          //
+        }).catch(error => {
+          console.warn(`Field Load Error: ${error.message}. Code: ${error.code}.`)
+        })
+      }
+    }
+
+    getPanel()
+
     return {
+      // computeds
       componentRender,
       panelMetadata
     }
