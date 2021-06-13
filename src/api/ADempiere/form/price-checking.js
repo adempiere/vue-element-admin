@@ -17,29 +17,28 @@
 // Get Instance for connectionimport {
 import { isEmptyValue } from '@/utils/ADempiere'
 import { request } from '@/utils/ADempiere/request'
+import { config } from '@/utils/ADempiere/config'
 
 // List Point of sales
-export function requestGetProductPrice({
+export function getProductPrice({
   searchValue,
   upc,
   value,
   name,
-  priceListUuid,
+  posUuid,
   businessPartnerUuid,
-  warehouseUuid,
   validFrom
 }) {
   return request({
-    url: '/form/addons/point-of-sales/product-price',
+    url: `${config.priceChecking.endpoint}/product-price`,
     method: 'get',
     params: {
       search_value: searchValue,
       upc,
       value,
       name,
-      price_list_uuid: priceListUuid,
+      pos_uuid: posUuid,
       business_partner_uuid: businessPartnerUuid,
-      warehouse_uuid: warehouseUuid,
       valid_from: validFrom
     }
   })

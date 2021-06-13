@@ -410,6 +410,7 @@ export default {
   form: {
     pos: {
       title: 'POS',
+      priceList: 'Price List',
       optionsPoinSales: {
         title: 'Quick Point of Sales Options',
         salesOrder: {
@@ -434,7 +435,9 @@ export default {
         generalOptions: {
           title: 'General Options',
           changePos: 'Change Point of Sale',
-          listProducts: 'Change Point of Sale'
+          listProducts: 'Change Point of Sale',
+          changeWarehouseList: 'Change Warehouse',
+          changePriceList: 'Change Price List'
         }
       },
       tableProduct: {
@@ -471,6 +474,7 @@ export default {
         payment: 'Payment',
         change: 'Change',
         convertAmount: 'Convert Quantity',
+        convertedAmount: 'Converted Amount',
         fullPayment: 'Full Payment',
         dayRate: 'Day Rate',
         TenderType: {
@@ -509,6 +513,48 @@ export default {
       grandTotalConverted: 'Grand Total Converted',
       quantityAvailable: 'Quantity Avalible',
       upc: 'UPC / EAN'
+    },
+    guideSteps: {
+      productValue: {
+        description: 'Search for the product by Product Code, Name or UPC'
+      },
+      businessPartner: {
+        description: 'Show Business Partner Information'
+      },
+      linesTable: {
+        title: 'Order Lines',
+        description: 'Order Product Listing'
+      },
+      buttonPanelLeftPos: {
+        title: 'Show Left Panel',
+        description: 'Display the Point of Sale Options panel'
+      },
+      point: {
+        description: 'Current point of sale information'
+      },
+      buttonPanelRightPos: {
+        title: 'Show Right Panel',
+        description: 'Displays the catalog panel'
+      },
+      fieldListCollection: {
+        title: 'Collection Fields',
+        description: 'Field Group which has. Amount, Currency, Payment Type, Bank, Reference No. and Date'
+      },
+      buttonCollection: {
+        title: 'Collection Tools',
+        description: 'Composed of a set of buttons that allows you to add, delete and process'
+      },
+      cardCollection: {
+        title: 'Payment Panel',
+        description: 'In this panel you can see a list with the cards of the added payments'
+      },
+      infoInvoce: {
+        title: 'Invoice Detail',
+        description: 'Invoice information with total amount, pending, change'
+      },
+      toolsPoint: {
+        title: 'Point of Sale Tools'
+      }
     }
   }
 }

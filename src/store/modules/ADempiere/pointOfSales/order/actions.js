@@ -15,11 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
-  requestCreateOrder,
-  requestGetOrder,
-  requestUpdateOrder,
-  requestCreateOrderLine,
-  requestListOrders
+  createOrder,
+  getOrder,
+  updateOrder,
+  createOrderLine,
+  listOrders
 } from '@/api/ADempiere/form/point-of-sales.js'
 import { isEmptyValue, extractPagingToken, convertValuesToSend } from '@/utils/ADempiere/valueUtils.js'
 import { showMessage } from '@/utils/ADempiere/notification.js'
@@ -34,15 +34,16 @@ export default {
    * @param {string} customerUuid Customer Uuid
    * @param {string} salesRepresentativeUuid Sales Representative Uuid
    */
-  createOrder({ commit, dispatch }, {
+  createOrder({ commit, dispatch, rootGetters }, {
     posUuid,
     customerUuid,
     salesRepresentativeUuid
   }) {
-    return requestCreateOrder({
+    return createOrder({
       posUuid,
       customerUuid,
-      salesRepresentativeUuid
+      salesRepresentativeUuid,
+      warehouseUuid: rootGetters.currentWarehouse.uuid
     })
       .then(order => {
         commit('setOrder', order)
@@ -66,15 +67,15 @@ export default {
    * @param {string} posUuid Order Uuid
    * @param {string} customerUuid Customer Uuid
    */
-  updateOrder({ commit, dispatch }, {
+  updateOrder({ commit, dispatch, rootGetters }, {
     orderUuid,
     posUuid,
     customerUuid
   }) {
-    requestUpdateOrder({
+    updateOrder({
       orderUuid,
       posUuid,
-      customerUuid
+      warehouseUuid: rootGetters.currentWarehouse.uuid
     })
       .then(response => {
         dispatch('reloadOrder', { orderUuid: response.uuid })
@@ -108,7 +109,7 @@ export default {
     price,
     discountRate
   }) {
-    requestCreateOrderLine({
+    createOrderLine({
       orderUuid,
       productUuid
     })
@@ -134,7 +135,7 @@ export default {
       orderUuid = rootGetters.posAttributes.currentPointOfSales.currentOrder.uuid // this.currentOrder.uuid
     }
     if (!isEmptyValue(orderUuid)) {
-      requestGetOrder(orderUuid)
+      getOrder(orderUuid)
         .then(orderResponse => {
           dispatch('fillOrde', {
             attribute: orderResponse,
@@ -207,7 +208,7 @@ export default {
     })
     values = convertValuesToSend(values)
     const { documentNo, businessPartnerUuid, grandTotal, openAmount, isPaid, isProcessed, isAisleSeller, isInvoiced, dateOrderedFrom, dateOrderedTo, salesRepresentativeUuid } = values
-    requestListOrders({
+    listOrders({
       posUuid,
       documentNo,
       businessPartnerUuid,
@@ -254,7 +255,7 @@ export default {
   },
   findOrderServer({ commit }, orderUuid) {
     if (typeof orderUuid === 'string' && !isEmptyValue(orderUuid)) {
-      requestGetOrder(orderUuid)
+      getOrder(orderUuid)
         .then(responseOrder => {
           commit('findOrder', responseOrder)
         })
