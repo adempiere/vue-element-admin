@@ -58,9 +58,9 @@ export default {
         pageToken = token + '-' + pageNumber
       }
     }
-    const { priceList, templateBusinessPartner } = rootGetters.posAttributes.currentPointOfSales
+    const currentPointOfSales = rootGetters.posAttributes.currentPointOfSales
+    const { templateBusinessPartner } = currentPointOfSales
     const { uuid: businessPartnerUuid } = templateBusinessPartner
-    const { uuid: priceListUuid } = priceList
     const { uuid: warehouseUuid } = rootGetters['user/getWarehouse']
     if (isEmptyValue(searchValue)) {
       searchValue = rootGetters.getValueOfField({
@@ -71,9 +71,8 @@ export default {
     return new Promise(resolve => {
       getProductPriceList({
         searchValue,
-        priceListUuid,
+        posUuid: currentPointOfSales.uuid,
         businessPartnerUuid,
-        warehouseUuid,
         pageToken
       }).then(responseProductPrice => {
         if (isEmptyValue(token) || isEmptyValue(pageToken)) {
@@ -92,7 +91,7 @@ export default {
 
         resolve(responseProductPrice)
       }).catch(error => {
-        console.warn(`getKeyLayoutFromServer: ${error.message}. Code: ${error.code}.`)
+        console.warn(`getProductPriceList: ${error.message}. Code: ${error.code}.`)
         showMessage({
           type: 'error',
           message: error.message,
@@ -130,9 +129,8 @@ export default {
       }
     }
 
-    const { priceList, templateBusinessPartner } = rootGetters.posAttributes.currentPointOfSales
+    const { templateBusinessPartner } = rootGetters.posAttributes.currentPointOfSales
     const { uuid: businessPartnerUuid } = templateBusinessPartner
-    const { uuid: priceListUuid } = priceList
     const { uuid: warehouseUuid } = rootGetters['user/getWarehouse']
 
     if (isEmptyValue(searchValue)) {
@@ -144,9 +142,8 @@ export default {
     return new Promise(resolve => {
       getProductPriceList({
         searchValue,
-        priceListUuid,
+        posUuid: rootGetters.currentPointOfSales.uuid,
         businessPartnerUuid,
-        warehouseUuid,
         pageToken
       }).then(responseProductPrice => {
         if (isEmptyValue(token) || isEmptyValue(pageToken)) {

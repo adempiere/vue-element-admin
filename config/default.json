@@ -27,5 +27,11 @@
     "report": true,
     "smartBrowser": false,
     "form": false
+  },
+  "pointOfSales": {
+    "endpoint": "/form/addons/point-of-sales"
+  },
+  "priceChecking": {
+    "endpoint": "/form/addons/point-of-sales"
   }
 }

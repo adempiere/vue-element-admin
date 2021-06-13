@@ -38,6 +38,7 @@
         >
           <field
             v-for="(field) in fieldsList"
+            id="ProductValue"
             ref="ProductValue"
             :key="field.columnName"
             :metadata-field="field"
@@ -103,10 +104,9 @@
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import fieldsList from './fieldsList.js'
-import { requestGetProductPrice } from '@/api/ADempiere/form/price-checking.js'
+import { getProductPrice } from '@/api/ADempiere/form/price-checking.js'
 import { formatPercent, formatPrice } from '@/utils/ADempiere/valueFormat.js'
-import { buildImageFromArrayBuffer } from '@/utils/ADempiere/resource.js'
-import { requestImage } from '@/api/ADempiere/common/resource.js'
+import { getImagePath } from '@/utils/ADempiere/resource.js'
 
 export default {
   name: 'PriceChecking',
@@ -122,7 +122,7 @@ export default {
       currentImageOfProduct: '',
       search: 'sad',
       resul: '',
-      load: '',
+      backgroundForm: '',
       unsubscribe: () => {}
     }
   },
@@ -133,62 +133,37 @@ export default {
     defaultImage() {
       return require('@/image/ADempiere/priceChecking/no-image.jpg')
     },
-    backgroundForm() {
-      if (this.isEmptyValue(this.organizationImagePath)) {
-        return this.defaultImage
-      }
-      if (this.isEmptyValue(this.currentImageOfProduct)) {
-        return this.organizationBackground
-      }
-      return this.currentImageOfProduct
-    },
     currentPoint() {
       return this.$store.getters.posAttributes.currentPointOfSales
     }
   },
   created() {
-    this.$store.dispatch('listPointOfSalesFromServer')
     this.unsubscribe = this.subscribeChanges()
   },
   mounted() {
-    this.getImage()
+    this.backgroundForm = this.defaultImage
+    this.getImageFromSource(this.organizationImagePath)
+    this.$store.dispatch('listPointOfSalesFromServer')
   },
   beforeDestroy() {
     this.unsubscribe()
   },
   methods: {
-    async getImage(imageName = '') {
-      let isSetOrg = false
-      if (this.isEmptyValue(imageName)) {
-        if (!this.isEmptyValue(this.organizationBackground)) {
-          return this.organizationBackground
-        }
-        isSetOrg = true
-        imageName = this.organizationImagePath
-      }
-      // the name of the image plus the height and width of the container is sent
-      const imageBuffer = await requestImage({
-        file: imageName,
-        width: 750,
-        height: 380
-      }).then(responseImage => {
-        const arrayBufferAsImage = buildImageFromArrayBuffer({
-          arrayBuffer: responseImage
-        })
-        if (isSetOrg) {
-          this.organizationBackground = arrayBufferAsImage
-          return arrayBufferAsImage
-        }
-
-        this.currentImageOfProduct = arrayBufferAsImage
-        return arrayBufferAsImage
-      })
-      return imageBuffer
-    },
     focusProductValue() {
       if (!this.isEmptyValue(this.$refs.ProductValue[0])) {
         this.$refs.ProductValue[0].$children[0].$children[0].$children[1].$children[0].focus()
       }
+    },
+    getImageFromSource(fileName) {
+      if (this.isEmptyValue(fileName)) {
+        return this.defaultImage
+      }
+      const image = getImagePath({
+        file: fileName,
+        width: 250,
+        height: 280
+      })
+      this.backgroundForm = image.uri
     },
     formatPercent,
     formatPrice,
@@ -201,7 +176,7 @@ export default {
           // cleans all values except column name 'ProductValue'
           this.search = mutation.payload.value
           if (!this.isEmptyValue(this.search) && this.search.length >= 4) {
-            requestGetProductPrice({
+            getProductPrice({
               searchValue: mutation.payload.value,
               priceListUuid: this.currentPoint.priceList.uuid
             })
@@ -247,7 +222,7 @@ export default {
                 this.search = ''
                 this.currentImageOfProduct = ''
                 if (this.isEmptyValue(this.productPrice.image)) {
-                  this.getImage(this.productPrice.image)
+                  this.getImageFromSource(this.productPrice.image)
                 }
               })
           }
@@ -258,7 +233,7 @@ export default {
             if (typeof value[value.length - 1] === 'string') {
               value = mutation.payload.value.slice(0, -1)
             }
-            requestGetProductPrice({
+            getProductPrice({
               searchValue: mutation.payload.value,
               priceListUuid: this.currentPoint.priceList.uuid
             })
@@ -302,7 +277,7 @@ export default {
                 this.search = ''
                 this.currentImageOfProduct = ''
                 if (this.isEmptyValue(this.productPrice.image)) {
-                  this.getImage(this.productPrice.image)
+                  this.getImageFromSource(this.productPrice.image)
                 }
               })
           }, 500)
@@ -338,6 +313,7 @@ export default {
     width: 100%;
     height: 100%;
     float: inherit;
+    background: white;
     // color: white;
     // opacity: 0.5;
   }

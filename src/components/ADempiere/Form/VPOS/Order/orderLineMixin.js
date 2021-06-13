@@ -15,11 +15,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
-  requestCreateOrderLine,
-  requestUpdateOrderLine,
-  requestDeleteOrderLine
+  createOrderLine,
+  updateOrderLine,
+  deleteOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
 import { formatPercent } from '@/utils/ADempiere/valueFormat.js'
+import { showMessage } from '@/utils/ADempiere/notification.js'
 
 export default {
   name: 'OrderLineMixin',
@@ -55,6 +56,12 @@ export default {
           label: 'Total',
           isNumeric: true,
           size: 'auto'
+        },
+        convertedAmount: {
+          columnName: 'ConvertedAmount',
+          label: this.$t('form.pos.collect.convertedAmount'),
+          isNumeric: true,
+          size: 'auto'
         }
       },
       currentOrderLine: {
@@ -67,11 +74,18 @@ export default {
         taxIndicator: 0,
         quantityOrdered: 0,
         uuid: ''
+      },
+      totalAmountConvertedLine: {
       }
     }
   },
   computed: {
 
+  },
+  created() {
+    if (!this.isEmptyValue(this.$store.getters.posAttributes.currentPointOfSales.displayCurrency)) {
+      this.convertedAmountAsTotal(this.$store.getters.posAttributes.currentPointOfSales.displayCurrency)
+    }
   },
   methods: {
     formatPercent,
@@ -100,7 +114,7 @@ export default {
     },
     createOrderLine(orderUuid) {
       const productUuid = this.product.uuid
-      requestCreateOrderLine({
+      createOrderLine({
         orderUuid,
         productUuid
       })
@@ -143,7 +157,7 @@ export default {
           quantity = currentLine.quantity
           break
       }
-      requestUpdateOrderLine({
+      updateOrderLine({
         orderLineUuid: currentLine.uuid,
         quantity,
         price,
@@ -171,7 +185,7 @@ export default {
     },
     deleteOrderLine(lineSelection) {
       console
-      requestDeleteOrderLine({
+      deleteOrderLine({
         orderLineUuid: lineSelection.uuid
       })
         .then(() => {
@@ -185,6 +199,40 @@ export default {
             showClose: true
           })
         })
+    },
+    convertedAmountAsTotal(value) {
+      this.$store.dispatch('conversionDivideRate', {
+        conversionTypeUuid: this.currentPointOfSales.conversionTypeUuid,
+        currencyFromUuid: this.pointOfSalesCurrency.uuid,
+        currencyToUuid: value.uuid
+      })
+        .then(response => {
+          if (!this.isEmptyValue(response.currencyTo)) {
+            const currency = {
+              ...response.currencyTo,
+              amountConvertion: response.divideRate,
+              multiplyRate: response.multiplyRate
+            }
+            this.totalAmountConvertedLine = currency
+          } else {
+            this.totalAmountConvertedLine.multiplyRate = '1'
+            this.totalAmountConvertedLine.iSOCode = value.iSOCode
+          }
+        })
+        .catch(error => {
+          console.warn(`conversionDivideRate: ${error.message}. Code: ${error.code}.`)
+          showMessage({
+            type: 'error',
+            message: error.message,
+            showClose: true
+          })
+        })
+    },
+    getTotalAmount(basePrice, multiplyRate) {
+      if (this.isEmptyValue(basePrice) || this.isEmptyValue(multiplyRate)) {
+        return 0
+      }
+      return (basePrice * multiplyRate)
     },
     /**
      * Show the correct display format
@@ -205,6 +253,8 @@ export default {
         return this.formatPercent(row.discount / 100)
       } else if (columnName === 'GrandTotal') {
         return this.formatPrice(row.grandTotal, currency)
+      } else if (columnName === 'ConvertedAmount') {
+        return this.formatPrice(this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate), this.totalAmountConvertedLine.iSOCode)
       }
     },
     productPrice(price, discount) {

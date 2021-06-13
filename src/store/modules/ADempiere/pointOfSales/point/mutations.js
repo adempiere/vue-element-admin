@@ -14,21 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import Vue from 'vue'
-
 /**
  * Pos Mutations
  * @author Elsio Sanchez <elsiosanches@gmail.com>
  */
 export default {
-  setPontOfSales(state, pos) {
-    state.pointOfSales = pos
-  },
-  setCurrentPOS(state, pos) {
-    Vue.set(state.pointOfSales, 'currentPOS', pos)
-  },
   listPointOfSales(state, listPointOfSales) {
     state.listPointOfSales = listPointOfSales
+  },
+  listWarehouses(state, listWarehouses) {
+    state.listWarehouses = listWarehouses
+  },
+  currentPriceList(state, priceList) {
+    state.currentPriceList = priceList
+  },
+  currentWarehouse(state, warehouse) {
+    state.currentWarehouse = warehouse
+  },
+  listPrices(state, listPrices) {
+    state.listPrices = listPrices
+  },
+  listCurrencies(state, listCurrency) {
+    state.listCurrency = listCurrency
+  },
+  conversionList(state, conversion) {
+    state.conversionList.push(conversion)
   },
   currentPointOfSales(state, currentPointOfSales) {
     state.currentPointOfSales = currentPointOfSales
