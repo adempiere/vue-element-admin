@@ -34,6 +34,7 @@
               >
                 <product-info
                   v-if="field.columnName === 'ProductValue'"
+                  id="ProductValue"
                   :key="field.columnName"
                   :metadata="field"
                 />
@@ -41,6 +42,7 @@
             </el-col>
             <el-col :span="isEmptyValue(currentOrder) ? 9 : 7" :style="styleTab">
               <business-partner
+                id="BusinessPartner"
                 :parent-metadata="{
                   name: panelMetadata.name,
                   containerUuid: panelMetadata.containerUuid,
@@ -78,6 +80,7 @@
         <el-container style="background: white; padding: 0px; height: 100% !important;">
           <el-main style="padding-top: 0px; padding-right: 10px; padding-bottom: 0px; padding-left: 10px;">
             <el-table
+              id="linesOrder"
               ref="linesTable"
               v-shortkey="shortsKey"
               :data="listOrderLine"
@@ -109,7 +112,7 @@
                 <template slot-scope="scope">
                   <el-popover
                     v-if="!isEmptyValue(listOrderLine)"
-                    placement="right"
+                    placement="top-start"
                     trigger="click"
                     :title="$t('form.productInfo.productInformation')"
                   >
@@ -118,23 +121,29 @@
                       style="float: right; display: flex; line-height: 30px;"
                     >
                       <el-row :gutter="24">
-                        <el-col :span="4">
+                        <el-col :span="3">
                           <div>
-                            <el-avatar shape="square" :size="100" src="https://#" @error="true">
+                            <el-avatar v-if="isEmptyValue(scope.row.product.imageUrl)" shape="square" :size="100" src="https://#" @error="true">
                               <el-image>
                                 <div slot="error" class="image-slot">
                                   <i class="el-icon-picture-outline" />
                                 </div>
                               </el-image>
                             </el-avatar>
+                            <el-image
+                              v-else
+                              style="width: 100px; height: 100px"
+                              :src="scope.row.product.imageUrl"
+                              fit="contain"
+                            />
                           </div>
                         </el-col>
-                        <el-col :span="10">
+                        <el-col :span="16">
                           {{ $t('form.productInfo.code') }}: <b>{{ scope.row.product.value }}</b><br>
                           {{ $t('form.productInfo.name') }}: <b>{{ scope.row.product.name }}</b><br>
                           {{ $t('form.productInfo.description') }}: <b>{{ scope.row.product.description }}</b><br>
                         </el-col>
-                        <el-col :span="10">
+                        <el-col :span="5">
                           <div style="float: right">
                             {{ $t('form.productInfo.price') }}:
                             <b>{{ formatPrice(scope.row.product.priceStandard, pointOfSalesCurrency.iSOCode) }}</b>
@@ -172,32 +181,76 @@
 
           <el-footer :class="classOrderFooter">
             <div class="keypad">
-              <el-button type="primary" icon="el-icon-top" :disabled="isDisabled" @click="arrowTop" />
-              <el-button type="primary" icon="el-icon-bottom" :disabled="isDisabled" @click="arrowBottom" />
-              <el-button v-show="isValidForDeleteLine(listOrderLine)" type="danger" icon="el-icon-delete" :disabled="isDisabled" @click="deleteOrderLine(currentOrderLine)" />
-              <el-button
-                v-show="isValidForDeleteLine(listOrderLine)"
-                type="success"
-                icon="el-icon-bank-card"
-                @click="openCollectionPanel"
-              >
-                {{ labelButtonCollections }}
-              </el-button>
+              <span id="toolPoint">
+                <el-button type="primary" icon="el-icon-top" :disabled="isDisabled" @click="arrowTop" />
+                <el-button type="primary" icon="el-icon-bottom" :disabled="isDisabled" @click="arrowBottom" />
+                <el-button v-show="isValidForDeleteLine(listOrderLine)" type="danger" icon="el-icon-delete" :disabled="isDisabled" @click="deleteOrderLine(currentOrderLine)" />
+                <el-button
+                  v-show="isValidForDeleteLine(listOrderLine)"
+                  type="success"
+                  icon="el-icon-bank-card"
+                  @click="openCollectionPanel"
+                >
+                  {{ labelButtonCollections }}
+                </el-button>
+              </span>
               <br>
-              <p>
+              <p id="point" style="margin-bottom: 5%;margin-top: 3%;">
                 <el-dropdown
                   v-if="!isEmptyValue(currentPointOfSales)"
                   trigger="click"
-                  style="padding-top: 8px; color: black;"
+                  class="info-pos"
                   @command="changePos"
                 >
-                  <p>
+                  <span>
                     <i class="el-icon-mobile-phone" />
                     {{ $t('form.pos.order.pointSale') }}: <b style="cursor: pointer"> {{ currentPointOfSales.name }} </b>
-                  </p>
+                  </span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item
                       v-for="item in listPointOfSales"
+                      :key="item.uuid"
+                      :command="item"
+                    >
+                      {{ item.name }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+                <br>
+                <el-dropdown
+                  v-if="!isEmptyValue(curretnWarehouse)"
+                  trigger="click"
+                  class="info-pos"
+                  @command="changeWarehouse"
+                >
+                  <span>
+                    <svg-icon icon-class="tree" />
+                    {{ $t('route.warehouse') }}: <b style="cursor: pointer"> {{ curretnWarehouse.name }} </b>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item
+                      v-for="item in listWarehouse"
+                      :key="item.uuid"
+                      :command="item"
+                    >
+                      {{ item.name }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+                <br>
+                <el-dropdown
+                  v-if="!isEmptyValue(curretnPriceList)"
+                  trigger="click"
+                  class="info-pos"
+                  @command="changePriceList"
+                >
+                  <span>
+                    <svg-icon icon-class="tree-table" />
+                    {{ $t('form.pos.priceList') }}: <b style="cursor: pointer"> {{ curretnPriceList.name }} </b>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item
+                      v-for="item in pointPriceList"
                       :key="item.uuid"
                       :command="item"
                     >
@@ -295,6 +348,7 @@
     </div>
     <div v-if="!isMobile" :style="classButtomRight">
       <el-button
+        id="buttonPanelRightPos"
         :circle="true"
         type="primary"
         :icon="isShowedPOSKeyLayout ? 'el-icon-arrow-right' : 'el-icon-arrow-left'"
@@ -507,6 +561,31 @@ export default {
     currentLineOrder() {
       const line = this.$store.state['pointOfSales/orderLine/index'].line
       return line
+    },
+    curretnPriceList() {
+      if (!this.isEmptyValue(this.$store.getters.currentPriceList)) {
+        return this.$store.getters.currentPriceList
+      }
+      return {}
+    },
+    pointPriceList() {
+      const list = this.$store.getters.posAttributes.currentPointOfSales.listPrices
+      if (this.isEmptyValue(list)) {
+        return []
+      }
+      return list
+    },
+    curretnWarehouse() {
+      if (!this.isEmptyValue(this.$store.getters['user/getWarehouse'])) {
+        return this.$store.getters['user/getWarehouse']
+      }
+      return {}
+    },
+    listWarehouse() {
+      if (!this.isEmptyValue(this.$store.getters.currentWarehouse)) {
+        return this.$store.getters.currentWarehouse
+      }
+      return []
     }
   },
   mounted() {
@@ -592,6 +671,12 @@ export default {
       this.$store.dispatch('setCurrentPOS', posElement)
       this.newOrder()
     },
+    changeWarehouse(warehouse) {
+      this.$store.commit('currentWarehouse', warehouse)
+    },
+    changePriceList(priceList) {
+      this.$store.commit('currentPriceList', priceList)
+    },
     arrowTop() {
       if (this.currentTable > 0) {
         this.currentTable--
@@ -646,11 +731,15 @@ export default {
   .keypad {
     float: left;
     height: 20%;
-    padding-top: 25px;
+    padding-top: 10px;
   }
   .total {
     margin-top: 10px;
     margin-bottom: 10px
+  }
+  .info-pos {
+    padding-top: 10px;
+    color: black;
   }
   .split {
     -webkit-box-sizing: border-box;

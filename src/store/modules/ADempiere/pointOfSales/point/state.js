@@ -28,6 +28,12 @@ export default {
     ...withoutResponse
   },
   listPointOfSales: {},
+  listWarehouses: {},
+  listPrices: {},
+  currentPriceList: {},
+  currentWarehouse: {},
+  listCurrency: [],
+  conversionList: [],
   currentPointOfSales: {},
   showPOSOptions: false,
   showPOSKeyLayout: false,

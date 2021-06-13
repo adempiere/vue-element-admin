@@ -16,7 +16,7 @@
 
 import {
   findProduct,
-  requestUpdateOrderLine
+  updateOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
 import {
   formatDate,
@@ -81,11 +81,32 @@ export default {
         uuid: '',
         iSOCode: '',
         curSymbol: '',
-        amountConvertion: 1
+        amountConvertion: 1,
+        divideRate: 1
       }
     },
     listPointOfSales() {
       return this.$store.getters.posAttributes.listPointOfSales
+    },
+    curretnPriceList() {
+      if (!this.isEmptyValue(this.$store.getters.currentPriceList)) {
+        return this.$store.getters.currentPriceList
+      }
+      return {}
+    },
+    priceListPointOfSales() {
+      const list = this.$store.getters.posAttributes.currentPointOfSales.listPrices
+      if (this.isEmptyValue(list)) {
+        return []
+      }
+      return list
+    },
+    warehousesListPointOfSales() {
+      const list = this.$store.getters.posAttributes.currentPointOfSales.listWarehouses
+      if (this.isEmptyValue(list)) {
+        return []
+      }
+      return list
     },
     ordersList() {
       if (this.isEmptyValue(this.currentPointOfSales)) {
@@ -223,10 +244,12 @@ export default {
       }
 
       const searchProduct = (typeof searchValue === 'object') ? searchValue.value : searchValue
-
+      if (this.isEmptyValue(this.curretnPriceList)) {
+        return
+      }
       findProduct({
         searchValue: searchProduct,
-        priceListUuid: this.currentPointOfSales.priceList.uuid
+        priceListUuid: this.curretnPriceList.uuid
       })
         .then(productPrice => {
           this.product = productPrice.product
@@ -404,7 +427,7 @@ export default {
           this.arrowBottom()
           break
         case 'plus':
-          requestUpdateOrderLine({
+          updateOrderLine({
             orderLineUuid: this.currentOrderLine.uuid,
             quantity: this.listOrderLine[this.currentTable].quantity + 1
           })
@@ -423,7 +446,7 @@ export default {
 
           break
         case 'minus':
-          requestUpdateOrderLine({
+          updateOrderLine({
             orderLineUuid: this.currentOrderLine.uuid,
             quantity: this.listOrderLine[this.currentTable].quantity - 1
           })
