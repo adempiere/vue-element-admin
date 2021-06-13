@@ -25,7 +25,7 @@
     "window": true,
     "process": true,
     "report": true,
-    "smartBrowser": false,
+    "smartBrowser": true,
     "form": false
   },
   "pointOfSales": {

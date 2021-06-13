@@ -631,6 +631,9 @@ export function convertAction(action) {
       actionAttributes.name = 'browser'
       actionAttributes.icon = 'search'
       actionAttributes.component = () => import('@/views/ADempiere/Browser')
+      if (config.betaFunctionality.process) {
+        actionAttributes.component = () => import('@/views/ADempiere/BrowserView')
+      }
       break
     case 'T':
       actionAttributes.name = 'task'
