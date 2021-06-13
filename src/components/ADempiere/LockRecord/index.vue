@@ -118,15 +118,16 @@ export default defineComponent({
     const getRecordId = () => {
       let recordId
       let recordUuid
-      if (isValidUuid(root.$route.query.action)) {
-        recordUuid = root.$route.query.action
+      const recordRow = record.value
+      if (!root.isEmptyValue(recordRow)) {
+        recordId = recordRow[tableName + '_ID']
+        recordUuid = recordRow.UUID
       } else {
-        const recordRow = record.value
-        if (!root.isEmptyValue(recordRow)) {
-          recordId = recordRow[tableName + '_ID']
-          recordUuid = recordRow.UUID
+        if (isValidUuid(root.$route.query.action)) {
+          recordUuid = root.$route.query.action
         }
       }
+
       return {
         recordId,
         recordUuid
