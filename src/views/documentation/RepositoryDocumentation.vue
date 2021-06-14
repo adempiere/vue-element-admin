@@ -80,7 +80,7 @@
       </p>
     </div>
     <p align="center">
-      <repository-tags />
+      <repository-tags :repository="repository" />
     </p>
 
     <div
