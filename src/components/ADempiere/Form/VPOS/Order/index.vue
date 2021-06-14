@@ -523,7 +523,7 @@ export default {
       }
     },
     listPointOfSales() {
-      return this.$store.getters.posAttributes.listPointOfSales
+      return this.$store.getters.posAttributes.pointOfSalesList
     },
     ordersList() {
       if (this.isEmptyValue(this.currentPointOfSales)) {
@@ -569,7 +569,7 @@ export default {
       return {}
     },
     pointPriceList() {
-      const list = this.$store.getters.posAttributes.currentPointOfSales.listPrices
+      const list = this.$store.getters.posAttributes.currentPointOfSales.pricesList
       if (this.isEmptyValue(list)) {
         return []
       }
@@ -672,10 +672,10 @@ export default {
       this.newOrder()
     },
     changeWarehouse(warehouse) {
-      this.$store.commit('currentWarehouse', warehouse)
+      this.$store.commit('setCurrentWarehouse', warehouse)
     },
     changePriceList(priceList) {
-      this.$store.commit('currentPriceList', priceList)
+      this.$store.commit('setCurrentPriceList', priceList)
     },
     arrowTop() {
       if (this.currentTable > 0) {
