@@ -49,16 +49,10 @@
           :fixed="fieldAttributes.isFixedTableColumn"
         >
           <template slot-scope="scope">
-            <el-tag
-              v-if="COLUMNS_NAME_DOCUMENT_STATUS.includes(fieldAttributes.columnName)"
-              :type="tagStatus(scope.row[fieldAttributes.columnName])"
-              disable-transitions
-            >
-              {{ displayedValue(scope.row, fieldAttributes) }}
-            </el-tag>
-            <span v-else>
-              {{ displayedValue(scope.row, fieldAttributes) }}
-            </span>
+            <cell-info
+              :field-attributes="fieldAttributes"
+              :data-row="scope.row"
+            />
           </template>
         </el-table-column>
       </template>
@@ -77,15 +71,14 @@
 import { defineComponent, computed } from '@vue/composition-api'
 
 import FieldDefinition from '@/components/ADempiere/Field'
-import { COLUMNS_NAME_DOCUMENT_STATUS, FIELDS_DECIMALS } from '@/utils/ADempiere/references'
-import { typeValue } from '@/utils/ADempiere/valueUtils.js'
-import { formatField } from '@/utils/ADempiere/valueFormat.js'
+import CellInfo from './CellInfo'
 
 export default defineComponent({
   name: 'DefaultTable',
 
   components: {
-    FieldDefinition
+    FieldDefinition,
+    CellInfo
   },
 
   props: {
@@ -174,77 +167,14 @@ export default defineComponent({
       return field.isActive && isDisplayed
     }
 
-    /**
-     * @param {object} row, row data
-     * @param {object} field, field with attributes
-     */
-    const displayedValue = (row, field) => {
-      const { columnName, componentPath, displayColumnName, displayType } = field
-
-      let valueToShow
-      switch (componentPath) {
-        case 'FieldDate':
-        case 'FieldTime': {
-          let cell = row[columnName]
-          if (typeValue(cell) === 'DATE') {
-            cell = cell.getTime()
-          }
-          // replace number timestamp value for date
-          valueToShow = formatField(cell, displayType)
-          break
-        }
-
-        case 'FieldNumber':
-          if (root.isEmptyValue(row[columnName])) {
-            valueToShow = undefined
-            break
-          }
-          valueToShow = formatNumber({
-            displayType,
-            number: row[columnName]
-          })
-          break
-
-        case 'FieldSelect':
-          valueToShow = row[displayColumnName]
-          if (root.isEmptyValue(valueToShow) && row[columnName] === 0) {
-            valueToShow = field.defaultValue
-            break
-          }
-          break
-
-        case 'FieldYesNo':
-          // replace boolean true-false value for 'Yes' or 'Not' ('Si' or 'No' for spanish)
-          valueToShow = row[columnName]
-            ? root.$t('components.switchActiveText')
-            : root.$t('components.switchInactiveText')
-          break
-
-        default:
-          valueToShow = row[columnName]
-          break
-      }
-
-      return valueToShow
-    }
-
-    const formatNumber = ({ displayType, number }) => {
-      let fixed = 0
-      // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(displayType)) {
-        fixed = 2
-      }
-      return new Intl.NumberFormat().format(number.toFixed(fixed))
-    }
-
     return {
+      // computeds
       keyColumn,
       panelMetadata,
       fieldsList,
-      COLUMNS_NAME_DOCUMENT_STATUS,
+      // methods
       headerLabel,
       isDisplayed,
-      displayedValue,
       handleRowClick
     }
   }
