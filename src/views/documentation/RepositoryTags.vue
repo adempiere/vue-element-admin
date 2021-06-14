@@ -17,8 +17,9 @@
     </a>
   </div>
 </template>
+
 <script>
 export default {
-  name: 'Tags'
+  name: 'RepositoryTags'
 }
 </script>
