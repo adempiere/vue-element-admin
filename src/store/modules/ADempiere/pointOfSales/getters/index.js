@@ -55,7 +55,8 @@ export default {
         ...state.currentPointOfSales,
         listOrder: state.listOrder,
         warehousesList: state.warehousesList,
-        listPrices: state.pricesList,
+        pricesList: state.pricesList,
+        currentPriceList: state.currentPriceList,
         currentOrder: {
           ...state.order,
           lineOrder: state.listOrderLine,
