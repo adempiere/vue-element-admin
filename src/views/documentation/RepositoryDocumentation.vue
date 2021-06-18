@@ -205,8 +205,8 @@ export default defineComponent({
           href: response.html_url,
           description: response.description,
           avatar: response.organization.avatar_url,
-          clone: response.clone_url,
-          sshUrl: response.ssh_url,
+          clone: root.isEmptyValue(response.clone_url) ? '' : String(response.clone_url),
+          sshUrl: root.isEmptyValue(response.ssh_url) ? '' : String(response.ssh_url),
           branches: response.branches_url,
           downloadZip: response.html_url + '/archive/refs/heads/' + response.default_branch + '.zip'
         }
@@ -231,23 +231,24 @@ export default defineComponent({
               title: release.name,
               href: release.html_url,
               author: release.author.login,
-              body: release.body,
+              body: root.isEmptyValue(release.body) ? '' : String(release.body),
               created_at: release.created_at,
               download,
               titleDownload
             })
           })
 
-          if (config.repository.releaseNo !== undefined && releasesList.value.length > 0) {
+          const { releaseNo } = config.repository
+          if (!root.isEmptyValue(releaseNo) && !root.isEmptyValue(releasesList.value)) {
             releaseNotes.value = releasesList.value.find(release => {
-              return release.title === config.repository.releaseNo
+              return release.title === releaseNo
             })
-            if (!releaseNotes.value) {
+            if (root.isEmptyValue(releaseNotes.value)) {
               releaseNotes.value = releasesList.value[0]
             }
           }
 
-          isLoadedRepository.value = true
+          isLoadedReleases.value = true
         }
       })
 
