@@ -51,7 +51,7 @@
 <script>
 import tabMixin from './tabMixin.js'
 import MainPanel from '@/components/ADempiere/Panel'
-import LockRecord from '@/components/ADempiere/LockRecord'
+import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 export default {
