@@ -167,6 +167,33 @@ export default defineComponent({
       return releasesList.value.length - 1
     })
 
+    // fallback Copy Text To Clip board
+    const fallbackCopyTextToClipboard = (text) => {
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      try {
+        if (document.execCommand('copy')) {
+          clipboardMessage(root.$t('notifications.copySuccessful'))
+        }
+      } catch (err) {
+        clipboardMessage(root.$t('notifications.copyUnsuccessful'))
+      }
+      document.body.removeChild(textArea)
+    }
+
+    // Notification Message when Copying TextNotification Message when Copying Text
+    const clipboardMessage = (message) => {
+      root.$message({
+        message,
+        type: 'success',
+        showClose: true,
+        duration: 1500
+      })
+    }
+
     // Repository
     fetchReadme({
       repository: props.repository
@@ -233,7 +260,9 @@ export default defineComponent({
       repositoryData,
       releasesList,
       // computed
-      stopper
+      stopper,
+      // methods
+      fallbackCopyTextToClipboard
     }
   }
 })
