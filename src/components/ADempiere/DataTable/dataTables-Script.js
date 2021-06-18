@@ -20,7 +20,7 @@ import FixedColumns from '@/components/ADempiere/DataTable/fixedColumns'
 import TableContextMenu from '@/components/ADempiere/DataTable/menu/tableContextMenu'
 import TableMainMenu from '@/components/ADempiere/DataTable/menu'
 import IconElement from '@/components/ADempiere/IconElement'
-import { formatField } from '@/utils/ADempiere/valueFormat'
+import { formatField } from '@/utils/ADempiere/valueFormat.js'
 import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere/dictionaryUtils'
 import { FIELDS_DECIMALS, FIELDS_QUANTITY, COLUMNS_READ_ONLY_FORM } from '@/utils/ADempiere/references'
@@ -368,51 +368,16 @@ export default {
      * @param {object} field, field with attributes
      */
     displayedValue(row, field) {
-      const { columnName, componentPath, displayColumnName, displayType } = field
+      const { columnName, displayColumnName, defaultValue, displayType } = field
+      const value = row[columnName]
+      const displayedValue = row[displayColumnName]
 
-      let valueToShow
-      switch (componentPath) {
-        case 'FieldDate':
-        case 'FieldTime': {
-          let cell = row[columnName]
-          if (this.typeValue(cell) === 'DATE') {
-            cell = cell.getTime()
-          }
-          // replace number timestamp value for date
-          valueToShow = formatField(cell, displayType)
-          break
-        }
-
-        case 'FieldNumber':
-          if (this.isEmptyValue(row[columnName])) {
-            valueToShow = undefined
-            break
-          }
-          valueToShow = this.formatNumber({
-            displayType,
-            number: row[columnName]
-          })
-          break
-
-        case 'FieldSelect':
-          valueToShow = row[displayColumnName]
-          if (this.isEmptyValue(valueToShow) && row[columnName] === 0) {
-            valueToShow = field.defaultValue
-            break
-          }
-          break
-
-        case 'FieldYesNo':
-          // replace boolean true-false value for 'Yes' or 'Not' ('Si' or 'No' for spanish)
-          valueToShow = row[columnName]
-            ? this.$t('components.switchActiveText')
-            : this.$t('components.switchInactiveText')
-          break
-
-        default:
-          valueToShow = row[columnName]
-          break
-      }
+      const valueToShow = formatField({
+        value,
+        defaultValue,
+        displayedValue,
+        displayType
+      })
 
       return valueToShow
     },

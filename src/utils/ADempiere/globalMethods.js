@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 export {
-  zeroPad,
   tagStatus,
   iconStatus,
   isEmptyValue,
@@ -23,7 +22,8 @@ export {
   clearVariables,
   currencyFind,
   tenderTypeFind,
-  formatConversionCurrenty,
   convertValuesToSend,
   typeValue
 } from '@/utils/ADempiere/valueUtils.js'
+
+export { zeroPad } from '@/utils/ADempiere/numberFormat.js'

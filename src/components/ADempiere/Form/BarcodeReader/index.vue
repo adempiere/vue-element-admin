@@ -56,7 +56,12 @@
               <div class="product-price-base">
                 Precio Base
                 <span class="amount">
-                  {{ formatPrice(productPrice.priceBase, productPrice.currency.iSOCode) }}
+                  {{
+                    formatPrice({
+                      value: productPrice.priceBase,
+                      currencyCode
+                    })
+                  }}
                 </span>
               </div>
               <br><br><br>
@@ -64,13 +69,23 @@
               <div class="product-tax">
                 {{ productPrice.taxName }}
                 <span class="amount">
-                  {{ formatPrice(productPrice.taxAmt, productPrice.currency.iSOCode) }}
+                  {{
+                    formatPrice({
+                      value: productPrice.taxAmt,
+                      currencyCode
+                    })
+                  }}
                 </span>
               </div>
               <br><br><br>
 
               <div class="product-price amount">
-                {{ formatPrice(productPrice.grandTotal, productPrice.currency.iSOCode) }}
+                {{
+                  formatPrice({
+                    vaue: productPrice.grandTotal,
+                    currencyCode
+                  })
+                }}
               </div>
             </el-col>
           </el-row>
@@ -92,7 +107,7 @@
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import fieldsList from './fieldsListBarCode.js'
-import { formatPercent, formatPrice } from '@/utils/ADempiere/valueFormat.js'
+import { formatPrice, getTaxAmount } from '@/utils/ADempiere/numberFormat.js'
 import { buildImageFromArrayBuffer } from '@/utils/ADempiere/resource.js'
 import { requestImage } from '@/api/ADempiere/common/resource.js'
 
@@ -130,6 +145,12 @@ export default {
     defaultImage() {
       return require('@/image/ADempiere/priceChecking/no-image.jpg')
     },
+    currencyCode() {
+      if (!this.isEmptyValue(this.productPrice)) {
+        return this.productPrice.currency.iSOCode
+      }
+      return 'USD'
+    },
     backgroundForm() {
       if (this.isEmptyValue(this.currentImageOfProduct)) {
         return this.organizationBackground
@@ -147,6 +168,8 @@ export default {
     this.unsubscribe()
   },
   methods: {
+    formatPrice,
+    getTaxAmount,
     async getImage(imageName = '') {
       let isSetOrg = false
       if (this.isEmptyValue(imageName)) {
@@ -178,8 +201,6 @@ export default {
     focusProductValue() {
       this.$refs.ProductValue[0].$children[0].$children[0].$children[1].$children[0].focus()
     },
-    formatPercent,
-    formatPrice,
     subscribeChanges() {
       return this.$store.subscribe((mutation, state) => {
         // if ((mutation.type === 'updateValueOfField' || mutation.type === 'addActionKeyPerformed') && mutation.payload.columnName === 'ProductValue') {
@@ -234,12 +255,6 @@ export default {
         //   }
         // }
       })
-    },
-    getTaxAmount(basePrice, taxRate) {
-      if (this.isEmptyValue(basePrice) || this.isEmptyValue(taxRate)) {
-        return 0
-      }
-      return (basePrice * taxRate) / 100
     },
     getGrandTotal(basePrice, taxRate) {
       if (this.isEmptyValue(basePrice)) {

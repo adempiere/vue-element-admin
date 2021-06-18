@@ -19,8 +19,11 @@ import {
   updateOrderLine,
   deleteOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
-import { formatPercent } from '@/utils/ADempiere/valueFormat.js'
-import { showMessage } from '@/utils/ADempiere/notification.js'
+import {
+  formatPrice,
+  formatPercent,
+  formatQuantity
+} from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'OrderLineMixin',
@@ -88,7 +91,9 @@ export default {
     }
   },
   methods: {
+    formatPrice,
     formatPercent,
+    formatQuantity,
     changeLine(command) {
       switch (command.option) {
         case 'Eliminar':
@@ -221,7 +226,7 @@ export default {
         })
         .catch(error => {
           console.warn(`conversionDivideRate: ${error.message}. Code: ${error.code}.`)
-          showMessage({
+          this.message({
             type: 'error',
             message: error.message,
             showClose: true
@@ -244,17 +249,29 @@ export default {
       if (columnName === 'LineDescription') {
         return row.lineDescription
       }
-      const currency = this.pointOfSalesCurrency.iSOCode
+      const currencyCode = this.pointOfSalesCurrency.iSOCode
       if (columnName === 'CurrentPrice') {
-        return this.formatPrice(row.priceActual, currency)
+        return this.formatPrice({
+          value: row.priceActual,
+          currencyCode
+        })
       } else if (columnName === 'QtyOrdered') {
-        return this.formatQuantity(row.quantityOrdered)
+        return this.formatQuantity({
+          value: row.quantityOrdered
+        })
       } else if (columnName === 'Discount') {
         return this.formatPercent(row.discount / 100)
       } else if (columnName === 'GrandTotal') {
-        return this.formatPrice(row.grandTotal, currency)
+        return this.formatPrice({
+          value: row.grandTotal,
+          currencyCode
+        })
       } else if (columnName === 'ConvertedAmount') {
-        return this.formatPrice(this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate), this.totalAmountConvertedLine.iSOCode)
+        const value = this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate)
+        return this.formatPrice({
+          value,
+          currencyCode: this.totalAmountConvertedLine.iSOCode
+        })
       }
     },
     productPrice(price, discount) {

@@ -36,7 +36,12 @@
                       :currency="pointOfSalesCurrency"
                     />
                     <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                      {{ formatPrice(currentOrder.grandTotal, pointOfSalesCurrency.iSOCode) }}
+                      {{
+                        formatPrice({
+                          value: currentOrder.grandTotal,
+                          currencyCode: pointOfSalesCurrency.iSOCode
+                        })
+                      }}
                     </el-button>
                   </el-popover>
                 </b>
@@ -54,7 +59,12 @@
                       :currency="pointOfSalesCurrency"
                     />
                     <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                      {{ formatPrice(pending, pointOfSalesCurrency.iSOCode) }}
+                      {{
+                        formatPrice({
+                          value: pending,
+                          currencyCode: pointOfSalesCurrency.iSOCode
+                        })
+                      }}
                     </el-button>
                   </el-popover>
                 </b>
@@ -64,9 +74,12 @@
                 <!-- Conversion rate to date -->
                 <b v-if="!isEmptyValue(dateRate)" style="float: right;">
                   <span v-if="!isEmptyValue(dateRate.divideRate)">
-                    <span v-if="formatConversionCurrenty(dateRate.divideRate) > 1">
+                    <span v-if="Number(formatExponential(dateRate.divideRate)) > 1">
                       {{
-                        formatPrice(formatConversionCurrenty(dateRate.divideRate), dateRate.currencyTo.iSOCode)
+                        formatPrice({
+                          value: formatExponential(dateRate.divideRate),
+                          currencyCode: dateRate.currencyTo.iSOCode
+                        })
                       }}
                     </span>
                     <span v-else>
@@ -74,13 +87,16 @@
                         dateRate.currencyTo.iSOCode
                       }}
                       {{
-                        formatConversionCurrenty(dateRate.divideRate)
+                        formatExponential(dateRate.divideRate)
                       }}
                     </span>
                   </span>
                   <span v-else>
                     {{
-                      formatPrice(1, dateRate.iSOCode)
+                      formatPrice({
+                        value: 1,
+                        currencyCode: dateRate.iSOCode
+                      })
                     }}
                   </span>
                 </b>
@@ -187,7 +203,12 @@
                         :currency="pointOfSalesCurrency"
                       />
                       <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                        {{ formatPrice(currentOrder.grandTotal, pointOfSalesCurrency.iSOCode) }}
+                        {{
+                          formatPrice({
+                            value: currentOrder.grandTotal,
+                            currencyCode: pointOfSalesCurrency.iSOCode
+                          })
+                        }}
                       </el-button>
                     </el-popover>
                   </b>
@@ -206,7 +227,12 @@
                         :currency="pointOfSalesCurrency"
                       />
                       <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                        {{ formatPrice(pending, pointOfSalesCurrency.iSOCode) }}
+                        {{
+                          formatPrice({
+                            value: pending,
+                            currencyCode: pointOfSalesCurrency.iSOCode
+                          })
+                        }}
                       </el-button>
                     </el-popover>
                   </b>
@@ -225,7 +251,12 @@
                         :currency="pointOfSalesCurrency"
                       />
                       <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                        {{ formatPrice(pay, pointOfSalesCurrency.iSOCode) }}
+                        {{
+                          formatPrice({
+                            value: pay,
+                            currencyCode: pointOfSalesCurrency.iSOCode
+                          })
+                        }}
                       </el-button>
                     </el-popover>
                   </b>
@@ -243,7 +274,12 @@
                         :currency="pointOfSalesCurrency"
                       />
                       <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;">
-                        {{ formatPrice(change, pointOfSalesCurrency.iSOCode) }}
+                        {{
+                          formatPrice({
+                            value: change,
+                            currencyCode: pointOfSalesCurrency.iSOCode
+                          })
+                        }}
                       </el-button>
                     </el-popover>
                   </b>
@@ -263,9 +299,8 @@ import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
 import fieldsListCollection from './fieldsListCollection.js'
 import typeCollection from '@/components/ADempiere/Form/VPOS/Collection/typeCollection'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
-import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
 import { processOrder } from '@/api/ADempiere/form/point-of-sales.js'
-import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import { formatExponential } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'Collection',
@@ -618,20 +653,12 @@ export default {
     this.defaultValueCurrency()
   },
   methods: {
-    formatNumber({ displayType, number }) {
-      let fixed = 0
-      // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(displayType)) {
-        fixed = 2
-      }
-      return new Intl.NumberFormat().format(number.toFixed(fixed))
-    },
-    formatPrice,
+    formatExponential,
     sumCash(cash) {
       let sum = 0
       if (cash) {
         cash.forEach((pay) => {
-          if (!this.isEmptyValue(pay.divideRate)) {
+          if (!this.isEmptyValue(pay.divideRate) && pay.divideRate !== 0) {
             sum += pay.amountConvertion / pay.divideRate
           } else {
             sum += pay.amount

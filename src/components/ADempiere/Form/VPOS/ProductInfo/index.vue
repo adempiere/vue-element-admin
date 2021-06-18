@@ -67,9 +67,18 @@
             </div>
             <div style="width: 30%;float: right;">
               <p style="overflow: hidden;text-overflow: ellipsis;text-align: end;">
-                {{ formatPrice(props.item.priceStandard, props.item.currency.iSOCode) }}
+                {{
+                  formatPrice({
+                    value: props.item.priceStandard,
+                    currencyCode: props.item.currency.iSOCode
+                  })
+                }}
                 <br>
-                {{ formatQuantity(props.item.quantityAvailable) }}
+                {{
+                  formatQuantity({
+                    value: props.item.quantityAvailable
+                  })
+                }}
               </p>
             </div>
           </div>
@@ -88,7 +97,7 @@ import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import {
   formatPrice,
   formatQuantity
-} from '@/utils/ADempiere/valueFormat.js'
+} from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'FieldProductInfo',

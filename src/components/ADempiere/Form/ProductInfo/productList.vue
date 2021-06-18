@@ -33,6 +33,7 @@
         :metadata-field="field"
       />
     </el-form>
+
     <el-table
       ref="singleTable"
       v-loading="!productPrice.isLoaded"
@@ -57,11 +58,43 @@
             <el-divider />
             <p><b style="float: left">{{ $t('form.productInfo.code') }}</b><span style="float: right">{{ scope.row.product.value }}</span></p><br>
             <p><b style="float: left">{{ $t('form.productInfo.upc') }}</b><span style="float: right"> {{ scope.row.product.upc }} </span></p><br>
-            <p><b style="float: left">{{ $t('form.productInfo.quantityOnHand') }}</b><span style="float: right"> {{ formatQuantity(scope.row.quantityOnHand) }} </span></p><br>
-            <p><b style="float: left">{{ $t('form.productInfo.price') }}</b><span style="float: right"> {{ formatPrice(scope.row.priceStandard, scope.row.currency.iSOCode) }} </span></p><br>
-            <p><b style="float: left">{{ $t('form.productInfo.taxAmount') }}</b><span style="float: right"> {{ formatPrice(getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate), scope.row.currency.iSOCode) }} </span></p><br>
-            <p><b style="float: left">{{ $t('form.productInfo.grandTotal') }}</b><span style="float: right"><b> {{ formatPrice(getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate) + scope.row.priceStandard, scope.row.currency.iSOCode) }} </b></span></p><br>
-            <p><b style="float: left">{{ $t('form.productInfo.grandTotalConverted') }} ({{ scope.row.schemaCurrency.iSOCode }}) </b><span style="float: right"><b> {{ formatPrice(getTaxAmount(scope.row.schemaPriceStandard, scope.row.taxRate.rate) + scope.row.schemaPriceStandard, scope.row.schemaCurrency.iSOCode) }} </b></span></p>
+            <p><b style="float: left">{{ $t('form.productInfo.quantityOnHand') }}</b><span style="float: right">
+              {{
+                formatQuantity({
+                  value: scope.row.quantityOnHand
+                })
+              }}
+            </span></p><br>
+            <p><b style="float: left">{{ $t('form.productInfo.price') }}</b><span style="float: right">
+              {{
+                formatPrice({
+                  value: scope.row.priceStandard,
+                  currencyCode: scope.row.currency.iSOCode
+                })
+              }}
+            </span></p><br>
+            <p><b style="float: left">{{ $t('form.productInfo.taxAmount') }}</b><span style="float: right">
+              {{
+                formatPrice({
+                  value: getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate),
+                  currencyCode: scope.row.currency.iSOCode
+                })
+              }}
+            </span></p><br>
+            <p><b style="float: left">{{ $t('form.productInfo.grandTotal') }}</b><span style="float: right"><b>
+              {{
+                formatPrice({
+                  value: getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate) + scope.row.priceStandard,
+                  currencyCode: scope.row.currency.iSOCode
+                })
+              }} </b></span></p><br>
+            <p><b style="float: left">{{ $t('form.productInfo.grandTotalConverted') }} ({{ scope.row.schemaCurrency.iSOCode }}) </b><span style="float: right"><b>
+              {{
+                formatPrice({
+                  value: getTaxAmount(scope.row.schemaPriceStandard, scope.row.taxRate.rate) + scope.row.schemaPriceStandard,
+                  currencyCode: scope.row.schemaCurrency.iSOCode
+                })
+              }} </b></span></p>
             <div slot="reference" class="name-wrapper">
               {{ scope.row.product.name }}
             </div>
@@ -74,7 +107,11 @@
         width="100"
       >
         <template slot-scope="scope">
-          {{ formatQuantity(scope.row.quantityOnHand) }}
+          {{
+            formatQuantity({
+              value: scope.row.quantityOnHand
+            })
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -83,7 +120,11 @@
         width="100"
       >
         <template slot-scope="scope">
-          {{ formatQuantity(scope.row.quantityAvailable) }}
+          {{
+            formatQuantity({
+              value: scope.row.quantityAvailable
+            })
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -91,7 +132,12 @@
         align="right"
       >
         <template slot-scope="scope">
-          {{ formatPrice(scope.row.priceStandard, scope.row.currency.iSOCode) }}
+          {{
+            formatPrice({
+              value: scope.row.priceStandard,
+              currencyCode: scope.row.currency.iSOCode
+            })
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -100,7 +146,12 @@
         width="200"
       >
         <template slot-scope="scope">
-          {{ formatPrice(getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate), scope.row.currency.iSOCode) }}
+          {{
+            formatPrice({
+              value: getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate),
+              currencyCode: scope.row.currency.iSOCode
+            })
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -109,7 +160,12 @@
         width="300"
       >
         <template slot-scope="scope">
-          {{ formatPrice(getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate) + scope.row.priceStandard, scope.row.currency.iSOCode) }}
+          {{
+            formatPrice({
+              value: getTaxAmount(scope.row.priceStandard, scope.row.taxRate.rate) + scope.row.priceStandard,
+              currencyCode: scope.row.currency.iSOCode
+            })
+          }}
         </template>
       </el-table-column>
       <el-table-column
@@ -147,7 +203,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import CustomPagination from '@/components/ADempiere/Pagination'
 import fieldsListProductPrice from './fieldsList.js'
-import { formatPrice, formatQuantity } from '@/utils/ADempiere/valueFormat.js'
+import { formatPrice, formatQuantity, getTaxAmount } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'ProductList',
@@ -281,6 +337,7 @@ export default {
   methods: {
     formatPrice,
     formatQuantity,
+    getTaxAmount,
     getImageFromSource(keyValue) {
       if (this.isEmptyValue(keyValue)) {
         return this.defaultImage
@@ -358,12 +415,6 @@ export default {
         attribute: this.popoverName,
         isShowed: false
       })
-    },
-    getTaxAmount(basePrice, taxRate) {
-      if (this.isEmptyValue(basePrice) || this.isEmptyValue(taxRate)) {
-        return 0
-      }
-      return (basePrice * taxRate) / 100
     },
     associatedprocesses(product, report) {
       report.parametersList.push({ columnName: 'M_Product_ID', value: product }, { columnName: 'M_PriceList_ID', value: this.listPrice })

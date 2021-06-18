@@ -15,7 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { supportedTypes, exportFileFromJson, exportZipFile } from '@/utils/ADempiere/exportUtil.js'
-import { clientDateTime, recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
+import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
+import { clientDateTime } from '@/utils/ADempiere/dateTimeFormat.js'
 import { FIELDS_QUANTITY } from '@/utils/ADempiere/references'
 import TableMixin from '@/components/ADempiere/DataTable/mixin/tableMixin.js'
 

@@ -62,6 +62,7 @@
 <script>
 import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import { FIELDS_CURRENCY, FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import { formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'FieldNumber',
@@ -132,32 +133,18 @@ export default {
       if (this.isEmptyValue(value)) {
         value = 0
       }
-      if (!this.isDecimal) {
-        return value
-      }
 
-      let options = {
-        useGrouping: true,
-        minimumIntegerDigits: 1,
-        minimumFractionDigits: this.precision,
-        maximumFractionDigits: this.precision
-      }
-      let lang
       if (this.isCurrency) {
-        lang = this.countryLanguage
-        options = {
-          ...options,
-          style: 'currency',
-          currency: this.currencyCode
-        }
+        return formatPrice({
+          value,
+          currencyCode: this.currencyCode
+        })
       }
 
-      // TODO: Check the grouping of thousands
-      const formatterInstance = new Intl.NumberFormat(lang, options)
-      return formatterInstance.format(value)
-    },
-    countryLanguage() {
-      return this.$store.getters.getCountryLanguage
+      return formatQuantity({
+        value,
+        displayType: this.metadata.displayType
+      })
     },
     currencyCode() {
       if (!this.isEmptyValue(this.metadata.labelCurrency)) {

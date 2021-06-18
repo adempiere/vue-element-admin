@@ -69,16 +69,31 @@
                       >
                         <p class="total">
                           <b v-if="!isEmptyValue(value.multiplyRate)" style="float: right;">
-                            {{ formatPrice(value.multiplyRate, currency.iSOCode) }}
+                            {{
+                              formatPrice({
+                                value: value.multiplyRate,
+                                currencyCode: currency.iSOCode
+                              })
+                            }}
                           </b>
                           <b v-else style="float: right;">
-                            {{ formatPrice(value.amount, currency.iSOCode) }}
+                            {{
+                              formatPrice({
+                                value: value.amount,
+                                currencyCode: currency.iSOCode
+                              })
+                            }}
                           </b>
                         </p>
                         <br>
                         <p v-if="!isEmptyValue(value.currencyConvertion)" class="total">
                           <b style="float: right;">
-                            {{ formatPrice(value.amountConvertion, value.currencyConvertion.iSOCode) }}
+                            {{
+                              formatPrice({
+                                value: value.amountConvertion,
+                                currencyCode: value.currencyConvertion.iSOCode
+                              })
+                            }}
                           </b>
                         </p>
                       </div>
@@ -95,10 +110,6 @@
 </template>
 
 <script>
-import {
-  formatDate,
-  formatPrice
-} from '@/utils/ADempiere/valueFormat.js'
 import {
   requestGetConversionRate
 } from '@/api/ADempiere/form/point-of-sales.js'
@@ -177,8 +188,6 @@ export default {
     }
   },
   methods: {
-    formatDate,
-    formatPrice,
     // If there are payments in another currency, search for conversion
     convertingPaymentMethods() {
       if (!this.isEmptyValue(this.paymentCurrency)) {

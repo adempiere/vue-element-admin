@@ -63,7 +63,11 @@
         align="right"
       >
         <template slot-scope="scope">
-          {{ formatPrice(scope.row.priceStandard) }}
+          {{
+            formatPrice({
+              value: scope.row.priceStandard
+            })
+          }}
         </template>
       </el-table-column>
     </el-table>
@@ -79,7 +83,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import CustomPagination from '@/components/ADempiere/Pagination'
 import fieldsListProductPrice from './fieldsList.js'
-import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
+import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'ProductList',

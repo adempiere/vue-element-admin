@@ -21,7 +21,12 @@
       <span>
         <b>
           {{ $t('form.pos.collect.convertAmount') }}:
-          {{ formatPrice(amountConvertionTotal, displayCurrency) }}
+          {{
+            formatPrice({
+              value: amountConvertionTotal,
+              currencyCode: displayCurrency
+            })
+          }}
         </b>
       </span>
     </div>
@@ -47,7 +52,7 @@
 </template>
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin'
-import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
+import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
 import fieldsListConvertAmountCollection from './fieldsListConvertAmountCollection.js'
 
 export default {

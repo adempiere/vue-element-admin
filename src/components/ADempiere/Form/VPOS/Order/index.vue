@@ -146,13 +146,27 @@
                         <el-col :span="5">
                           <div style="float: right">
                             {{ $t('form.productInfo.price') }}:
-                            <b>{{ formatPrice(scope.row.product.priceStandard, pointOfSalesCurrency.iSOCode) }}</b>
+                            <b>
+                              {{
+                                formatPrice({
+                                  value: scope.row.product.priceStandard,
+                                  currencyCode: pointOfSalesCurrency.iSOCode
+                                })
+                              }}
+                            </b>
                             <br>
                             {{ $t('form.productInfo.taxAmount') }}:
                             <b>{{ scope.row.taxIndicator }}</b>
                             <br>
+
                             {{ $t('form.productInfo.quantityAvailable') }}:
-                            <b>{{ formatQuantity(scope.row.quantityOrdered) }}</b>
+                            <b>
+                              {{
+                                formatQuantity({
+                                  value: scope.row.quantityOrdered
+                                })
+                              }}
+                            </b>
                           </div>
                         </el-col>
                       </el-row>
@@ -307,7 +321,12 @@
                       :is-open="seeConversion"
                     />
                     <el-button slot="reference" type="text" style="color: #000000;font-weight: 604!important;font-size: 100%;" @click="seeConversion = !seeConversion">
-                      {{ formatPrice(currentOrder.grandTotal, pointOfSalesCurrency.iSOCode) }}
+                      {{
+                        formatPrice({
+                          value: currentOrder.grandTotal,
+                          currencyCode: pointOfSalesCurrency.iSOCode
+                        })
+                      }}
                     </el-button>
                   </el-popover>
                 </b>
@@ -375,12 +394,7 @@ import BusinessPartner from '@/components/ADempiere/Form/VPOS/BusinessPartner'
 import fieldLine from '@/components/ADempiere/Form/VPOS/Order/line/index'
 import ProductInfo from '@/components/ADempiere/Form/VPOS/ProductInfo'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
-// Format of values ( Date, Price, Quantity )
-import {
-  formatDate,
-  formatPrice,
-  formatQuantity
-} from '@/utils/ADempiere/valueFormat.js'
+import { formatDate } from '@/utils/ADempiere/dateTimeFormat.js'
 
 export default {
   name: 'Order',
@@ -595,8 +609,6 @@ export default {
   },
   methods: {
     formatDate,
-    formatPrice,
-    formatQuantity,
     closeConvertion() {
       this.seeConversion = false
     },
