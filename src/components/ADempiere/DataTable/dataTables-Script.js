@@ -21,6 +21,7 @@ import TableContextMenu from '@/components/ADempiere/DataTable/menu/tableContext
 import TableMainMenu from '@/components/ADempiere/DataTable/menu'
 import IconElement from '@/components/ADempiere/IconElement'
 import { formatField } from '@/utils/ADempiere/valueFormat.js'
+import { formatQuantity } from '@/utils/ADempiere/numberFormat.js'
 import MainPanel from '@/components/ADempiere/Panel'
 import { sortFields } from '@/utils/ADempiere/dictionaryUtils'
 import { FIELDS_DECIMALS, FIELDS_QUANTITY, COLUMNS_READ_ONLY_FORM } from '@/utils/ADempiere/references'
@@ -699,7 +700,8 @@ export default {
             }
             return prev
           }, 0)
-          sums[index] = this.formatNumber({
+
+          sums[index] = formatQuantity({
             displayType,
             number: total
           })
@@ -707,14 +709,6 @@ export default {
       })
 
       return sums
-    },
-    formatNumber({ displayType, number }) {
-      let fixed = 0
-      // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(displayType)) {
-        fixed = 2
-      }
-      return new Intl.NumberFormat().format(number.toFixed(fixed))
     },
     handleChangePage(newPage) {
       this.$store.dispatch('setPageNumber', {
