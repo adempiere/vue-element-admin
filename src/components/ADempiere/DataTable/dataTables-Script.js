@@ -675,6 +675,8 @@ export default {
         return
       }
 
+      const selectionData = this.getDataSelection
+
       const fieldsList = this.fieldsList
       columns.forEach((columnItem, index) => {
         if (index === 0) {
@@ -688,7 +690,7 @@ export default {
           return
         }
 
-        const values = this.getDataSelection.map(item => Number(item[columnItem.property]))
+        const values = selectionData.map(item => Number(item[columnItem.property]))
         const total = values.reduce((prev, curr) => {
           const value = Number(curr)
           if (!isNaN(value)) {
