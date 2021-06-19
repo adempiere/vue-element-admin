@@ -38,9 +38,8 @@ export function getCountryCode() {
 /**
  * Get formatted price and show currency
  * @param {number} value
- * @param {string} currencyCode
- * @param {string} countryCode
- * @param {number} precision
+ * @param {string} currency default 'USD'
+ * @returns {string} number format with thousands separator, precision, currency format
  */
 export function formatPrice(value, currency) {
   if (isEmptyValue(value)) {
@@ -75,8 +74,7 @@ export function getTaxAmount(basePrice, taxRate) {
 /**
  * Get formatted number, integer and decimal
  * @param {number} value
- * @param {number} precision
- * @param {number} displayType
+ * @returns {string} number format with thousands separator, precision
  */
 export function formatQuantity(value) {
   if (isEmptyValue(value)) {
@@ -101,10 +99,11 @@ export function formatQuantity(value) {
 /**
  * Format percentage based on Intl library
  * @param {number} value
+ * @returns {string} number format with percentage
  */
 export function formatPercent(value) {
   if (isEmptyValue(value)) {
-    return undefined
+    value = 0
   }
 
   // get formatted number

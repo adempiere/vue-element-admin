@@ -23,9 +23,11 @@ import store from '@/store'
 import {
   DATE, DATE_PLUS_TIME, TIME,
   // currencies
-  AMOUNT, COSTS_PLUS_PRICES,
+  FIELDS_CURRENCY,
   //
-  NUMBER, QUANTITY, INTEGER,
+  NUMBER, QUANTITY,
+  // integers
+  FIELDS_INTEGER,
   isLookup,
   YES_NO
 } from '@/utils/ADempiere/references.js'
@@ -201,14 +203,13 @@ export function formatField({
       }))
       break
 
-    case AMOUNT.id:
-    case COSTS_PLUS_PRICES.id:
+    case (FIELDS_CURRENCY.includes(displayType) && displayType):
       formattedValue = formatPrice(value)
       break
 
     case NUMBER.id:
     case QUANTITY.id:
-    case INTEGER.id:
+    case (FIELDS_INTEGER.includes(displayType) && displayType):
       formattedValue = formatQuantity(value)
       break
 

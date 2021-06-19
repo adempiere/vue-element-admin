@@ -657,3 +657,8 @@ export const FIELDS_CURRENCY = [
   AMOUNT.id,
   COSTS_PLUS_PRICES.id
 ]
+
+export const FIELDS_INTEGER = [
+  INTEGER.id,
+  ID.id
+]
