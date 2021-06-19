@@ -27,7 +27,7 @@ import {
   isLookup,
   YES_NO
 } from '@/utils/ADempiere/references.js'
-import { formatNumber, formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
+import { formatNumber } from '@/utils/ADempiere/numberFormat.js'
 
 /**
  * Convert string values ('Y' or 'N') to component compatible Boolean values

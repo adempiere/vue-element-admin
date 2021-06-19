@@ -688,17 +688,14 @@ export default {
           return
         }
 
-        let total = 0
         const values = this.getDataSelection.map(item => Number(item[columnItem.property]))
-        if (!values.every(value => isNaN(value))) {
-          total = values.reduce((prev, curr) => {
-            const value = Number(curr)
-            if (!isNaN(value)) {
-              return prev + curr
-            }
-            return prev
-          }, 0)
-        }
+        const total = values.reduce((prev, curr) => {
+          const value = Number(curr)
+          if (!isNaN(value)) {
+            return prev + curr
+          }
+          return prev
+        }, 0)
 
         sums[index] = formatNumber({
           value: total,
