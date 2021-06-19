@@ -21,7 +21,7 @@ import TableContextMenu from '@/components/ADempiere/DataTable/menu/tableContext
 import TableMainMenu from '@/components/ADempiere/DataTable/menu'
 import IconElement from '@/components/ADempiere/IconElement'
 import { formatField } from '@/utils/ADempiere/valueFormat.js'
-import { formatQuantity } from '@/utils/ADempiere/numberFormat.js'
+import { formatNumber } from '@/utils/ADempiere/numberFormat.js'
 import MainPanel from '@/components/ADempiere/Panel'
 import { fieldIsDisplayed, sortFields } from '@/utils/ADempiere/dictionaryUtils.js'
 import { FIELDS_QUANTITY, COLUMNS_READ_ONLY_FORM } from '@/utils/ADempiere/references'
@@ -687,20 +687,23 @@ export default {
           sums[index] = ''
           return
         }
+
+        let total = 0
         const values = this.getDataSelection.map(item => Number(item[columnItem.property]))
-        if (values.every(value => isNaN(value))) {
-          sums[index] = 0
-        } else {
-          const total = values.reduce((prev, curr) => {
+        if (!values.every(value => isNaN(value))) {
+          total = values.reduce((prev, curr) => {
             const value = Number(curr)
             if (!isNaN(value)) {
               return prev + curr
             }
             return prev
           }, 0)
-
-          sums[index] = formatQuantity(total)
         }
+
+        sums[index] = formatNumber({
+          value: total,
+          displayType
+        })
       })
 
       return sums

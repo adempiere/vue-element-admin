@@ -61,8 +61,8 @@
 
 <script>
 import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
-import { FIELDS_CURRENCY, FIELDS_DECIMALS } from '@/utils/ADempiere/references'
-import { formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
+import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import { formatNumber } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'FieldNumber',
@@ -71,7 +71,6 @@ export default {
     return {
       showControls: true,
       isFocus: false,
-      operation: '',
       expression: /[\d\/.()%\*\+\-]/gim,
       valueToDisplay: '',
       isShowed: false
@@ -125,25 +124,12 @@ export default {
     isDecimal() {
       return FIELDS_DECIMALS.includes(this.metadata.displayType)
     },
-    isCurrency() {
-      return FIELDS_CURRENCY.includes(this.metadata.displayType)
-    },
     displayedValue() {
-      let value = this.value
-      if (this.isEmptyValue(value)) {
-        value = 0
-      }
-
-      // integer value
-      if (!this.isDecimal) {
-        return value
-      }
-
-      if (this.isCurrency) {
-        return formatPrice(value, this.currencyCode)
-      }
-
-      return formatQuantity(value)
+      return formatNumber({
+        value: this.value,
+        displayType: this.metadata.displayType,
+        currency: this.currencyCode
+      })
     },
     currencyCode() {
       if (!this.isEmptyValue(this.metadata.labelCurrency)) {

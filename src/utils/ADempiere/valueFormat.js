@@ -22,16 +22,12 @@ import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 import store from '@/store'
 import {
   DATE, DATE_PLUS_TIME, TIME,
-  // currencies
-  FIELDS_CURRENCY,
-  //
-  NUMBER, QUANTITY,
-  // integers
-  FIELDS_INTEGER,
+  FIELDS_QUANTITY,
+  ID,
   isLookup,
   YES_NO
 } from '@/utils/ADempiere/references.js'
-import { formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
+import { formatNumber, formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
 
 /**
  * Convert string values ('Y' or 'N') to component compatible Boolean values
@@ -203,14 +199,12 @@ export function formatField({
       }))
       break
 
-    case (FIELDS_CURRENCY.includes(displayType) && displayType):
-      formattedValue = formatPrice(value)
-      break
-
-    case NUMBER.id:
-    case QUANTITY.id:
-    case (FIELDS_INTEGER.includes(displayType) && displayType):
-      formattedValue = formatQuantity(value)
+    case ID.id:
+    case (FIELDS_QUANTITY.includes(displayType) && displayType):
+      formattedValue = formatNumber({
+        value,
+        displayType
+      })
       break
 
     case YES_NO.id:

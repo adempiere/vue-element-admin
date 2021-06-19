@@ -15,6 +15,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
+import {
+  // currencies
+  FIELDS_CURRENCY,
+  //
+  NUMBER, QUANTITY,
+  // integers
+  FIELDS_INTEGER
+} from '@/utils/ADempiere/references.js'
 import store from '@/store'
 
 /**
@@ -35,13 +43,43 @@ export function getCountryCode() {
   return store.getters.getCountryLanguage
 }
 
+export function formatNumber({
+  value,
+  displayType,
+  currency,
+  country
+}) {
+  if (isEmptyValue(value)) {
+    value = 0
+  }
+
+  let formattedNumber
+  switch (displayType) {
+    case (FIELDS_CURRENCY.includes(displayType) && displayType):
+      formattedNumber = formatPrice(value, currency, country)
+      break
+
+    case NUMBER.id:
+    case QUANTITY.id:
+      formattedNumber = formatQuantity(value)
+      break
+
+    case (FIELDS_INTEGER.includes(displayType) && displayType):
+    default:
+      formattedNumber = formatQuantity(value, true)
+      break
+  }
+
+  return formattedNumber
+}
+
 /**
  * Get formatted price and show currency
  * @param {number} value
  * @param {string} currency default 'USD'
  * @returns {string} number format with thousands separator, precision, currency format
  */
-export function formatPrice(value, currency) {
+export function formatPrice(value, currency, country) {
   if (isEmptyValue(value)) {
     value = 0
   }
@@ -52,8 +90,12 @@ export function formatPrice(value, currency) {
 
   // const precision = getStandardPrecision()
 
+  if (isEmptyValue(country)) {
+    country = getCountryCode()
+  }
+
   // get formatted currency number
-  return new Intl.NumberFormat(getCountryCode(), {
+  return new Intl.NumberFormat(country, {
     style: 'currency',
     currency,
     useGrouping: true,
@@ -75,15 +117,17 @@ export function getTaxAmount(basePrice, taxRate) {
  * Get formatted number, integer and decimal
  * @param {number} value
  * @returns {string} number format with thousands separator, precision
+ * @returns {boolean} number format without precision
  */
-export function formatQuantity(value) {
+export function formatQuantity(value, isInteger = false) {
   if (isEmptyValue(value)) {
     value = 0
   }
 
   let precision = getStandardPrecision()
   // without decimals
-  if (Number.isInteger(value)) {
+  if (isInteger) {
+    // if (Number.isInteger(value)) {
     precision = 0
   }
 
