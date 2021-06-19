@@ -80,17 +80,15 @@ export function getTaxAmount(basePrice, taxRate) {
  */
 export function formatQuantity(value) {
   if (isEmptyValue(value)) {
-    return undefined
+    value = 0
   }
 
+  let precision = getStandardPrecision()
   // without decimals
   if (!Number.isInteger(value)) {
-    return value
+    precision = 0
   }
 
-  const precision = getStandardPrecision()
-
-  // return Number.parseFloat(number).toFixed(precision)
   // get formatted decimal number
   return new Intl.NumberFormat(undefined, {
     useGrouping: true, // thousands separator
