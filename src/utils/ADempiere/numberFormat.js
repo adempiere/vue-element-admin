@@ -85,7 +85,7 @@ export function formatQuantity(value) {
 
   let precision = getStandardPrecision()
   // without decimals
-  if (!Number.isInteger(value)) {
+  if (Number.isInteger(value)) {
     precision = 0
   }
 
