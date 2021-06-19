@@ -92,7 +92,7 @@
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import fieldsList from './fieldsListBarCode.js'
-import { formatPercent, formatPrice } from '@/utils/ADempiere/valueFormat.js'
+import { formatPrice, getTaxAmount } from '@/utils/ADempiere/numberFormat.js'
 import { buildImageFromArrayBuffer } from '@/utils/ADempiere/resource.js'
 import { requestImage } from '@/api/ADempiere/common/resource.js'
 
@@ -147,6 +147,8 @@ export default {
     this.unsubscribe()
   },
   methods: {
+    formatPrice,
+    getTaxAmount,
     async getImage(imageName = '') {
       let isSetOrg = false
       if (this.isEmptyValue(imageName)) {
@@ -178,8 +180,6 @@ export default {
     focusProductValue() {
       this.$refs.ProductValue[0].$children[0].$children[0].$children[1].$children[0].focus()
     },
-    formatPercent,
-    formatPrice,
     subscribeChanges() {
       return this.$store.subscribe((mutation, state) => {
         // if ((mutation.type === 'updateValueOfField' || mutation.type === 'addActionKeyPerformed') && mutation.payload.columnName === 'ProductValue') {
@@ -234,12 +234,6 @@ export default {
         //   }
         // }
       })
-    },
-    getTaxAmount(basePrice, taxRate) {
-      if (this.isEmptyValue(basePrice) || this.isEmptyValue(taxRate)) {
-        return 0
-      }
-      return (basePrice * taxRate) / 100
     },
     getGrandTotal(basePrice, taxRate) {
       if (this.isEmptyValue(basePrice)) {

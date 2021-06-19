@@ -16,6 +16,7 @@
 
 import { convertStringToBoolean, convertBooleanToString } from '@/utils/ADempiere/valueFormat.js'
 import { TABLE, TABLE_DIRECT } from '@/utils/ADempiere/references.js'
+import { zeroPad } from '@/utils/ADempiere/numberFormat.js'
 
 /**
  * Checks if value is empty. Deep-checks arrays and objects
@@ -112,18 +113,6 @@ export function extractPagingToken(token) {
     onlyToken = onlyToken.slice(0, -1)
   }
   return onlyToken
-}
-
-/**
- * zero pad
- * @author EdwinBetanc0urt <EdwinBetanc0urt@oulook.com>
- * @param {number|string} number
- * @param {number} pad
- * @returns {string}
- */
-export function zeroPad(number, pad = 2) {
-  const zero = Number(pad) - number.toString().length + 1
-  return Array(+(zero > 0 && zero)).join('0') + number
 }
 
 /**
@@ -498,6 +487,7 @@ export function calculationValue(value, event) {
     }
   }
 }
+
 /**
  * Search in the currency lists for the current currency
  * @author Elsio Sanchez <elsiosanches@gmail.com>
@@ -522,13 +512,13 @@ export function currencyFind({
   }
   return defaultCurrency.iSOCode
 }
+
 /**
  * Search the Payment List for the Current Payment
  * @author Elsio Sanchez <elsiosanches@gmail.com>
  * @param {string} currentPayment Current Payment
  * @param {array} listTypePayment Payment Type Listings
  */
-
 export function tenderTypeFind({
   currentPayment,
   listTypePayment
@@ -543,26 +533,15 @@ export function tenderTypeFind({
   }
   return currentPayment
 }
+
 export function clearVariables() {
   partialValue = ''
 }
-export function formatConversionCurrenty(params) {
-  let exponential, expre
-  const number = params.toString()
-  if (params > 0) {
-    if (number.includes('e')) {
-      expre = number.split('-')
-      exponential = params.toFixed(expre[1])
-      return exponential
-    }
-  }
-  return params
-}
+
 /**
  * convert Values To Send
  * @param {string, number, boolean, date} values
  */
-
 export function convertValuesToSend(values) {
   const valuesToSend = {}
 

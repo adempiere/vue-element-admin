@@ -88,7 +88,7 @@ import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import {
   formatPrice,
   formatQuantity
-} from '@/utils/ADempiere/valueFormat.js'
+} from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'FieldProductInfo',

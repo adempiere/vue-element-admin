@@ -62,6 +62,7 @@
 <script>
 import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import { FIELDS_CURRENCY, FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import { formatPrice, formatQuantity } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'FieldNumber',
@@ -99,7 +100,7 @@ export default {
     precision() {
       // Amount, Costs+Prices, Number
       if (this.isDecimal) {
-        return this.currencyDefinition.standardPrecision
+        return this.$store.getters.getStandardPrecision
       }
       return undefined
     },
@@ -132,43 +133,22 @@ export default {
       if (this.isEmptyValue(value)) {
         value = 0
       }
+
+      // integer value
       if (!this.isDecimal) {
         return value
       }
 
-      let options = {
-        useGrouping: true,
-        minimumIntegerDigits: 1,
-        minimumFractionDigits: this.precision,
-        maximumFractionDigits: this.precision
-      }
-      let lang
       if (this.isCurrency) {
-        lang = this.countryLanguage
-        options = {
-          ...options,
-          style: 'currency',
-          currency: this.currencyCode
-        }
+        return formatPrice(value, this.currencyCode)
       }
 
-      // TODO: Check the grouping of thousands
-      const formatterInstance = new Intl.NumberFormat(lang, options)
-      return formatterInstance.format(value)
-    },
-    countryLanguage() {
-      return this.$store.getters.getCountryLanguage
+      return formatQuantity(value)
     },
     currencyCode() {
       if (!this.isEmptyValue(this.metadata.labelCurrency)) {
-        if (this.metadata.labelCurrency.iSOCode === this.currencyDefinition.iSOCode) {
-          return this.currencyDefinition.iSOCode
-        }
         return this.metadata.labelCurrency.iSOCode
       }
-      return this.currencyDefinition.iSOCode
-    },
-    currencyDefinition() {
       return this.$store.getters.getCurrency
     }
   },

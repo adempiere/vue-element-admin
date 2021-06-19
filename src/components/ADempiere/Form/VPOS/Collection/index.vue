@@ -64,9 +64,13 @@
                 <!-- Conversion rate to date -->
                 <b v-if="!isEmptyValue(dateRate)" style="float: right;">
                   <span v-if="!isEmptyValue(dateRate.divideRate)">
-                    <span v-if="formatConversionCurrenty(dateRate.divideRate) > 1">
+                    <span v-if="Number(formatExponential(dateRate.divideRate)) > 1">
+                      <!-- TODO: Evaluate if needed formatExponential into formatPrice -->
                       {{
-                        formatPrice(formatConversionCurrenty(dateRate.divideRate), dateRate.currencyTo.iSOCode)
+                        formatPrice(
+                          formatExponential(dateRate.divideRate),
+                          dateRate.currencyTo.iSOCode
+                        )
                       }}
                     </span>
                     <span v-else>
@@ -74,7 +78,7 @@
                         dateRate.currencyTo.iSOCode
                       }}
                       {{
-                        formatConversionCurrenty(dateRate.divideRate)
+                        formatExponential(dateRate.divideRate)
                       }}
                     </span>
                   </span>
@@ -263,9 +267,8 @@ import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
 import fieldsListCollection from './fieldsListCollection.js'
 import typeCollection from '@/components/ADempiere/Form/VPOS/Collection/typeCollection'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
-import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
 import { processOrder } from '@/api/ADempiere/form/point-of-sales.js'
-import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
+import { formatExponential } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'Collection',
@@ -618,20 +621,12 @@ export default {
     this.defaultValueCurrency()
   },
   methods: {
-    formatNumber({ displayType, number }) {
-      let fixed = 0
-      // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(displayType)) {
-        fixed = 2
-      }
-      return new Intl.NumberFormat().format(number.toFixed(fixed))
-    },
-    formatPrice,
+    formatExponential,
     sumCash(cash) {
       let sum = 0
       if (cash) {
         cash.forEach((pay) => {
-          if (!this.isEmptyValue(pay.divideRate)) {
+          if (!this.isEmptyValue(pay.divideRate) && pay.divideRate !== 0) {
             sum += pay.amountConvertion / pay.divideRate
           } else {
             sum += pay.amount

@@ -19,8 +19,11 @@ import {
   updateOrderLine,
   deleteOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
-import { formatPercent } from '@/utils/ADempiere/valueFormat.js'
-import { showMessage } from '@/utils/ADempiere/notification.js'
+import {
+  formatPrice,
+  formatPercent,
+  formatQuantity
+} from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'OrderLineMixin',
@@ -88,7 +91,9 @@ export default {
     }
   },
   methods: {
+    formatPrice,
     formatPercent,
+    formatQuantity,
     changeLine(command) {
       switch (command.option) {
         case 'Eliminar':
@@ -221,7 +226,7 @@ export default {
         })
         .catch(error => {
           console.warn(`conversionDivideRate: ${error.message}. Code: ${error.code}.`)
-          showMessage({
+          this.message({
             type: 'error',
             message: error.message,
             showClose: true
@@ -254,7 +259,8 @@ export default {
       } else if (columnName === 'GrandTotal') {
         return this.formatPrice(row.grandTotal, currency)
       } else if (columnName === 'ConvertedAmount') {
-        return this.formatPrice(this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate), this.totalAmountConvertedLine.iSOCode)
+        const value = this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate)
+        return this.formatPrice(value, this.totalAmountConvertedLine.iSOCode)
       }
     },
     productPrice(price, discount) {

@@ -95,7 +95,8 @@
 
 <script>
 import { getImagePath } from '@/utils/ADempiere/resource.js'
-import { formatQuantity } from '@/utils/ADempiere/valueFormat.js'
+import { formatQuantity } from '@/utils/ADempiere/numberFormat.js'
+
 export default {
   name: 'KeyLayout',
   data() {

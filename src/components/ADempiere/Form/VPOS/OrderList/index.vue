@@ -131,10 +131,6 @@ import fieldsListOrders from './fieldsListOrders.js'
 import {
   createFieldFromDictionary
 } from '@/utils/ADempiere/lookupFactory'
-import {
-  formatDate,
-  formatQuantity
-} from '@/utils/ADempiere/valueFormat.js'
 import Field from '@/components/ADempiere/Field'
 import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
 
@@ -233,8 +229,6 @@ export default {
     this.unsubscribe()
   },
   methods: {
-    formatDate,
-    formatQuantity,
     createFieldFromDictionary,
     keyAction(event) {
       switch (event.srcKey) {
