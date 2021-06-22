@@ -31,6 +31,8 @@
         <span slot="label">
           <lock-record
             :tab-position="key"
+            :tab-uuid="tabAttributes.uuid"
+            :table-bame="tabAttributes.tableName"
             :tab-name="tabAttributes.name"
           />
         </span>

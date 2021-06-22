@@ -49,6 +49,10 @@ export default defineComponent({
   name: 'LockRecord',
 
   props: {
+    tabUuid: {
+      type: String,
+      required: true
+    },
     tabPosition: {
       type: Number,
       default: 0
@@ -56,12 +60,16 @@ export default defineComponent({
     tabName: {
       type: String,
       required: true
+    },
+    tableName: {
+      type: String,
+      required: true
     }
   },
 
   setup(props, { root }) {
-    const { tabUuid: containerUuid } = root.$route.meta
-    const { tableName } = root.$route.params
+    const containerUuid = props.tabUuid
+    const tableName = props.tableName
 
     const isFirstTab = computed(() => {
       return props.tabPosition === 0

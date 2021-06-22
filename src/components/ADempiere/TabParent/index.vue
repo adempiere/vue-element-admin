@@ -35,25 +35,13 @@
         :style="tabParentStyle"
       >
 
-        <span v-if="key === 0" slot="label">
-          <el-tooltip
-            v-if="key === 0"
-            :content="isLock ? $t('data.lockRecord') : $t('data.unlockRecord')"
-            placement="top"
-          >
-            <el-button type="text" @click="lockRecord()">
-              <i
-                :class="isLock ? 'el-icon-lock' : 'el-icon-unlock'"
-                style="font-size: 15px; color: black;"
-              />
-            </el-button>
-          </el-tooltip>
-          <span :style="isLock ? 'color: red;' : 'color: #1890ff;'">
-            {{ tabAttributes.name }}
-          </span>
-        </span>
-        <span v-else slot="label">
-          {{ tabAttributes.name }}
+        <span slot="label">
+          <lock-record
+            :tab-position="key"
+            :tab-uuid="tabAttributes.uuid"
+            :table-bame="tabAttributes.tableName"
+            :tab-name="tabAttributes.name"
+          />
         </span>
 
         <panel-definition
@@ -68,17 +56,18 @@
 </template>
 
 <script>
-// TODO: Migrate the lock features to other component
 import { defineComponent, computed, ref, watch } from '@vue/composition-api'
 
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
+import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
 import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 export default defineComponent({
   name: 'TabParent',
 
   components: {
-    PanelDefinition
+    PanelDefinition,
+    LockRecord
   },
 
   props: {
@@ -98,7 +87,6 @@ export default defineComponent({
 
   setup(props, { root }) {
     const panelType = 'window'
-    const isLock = ref(false)
     const currentTab = ref(root.$route.query.tabParent)
     const tabUuid = ref(props.tabsList[0].uuid)
 
@@ -122,40 +110,6 @@ export default defineComponent({
 
     const isDisabledTab = (key) => {
       return key > 0 && isCreateNew.value
-    }
-
-    const lockRecord = () => {
-      const tableName = props.windowMetadata.firstTab.tableName
-      const action = isLock.value ? 'unlockRecord' : 'lockRecord'
-      root.$store.dispatch(action, {
-        tableName,
-        recordId: this.record[tableName + '_ID'],
-        recordUuid: this.record.UUID
-      })
-        .then(() => {
-          root.$message({
-            type: 'success',
-            message: root.$t('data.notification.' + action),
-            showClose: true
-          })
-        })
-        .catch(() => {
-          root.$message({
-            type: 'error',
-            message: root.$t('data.isError') + root.$t('data.' + action),
-            showClose: true
-          })
-        })
-        .finally(() => {
-          root.$store.dispatch('getPrivateAccessFromServer', {
-            tableName,
-            recordId: this.record[tableName + '_ID'],
-            recordUuid: this.record.UUID
-          })
-            .then(privateAccessResponse => {
-              isLock.value = privateAccessResponse.isLocked
-            })
-        })
     }
 
     const setCurrentTab = () => {
@@ -216,13 +170,11 @@ export default defineComponent({
       panelType,
       currentTab,
       tabUuid,
-      isLock,
       // computed
       isCreateNew,
       tabParentStyle,
       // meyhods
       setCurrentTab,
-      lockRecord,
       handleClick,
       isDisabledTab,
       handleBeforeLeave
