@@ -80,11 +80,24 @@ export default defineComponent({
     TitleAndHelp
   },
 
+  props: {
+    // implement by test view
+    uuid: {
+      type: String,
+      default: ''
+    }
+  },
+
   setup(props, { root }) {
-    const processUuid = ref(root.$route.meta.uuid)
     const isLoadedMetadata = ref(false)
     const processMetadata = ref({})
     const panelType = 'process'
+
+    let processUuid = root.$route.meta.uuid
+    // set uuid from test
+    if (!root.isEmptyValue(props.uuid)) {
+      processUuid = props.uuid
+    }
 
     const showContextMenu = computed(() => {
       return root.$store.state.settings.showContextMenu

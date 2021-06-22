@@ -96,11 +96,24 @@ export default defineComponent({
     TitleAndHelp
   },
 
+  props: {
+    // implement by test view
+    uuid: {
+      type: String,
+      default: ''
+    }
+  },
+
   setup(props, { root }) {
     const panelType = 'browser'
     const isLoaded = ref(false)
-    const browserUuid = root.$route.meta.uuid
     const browserMetadata = ref({})
+
+    let browserUuid = root.$route.meta.uuid
+    // set uuid from test
+    if (!root.isEmptyValue(props.uuid)) {
+      browserUuid = props.uuid
+    }
 
     const browserDefinition = computed(() => {
       return root.$store.getters.getBrowser(browserUuid)
