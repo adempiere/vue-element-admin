@@ -74,7 +74,7 @@
                         dateRate.currencyTo.iSOCode
                       }}
                       {{
-                        formatExponential(dateRate.divideRate)
+                        formatConversionCurrenty(dateRate.divideRate)
                       }}
                     </span>
                   </span>
@@ -263,7 +263,7 @@ import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
 import fieldsListCollection from './fieldsListCollection.js'
 import typeCollection from '@/components/ADempiere/Form/VPOS/Collection/typeCollection'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
-import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
+import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
 import { processOrder } from '@/api/ADempiere/form/point-of-sales.js'
 import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
 
