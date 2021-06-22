@@ -271,6 +271,5 @@ export function trimPercentage(stringToParsed) {
 export {
   formatPrice,
   formatPercent,
-  formatQuantity,
-  formatExponential as formatConversionCurrenty
+  formatQuantity
 } from '@/utils/ADempiere/numberFormat.js'

@@ -254,8 +254,7 @@ export default {
       } else if (columnName === 'GrandTotal') {
         return this.formatPrice(row.grandTotal, currency)
       } else if (columnName === 'ConvertedAmount') {
-        const value = this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate)
-        return this.formatPrice(value, this.totalAmountConvertedLine.iSOCode)
+        return this.formatPrice(this.getTotalAmount(row.grandTotal, this.totalAmountConvertedLine.multiplyRate), this.totalAmountConvertedLine.iSOCode)
       }
     },
     productPrice(price, discount) {

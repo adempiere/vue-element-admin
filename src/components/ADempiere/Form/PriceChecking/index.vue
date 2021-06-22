@@ -1,7 +1,7 @@
 <!--
  ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
  Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
- Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+ Contributor(s): Edwin Betancourt edwinBetanc0urt@hotmail.com www.erpya.com
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -105,7 +105,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import fieldsList from './fieldsList.js'
 import { getProductPrice } from '@/api/ADempiere/form/price-checking.js'
-import { formatPrice, getTaxAmount } from '@/utils/ADempiere/numberFormat.js'
+import { formatPercent, formatPrice } from '@/utils/ADempiere/valueFormat.js'
 import { getImagePath } from '@/utils/ADempiere/resource.js'
 
 export default {
@@ -149,8 +149,6 @@ export default {
     this.unsubscribe()
   },
   methods: {
-    formatPrice,
-    getTaxAmount,
     focusProductValue() {
       if (!this.isEmptyValue(this.$refs.ProductValue[0])) {
         this.$refs.ProductValue[0].$children[0].$children[0].$children[1].$children[0].focus()
@@ -167,6 +165,8 @@ export default {
       })
       this.backgroundForm = image.uri
     },
+    formatPercent,
+    formatPrice,
     subscribeChanges() {
       return this.$store.subscribe((mutation, state) => {
         if ((mutation.type === 'currentPointOfSales') || (mutation.type === 'setListProductPrice') || (mutation.type === 'addFocusLost')) {
@@ -291,6 +291,12 @@ export default {
       setTimeout(() => {
         this.messageError = true
       }, 2000)
+    },
+    getTaxAmount(basePrice, taxRate) {
+      if (this.isEmptyValue(basePrice) || this.isEmptyValue(taxRate)) {
+        return 0
+      }
+      return (basePrice * taxRate) / 100
     },
     getGrandTotal(basePrice, taxRate) {
       if (this.isEmptyValue(basePrice)) {

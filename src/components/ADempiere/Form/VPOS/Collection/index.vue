@@ -268,7 +268,7 @@ import fieldsListCollection from './fieldsListCollection.js'
 import typeCollection from '@/components/ADempiere/Form/VPOS/Collection/typeCollection'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
 import { processOrder } from '@/api/ADempiere/form/point-of-sales.js'
-import { formatExponential } from '@/utils/ADempiere/numberFormat.js'
+import { formatPrice, formatExponential } from '@/utils/ADempiere/numberFormat.js'
 
 export default {
   name: 'Collection',
@@ -622,11 +622,12 @@ export default {
   },
   methods: {
     formatExponential,
+    formatPrice,
     sumCash(cash) {
       let sum = 0
       if (cash) {
         cash.forEach((pay) => {
-          if (!this.isEmptyValue(pay.divideRate) && pay.divideRate !== 0) {
+          if (!this.isEmptyValue(pay.divideRate)) {
             sum += pay.amountConvertion / pay.divideRate
           } else {
             sum += pay.amount
