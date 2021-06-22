@@ -41,9 +41,9 @@
           :name="processMetadata.name"
           :help="processMetadata.help"
         />
+
         <el-scrollbar wrap-class="scroll-child">
-          <main-panel
-            :position-tab="processMetadata.accesLevel"
+          <panel-definition
             :container-uuid="processUuid"
             :metadata="processMetadata"
             :panel-type="panelType"
@@ -75,7 +75,7 @@ export default defineComponent({
   name: 'ProcessView',
 
   components: {
-    MainPanel: PanelDefinition,
+    PanelDefinition,
     ContextMenu,
     TitleAndHelp
   },
@@ -121,7 +121,7 @@ export default defineComponent({
       }
 
       root.$store.dispatch('getPanelAndFields', {
-        containerUuid: processUuid.value,
+        containerUuid: processUuid,
         panelType,
         routeToDelete: root.$route
       }).then(processResponse => {
@@ -138,9 +138,11 @@ export default defineComponent({
       panelType,
       isLoadedMetadata,
       processMetadata,
-      getProcess,
+      // computeds
       showContextMenu,
-      getterProcess
+      getterProcess,
+      // methods
+      getProcess
     }
   }
 })
