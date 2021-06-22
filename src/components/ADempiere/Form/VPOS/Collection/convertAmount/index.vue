@@ -47,7 +47,7 @@
 </template>
 <script>
 import formMixin from '@/components/ADempiere/Form/formMixin'
-import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
+import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
 import fieldsListConvertAmountCollection from './fieldsListConvertAmountCollection.js'
 
 export default {

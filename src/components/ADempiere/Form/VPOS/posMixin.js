@@ -18,7 +18,11 @@ import {
   findProduct,
   updateOrderLine
 } from '@/api/ADempiere/form/point-of-sales.js'
-import { formatDate } from '@/utils/ADempiere/valueFormat.js'
+import {
+  formatDate,
+  formatPrice,
+  formatQuantity
+} from '@/utils/ADempiere/valueFormat.js'
 import orderLineMixin from './Order/orderLineMixin.js'
 
 export default {
@@ -177,6 +181,8 @@ export default {
   },
   methods: {
     formatDate,
+    formatPrice,
+    formatQuantity,
     withoutPOSTerminal() {
       if (this.isEmptyValue(this.currentPointOfSales)) {
         this.$message({
@@ -364,8 +370,7 @@ export default {
       // this.order = orderToPush
     },
     getOrderTax(currency) {
-      const value = this.currentOrder.grandTotal - this.currentOrder.totalLines
-      return this.formatPrice(value, currency)
+      return this.formatPrice(this.currentOrder.grandTotal - this.currentOrder.totalLines, currency)
     },
     subscribeChanges() {
       return this.$store.subscribe((mutation, state) => {

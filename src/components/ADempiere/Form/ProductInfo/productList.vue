@@ -147,7 +147,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import CustomPagination from '@/components/ADempiere/Pagination'
 import fieldsListProductPrice from './fieldsList.js'
-import { formatPrice, formatQuantity, getTaxAmount } from '@/utils/ADempiere/numberFormat.js'
+import { formatPrice, formatQuantity } from '@/utils/ADempiere/valueFormat.js'
 
 export default {
   name: 'ProductList',
@@ -281,7 +281,6 @@ export default {
   methods: {
     formatPrice,
     formatQuantity,
-    getTaxAmount,
     getImageFromSource(keyValue) {
       if (this.isEmptyValue(keyValue)) {
         return this.defaultImage
@@ -359,6 +358,12 @@ export default {
         attribute: this.popoverName,
         isShowed: false
       })
+    },
+    getTaxAmount(basePrice, taxRate) {
+      if (this.isEmptyValue(basePrice) || this.isEmptyValue(taxRate)) {
+        return 0
+      }
+      return (basePrice * taxRate) / 100
     },
     associatedprocesses(product, report) {
       report.parametersList.push({ columnName: 'M_Product_ID', value: product }, { columnName: 'M_PriceList_ID', value: this.listPrice })

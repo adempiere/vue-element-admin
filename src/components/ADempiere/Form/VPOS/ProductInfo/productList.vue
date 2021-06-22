@@ -79,7 +79,7 @@
 import formMixin from '@/components/ADempiere/Form/formMixin.js'
 import CustomPagination from '@/components/ADempiere/Pagination'
 import fieldsListProductPrice from './fieldsList.js'
-import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
+import { formatPrice } from '@/utils/ADempiere/valueFormat.js'
 
 export default {
   name: 'ProductList',

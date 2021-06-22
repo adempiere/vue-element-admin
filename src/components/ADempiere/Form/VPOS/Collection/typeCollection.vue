@@ -96,6 +96,10 @@
 
 <script>
 import {
+  formatDate,
+  formatPrice
+} from '@/utils/ADempiere/valueFormat.js'
+import {
   requestGetConversionRate
 } from '@/api/ADempiere/form/point-of-sales.js'
 import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
@@ -173,6 +177,8 @@ export default {
     }
   },
   methods: {
+    formatDate,
+    formatPrice,
     // If there are payments in another currency, search for conversion
     convertingPaymentMethods() {
       if (!this.isEmptyValue(this.paymentCurrency)) {

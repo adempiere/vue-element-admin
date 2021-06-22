@@ -30,6 +30,10 @@
 import ProductInfoList from './productList'
 import fieldMixin from '@/components/ADempiere/Field/mixin/mixinField.js'
 import staticReportRoutes from '@/utils/ADempiere/constants/zoomReport'
+import {
+  formatPrice,
+  formatQuantity
+} from '@/utils/ADempiere/valueFormat.js'
 
 export default {
   name: 'ProductInfo',
@@ -88,6 +92,8 @@ export default {
     // }
   },
   methods: {
+    formatPrice,
+    formatQuantity,
     shortcutKeyMethod(event) {
       switch (event.srcKey) {
         case 'refreshList':

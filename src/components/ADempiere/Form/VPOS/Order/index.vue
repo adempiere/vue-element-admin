@@ -375,7 +375,12 @@ import BusinessPartner from '@/components/ADempiere/Form/VPOS/BusinessPartner'
 import fieldLine from '@/components/ADempiere/Form/VPOS/Order/line/index'
 import ProductInfo from '@/components/ADempiere/Form/VPOS/ProductInfo'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
-import { formatDate } from '@/utils/ADempiere/valueFormat.js'
+// Format of values ( Date, Price, Quantity )
+import {
+  formatDate,
+  formatPrice,
+  formatQuantity
+} from '@/utils/ADempiere/valueFormat.js'
 
 export default {
   name: 'Order',
@@ -590,6 +595,8 @@ export default {
   },
   methods: {
     formatDate,
+    formatPrice,
+    formatQuantity,
     closeConvertion() {
       this.seeConversion = false
     },
