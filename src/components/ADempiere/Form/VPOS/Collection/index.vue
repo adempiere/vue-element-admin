@@ -64,13 +64,9 @@
                 <!-- Conversion rate to date -->
                 <b v-if="!isEmptyValue(dateRate)" style="float: right;">
                   <span v-if="!isEmptyValue(dateRate.divideRate)">
-                    <span v-if="Number(formatExponential(dateRate.divideRate)) > 1">
-                      <!-- TODO: Evaluate if needed formatExponential into formatPrice -->
+                    <span v-if="formatConversionCurrenty(dateRate.divideRate) > 1">
                       {{
-                        formatPrice(
-                          formatExponential(dateRate.divideRate),
-                          dateRate.currencyTo.iSOCode
-                        )
+                        formatPrice(formatConversionCurrenty(dateRate.divideRate), dateRate.currencyTo.iSOCode)
                       }}
                     </span>
                     <span v-else>
@@ -267,8 +263,9 @@ import posMixin from '@/components/ADempiere/Form/VPOS/posMixin.js'
 import fieldsListCollection from './fieldsListCollection.js'
 import typeCollection from '@/components/ADempiere/Form/VPOS/Collection/typeCollection'
 import convertAmount from '@/components/ADempiere/Form/VPOS/Collection/convertAmount/index'
+import { formatPrice } from '@/utils/ADempiere/numberFormat.js'
 import { processOrder } from '@/api/ADempiere/form/point-of-sales.js'
-import { formatPrice, formatExponential } from '@/utils/ADempiere/numberFormat.js'
+import { FIELDS_DECIMALS } from '@/utils/ADempiere/references'
 
 export default {
   name: 'Collection',
@@ -621,7 +618,14 @@ export default {
     this.defaultValueCurrency()
   },
   methods: {
-    formatExponential,
+    formatNumber({ displayType, number }) {
+      let fixed = 0
+      // Amount, Costs+Prices, Number
+      if (FIELDS_DECIMALS.includes(displayType)) {
+        fixed = 2
+      }
+      return new Intl.NumberFormat().format(number.toFixed(fixed))
+    },
     formatPrice,
     sumCash(cash) {
       let sum = 0
