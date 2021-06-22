@@ -498,7 +498,6 @@ export function calculationValue(value, event) {
     }
   }
 }
-
 /**
  * Search in the currency lists for the current currency
  * @author Elsio Sanchez <elsiosanches@gmail.com>
@@ -523,13 +522,13 @@ export function currencyFind({
   }
   return defaultCurrency.iSOCode
 }
-
 /**
  * Search the Payment List for the Current Payment
  * @author Elsio Sanchez <elsiosanches@gmail.com>
  * @param {string} currentPayment Current Payment
  * @param {array} listTypePayment Payment Type Listings
  */
+
 export function tenderTypeFind({
   currentPayment,
   listTypePayment
