@@ -136,22 +136,21 @@ const getters = {
    */
   getFieldsListNotMandatory: (state, getters) => ({
     containerUuid,
+    isTable = false,
     isEvaluateShowed = true
   }) => {
     // all optionals (not mandatory) fields
     return getters.getFieldsListFromPanel(containerUuid)
       .filter(fieldItem => {
         const isMandatory = fieldItem.isMandatory || fieldItem.isMandatoryFromLogic
-        if (isMandatory) {
+        if (isMandatory && !isTable) {
           return false
         }
-        const isButtonField = fieldItem.componentPath === 'FieldButton'
-        if (isButtonField) {
-          return false
-        }
+
         if (isEvaluateShowed) {
-          return fieldIsDisplayed(fieldItem)
+          return fieldIsDisplayed(fieldItem, isTable)
         }
+
         return true
       })
   },
@@ -329,6 +328,7 @@ const getters = {
     const fieldsList = getters.getFieldsListFromPanel(containerUuid)
     let fieldsIsDisplayed = []
     const fieldsNotDisplayed = []
+
     if (fieldsList.length) {
       fieldsIsDisplayed = fieldsList.filter(itemField => {
         const isMandatory = itemField.isMandatory && itemField.isMandatoryFromLogic
@@ -338,8 +338,9 @@ const getters = {
         fieldsNotDisplayed.push(itemField)
       })
     }
+
     return {
-      fieldIsDisplayed,
+      fieldsIsDisplayed,
       fieldsNotDisplayed,
       totalField: fieldsList.length,
       isDisplayed: Boolean(fieldsIsDisplayed.length)
