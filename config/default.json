@@ -23,9 +23,9 @@
   },
   "betaFunctionality": {
     "window": false,
-    "process": true,
-    "report": true,
-    "smartBrowser": true,
+    "process": false,
+    "report": false,
+    "smartBrowser": false,
     "form": false
   },
   "pointOfSales": {
