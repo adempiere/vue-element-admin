@@ -17,34 +17,27 @@
 // please if you want to implement a custom dashboard create a new fielwith api definition
 // Get Instance for connection
 import { request } from '@/utils/ADempiere/request'
+import { camelizeObjectKeys } from '@/utils/ADempiere/transformObject.js'
 
-// List all dashboard for role
-export function requestLisDashboards({
-  roleId,
-  roleUuid,
+// Get Metrics for Charts
+export function getMetrics({
+  id,
+  uuid,
   pageToken,
   pageSize
 }) {
   return request({
-    url: '/dashboard/dashboards',
+    url: '/dashboard/addons/charts/metrics',
     method: 'get',
     params: {
-      role_id: roleId,
-      role_uuid: roleUuid,
+      id,
+      uuid,
       // Page Data
       pageToken,
       pageSize
     }
   })
-    .then(dashboardsListResponse => {
-      const { convertDashboard } = require('@/utils/ADempiere/apiConverts/dashboard.js')
-
-      return {
-        recordCount: dashboardsListResponse.record_count,
-        dashboardsList: dashboardsListResponse.records.map(dashboard => {
-          return convertDashboard(dashboard)
-        }),
-        nextPageToken: dashboardsListResponse.next_page_token
-      }
+    .then(chart => {
+      return camelizeObjectKeys(chart)
     })
 }
