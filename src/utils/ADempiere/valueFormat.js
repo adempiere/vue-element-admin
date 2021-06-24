@@ -27,7 +27,7 @@ import {
   isLookup,
   YES_NO
 } from '@/utils/ADempiere/references.js'
-import { formatNumber } from '@/utils/ADempiere/numberFormat.js'
+import { formatNumber, getCountryCode, getStandardPrecision, getCurrency } from '@/utils/ADempiere/numberFormat.js'
 
 /**
  * Convert string values ('Y' or 'N') to component compatible Boolean values
@@ -164,6 +164,81 @@ export function formatDate(date, isTime = false) {
 }
 
 /**
+ * Get formatted price and show currency
+ * @param {number} value
+ * @param {string} currency default 'USD'
+ * @returns {string} number format with thousands separator, precision, currency format
+ */
+export function formatPrice(value, currency, country) {
+  if (isEmptyValue(value)) {
+    value = 0
+  }
+
+  if (isEmptyValue(currency)) {
+    currency = getCurrency()
+  }
+
+  // const precision = getStandardPrecision()
+
+  if (isEmptyValue(country)) {
+    country = getCountryCode()
+  }
+
+  // get formatted currency number
+  return new Intl.NumberFormat(country, {
+    style: 'currency',
+    currency,
+    useGrouping: true,
+    // minimumFractionDigits: precision,
+    // maximumFractionDigits: precision,
+    minimumIntegerDigits: 1
+  }).format(value)
+}
+
+/**
+ * Get formatted number, integer and decimal
+ * @param {number} value
+ * @returns {string} number format with thousands separator, precision
+ * @returns {boolean} number format without precision
+ */
+export function formatQuantity(value, isInteger = false) {
+  if (isEmptyValue(value)) {
+    value = 0
+  }
+
+  let precision = getStandardPrecision()
+  // without decimals
+  if (isInteger) {
+    // if (Number.isInteger(value)) {
+    precision = 0
+  }
+
+  // get formatted decimal number
+  return new Intl.NumberFormat(undefined, {
+    useGrouping: true, // thousands separator
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: precision,
+    maximumFractionDigits: precision
+  }).format(value)
+}
+
+/**
+ * Format percentage based on Intl library
+ * @param {number} value
+ * @returns {string} number format with percentage
+ */
+export function formatPercent(value) {
+  if (isEmptyValue(value)) {
+    value = 0
+  }
+
+  // get formatted number
+  return new Intl.NumberFormat(getCountryCode(), {
+    style: 'percent'
+  }).format(value)
+}
+
+/**
  * Return a format for field depending of reference for him
  */
 export function formatField({
@@ -266,10 +341,3 @@ export function trimPercentage(stringToParsed) {
 
   return parsedValue
 }
-
-// TODO: Remove this export from numberFormat and import directly from numberFormat
-export {
-  formatPrice,
-  formatPercent,
-  formatQuantity
-} from '@/utils/ADempiere/numberFormat.js'
