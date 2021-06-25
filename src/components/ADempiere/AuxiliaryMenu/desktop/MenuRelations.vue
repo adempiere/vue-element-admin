@@ -17,12 +17,14 @@
             <div style="margin-right: 5%;margin-top: 10%;">
               <svg-icon :icon-class="relation.meta.icon" />
             </div>
+
             <div>
               <span class="contents">
                 <b class="label">
                   {{ relation.meta.title }}
                 </b>
               </span>
+
               <p class="description">
                 {{ relation.meta.description }}
               </p>
@@ -35,3 +37,27 @@
 </template>
 
 <script src="@/components/ADempiere/AuxiliaryMenu/menuRelations.js"></script>
+
+<style scoped lang="scss" src="./common.scss">
+</style>
+<style lang="scss">
+// dropdown menu item container
+.el-dropdown-menu {
+  padding: 10px 0;
+  max-width: 220px;
+}
+
+// height, and font size of the prefix icons of menu items
+.el-dropdown-menu--mini .el-dropdown-menu__item {
+  line-height: 14px;
+  padding: 0px 15px;
+  font-size: 11px;
+}
+
+// eliminates the first top division line
+.el-dropdown-menu__item--divided:first-child {
+  border-top-width: 0px;
+  border-top-color: transparent;
+  border-top-style: hidden;
+}
+</style>

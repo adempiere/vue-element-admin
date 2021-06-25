@@ -120,43 +120,45 @@
 
 <script src="@/components/ADempiere/AuxiliaryMenu/menuActions.js"></script>
 
+<style scoped lang="scss" src="./common.scss">
+</style>
+<style scoped>
+.el-dropdown .el-button-group {
+  display: inline-flex;
+}
+
+/* height, and font size of the prefix icons of menu items */
+.el-dropdown-menu--medium .el-dropdown-menu__item {
+  line-height: 17px;
+  padding: 0 17px;
+  display: grid;
+  font-size: 14px;
+}
+</style>
 <style lang="scss">
 .el-button-group {
+  // light blue style of the first section of the menu button
+  >.el-button:not(:last-child) {
+    // margin-right: -1px;
+    color: #409eff;
+    background: #ecf5ff;
+    border-color: #b3d8ff;
+  }
+
+  // light blue style of the drop down menu section
+  .el-button--primary:last-child {
+    margin-right: 2px;
+    color: #409eff;
+    background: #e6f1fd;
+    border-color: #b3d8ff;
+    border-left-color: #000000 !important;
+  }
+
+  // dark blue style when pointing to the menu
   .el-button--primary:hover {
     background: #1890ff;
     border-color: #1890ff;
     color: #FFFFFF;
   }
-
-  .el-button--primary:last-child {
-    margin-right: 1px;
-    color: #409eff;
-    background: #e6f1fd;
-    border-color: #b3d8ff;
-    border-top-color: #b3d8ff;
-    border-right-color: #b3d8ff;
-    border-bottom-color: #b3d8ff;
-    border-left-color: #000000 !important;
-  }
-
-  >.el-button:not(:last-child) {
-    margin-right: -1px;
-    color: #409eff;
-    background: #ecf5ff;
-    border-color: #b3d8ff;
-  }
 }
-
-// .el-dropdown .el-button-group:hover {
-//   background: #1890ff;
-//   border-color: #1890ff;
-//   color: #FFFFFF;
-// }
-
-// .el-button-group:hover {
-//   background: #1890ff;
-//   border-color: #1890ff;
-//   color: #FFFFFF;
-// }
-
 </style>

@@ -36,17 +36,17 @@
           :divided="true"
         >
           <div class="contents">
-            <span class="contents">
-              <b class="label">
-                {{ reference.displayName }}
-              </b>
-            </span>
+            <div>
+              <span class="contents">
+                <b class="label">
+                  {{ reference.displayName }}
+                </b>
+              </span>
 
-            <!--
-            <p class="description">
-              {{ $t('data.noDescription') }}
-            </p>
-            -->
+              <p class="description">
+                {{ $t('data.noDescription') }}
+              </p>
+            </div>
           </div>
         </el-dropdown-item>
 
@@ -56,3 +56,6 @@
 </template>
 
 <script src="@/components/ADempiere/AuxiliaryMenu/menuReferences.js"></script>
+
+<style scoped lang="scss" src="./common.scss">
+</style>
