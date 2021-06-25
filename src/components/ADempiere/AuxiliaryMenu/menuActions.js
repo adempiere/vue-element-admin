@@ -1,15 +1,76 @@
 
-import { defineComponent } from '@vue/composition-api'
+import { computed, defineComponent, ref } from '@vue/composition-api'
 
 import { showNotification } from '@/utils/ADempiere/notification.js'
 
 export default defineComponent({
   name: 'MenuActions',
 
-  setup(props, { root }) {
+  setup(props, { root, parent }) {
+    const {
+      containerUuid, parentUuid, panelType,
+      tableName, isInsertRecord, menuParentUuid
+    } = parent._props
+
+    const actionsList = ref([])
+
     const setShareLink = () => {
 
     }
+
+    const getterFieldsList = computed(() => {
+      return root.$store.getters.getFieldsListFromPanel(containerUuid)
+    })
+
+    const recordUuid = computed(() => {
+      const { action } = root.$route.query
+      return action
+    })
+
+    const isWindow = computed(() => {
+      return panelType === 'window'
+    })
+
+    const isWithRecord = computed(() => {
+      return !root.isEmptyValue(recordUuid.value) && recordUuid.value !== 'create-new'
+    })
+
+    const isReferecesContent = computed(() => {
+      if (isWindow.value && isWithRecord.value) {
+        return true
+      }
+      return false
+    })
+
+    const getterContextMenu = computed(() => {
+      return root.$store.getters.getContextMenu(containerUuid)
+    })
+
+    const isUndoAction = computed(() => {
+      if (isWindow.value) {
+        if (!isWithRecord.value) {
+          return true
+        }
+      }
+      return false
+    })
+
+    const defaultActionName = computed(() => {
+      if (isWindow.value) {
+        if (isWithRecord.value) {
+          return root.$t('window.newRecord')
+        }
+        return root.$t('data.undo')
+      }
+      return root.$t('components.RunProcess')
+    })
+
+    const defaultActionToRun = computed(() => {
+      if (isUndoAction.value) {
+        return actionsList.value[2]
+      }
+      return actionsList.value[0]
+    })
 
     const clickRunAction = (action) => {
       if (action === 'refreshData') {
@@ -34,30 +95,30 @@ export default defineComponent({
     }
 
     const refreshData = () => {
-      if (this.isWindow) {
-        this.$store.dispatch('getDataListTab', {
-          parentUuid: this.parentUuid,
-          containerUuid: this.containerUuid,
+      if (isWindow.value) {
+        root.$store.dispatch('getDataListTab', {
+          parentUuid: parentUuid,
+          containerUuid: containerUuid,
           isRefreshPanel: true,
-          recordUuid: this.recordUuid
+          recordUuid: recordUuid.value
         })
           .catch(error => {
             console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
           })
-      } else if (this.panelType === 'browser') {
-        const fieldsEmpty = this.$store.getters.getFieldsListEmptyMandatory({
-          containerUuid: this.containerUuid,
-          fieldsList: this.getterFieldsList
+      } else if (panelType === 'browser') {
+        const fieldsEmpty = root.$store.getters.getFieldsListEmptyMandatory({
+          containerUuid: containerUuid,
+          fieldsList: getterFieldsList.value
         })
         if (fieldsEmpty.length) {
-          this.$message({
-            message: this.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
+          root.$message({
+            message: root.$t('notifications.mandatoryFieldMissing') + fieldsEmpty,
             type: 'info',
             showClose: true
           })
         } else {
-          this.$store.dispatch('getBrowserSearch', {
-            containerUuid: this.containerUuid,
+          root.$store.dispatch('getBrowserSearch', {
+            containerUuid: containerUuid,
             isClearSelection: true
           })
         }
@@ -100,16 +161,16 @@ export default defineComponent({
         // run process associate with view (window or browser)
         showModal(action)
       } else if (action.type === 'dataAction') {
-        if (action.action === 'undoModifyData' && Boolean(!this.getDataLog) && this.getOldRouteOfWindow) {
+        if (action.action === 'undoModifyData' && Boolean(!getDataLog.value) && getOldRouteOfWindow.value) {
           root.$router.push({
-            path: this.getOldRouteOfWindow.path,
+            path: getOldRouteOfWindow.value.path,
             query: {
-              ...this.getOldRouteOfWindow.query
+              ...getOldRouteOfWindow.value.query
             }
           }, () => {})
         } else if (action.action === 'recordAccess') {
           root.$store.dispatch('setShowDialog', {
-            type: this.panelType,
+            type: panelType,
             action: action
           })
         } else if (action.action !== 'undoModifyData') {
@@ -118,13 +179,13 @@ export default defineComponent({
           }
 
           root.$store.dispatch(action.action, {
-            parentUuid: this.parentUuid,
-            containerUuid: this.containerUuid,
-            recordUuid: this.recordUuid,
-            panelType: this.panelType,
+            parentUuid: parentUuid,
+            containerUuid: containerUuid,
+            recordUuid: recordUuid.value,
+            panelType: panelType,
             isNewRecord: action.action === 'setDefaultValues',
-            tableName: this.tableName,
-            recordId: this.getCurrentRecord[this.tableNameCurrentTab + '_ID']
+            tableName: tableName,
+            recordId: getCurrentRecord.value[tableName + '_ID']
           })
             .then(response => {
               root.$message({
@@ -137,9 +198,9 @@ export default defineComponent({
               }
             })
             .catch(error => {
-              this.$message({
+              root.$message({
                 type: 'error',
-                message: this.$t('notifications.error') + error.message,
+                message: root.$t('notifications.error') + error.message,
                 showClose: true
               })
             })
@@ -160,16 +221,16 @@ export default defineComponent({
 
       // run process or report
       if (root.isEmptyValue(fieldsNotReady)) {
-        let menuParentUuid = this.menuParentUuid
-        if (root.isEmptyValue(menuParentUuid) && this.$route.params) {
-          if (!this.isEmptyValue(this.$route.params.menuParentUuid)) {
-            menuParentUuid = this.$route.params.menuParentUuid
+        let menuUuid = menuParentUuid
+        if (root.isEmptyValue(menuUuid) && root.$route.params) {
+          if (!root.isEmptyValue(root.$route.params.menuParentUuid)) {
+            menuUuid = root.$route.params.menuParentUuid
           }
         }
 
-        if (this.panelType === 'process') {
-          this.$store.dispatch('setTempShareLink', {
-            processId: this.$route.params.processId,
+        if (panelType === 'process') {
+          root.$store.dispatch('setTempShareLink', {
+            processId: root.$route.params.processId,
             href: window.location.href
           })
         }
@@ -187,12 +248,12 @@ export default defineComponent({
 
         root.$store.dispatch(action.action, {
           action,
-          parentUuid: this.containerUuid,
+          parentUuid: containerUuid,
           containerUuid: containerParams, // EVALUATE IF IS action.uuid
-          panelType: this.panelType, // determinate if get table name and record id (window) or selection (browser)
+          panelType, // determinate if get table name and record id (window) or selection (browser)
           reportFormat, // this.$route.query.reportType ? this.$route.query.reportType : action.reportExportType,
-          menuParentUuid, // to load relationsList in context menu (report view)
-          routeToDelete: this.$route
+          menuParentUuid: menuUuid, // to load relationsList in context menu (report view)
+          routeToDelete: root.$route
         })
           .catch(error => {
             console.warn(error)
@@ -255,13 +316,25 @@ export default defineComponent({
         })
     }
 
+    const recordAccess = computed(() => {
+      return {
+        action: 'recordAccess',
+        disabled: false,
+        hidden: false,
+        isSortTab: true,
+        name: root.$t('data.recordAccess.actions'),
+        type: 'dataAction',
+        tableName: tableName
+      }
+    })
+
     const validatePrivateAccess = ({ isLocked, tableName, recordId }) => {
-      if (!this.isPersonalLock) {
+      if (!isPersonalLock.value) {
         let isHiddenLock = false
         if (isLocked) {
           isHiddenLock = true
         }
-        this.actions = this.actions.map(actionItem => {
+        actionsList.value = actionsList.value.map(actionItem => {
           if (actionItem.action === 'lockRecord') {
             return {
               ...actionItem,
@@ -280,9 +353,163 @@ export default defineComponent({
       }
     }
 
+    const getAllDataRecords = computed(() => {
+      return root.$store.getters.getDataRecordAndSelection(containerUuid)
+    })
+
+    const getCurrentRecord = computed(() => {
+      const record = getAllDataRecords.value.record.find(fieldItem => {
+        if (recordUuid.value === fieldItem.UUID) {
+          return fieldItem
+        }
+      })
+      if (!root.isEmptyValue(record)) {
+        return record
+      }
+      return {}
+    })
+
+    const getDataLog = computed(() => {
+      if (isWindow.value) {
+        return root.$store.getters.getDataLog(containerUuid, recordUuid.value)
+      }
+      return undefined
+    })
+
+    const getOldRouteOfWindow = computed(() => {
+      if (isWindow.value) {
+        const oldRoute = root.$store.state['windowControl/index'].windowOldRoute
+        if (!root.isEmptyValue(oldRoute.query.action) && oldRoute.query.action !== 'create-new' && root.$route.query.action === 'create-new') {
+          return oldRoute
+        }
+      }
+      return false
+    })
+
+    const isPersonalLock = computed(() => {
+      return root.$store.getters['user/getIsPersonalLock']
+    })
+
+    const isLockRecord = computed(() => {
+      return root.$store.getters['user/getRole'].isPersonalLock
+    })
+
+    const generateContextMenu = () => {
+      const metadataMenu = getterContextMenu.value
+
+      // the function is broken avoiding that an error is generated when closing
+      // session being in a window, since the store of vuex is cleaned, being
+      // this.metadataMenu with value undefined
+      if (root.isEmptyValue(metadataMenu)) {
+        return
+      }
+      actionsList.value = metadataMenu.actions
+
+      // TODO: Add store attribute to avoid making repeated requests
+      let isChangePrivateAccess = true
+      if (isReferecesContent.value) {
+        if ((!root.isEmptyValue(getCurrentRecord.value) && !root.isEmptyValue(tableName))) {
+          root.$store.dispatch('getPrivateAccessFromServer', {
+            tableName: tableName,
+            recordId: getCurrentRecord.value[tableName + '_ID'],
+            recordUuid: recordUuid.value
+          })
+            .then(privateAccessResponse => {
+              isChangePrivateAccess = false
+              validatePrivateAccess(privateAccessResponse)
+            })
+        }
+
+        const processAction = actionsList.value.find(item => {
+          // TODO: Compare with 'action' attribute and not with 'name' (this change with language)
+          if (item.name === 'Procesar Orden' || (item.name === 'Process Order')) {
+            return item
+          }
+        })
+        if (processAction) {
+          root.$store.dispatch('setOrder', processAction)
+        }
+      }
+      if (isWindow.value && root.isEmptyValue(actionsList.value.find(element => element.action === 'recordAccess'))) {
+        actionsList.value.push(recordAccess.value)
+      }
+
+      if (!root.isEmptyValue(actionsList.value)) {
+        actionsList.value.forEach(itemAction => {
+          const { action } = itemAction
+          if (root.$route.meta.type === 'report' && action === 'startProcess') {
+            itemAction.reportExportType = 'html'
+          }
+
+          // if no exists set prop with value
+          itemAction.disabled = false
+          if ((root.$route.name !== 'Report Viewer' && action === 'changeParameters') ||
+             (root.$route.meta.type === 'process' && itemAction.type === 'summary')) {
+            itemAction.disabled = true
+          }
+
+          if (root.$route.meta.type === 'window') {
+            if (isLockRecord.value) {
+              if (action === 'lockRecord') {
+                itemAction.hidden = isChangePrivateAccess
+              } else if (action === 'unlockRecord') {
+                itemAction.hidden = !isChangePrivateAccess
+              }
+            }
+
+            // rollback
+            if (itemAction.action === 'undoModifyData') {
+              itemAction.disabled = Boolean(!getDataLog.value && !getOldRouteOfWindow.value)
+            } else if (!isWithRecord.value || !isInsertRecord) {
+              itemAction.disabled = true
+            }
+          }
+        })
+      }
+    }
+
+    const iconAction = (action) => {
+      let icon
+      if (action.type === 'dataAction') {
+        switch (action.action) {
+          case 'setDefaultValues':
+            icon = 'el-icon-news'
+            break
+          case 'deleteEntity':
+            icon = 'el-icon-delete'
+            break
+          case 'undoModifyData':
+            icon = 'el-icon-refresh-left'
+            break
+          case 'lockRecord':
+            icon = 'el-icon-lock'
+            break
+          case 'unlockRecord':
+            icon = 'el-icon-unlock'
+            break
+          case 'recordAccess':
+            icon = 'el-icon-c-scale-to-original'
+            break
+        }
+      } else if (action.type === 'process') {
+        icon = 'el-icon-setting'
+      } else {
+        icon = 'el-icon-setting'
+      }
+      return icon
+    }
+
+    generateContextMenu()
+
     return {
+      actionsList,
+      // computeds
+      defaultActionName,
+      defaultActionToRun,
       // methods
-      clickRunAction
+      runAction,
+      clickRunAction,
+      iconAction
     }
   }
 })

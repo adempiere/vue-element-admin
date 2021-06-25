@@ -991,7 +991,7 @@ export default {
             referencesList
           }
           commit('addReferencesList', references)
-          resolve(referenceResponse)
+          resolve(references)
         })
         .catch(error => {
           console.warn(`References Load Error ${error.code}: ${error.message}.`)

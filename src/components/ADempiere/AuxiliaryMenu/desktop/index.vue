@@ -16,6 +16,52 @@ import MenuReferences from '@/components/ADempiere/AuxiliaryMenu/desktop/MenuRef
 export default defineComponent({
   name: 'AuxiliaryMenuDesktop',
 
+  props: {
+    menuParentUuid: {
+      type: String,
+      default: undefined
+    },
+    // uuid of the component where it is called
+    parentUuid: {
+      type: String,
+      default: undefined
+    },
+    // uuid of the component where it is called
+    containerUuid: {
+      type: String,
+      default: undefined
+    },
+    panelType: {
+      type: String,
+      default: undefined
+    },
+    tableName: {
+      type: String,
+      default: undefined
+    },
+    isReport: {
+      type: Boolean,
+      default: false
+    },
+    lastParameter: {
+      type: String,
+      default: undefined
+    },
+    reportFormat: {
+      type: String,
+      default: undefined
+    },
+    // used only window
+    isInsertRecord: {
+      type: Boolean,
+      default: undefined
+    },
+    isListRecord: {
+      type: Boolean,
+      default: false
+    }
+  },
+
   components: {
     MenuActions,
     MenuRelations,

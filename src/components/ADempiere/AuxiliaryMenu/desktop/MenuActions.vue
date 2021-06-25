@@ -9,6 +9,7 @@
     @click="runAction(defaultActionToRun)"
   >
     {{ defaultActionName }}
+
     <el-dropdown-menu slot="dropdown">
       <el-scrollbar wrap-class="scroll-child">
         <el-dropdown-item
@@ -24,16 +25,15 @@
                   {{ $t('components.contextMenuRefresh') }}
                 </b>
               </span>
-              <p
-                class="description"
-              >
+              <p class="description">
                 {{ $t('data.noDescription') }}
               </p>
             </div>
           </div>
         </el-dropdown-item>
+
         <el-dropdown-item
-          v-for="(action, index) in actions"
+          v-for="(action, index) in actionsList"
           :key="index"
           :command="action"
           :divided="true"
@@ -51,6 +51,7 @@
               <p class="description">
                 {{ $t('data.noDescription') }}
               </p>
+
               <el-dropdown-menu
                 slot="dropdown"
                 @command="handleCommand"
@@ -72,18 +73,14 @@
                   >
                     {{ childs.description }}
                   </p>
-                  <p
-                    v-else
-                    class="description"
-                  >
+                  <p v-else class="description">
                     {{ $t('data.noDescription') }}
                   </p>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <div
-              v-else
-            >
+
+            <div v-else>
               <span class="contents">
                 <b class="label">
                   {{ action.name }}
@@ -95,6 +92,7 @@
             </div>
           </div>
         </el-dropdown-item>
+
         <el-dropdown-item
           command="shareLink"
           :divided="true"
@@ -121,3 +119,44 @@
 </template>
 
 <script src="@/components/ADempiere/AuxiliaryMenu/menuActions.js"></script>
+
+<style lang="scss">
+.el-button-group {
+  .el-button--primary:hover {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: #FFFFFF;
+  }
+
+  .el-button--primary:last-child {
+    margin-right: 1px;
+    color: #409eff;
+    background: #e6f1fd;
+    border-color: #b3d8ff;
+    border-top-color: #b3d8ff;
+    border-right-color: #b3d8ff;
+    border-bottom-color: #b3d8ff;
+    border-left-color: #000000 !important;
+  }
+
+  >.el-button:not(:last-child) {
+    margin-right: -1px;
+    color: #409eff;
+    background: #ecf5ff;
+    border-color: #b3d8ff;
+  }
+}
+
+// .el-dropdown .el-button-group:hover {
+//   background: #1890ff;
+//   border-color: #1890ff;
+//   color: #FFFFFF;
+// }
+
+// .el-button-group:hover {
+//   background: #1890ff;
+//   border-color: #1890ff;
+//   color: #FFFFFF;
+// }
+
+</style>

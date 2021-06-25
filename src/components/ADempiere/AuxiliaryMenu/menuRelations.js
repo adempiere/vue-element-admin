@@ -4,11 +4,15 @@ import { defineComponent, computed } from '@vue/composition-api'
 export default defineComponent({
   name: 'MenuRelations',
 
-  setup(props, { root }) {
+  setup(props, { root, parent }) {
+    const {
+      menuParentUuid
+    } = parent._props
+
     const relationsList = computed(() => {
       let menuUuid = root.$route.params.menuParentUuid
       if (root.isEmptyValue(menuUuid)) {
-        menuUuid = null // this.menuParentUuid
+        menuUuid = menuParentUuid
       }
       const relations = root.$store.getters.getRelations(menuUuid)
       if (!root.isEmptyValue(relations)) {

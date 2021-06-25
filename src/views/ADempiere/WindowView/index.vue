@@ -18,12 +18,12 @@
 
 <template>
   <div v-if="isLoaded" key="window-loaded">
-    <context-menu
+    <auxiliary-menu
       :menu-parent-uuid="$route.meta.parentUuid"
       :parent-uuid="windowUuid"
       :container-uuid="windowMetadata.currentTabUuid"
-      :table-name="windowMetadata.currentTab.tableName"
       :panel-type="panelType"
+      :table-name="windowMetadata.currentTab.tableName"
       :is-insert-record="windowMetadata.currentTab.isInsertRecord"
     />
 
@@ -46,13 +46,13 @@
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
-import ContextMenu from '@/components/ADempiere/ContextMenu'
+import AuxiliaryMenu from '@/components/ADempiere/AuxiliaryMenu'
 
 export default defineComponent({
   name: 'WindowView',
 
   components: {
-    ContextMenu
+    AuxiliaryMenu
   },
 
   setup(props, { root }) {

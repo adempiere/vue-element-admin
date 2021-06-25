@@ -4,6 +4,7 @@
       {{ $t('components.contextMenuRelations') }}
       <i class="el-icon-arrow-down el-icon--right" />
     </el-button>
+
     <el-dropdown-menu slot="dropdown">
       <el-scrollbar wrap-class="scroll-child">
         <el-dropdown-item
