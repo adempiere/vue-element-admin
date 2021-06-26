@@ -26,34 +26,15 @@ export default defineComponent({
       return []
     })
 
-    const isEmptyChilds = computed(() => {
-      const childs = relationsList.value
-      const len = childs.length
-      if (len < 1) {
-        return true
-      }
-      if (len === 1) {
-        // diferent to current view
-        return childs[0].meta.uuid === root.$route.meta.uuid
-      }
-      return false
-    })
-
-    const getChilds = (item) => {
-      if (!root.isEmptyValue(item.children)) {
-        return item.children
-      }
-      if (item.meta && !root.isEmptyValue(item.meta.childs)) {
-        return item.meta.childs
-      }
-      return []
-    }
-
     const clickRelation = (item) => {
+      let tabParent
+      if (item.meta && item.meta.type === 'window') {
+        tabParent = 0
+      }
       root.$router.push({
         name: item.name,
         query: {
-          tabParent: 0
+          tabParent
         }
       }, () => {})
     }
@@ -61,9 +42,7 @@ export default defineComponent({
     return {
       // computeds
       relationsList,
-      isEmptyChilds,
       // methods
-      getChilds,
       clickRelation
     }
   }

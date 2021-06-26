@@ -1,7 +1,7 @@
 
 import { computed, defineComponent, ref } from '@vue/composition-api'
 
-import { recursiveTreeSearch } from '@/utils/ADempiere/valueUtils.js'
+import { zoomIn } from '@/utils/ADempiere/coreUtils.js'
 
 export default defineComponent({
   name: 'MenuReferences',
@@ -19,16 +19,13 @@ export default defineComponent({
       return action
     })
 
-    const permissionRoutes = computed(() => {
-      return root.$store.getters.permission_routes
-    })
-
     const isWindow = computed(() => {
       return panelType === 'window'
     })
 
     const isWithRecord = computed(() => {
-      return !root.isEmptyValue(recordUuid.value) && recordUuid.value !== 'create-new'
+      return !root.isEmptyValue(recordUuid.value) &&
+        recordUuid.value !== 'create-new'
     })
 
     const isReferecesContent = computed(() => {
@@ -39,7 +36,8 @@ export default defineComponent({
     })
 
     const isDisabledMenu = computed(() => {
-      return !(isReferecesContent.value && isLoadedReferences.value && isWithRecord.value)
+      return !(isReferecesContent.value &&
+        isLoadedReferences.value)
     })
 
     const getterReferences = computed(() => {
@@ -56,31 +54,16 @@ export default defineComponent({
       }
 
       if (referenceElement.windowUuid && referenceElement.recordUuid) {
-        const viewSearch = recursiveTreeSearch({
-          treeData: permissionRoutes.value,
-          attributeValue: referenceElement.windowUuid,
-          attributeName: 'meta',
-          secondAttribute: 'uuid',
-          attributeChilds: 'children'
+        zoomIn({
+          uuid: referenceElement.windowUuid,
+          query: {
+            action: referenceElement.type,
+            referenceUuid: referenceElement.uuid,
+            recordUuid: referenceElement.recordUuid,
+            // windowUuid: parentUuid,
+            tabParent: 0
+          }
         })
-        if (viewSearch) {
-          root.$router.push({
-            name: viewSearch.name,
-            query: {
-              action: referenceElement.type,
-              referenceUuid: referenceElement.uuid,
-              recordUuid: referenceElement.recordUuid,
-              // windowUuid: parentUuid,
-              tabParent: 0
-            }
-          }, () => {})
-        } else {
-          root.$message({
-            type: 'error',
-            message: root.$t('notifications.noRoleAccess'),
-            showClose: true
-          })
-        }
       }
     }
 

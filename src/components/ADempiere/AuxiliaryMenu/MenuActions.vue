@@ -2,6 +2,7 @@
   <!-- actions or process on container -->
   <el-dropdown
     :hide-on-click="true"
+    size="mini"
     split-button
     type="primary"
     trigger="click"
@@ -67,6 +68,7 @@
                       {{ childs.name }}
                     </b>
                   </span>
+
                   <p
                     v-if="!isEmptyValue(childs.description)"
                     class="description"
@@ -118,9 +120,10 @@
   </el-dropdown>
 </template>
 
-<script src="@/components/ADempiere/AuxiliaryMenu/menuActions.js"></script>
+<script src="@/components/ADempiere/AuxiliaryMenu/menuActions.js">
+</script>
 
-<style scoped lang="scss" src="./common.scss">
+<style scoped lang="scss" src="@/components/ADempiere/AuxiliaryMenu/common.scss">
 </style>
 <style scoped>
 .el-dropdown .el-button-group {

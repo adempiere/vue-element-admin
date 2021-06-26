@@ -251,7 +251,7 @@ export default defineComponent({
           parentUuid: containerUuid,
           containerUuid: containerParams, // EVALUATE IF IS action.uuid
           panelType, // determinate if get table name and record id (window) or selection (browser)
-          reportFormat, // this.$route.query.reportType ? this.$route.query.reportType : action.reportExportType,
+          reportFormat, // root.$route.query.reportType ? root.$route.query.reportType : action.reportExportType,
           menuParentUuid: menuUuid, // to load relationsList in context menu (report view)
           routeToDelete: root.$route
         })
@@ -399,7 +399,7 @@ export default defineComponent({
 
       // the function is broken avoiding that an error is generated when closing
       // session being in a window, since the store of vuex is cleaned, being
-      // this.metadataMenu with value undefined
+      // metadataMenu with value undefined
       if (root.isEmptyValue(metadataMenu)) {
         return
       }
@@ -491,8 +491,6 @@ export default defineComponent({
             icon = 'el-icon-c-scale-to-original'
             break
         }
-      } else if (action.type === 'process') {
-        icon = 'el-icon-setting'
       } else {
         icon = 'el-icon-setting'
       }

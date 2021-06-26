@@ -1,7 +1,12 @@
 <template>
   <!-- records references only window -->
-  <el-dropdown size="mini" trigger="click" @command="openReference">
+  <el-dropdown
+    size="mini"
+    trigger="click"
+    @command="openReference"
+  >
     <el-button
+      size="mini"
       plain
       type="warning"
       :disabled="isDisabledMenu"
@@ -55,7 +60,8 @@
   </el-dropdown>
 </template>
 
-<script src="@/components/ADempiere/AuxiliaryMenu/menuReferences.js"></script>
+<script src="@/components/ADempiere/AuxiliaryMenu/menuReferences.js">
+</script>
 
-<style scoped lang="scss" src="./common.scss">
+<style scoped lang="scss" src="@/components/ADempiere/AuxiliaryMenu/common.scss">
 </style>

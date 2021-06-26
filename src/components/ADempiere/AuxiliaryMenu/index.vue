@@ -1,26 +1,31 @@
 <template>
-  <component
-    :is="templateDevice"
-    :menu-parent-uuid="menuParentUuid"
-    :parent-uuid="parentUuid"
-    :container-uuid="containerUuid"
-    :panel-type="panelType"
-    :table-name="tableName"
-    :is-report="isReport"
-    :last-parameter="lastParameter"
-    :report-format="reportFormat"
-    :is-insert-record="isInsertRecord"
-    :is-list-record="isListRecord"
-  />
+  <div class="container-auxiliary-menu container-auxiliary-mobile">
+    <menu-actions />
+
+    <menu-relations />
+
+    <menu-references />
+  </div>
 </template>
 
 <script>
-import { defineComponent, computed } from '@vue/composition-api'
+import { defineComponent } from '@vue/composition-api'
+
+import MenuActions from '@/components/ADempiere/AuxiliaryMenu/MenuActions'
+import MenuRelations from '@/components/ADempiere/AuxiliaryMenu/MenuRelations'
+import MenuReferences from '@/components/ADempiere/AuxiliaryMenu/MenuReferences'
 
 export default defineComponent({
   name: 'AuxiliaryMenu',
 
+  components: {
+    MenuActions,
+    MenuRelations,
+    MenuReferences
+  },
+
   props: {
+    // used only report view
     menuParentUuid: {
       type: String,
       default: undefined
@@ -64,128 +69,30 @@ export default defineComponent({
       type: Boolean,
       default: false
     }
-  },
-
-  setup(props, { root }) {
-    const isMobile = computed(() => {
-      return root.$store.state.app.device === 'mobile'
-    })
-
-    const templateDevice = computed(() => {
-      // if (root.isMobile) {
-      //   return () => import('@/components/ADempiere/AuxiliaryMenu/mobile')
-      // }
-      return () => import('@/components/ADempiere/AuxiliaryMenu/desktop')
-    })
-
-    return {
-      // computeds
-      isMobile,
-      templateDevice
-    }
   }
+
 })
 </script>
 
-<style lang="scss" scoped>
-  .selector {
-    /* definir una altura pequeña para forzar el scroll */
-    height: 100px;
-    overflow-y: scroll;
-    width: 300px;
-
-    /* cambiar el estilo por defecto de la barra de scroll */
-    scrollbar-color: yellow #800080;
-    scrollbar-width: 10px;
-  }
-  .el-submenu .el-menu-item {
-    height: 50px;
-    line-height: 50px;
-    padding-left: 27px !important;
-    padding: 0 45px;
-    min-width: 200px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>
 <style lang="scss">
-  // this forces to show the arrow icon when the main menu is hidden
-  #app .hideSidebar .el-submenu > .el-submenu__title .el-submenu__icon-arrow {
-    display: initial;
-  }
+.container-auxiliary-menu {
+  z-index: 1;
 
-  .Run-Report {
-    position: absolute;
-    right: 102%;
-    border: 0;
+  .el-dropdown-menu {
+    max-height: 250px;
+    overflow: auto;
   }
-  .icon-menu {
-    position: absolute;
-    right: 140%;
-    margin-top: -38%;
-  }
-  .List-Report {
-    border: 0;
-    background: transparent;
-  }
-  .container-context-menu {
-    z-index: 1;
-  }
+}
 
-  .container-submenu-mobile {
-    position: absolute;
-    height: 39px !important;
-    right: 0%;
-    top: 0;
-    display: flex;
-  }
+.container-auxiliary-mobile {
+  position: absolute;
+  height: 39px !important;
+  right: 0%;
+  top: 0;
+  display: flex;
+}
 
-  .container-submenu {
-    position: absolute;
-    height: 39px !important;
-    right: 0;
-    top: -1px;
-  }
-
-  ul.el-menu-demo > .el-menu-item {
-    height: 39px !important;
-    line-height: 39px !important;
-    padding: 0 10px;
-  }
-
-  .el-menu-demo > .el-menu-item > .el-submenu__title {
-    line-height: 39px;
-    height: 39px !important;
-    padding: 0;
-  }
-
-  .el-menu--horizontal .el-submenu > .el-menu--horizontal {
-    left: initial !important;
-    right: 150px;
-  }
-
-  .el-menu--popup-bottom-start {
-    min-width: 150px !important;
-  }
-
-  .el-menu--popup-right-start{
-    min-width: 150px !important;
-  }
-
-  .el-menu--popup-right-start > .el-menu-item {
-    min-width: 150px;
-  }
-
-  .scroll {
-    max-height: 400px;
-  }
-
-  .scroll-child {
-    max-height: 300px;
-  }
-
-  .el-icon-more {
-    transform: rotate(90deg);
-  }
+.scroll-child {
+  max-height: 300px;
+}
 </style>

@@ -1,6 +1,14 @@
 <template>
-  <el-dropdown size="mini" trigger="click" @command="clickRelation">
-    <el-button type="success" plain>
+  <el-dropdown
+    size="mini"
+    trigger="click"
+    @command="clickRelation"
+  >
+    <el-button
+      size="mini"
+      type="success"
+      plain
+    >
       {{ $t('components.contextMenuRelations') }}
       <i class="el-icon-arrow-down el-icon--right" />
     </el-button>
@@ -36,9 +44,10 @@
   </el-dropdown>
 </template>
 
-<script src="@/components/ADempiere/AuxiliaryMenu/menuRelations.js"></script>
+<script src="@/components/ADempiere/AuxiliaryMenu/menuRelations.js">
+</script>
 
-<style scoped lang="scss" src="./common.scss">
+<style scoped lang="scss" src="@/components/ADempiere/AuxiliaryMenu/common.scss">
 </style>
 <style lang="scss">
 // dropdown menu item container
