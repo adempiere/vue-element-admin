@@ -1,15 +1,39 @@
+// ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
+// Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
+// Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { computed, defineComponent, ref } from '@vue/composition-api'
 
 import { showNotification } from '@/utils/ADempiere/notification.js'
+import { buildLinkHref } from '@/utils/ADempiere/resource.js'
 
 export default defineComponent({
   name: 'MenuActions',
 
+  props: {
+    size: {
+      type: String,
+      default: ''
+    }
+  },
+
   setup(props, { root, parent }) {
     const {
       containerUuid, parentUuid, panelType,
-      tableName, isInsertRecord, menuParentUuid
+      tableName, isInsertRecord,
+      menuParentUuid, lastParameter
     } = parent._props
 
     const actionsList = ref([])
@@ -77,19 +101,20 @@ export default defineComponent({
         refreshData()
       } else if (action === 'shareLink') {
         setShareLink()
-      } else if (action.action === 'recordAccess') {
-        root.$store.commit('changeShowRigthPanel', true)
-        root.$store.commit('setRecordAccess', true)
-        root.$store.commit('attributeEmbedded', action)
-        root.$router.push({
-          name: root.$route.name,
-          query: {
-            ...root.$route.query,
-            typeAction: root.$store.getters.getAttributeEmbedded.action
-          }
-        }, () => {})
-        runAction(action)
       } else {
+        if (action.action === 'recordAccess') {
+          root.$store.commit('changeShowRigthPanel', true)
+          root.$store.commit('setRecordAccess', true)
+          root.$store.commit('attributeEmbedded', action)
+          root.$router.push({
+            name: root.$route.name,
+            query: {
+              ...root.$route.query,
+              typeAction: root.$store.getters.getAttributeEmbedded.action
+            }
+          }, () => {})
+        }
+
         runAction(action)
       }
     }
@@ -212,8 +237,8 @@ export default defineComponent({
 
     const executeAction = (action) => {
       let containerParams = root.$route.meta.uuid
-      if (this.lastParameter !== undefined) {
-        containerParams = this.lastParameter
+      if (!root.isEmptyValue(lastParameter)) {
+        containerParams = lastParameter
       }
       const fieldsNotReady = root.$store.getters.getFieldsListEmptyMandatory({
         containerUuid: containerParams
@@ -292,21 +317,18 @@ export default defineComponent({
       })
         .then(reportOutputResponse => {
           if (!reportOutputResponse.isError) {
-            let link = {
-              href: undefined,
-              download: undefined
-            }
+            const {
+              fileName, mimeType, outputStream, reportType
+            } = reportOutputResponse
+            const isDownload = !['pdf', 'html'].includes(reportType)
 
-            const blob = new Blob(
-              [reportOutputResponse.outputStream],
-              { type: reportOutputResponse.mimeType }
-            )
-            link = document.createElement('a')
-            link.href = window.URL.createObjectURL(blob)
-            link.download = reportOutputResponse.fileName
-            if (reportOutputResponse.reportType !== 'pdf' && reportOutputResponse.reportType !== 'html') {
-              link.click()
-            }
+            const link = buildLinkHref({
+              fileName,
+              mimeType,
+              outputStream,
+              isDownload
+            })
+
             reportOutputResponse.url = link.href
           }
           root.$store.dispatch('finishProcess', {
@@ -468,10 +490,13 @@ export default defineComponent({
       }
     }
 
-    const iconAction = (action) => {
-      let icon
-      if (action.type === 'dataAction') {
-        switch (action.action) {
+    /**
+     * Get element-ui icon from action
+     */
+    const iconAction = ({ type, action }) => {
+      let icon = 'el-icon-setting'
+      if (type === 'dataAction') {
+        switch (action) {
           case 'setDefaultValues':
             icon = 'el-icon-news'
             break
@@ -491,15 +516,15 @@ export default defineComponent({
             icon = 'el-icon-c-scale-to-original'
             break
         }
-      } else {
-        icon = 'el-icon-setting'
       }
+
       return icon
     }
 
     generateContextMenu()
 
     return {
+      // size: pro,
       actionsList,
       // computeds
       defaultActionName,

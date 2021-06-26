@@ -1,14 +1,37 @@
+// ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
+// Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
+// Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 
-import { computed, defineComponent, ref } from '@vue/composition-api'
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import { computed, defineComponent, ref, watch } from '@vue/composition-api'
 
 import { zoomIn } from '@/utils/ADempiere/coreUtils.js'
 
 export default defineComponent({
   name: 'MenuReferences',
 
+  props: {
+    size: {
+      type: String,
+      default: ''
+    }
+  },
+
   setup(props, { root, parent }) {
     const {
-      containerUuid, parentUuid, panelType, tableName
+      containerUuid, parentUuid, panelType,
+      tableName
     } = parent._props
 
     const isLoadedReferences = ref(false)
@@ -68,6 +91,10 @@ export default defineComponent({
     }
 
     const getReferences = () => {
+      if (!isReferecesContent.value) {
+        return
+      }
+
       const references = getterReferences.value
       if (!root.isEmptyValue(references)) {
         referencesList.value = references.referencesList
@@ -90,13 +117,16 @@ export default defineComponent({
       }
     }
 
-    if (isReferecesContent.value) {
+    watch(recordUuid, () => {
       getReferences()
-    }
+    })
+
+    getReferences()
 
     return {
       referencesList,
       // computeds
+      isReferecesContent,
       isLoadedReferences,
       isDisabledMenu,
       // methods

@@ -1,15 +1,33 @@
+<!--
+ ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
+ Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
+ Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https:www.gnu.org/licenses/>.
+-->
+
 <template>
-  <div class="container-auxiliary-menu container-auxiliary-mobile">
-    <menu-actions />
+  <div class="auxiliary-menu auxiliary-menu-mobile">
+    <menu-actions :size="size" />
 
-    <menu-relations />
+    <menu-relations :size="size" />
 
-    <menu-references />
+    <menu-references :size="size" />
   </div>
 </template>
 
 <script>
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, computed } from '@vue/composition-api'
 
 import MenuActions from '@/components/ADempiere/AuxiliaryMenu/MenuActions'
 import MenuRelations from '@/components/ADempiere/AuxiliaryMenu/MenuRelations'
@@ -69,22 +87,44 @@ export default defineComponent({
       type: Boolean,
       default: false
     }
+  },
+
+  setup(props, { root }) {
+    const isMobile = computed(() => {
+      return root.$store.getters.device === 'mobile'
+    })
+
+    const size = computed(() => {
+      if (isMobile.value) {
+        return 'mini'
+      }
+      return 'medium'
+    })
+
+    return {
+      size
+    }
   }
 
 })
 </script>
 
 <style lang="scss">
-.container-auxiliary-menu {
+.auxiliary-menu {
   z-index: 1;
 
   .el-dropdown-menu {
+    &.el-popper {
+      max-height: 250px;
+      overflow: auto;
+    }
+
     max-height: 250px;
     overflow: auto;
   }
 }
 
-.container-auxiliary-mobile {
+.auxiliary-menu-mobile {
   position: absolute;
   height: 39px !important;
   right: 0%;
