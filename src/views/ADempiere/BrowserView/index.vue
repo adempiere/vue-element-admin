@@ -30,7 +30,7 @@
     />
 
     <el-header v-if="isShowContextMenu">
-      <context-menu
+      <auxiliary-menu
         :menu-parent-uuid="$route.meta.parentUuid"
         :container-uuid="browserUuid"
         :panel-type="panelType"
@@ -79,7 +79,7 @@
 <script>
 import { computed, defineComponent, ref } from '@vue/composition-api'
 
-import ContextMenu from '@/components/ADempiere/ContextMenu'
+import AuxiliaryMenu from '@/components/ADempiere/AuxiliaryMenu'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
@@ -89,7 +89,7 @@ export default defineComponent({
   name: 'BrowserView',
 
   components: {
-    ContextMenu,
+    AuxiliaryMenu,
     DataTable,
     ModalDialog,
     PanelDefinition,
