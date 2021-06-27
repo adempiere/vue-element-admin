@@ -163,15 +163,10 @@ export function formatDate(date, isTime = false) {
   }))
 }
 
-/**
- * Get formatted price and show currency
- * @param {number} value
- * @param {string} currency default 'USD'
- * @returns {string} number format with thousands separator, precision, currency format
- */
-export function formatPrice(value, currency, country) {
-  if (isEmptyValue(value)) {
-    value = 0
+//  Get Formatted Price
+export function formatPrice(number, currency, country = '') {
+  if (isEmptyValue(number)) {
+    number = 0
   }
 
   if (isEmptyValue(currency)) {
@@ -192,24 +187,19 @@ export function formatPrice(value, currency, country) {
     // minimumFractionDigits: precision,
     // maximumFractionDigits: precision,
     minimumIntegerDigits: 1
-  }).format(value)
+  }).format(number)
 }
 
-/**
- * Get formatted number, integer and decimal
- * @param {number} value
- * @returns {string} number format with thousands separator, precision
- * @returns {boolean} number format without precision
- */
-export function formatQuantity(value, isInteger = false) {
-  if (isEmptyValue(value)) {
-    value = 0
+//  Format Quantity
+export function formatQuantity(number, isInteger = false) {
+  if (isEmptyValue(number)) {
+    number = 0
   }
 
   let precision = getStandardPrecision()
   // without decimals
+  // if (Number.isInteger(value)) {
   if (isInteger) {
-    // if (Number.isInteger(value)) {
     precision = 0
   }
 
@@ -219,23 +209,19 @@ export function formatQuantity(value, isInteger = false) {
     minimumIntegerDigits: 1,
     minimumFractionDigits: precision,
     maximumFractionDigits: precision
-  }).format(value)
+  }).format(number)
 }
 
-/**
- * Format percentage based on Intl library
- * @param {number} value
- * @returns {string} number format with percentage
- */
-export function formatPercent(value) {
-  if (isEmptyValue(value)) {
-    value = 0
+// Format percentage based on Intl library
+export function formatPercent(number) {
+  if (isEmptyValue(number)) {
+    number = 0
   }
 
   // get formatted number
   return new Intl.NumberFormat(getCountryCode(), {
     style: 'percent'
-  }).format(value)
+  }).format(number)
 }
 
 /**

@@ -30,7 +30,7 @@ import store from '@/store'
  * Get Default currency ISO code
  */
 export function getCurrency() {
-  return store.getters.getCurrency
+  return store.getters.getCurrencyCode
 }
 
 export function getStandardPrecision() {
@@ -110,10 +110,7 @@ export function formatExponential(value) {
       exponential = getStandardPrecision()
     }
 
-    // return formatQuantity({
-    //   value,
-    //   precision: exponential
-    // })
+    // TODO: Verify with formatQuantity
     return Number.parseFloat(value)
       .toFixed(exponential)
   }

@@ -135,7 +135,7 @@ export default {
       if (!this.isEmptyValue(this.metadata.labelCurrency)) {
         return this.metadata.labelCurrency.iSOCode
       }
-      return this.$store.getters.getCurrency
+      return this.$store.getters.getCurrencyCode
     }
   },
   methods: {

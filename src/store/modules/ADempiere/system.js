@@ -96,7 +96,14 @@ const system = {
     getCountry: (state) => {
       return state.country
     },
-    getCurrency: (state, getter) => {
+    getCurrency: (state) => {
+      const { currencyIsoCode, standardPrecision } = state.systemDefinition
+      return {
+        standardPrecision: standardPrecision || 2,
+        iSOCode: currencyIsoCode || 'USD'
+      }
+    },
+    getCurrencyCode: (state) => {
       const { currencyIsoCode } = state.systemDefinition
 
       return currencyIsoCode || 'USD'
