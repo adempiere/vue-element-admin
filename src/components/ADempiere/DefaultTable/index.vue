@@ -84,7 +84,7 @@ export default defineComponent({
   components: {
     CellInfo,
     CustomPagination,
-    FieldDefinition,
+    FieldDefinition
   },
 
   props: {
