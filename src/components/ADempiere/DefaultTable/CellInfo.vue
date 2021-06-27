@@ -16,9 +16,11 @@
 <script>
 import { defineComponent, computed } from '@vue/composition-api'
 
-import { COLUMNS_NAME_DOCUMENT_STATUS, FIELDS_DECIMALS } from '@/utils/ADempiere/references.js'
+import { COLUMNS_NAME_DOCUMENT_STATUS, FIELDS_CURRENCY } from '@/utils/ADempiere/references.js'
 import { typeValue } from '@/utils/ADempiere/valueUtils.js'
-import { formatField, convertBooleanToTranslationLang } from '@/utils/ADempiere/valueFormat.js'
+import {
+  formatField, formatPrice, formatQuantity, convertBooleanToTranslationLang
+} from '@/utils/ADempiere/valueFormat.js'
 
 export default defineComponent({
   name: 'CellInfo',
@@ -50,13 +52,15 @@ export default defineComponent({
       return root.tagStatus(fieldValue)
     })
 
-    const formatNumber = ({ displayType, number }) => {
-      let fixed = 0
-      // Amount, Costs+Prices, Number
-      if (FIELDS_DECIMALS.includes(displayType)) {
-        fixed = 2
+    const formatNumber = ({ displayType, value }) => {
+      if (root.isEmptyValue(value)) {
+        value = 0
       }
-      return new Intl.NumberFormat().format(number.toFixed(fixed))
+      // Amount, Costs+Prices
+      if (FIELDS_CURRENCY.includes(displayType)) {
+        return formatPrice(value)
+      }
+      return formatQuantity(value)
     }
 
     /**
@@ -86,7 +90,7 @@ export default defineComponent({
           }
           valueToShow = formatNumber({
             displayType,
-            number: fieldValue
+            value: fieldValue
           })
           break
 
