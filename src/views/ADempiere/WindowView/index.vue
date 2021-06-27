@@ -66,11 +66,24 @@ export default defineComponent({
     RecordNavigation
   },
 
+  props: {
+    // implement by test view
+    uuid: {
+      type: String,
+      default: ''
+    }
+  },
+
   setup(props, { root }) {
     const panelType = 'window'
-    const windowUuid = root.$route.meta.uuid
     const isLoaded = ref(false)
     const windowMetadata = ref({})
+
+    let windowUuid = root.$route.meta.uuid
+    // set uuid from test
+    if (!root.isEmptyValue(props.uuid)) {
+      windowUuid = props.uuid
+    }
 
     const generateWindow = (window) => {
       windowMetadata.value = window
