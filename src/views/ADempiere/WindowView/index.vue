@@ -17,22 +17,29 @@
 -->
 
 <template>
-  <div v-if="isLoaded" key="window-loaded">
-    <context-menu
-      :menu-parent-uuid="$route.meta.parentUuid"
-      :parent-uuid="windowUuid"
-      :container-uuid="windowMetadata.currentTabUuid"
-      :table-name="windowMetadata.currentTab.tableName"
-      :panel-type="panelType"
-      :is-insert-record="windowMetadata.currentTab.isInsertRecord"
-    />
+  <div v-if="isLoaded" key="window-loaded" class="view-base">
+    <el-container style="min-height: calc(100vh - 84px)">
+      <el-aside width="100%">
 
-    <component
-      :is="renderWindowComponent"
-      :window-metadata="windowMetadata"
-      :window-uuid="windowUuid"
-    />
+        <!-- // TODO: Add top window component for context menu and worflow status -->
+        <context-menu
+          :menu-parent-uuid="$route.meta.parentUuid"
+          :parent-uuid="windowUuid"
+          :container-uuid="windowMetadata.currentTabUuid"
+          :table-name="windowMetadata.currentTab.tableName"
+          :panel-type="panelType"
+          :is-insert-record="windowMetadata.currentTab.isInsertRecord"
+        />
+
+        <component
+          :is="renderWindowComponent"
+          :window-metadata="windowMetadata"
+          :window-uuid="windowUuid"
+        />
+      </el-aside>
+    </el-container>
   </div>
+
   <div
     v-else
     key="window-loading"
@@ -47,12 +54,16 @@
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
 import ContextMenu from '@/components/ADempiere/ContextMenu'
+import RecordNavigation from '@/components/ADempiere/RecordNavigation'
+import SplitPane from 'vue-splitpane'
 
 export default defineComponent({
   name: 'WindowView',
 
   components: {
-    ContextMenu
+    ContextMenu,
+    SplitPane,
+    RecordNavigation
   },
 
   setup(props, { root }) {
@@ -113,6 +124,7 @@ export default defineComponent({
       panelType,
       windowUuid,
       windowMetadata,
+      // computed
       getterWindow,
       renderWindowComponent,
       isLoaded

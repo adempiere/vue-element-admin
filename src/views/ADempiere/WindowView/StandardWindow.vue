@@ -28,7 +28,7 @@
 <script>
 import { defineComponent } from '@vue/composition-api'
 
-import TabParent from '@/components/ADempiere/Tab'
+import TabParent from '@/components/ADempiere/TabParent'
 
 export default defineComponent({
   name: 'StandardWindow',
