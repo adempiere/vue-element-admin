@@ -694,7 +694,7 @@ export function convertAction(action) {
       actionAttributes.name = 'report'
       actionAttributes.icon = 'skill'
       actionAttributes.component = () => import('@/views/ADempiere/Process')
-      if (config.betaFunctionality.process) {
+      if (config.betaFunctionality.report) {
         actionAttributes.component = () => import('@/views/ADempiere/ProcessView')
       }
       break

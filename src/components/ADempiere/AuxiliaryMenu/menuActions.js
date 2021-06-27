@@ -32,7 +32,7 @@ export default defineComponent({
   setup(props, { root, parent }) {
     const {
       containerUuid, parentUuid, panelType,
-      tableName, isInsertRecord,
+      tableName, isInsertRecord, isReport,
       menuParentUuid, lastParameter
     } = parent._props
 
@@ -426,6 +426,15 @@ export default defineComponent({
         return
       }
       actionsList.value = metadataMenu.actions
+
+      if (!isReport) {
+        // not showed pintFormat or run process as
+        actionsList.value = actionsList.value.filter(actionItem => {
+          return ![
+            root.$t('views.printFormat'), root.$t('components.RunProcessAs')
+          ].includes(actionItem.name)
+        })
+      }
 
       // TODO: Add store attribute to avoid making repeated requests
       let isChangePrivateAccess = true
