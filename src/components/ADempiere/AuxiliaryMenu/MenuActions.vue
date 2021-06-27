@@ -122,7 +122,7 @@
         >
           <div class="contents">
             <div class="auxiliary-menu-icon">
-              <i class="el-icon-copy-document" />
+              <i class="el-icon-share" />
             </div>
             <div>
               <span class="contents">

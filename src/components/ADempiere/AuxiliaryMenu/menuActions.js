@@ -102,19 +102,6 @@ export default defineComponent({
       } else if (action === 'shareLink') {
         setShareLink()
       } else {
-        if (action.action === 'recordAccess') {
-          root.$store.commit('changeShowRigthPanel', true)
-          root.$store.commit('setRecordAccess', true)
-          root.$store.commit('attributeEmbedded', action)
-          root.$router.push({
-            name: root.$route.name,
-            query: {
-              ...root.$route.query,
-              typeAction: root.$store.getters.getAttributeEmbedded.action
-            }
-          }, () => {})
-        }
-
         runAction(action)
       }
     }
@@ -179,6 +166,25 @@ export default defineComponent({
       }
     }
 
+    const manageRecordAccess = (action) => {
+      root.$store.commit('changeShowRigthPanel', true)
+      root.$store.commit('setRecordAccess', true)
+      root.$store.commit('attributeEmbedded', action)
+
+      root.$router.push({
+        name: root.$route.name,
+        query: {
+          ...root.$route.query,
+          typeAction: root.$store.getters.getAttributeEmbedded.action
+        }
+      }, () => {})
+
+      root.$store.dispatch('setShowDialog', {
+        type: panelType,
+        action: action
+      })
+    }
+
     const runAction = (action) => {
       if (action.type === 'action') {
         executeAction(action)
@@ -194,10 +200,7 @@ export default defineComponent({
             }
           }, () => {})
         } else if (action.action === 'recordAccess') {
-          root.$store.dispatch('setShowDialog', {
-            type: panelType,
-            action: action
-          })
+          manageRecordAccess(action)
         } else if (action.action !== 'undoModifyData') {
           if (action.action === 'setDefaultValues' && root.$route.query.action === 'create-new') {
             return
@@ -215,7 +218,7 @@ export default defineComponent({
             .then(response => {
               root.$message({
                 type: 'success',
-                message: root.$t('data.lockRecord'),
+                message: root.$t('notifications.recordLocked'),
                 showClose: true
               })
               if (response && response.isPrivateAccess) {
@@ -507,7 +510,7 @@ export default defineComponent({
       if (type === 'dataAction') {
         switch (action) {
           case 'setDefaultValues':
-            icon = 'el-icon-news'
+            icon = 'el-icon-circle-plus-outline'
             break
           case 'deleteEntity':
             icon = 'el-icon-delete'

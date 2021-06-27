@@ -42,10 +42,12 @@
   }
 
   .auxiliary-menu-icon {
-    margin-right: 5%;
-    margin-top: 10%;
+    margin-right: 8px;
 
     >i {
+      vertical-align: -webkit-baseline-middle;
+      vertical-align: -moz-middle-with-baseline;
+      vertical-align: middle baseline;
       font-weight: bolder
     }
   }

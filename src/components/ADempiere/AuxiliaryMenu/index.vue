@@ -23,6 +23,13 @@
     <menu-relations :size="size" />
 
     <menu-references :size="size" />
+
+    <modal-dialog
+      :parent-uuid="parentUuid"
+      :container-uuid="containerUuid"
+      :report-export-type="reportFormat"
+      :panel-type="panelType"
+    />
   </div>
 </template>
 
@@ -32,6 +39,7 @@ import { defineComponent, computed } from '@vue/composition-api'
 import MenuActions from '@/components/ADempiere/AuxiliaryMenu/MenuActions'
 import MenuRelations from '@/components/ADempiere/AuxiliaryMenu/MenuRelations'
 import MenuReferences from '@/components/ADempiere/AuxiliaryMenu/MenuReferences'
+import ModalDialog from '@/components/ADempiere/Dialog'
 
 export default defineComponent({
   name: 'AuxiliaryMenu',
@@ -39,7 +47,8 @@ export default defineComponent({
   components: {
     MenuActions,
     MenuRelations,
-    MenuReferences
+    MenuReferences,
+    ModalDialog
   },
 
   props: {
