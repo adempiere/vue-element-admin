@@ -23,12 +23,6 @@
     class="view-base"
     style="height: 86vh;"
   >
-    <modal-dialog
-      :parent-uuid="browserUuid"
-      :container-uuid="browserUuid"
-      :panel-type="panelType"
-    />
-
     <el-header v-if="isShowContextMenu">
       <auxiliary-menu
         :menu-parent-uuid="$route.meta.parentUuid"
@@ -58,10 +52,9 @@
         </el-collapse-item>
       </el-collapse>
 
-      <data-table
+      <!-- result of records in the table -->
+      <default-table
         :container-uuid="browserUuid"
-        :panel-type="panelType"
-        :metadata="browserMetadata"
       />
     </el-main>
   </el-container>
@@ -83,14 +76,14 @@ import AuxiliaryMenu from '@/components/ADempiere/AuxiliaryMenu'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
-import DataTable from '@/components/ADempiere/DataTable'
+import DefaultTable from '@/components/ADempiere/DefaultTable'
 
 export default defineComponent({
   name: 'BrowserView',
 
   components: {
     AuxiliaryMenu,
-    DataTable,
+    DefaultTable,
     ModalDialog,
     PanelDefinition,
     TitleAndHelp
