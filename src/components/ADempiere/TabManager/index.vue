@@ -60,7 +60,7 @@ import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
 
 export default defineComponent({
-  name: 'TabParent',
+  name: 'TabManager',
 
   components: {
     PanelDefinition,
