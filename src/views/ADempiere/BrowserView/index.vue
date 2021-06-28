@@ -73,7 +73,6 @@
 import { computed, defineComponent, ref } from '@vue/composition-api'
 
 import AuxiliaryMenu from '@/components/ADempiere/AuxiliaryMenu'
-import ModalDialog from '@/components/ADempiere/Dialog'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import DefaultTable from '@/components/ADempiere/DefaultTable'
@@ -84,7 +83,6 @@ export default defineComponent({
   components: {
     AuxiliaryMenu,
     DefaultTable,
-    ModalDialog,
     PanelDefinition,
     TitleAndHelp
   },
