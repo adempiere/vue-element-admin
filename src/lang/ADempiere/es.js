@@ -324,7 +324,7 @@ export default {
     deleteRecordSuccessful: 'Registro eliminado exitosamente',
     deleteRecordError: 'Error al eliminar el regitro',
     exportRecord: 'Exportar Registro',
-    lockRecord: 'Registro Bloqueado',
+    lockRecord: 'Bloquear Registro',
     noDescription: 'Sin Descripción',
     recordAccess: {
       modeMobile: {

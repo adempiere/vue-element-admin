@@ -27,7 +27,7 @@
       v-if="showContextMenu"
       style="height: 30px;"
     >
-      <context-menu
+      <auxiliary-menu
         :menu-parent-uuid="$route.meta.parentUuid"
         :container-uuid="processUuid"
         :panel-type="panelType"
@@ -67,7 +67,7 @@
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
-import ContextMenu from '@/components/ADempiere/ContextMenu'
+import AuxiliaryMenu from '@/components/ADempiere/AuxiliaryMenu'
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 
@@ -75,8 +75,8 @@ export default defineComponent({
   name: 'ProcessView',
 
   components: {
+    AuxiliaryMenu,
     PanelDefinition,
-    ContextMenu,
     TitleAndHelp
   },
 
