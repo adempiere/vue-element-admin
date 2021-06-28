@@ -20,6 +20,7 @@
   <component
     :is="WindowView"
     :uuid="uuid"
+    :metadata="metadata"
   />
 </template>
 
@@ -27,6 +28,7 @@
 import { defineComponent } from '@vue/composition-api'
 
 import WindowView from '@/views/ADempiere/WindowView'
+import standardMetadata from './standardWindow.json'
 
 export default defineComponent({
   name: 'TestWindowView',
@@ -34,9 +36,11 @@ export default defineComponent({
   setup() {
     // Product Group
     const uuid = 'a521b2f6-fb40-11e8-a479-7a0060f0aa01'
+    const metadata = standardMetadata.result
 
     return {
       WindowView,
+      metadata,
       uuid
     }
   }

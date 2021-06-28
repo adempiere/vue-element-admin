@@ -20,8 +20,7 @@
   <component
     :is="componentRender"
     :container-uuid="containerUuid"
-    :panel-type="panelType"
-    :panel-metadata="panelMetadata"
+    :panel-metadata="metadata"
   />
 </template>
 
@@ -40,29 +39,19 @@ export default defineComponent({
       type: String,
       required: true
     },
-    panelType: {
-      type: String,
-      required: true
-    },
-    isAdvancedQuery: {
-      type: Boolean,
-      default: false
+    panelMetadata: {
+      type: Object,
+      required: false
     }
   },
 
   setup(props, { root }) {
-    const panelMetadata = computed(() => {
+    const storedMetadata = computed(() => {
       return root.$store.getters.getPanel(props.containerUuid)
     })
 
     const componentRender = computed(() => {
-      if (['browser', 'process', 'table', 'window'].includes(props.panelType)) {
-        return () => import('@/components/ADempiere/PanelDefinition/StandardPanel')
-      }
-
-      const panel = () => import('@/components/ADempiere/PanelDefinition/UnsupportedPanel')
-
-      return panel
+      return () => import('@/components/ADempiere/PanelDefinition/StandardPanel')
     })
 
     /**
@@ -70,25 +59,22 @@ export default defineComponent({
      * the fields it contains
      */
     const getPanel = () => {
-      let panel = panelMetadata.value
-      if (root.isEmptyValue(panel) || !panel.fieldsList) {
-        if (props.containerUuid.includes('table_')) {
-          const containerUuid = props.containerUuid.replace('table_', '')
-          panel = root.$store.getters.getPanel(containerUuid)
-        }
-
-        root.$store.dispatch('getPanelAndFields', {
-          parentUuid: props.parentUuid,
-          containerUuid: props.containerUuid,
-          panelType: props.panelType,
-          panelMetadata: panel,
-          isAdvancedQuery: props.isAdvancedQuery
-        }).then(panelResponse => {
-          //
-        }).catch(error => {
-          console.warn(`Field Load Error: ${error.message}. Code: ${error.code}.`)
-        })
+      let panel = storedMetadata.value
+      if (root.isEmptyValue(panel)) {
+        // not in store, set with prop
+        panel = props.panelMetadata
       }
+      if (!root.isEmptyValue(panel) && panel.fieldsList) {
+        // not regenerate fields
+        return
+      }
+
+      // generate fields and set into store
+      root.$store.dispatch('getFieldsFromTab', {
+        parentUuid: props.parentUuid,
+        containerUuid: props.containerUuid,
+        panelMetadata: panel
+      })
     }
 
     getPanel()
@@ -96,7 +82,7 @@ export default defineComponent({
     return {
       // computeds
       componentRender,
-      panelMetadata
+      metadata: storedMetadata
     }
   }
 })

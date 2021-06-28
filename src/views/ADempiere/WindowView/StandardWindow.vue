@@ -17,7 +17,7 @@
 -->
 
 <template>
-  <tab-parent
+  <tab-manager
     :window-uuid="windowUuid"
     :window-metadata="windowMetadata"
     :tabs-list="windowMetadata.tabsListParent"
@@ -28,13 +28,13 @@
 <script>
 import { defineComponent } from '@vue/composition-api'
 
-import TabParent from '@/components/ADempiere/TabParent'
+import TabManager from '@/components/ADempiere/TabManager'
 
 export default defineComponent({
   name: 'StandardWindow',
 
   components: {
-    TabParent
+    TabManager
   },
 
   props: {

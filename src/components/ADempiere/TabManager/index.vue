@@ -20,7 +20,6 @@
   <el-tabs
     v-model="currentTab"
     type="border-card"
-    :before-leave="handleBeforeLeave"
     @tab-click="handleClick"
   >
     <template v-for="(tabAttributes, key) in tabsList">
@@ -45,8 +44,9 @@
         <panel-definition
           :parent-uuid="windowUuid"
           :container-uuid="tabAttributes.uuid"
+          :panel-metadata="tabAttributes"
           :group-tab="tabAttributes.tabGroup"
-          :panel-type="panelType"
+          panel-type="window"
         />
       </el-tab-pane>
     </template>
@@ -58,7 +58,6 @@ import { defineComponent, computed, ref, watch } from '@vue/composition-api'
 
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
-import { parseContext } from '@/utils/ADempiere/contextUtils'
 
 export default defineComponent({
   name: 'TabParent',
@@ -84,18 +83,10 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
-    const panelType = 'window'
     const currentTab = ref(root.$route.query.tabParent)
     const tabUuid = ref(props.tabsList[0].uuid)
 
     const tabParentStyle = computed(() => {
-      // if tabs children is showed or closed
-      if (props.windowMetadata.isShowedTabsChildren) {
-        return {
-          height: '100%',
-          overflow: 'hidden'
-        }
-      }
       return {
         height: '75vh',
         overflow: 'auto'
@@ -118,20 +109,6 @@ export default defineComponent({
       })
     }
 
-    const handleBeforeLeave = (activeName) => {
-      const tabIndex = parseInt(activeName, 10)
-      const metadataTab = props.tabsList.find(tab => tab.tabParentIndex === tabIndex)
-
-      if (!root.isEmptyValue(metadataTab.whereClause) && metadataTab.whereClause.includes('@')) {
-        metadataTab.whereClause = parseContext({
-          parentUuid: metadataTab.parentUuid,
-          containerUuid: metadataTab.uuid,
-          value: metadataTab.whereClause,
-          isBooleanToString: true
-        }).value
-      }
-    }
-
     /**
      * @param {object} tabHTML DOM HTML the tab clicked
      */
@@ -139,44 +116,46 @@ export default defineComponent({
       if (tabUuid.value !== tabHTML.$attrs.tabuuid) {
         tabUuid.value = tabHTML.$attrs.tabuuid
         setCurrentTab()
+        setTabNumber(tabHTML.$attrs.key)
       }
     }
 
+    // watch router query tab parent value
     watch(() => root.$route.query.tabParent, (newValue) => {
       if (root.isEmptyValue(newValue) || newValue === 'create-new') {
-        currentTab.value = '0'
-        setTabNumber(currentTab.value)
+        setTabNumber('0')
         return
       }
-      currentTab.value = newValue
       setTabNumber(newValue)
     })
 
     const setTabNumber = (tabNumber) => {
+      currentTab.value = tabNumber
+
       root.$router.push({
         query: {
           ...root.$route.query,
-          tabParent: String(tabNumber)
+          tabParent: currentTab.value
         },
         params: {
           ...root.$route.params
         }
       }, () => {})
+
+      // TODO: Delete this to production
+      console.log('Click tab number ', tabNumber)
     }
 
     return {
-      panelType,
       currentTab,
       tabUuid,
       // computed
-      isCreateNew,
       tabParentStyle,
       // meyhods
-      setCurrentTab,
       handleClick,
-      isDisabledTab,
-      handleBeforeLeave
+      isDisabledTab
     }
   }
+
 })
 </script>
