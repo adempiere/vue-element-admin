@@ -29,6 +29,7 @@
         :windowuuid="windowUuid"
         :tabuuid="tabAttributes.uuid"
         :name="String(key)"
+        :tabindex="String(key)"
         lazy
         :disabled="isDisabledTab(key)"
         :style="tabStyle"
@@ -53,7 +54,7 @@
 </template>
 
 <script>
-import { defineComponent, computed, ref, watch } from '@vue/composition-api'
+import { defineComponent, computed, ref } from '@vue/composition-api'
 
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
@@ -82,7 +83,10 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
-    const currentTab = ref(root.$route.query.tab)
+    // if tabParent is present in path set this
+    const tabNo = root.$route.query.tab || '0'
+    const currentTab = ref(tabNo)
+
     const tabUuid = ref(props.tabsList[0].uuid)
 
     const tabStyle = computed(() => {
@@ -114,20 +118,19 @@ export default defineComponent({
     const handleClick = (tabHTML) => {
       tabUuid.value = tabHTML.$attrs.tabuuid
       setCurrentTab()
-      setTabNumber(tabHTML.index)
+
+      if (currentTab.value !== tabHTML.$attrs.tabIndex) {
+        setTabNumber(tabHTML.$attrs.tabindex)
+      }
     }
 
-    // watch router query tab parent value
-    watch(() => root.$route.query.tab, (newValue) => {
-      if (root.isEmptyValue(newValue)) {
-        setTabNumber('0')
-        return
+    const setTabNumber = (tabNumber = '0') => {
+      if (root.isEmptyValue(tabNumber)) {
+        tabNumber = '0'
       }
-      setTabNumber(newValue)
-    })
-
-    const setTabNumber = (tabNumber) => {
-      currentTab.value = tabNumber
+      if (tabNumber !== currentTab.value) {
+        currentTab.value = tabNumber
+      }
 
       root.$router.push({
         query: {
@@ -141,7 +144,22 @@ export default defineComponent({
 
       // TODO: Delete this to production
       console.log('Click tab number ', tabNumber)
+      return tabNumber
     }
+
+    const getData = () => {
+      root.$store.dispatch('getDataListTab', {
+        parentUuid: props.windowUuid,
+        containerUuid: tabUuid.value
+      })
+        .catch(error => {
+          console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
+        })
+    }
+
+    getData()
+
+    setTabNumber(currentTab.value)
 
     return {
       currentTab,
