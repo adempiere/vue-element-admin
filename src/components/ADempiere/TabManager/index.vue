@@ -116,11 +116,13 @@ export default defineComponent({
      * @param {object} tabHTML DOM HTML the tab clicked
      */
     const handleClick = (tabHTML) => {
-      tabUuid.value = tabHTML.$attrs.tabuuid
-      setCurrentTab()
-
-      if (currentTab.value !== tabHTML.$attrs.tabIndex) {
-        setTabNumber(tabHTML.$attrs.tabindex)
+      const { tabuuid, tabindex } = tabHTML.$attrs
+      if (tabUuid.value !== tabuuid) {
+        tabUuid.value = tabuuid
+        setCurrentTab()
+      }
+      if (currentTab.value !== tabindex) {
+        setTabNumber(tabindex)
       }
     }
 
