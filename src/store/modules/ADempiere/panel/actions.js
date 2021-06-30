@@ -214,6 +214,10 @@ const actions = {
     fieldsExcludes = []
   }) {
     const panel = getters.getPanel(containerUuid)
+    if (isEmptyValue(panel)) {
+      // panel is with prop, not stored in vuex
+      return
+    }
 
     const fieldsList = panel.fieldsList.map(itemField => {
       const { columnName } = itemField

@@ -25,7 +25,8 @@
 </template>
 
 <script>
-import { defineComponent, computed } from '@vue/composition-api'
+import { defineComponent, computed, ref } from '@vue/composition-api'
+import { generatePanelAndFields } from './panelUtils'
 
 export default defineComponent({
   name: 'PanelDefinition',
@@ -45,10 +46,8 @@ export default defineComponent({
     }
   },
 
-  setup(props, { root }) {
-    const storedMetadata = computed(() => {
-      return root.$store.getters.getPanel(props.containerUuid)
-    })
+  setup(props) {
+    const metadata = ref({})
 
     const componentRender = computed(() => {
       return () => import('@/components/ADempiere/PanelDefinition/StandardPanel')
@@ -59,22 +58,15 @@ export default defineComponent({
      * the fields it contains
      */
     const getPanel = () => {
-      let panel = storedMetadata.value
-      if (root.isEmptyValue(panel)) {
-        // not in store, set with prop
-        panel = props.panelMetadata
-      }
-      if (!root.isEmptyValue(panel) && panel.fieldsList) {
-        // not regenerate fields
-        return
-      }
-
-      // generate fields and set into store
-      root.$store.dispatch('getFieldsFromTab', {
+      // generated panel properties
+      const panel = generatePanelAndFields({
         parentUuid: props.parentUuid,
         containerUuid: props.containerUuid,
-        panelMetadata: panel
+        panelMetadata: props.panelMetadata
       })
+
+      // set panel genereated
+      metadata.value = panel
     }
 
     getPanel()
@@ -82,7 +74,7 @@ export default defineComponent({
     return {
       // computeds
       componentRender,
-      metadata: storedMetadata
+      metadata
     }
   }
 })

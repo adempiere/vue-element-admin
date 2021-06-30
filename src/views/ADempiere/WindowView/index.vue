@@ -62,6 +62,7 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
+    const containerType = 'window'
     const isLoaded = ref(false)
     const windowMetadata = ref({})
 
@@ -76,53 +77,24 @@ export default defineComponent({
       isLoaded.value = true
     }
 
-    const storedWindow = computed(() => {
-      return root.$store.getters.getWindow(windowUuid)
-    })
-
     // get window from vuex store or request from server
     const getWindow = () => {
-      const window = storedWindow.value
-      if (!root.isEmptyValue(window)) {
-        generateWindow(window)
-        return
-      }
-
       // metadata props use for test
       if (!root.isEmptyValue(props.metadata)) {
         return new Promise(resolve => {
-          const windowResponse = generateWindowRespose(props.metadata)
-          root.$store.commit('addWindow', windowResponse)
+          const windowResponse = generateWindowRespose({
+            ...props.metadata,
+            containerType
+          })
+
           generateWindow(windowResponse)
           resolve(windowResponse)
         })
       }
-
-      root.$store.dispatch('getWindowFromServer', {
-        windowUuid,
-        routeToDelete: root.$route
-      })
-        .then(windowResponse => {
-          generateWindow(windowResponse)
-        })
     }
 
-    const isDocumentTab = computed(() => {
-      const panel = root.$store.getters.getPanel(windowMetadata.value.currentTabUuid)
-      if (!root.isEmptyValue(panel)) {
-        return panel.isDocument
-      }
-
-      return windowMetadata.value.firstTab.isDocument
-    })
-
     const renderWindowComponent = computed(() => {
-      let windowComponent = () => import('@/views/ADempiere/WindowView/StandardWindow')
-
-      // documents have workflow
-      if (isDocumentTab.value) {
-        windowComponent = () => import('@/views/ADempiere/WindowView/DocumentWindow')
-      }
+      const windowComponent = () => import('@/views/ADempiere/WindowView/StandardWindow')
 
       return windowComponent
     })

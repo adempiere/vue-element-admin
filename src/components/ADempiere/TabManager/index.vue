@@ -105,11 +105,7 @@ export default defineComponent({
     }
 
     const setCurrentTab = () => {
-      root.$store.dispatch('setCurrentTab', {
-        parentUuid: props.windowUuid,
-        containerUuid: tabUuid.value,
-        window: props.windowMetadata
-      })
+      // TODO: Add store current tab
     }
 
     /**
@@ -150,13 +146,7 @@ export default defineComponent({
     }
 
     const getData = () => {
-      root.$store.dispatch('getDataListTab', {
-        parentUuid: props.windowUuid,
-        containerUuid: tabUuid.value
-      })
-        .catch(error => {
-          console.warn(`Error getting data list tab. Message: ${error.message}, code ${error.code}.`)
-        })
+      // TODO: Add store get data from tab
     }
 
     getData()

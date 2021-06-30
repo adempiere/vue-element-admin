@@ -9,7 +9,7 @@ export function generateWindow(windowResponse) {
     firstTab, firstTabUuid
   } = generateTabs({
     tabs: responseWindow.tabs,
-    windowUuid: responseWindow.uuid
+    parentUuid: responseWindow.uuid
   })
 
   const newWindow = {
@@ -32,7 +32,8 @@ export function generateWindow(windowResponse) {
 
 export function generateTabs({
   tabs,
-  windowUuid
+  parentUuid,
+  containerType = 'window'
 }) {
   const firstTabTableName = tabs[0].tableName
   const firstTabUuid = tabs[0].uuid
@@ -50,9 +51,9 @@ export function generateTabs({
     // let tab = tabItem
     const tab = {
       ...tabItem,
+      parentUuid,
+      containerType,
       containerUuid: tabItem.uuid,
-      parentUuid: windowUuid,
-      windowUuid,
       tabGroup: tabItem.fieldGroup,
       firstTabUuid,
       // relations
