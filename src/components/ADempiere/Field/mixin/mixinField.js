@@ -16,6 +16,22 @@
 
 export default {
   props: {
+    parentUuid: {
+      type: String,
+      default: undefined
+    },
+    containerUuid: {
+      type: String,
+      required: true
+    },
+    containerManager: {
+      type: String,
+      required: true
+    },
+    fieldMetadata: {
+      type: Object,
+      required: true
+    },
     metadata: {
       type: Object,
       required: true
@@ -158,7 +174,7 @@ export default {
     },
     actionKeyPerformed(value) {
       // TODO: Delete for production
-      console.info('actionKeyPerformed ', value)
+      console.info('actionKeyPerformed ', this.containerManager, value)
       if (this.metadata.handleActionKeyPerformed) {
         this.$store.dispatch('notifyActionKeyPerformed', {
           containerUuid: this.metadata.containerUuid,

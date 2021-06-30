@@ -18,8 +18,8 @@
 
 <template>
   <tab-manager
-    :window-uuid="windowUuid"
-    :window-metadata="windowMetadata"
+    :parent-uuid="windowMetadata.uuid"
+    :container-manager="containerManager"
     :tabs-list="windowMetadata.tabsListParent"
     class="tab-window"
   />
@@ -38,7 +38,7 @@ export default defineComponent({
   },
 
   props: {
-    windowUuid: {
+    containerManager: {
       type: String,
       required: true
     },
@@ -46,10 +46,7 @@ export default defineComponent({
       type: Object,
       required: true
     }
-  },
-
-  setup() {
-
   }
+
 })
 </script>

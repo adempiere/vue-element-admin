@@ -35,11 +35,12 @@
             <el-row>
               <template v-for="(fieldAttributes, subKey) in fieldsList">
                 <field-definition
-                  :ref="fieldAttributes.columnName"
                   :key="subKey"
-                  :metadata-field="{
-                    ...fieldAttributes
-                  }"
+                  :parent-uuid="parentUuid"
+                  :container-uuid="containerUuid"
+                  :container-manager="containerManager"
+                  :field-metadata="fieldAttributes"
+                  :metadata-field="fieldAttributes"
                 />
               </template>
             </el-row>
@@ -65,7 +66,15 @@ export default defineComponent({
   },
 
   props: {
+    parentUuid: {
+      type: String,
+      default: undefined
+    },
     containerUuid: {
+      type: String,
+      required: true
+    },
+    containerManager: {
       type: String,
       required: true
     },

@@ -38,6 +38,10 @@
           :is="componentRender"
           :id="field.panelType !== 'form' ? field.columnName : ''"
           :ref="field.columnName"
+          :parent-uuid="parentUuid"
+          :container-uuid="containerUuid"
+          :container-manager="containerManager"
+          :field-metadata="fieldAttributes"
           :metadata="fieldAttributes"
           :value-model="recordDataFields"
         />
@@ -50,6 +54,10 @@
     :id="field.panelType !== 'form' ? field.columnName : ''"
     key="is-table-template"
     :class="classField"
+    :parent-uuid="parentUuid"
+    :container-uuid="containerUuid"
+    :container-manager="containerManager"
+    :field-metadata="fieldAttributes"
     :metadata="fieldAttributes"
     :value-model="recordDataFields"
     :in-table="true"
@@ -72,7 +80,23 @@ export default {
   },
 
   props: {
+    parentUuid: {
+      type: String,
+      default: undefined
+    },
+    containerUuid: {
+      type: String,
+      required: true
+    },
+    containerManager: {
+      type: String,
+      required: true
+    },
     // receives the property that is an object with all the attributes
+    fieldMetadata: {
+      type: Object,
+      default: () => ({})
+    },
     metadataField: {
       type: Object,
       default: () => ({})

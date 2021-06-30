@@ -26,9 +26,8 @@
       <el-tab-pane
         :key="key"
         :label="tabAttributes.name"
-        :windowuuid="windowUuid"
-        :tabuuid="tabAttributes.uuid"
         :name="String(key)"
+        :tabuuid="tabAttributes.uuid"
         :tabindex="String(key)"
         lazy
         :disabled="isDisabledTab(key)"
@@ -43,8 +42,9 @@
         />
 
         <panel-definition
-          :parent-uuid="windowUuid"
+          :parent-uuid="parentUuid"
           :container-uuid="tabAttributes.uuid"
+          :container-manager="containerManager"
           :panel-metadata="tabAttributes"
           :group-tab="tabAttributes.tabGroup"
         />
@@ -68,13 +68,13 @@ export default defineComponent({
   },
 
   props: {
-    windowUuid: {
+    parentUuid: {
       type: String,
-      default: ''
+      required: true
     },
-    windowMetadata: {
-      type: Object,
-      default: () => {}
+    containerManager: {
+      type: String,
+      required: true
     },
     tabsList: {
       type: Array,
@@ -155,7 +155,6 @@ export default defineComponent({
 
     return {
       currentTab,
-      tabUuid,
       // computed
       tabStyle,
       // meyhods

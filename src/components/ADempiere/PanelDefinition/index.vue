@@ -20,6 +20,7 @@
   <component
     :is="componentRender"
     :container-uuid="containerUuid"
+    :container-manager="containerManager"
     :panel-metadata="metadata"
   />
 </template>
@@ -37,6 +38,10 @@ export default defineComponent({
       default: undefined
     },
     containerUuid: {
+      type: String,
+      required: true
+    },
+    containerManager: {
       type: String,
       required: true
     },

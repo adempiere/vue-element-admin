@@ -10,7 +10,6 @@ export function generatePanelAndFields({
   const fieldAdditionalAttributes = {
     parentUuid,
     containerUuid,
-    containerType: tabMetadata.containerType,
     // tab attributes
     tabTableName: tabMetadata.tableName,
     tabQuery: tabMetadata.query,
@@ -19,9 +18,6 @@ export function generatePanelAndFields({
     isShowedFromUser: true,
     isReadOnlyFromForm: false
   }
-
-  let isWithUuidField = false // indicates it contains the uuid field
-  let fieldLinkColumnName
 
   // convert fields and add app attributes
   const fieldsList = tabMetadata.fields.map((fieldItem, index) => {
@@ -33,17 +29,21 @@ export function generatePanelAndFields({
       }
     })
 
-    if (!isWithUuidField && fieldItem.columnName === 'UUID') {
-      isWithUuidField = true
-    }
-
-    if (fieldItem.isParent) {
-      fieldLinkColumnName = fieldItem.columnName
-    }
-
     return fieldItem
   })
 
+  // parent link column name
+  let fieldLinkColumnName = fieldsList.find(fieldItem => {
+    return fieldItem.isParent
+  })
+  if (fieldLinkColumnName) {
+    fieldLinkColumnName = fieldLinkColumnName.columnName
+  }
+
+  // indicates it contains the uuid field
+  const isWithUuidField = fieldsList.some(fieldItem => {
+    return fieldItem.columnName === 'UUID'
+  })
   // add field uuid column name
   if (!isWithUuidField) {
     const fieldUuid = getFieldTemplate({

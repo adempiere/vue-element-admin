@@ -25,8 +25,8 @@
 
         <component
           :is="renderWindowComponent"
+          :container-manager="containerManager"
           :window-metadata="windowMetadata"
-          :window-uuid="windowUuid"
         />
       </el-aside>
     </el-container>
@@ -62,7 +62,8 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
-    const containerType = 'window'
+    const containerManager = 'window'
+
     const isLoaded = ref(false)
     const windowMetadata = ref({})
 
@@ -82,10 +83,7 @@ export default defineComponent({
       // metadata props use for test
       if (!root.isEmptyValue(props.metadata)) {
         return new Promise(resolve => {
-          const windowResponse = generateWindowRespose({
-            ...props.metadata,
-            containerType
-          })
+          const windowResponse = generateWindowRespose(props.metadata)
 
           generateWindow(windowResponse)
           resolve(windowResponse)
@@ -104,6 +102,7 @@ export default defineComponent({
 
     return {
       windowUuid,
+      containerManager,
       windowMetadata,
       // computed
       renderWindowComponent,
