@@ -89,7 +89,7 @@ export default {
       required: true
     },
     containerManager: {
-      type: String,
+      type: Object,
       required: true
     },
     // receives the property that is an object with all the attributes

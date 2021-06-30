@@ -73,7 +73,7 @@ export default defineComponent({
       required: true
     },
     containerManager: {
-      type: String,
+      type: Object,
       required: true
     },
     tabsList: {
@@ -117,9 +117,7 @@ export default defineComponent({
         tabUuid.value = tabuuid
         setCurrentTab()
       }
-      if (currentTab.value !== tabindex) {
-        setTabNumber(tabindex)
-      }
+      setTabNumber(tabindex)
     }
 
     const setTabNumber = (tabNumber = '0') => {
@@ -139,9 +137,14 @@ export default defineComponent({
           ...root.$route.params
         }
       }, () => {})
-
-      // TODO: Delete this to production
-      console.log('Click tab number ', tabNumber)
+      const containerManager = props.containerManager
+      if (containerManager !== undefined) {
+        console.log(containerManager)
+        // containerManager.seekTab({
+        //   tabNumber,
+        //   currentTab
+        // }).then(() => {})
+      }
       return tabNumber
     }
 

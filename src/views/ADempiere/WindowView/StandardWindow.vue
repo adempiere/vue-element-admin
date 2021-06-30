@@ -39,7 +39,7 @@ export default defineComponent({
 
   props: {
     containerManager: {
-      type: String,
+      type: Object,
       required: true
     },
     windowMetadata: {

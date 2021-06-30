@@ -25,7 +25,7 @@
 
         <component
           :is="renderWindowComponent"
-          :container-manager="containerManager"
+          :container-manager="containerManagerProp"
           :window-metadata="windowMetadata"
         />
       </el-aside>
@@ -58,11 +58,15 @@ export default defineComponent({
     metadata: {
       type: Object,
       default: () => {}
+    },
+    containerManager: {
+      type: Object,
+      required: true
     }
   },
 
   setup(props, { root }) {
-    const containerManager = 'window'
+    const containerManagerProp = props.containerManager
 
     const isLoaded = ref(false)
     const windowMetadata = ref({})
@@ -102,7 +106,7 @@ export default defineComponent({
 
     return {
       windowUuid,
-      containerManager,
+      containerManagerProp,
       windowMetadata,
       // computed
       renderWindowComponent,

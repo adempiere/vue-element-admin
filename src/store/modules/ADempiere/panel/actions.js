@@ -478,92 +478,6 @@ const actions = {
         }
       })
 
-    // return new Promise(resolve => {
-    //   if (isEmptyValue(fieldsList)) {
-    //     fieldsList = getters.getFieldsListFromPanel(containerUuid)
-    //   }
-    //   let fieldsShowed = []
-    //   // const promisessList = []
-    //   fieldsList.map(async actionField => {
-    //     if (actionField.isShowedFromUser) {
-    //       fieldsShowed.push(actionField.columnName)
-    //     }
-    //
-    //     // Evaluate with hasOwnProperty if exits this value
-    //     if (!Object.prototype.hasOwnProperty.call(newValues, actionField.columnName)) {
-    //       if (!isChangedAllValues || withOutColumnNames.includes(actionField.columnName)) {
-    //         // breaks if this value does not exist or ignore with out column names
-    //         return
-    //       }
-    //       // set empty value and continue
-    //       newValues[actionField.columnName] = undefined
-    //     }
-    //
-    //     if (isChangeFromCallout &&
-    //       actionField.componentPath === 'FieldSelect' &&
-    //       !Object.prototype.hasOwnProperty.call(newValues, actionField.displayColumnName)) {
-    //       let lookup = rootGetters.getLookupItem({
-    //         parentUuid,
-    //         containerUuid,
-    //         directQuery: actionField.reference.directQuery,
-    //         tableName: actionField.reference.tableName,
-    //         value: newValues[actionField.columnName]
-    //       })
-    //
-    //       if (isEmptyValue(lookup) && !isEmptyValue(newValues[actionField.columnName])) {
-    //         lookup = await dispatch('getLookupItemFromServer', {
-    //           parentUuid,
-    //           containerUuid,
-    //           tableName: actionField.reference.tableName,
-    //           directQuery: actionField.reference.parsedDirectQuery,
-    //           value: newValues[actionField.columnName]
-    //         })
-    //       }
-    //       if (!isEmptyValue(lookup)) {
-    //         newValues[actionField.displayColumnName] = lookup.label
-    //       }
-    //     }
-    //     //  Update field
-    //     commit('updateValueOfField', {
-    //       parentUuid,
-    //       containerUuid,
-    //       columnName: actionField.columnName,
-    //       value: newValues[actionField.columnName]
-    //     })
-    //   })
-    //   // show fields in query
-    //   if (isShowedField && !isEmptyValue(newValues)) {
-    //     // join column names without duplicating it
-    //     fieldsShowed = Array.from(new Set([
-    //       ...fieldsShowed,
-    //       ...Object.keys(newValues)
-    //     ]))
-    //
-    //     dispatch('changeFieldAttributesBoolean', {
-    //       containerUuid,
-    //       attribute: 'isShowedFromUser',
-    //       valueAttribute: true,
-    //       fieldsIncludes: fieldsShowed
-    //     })
-    //   }
-    //   if (panelType === 'window') {
-    //     dispatch('setIsloadContext', {
-    //       containerUuid
-    //     })
-    //     if (isPrivateAccess) {
-    //       const tableName = rootGetters.getTableNameFromTab(parentUuid, containerUuid)
-    //       // TODO: Add current id and new id to comparison
-    //       if (!isEmptyValue(newValues[`${tableName}_ID`])) {
-    //         dispatch('getPrivateAccessFromServer', {
-    //           tableName,
-    //           recordId: newValues[`${tableName}_ID`],
-    //           userUuid: rootGetters['user/getUserUuid']
-    //         })
-    //       }
-    //     }
-    //   }
-    // })
-
     dispatch('setIsloadContext', {
       containerUuid
     })
@@ -577,6 +491,7 @@ const actions = {
   */
   notifyFieldChange({ dispatch, getters }, {
     containerUuid,
+    containerManager,
     columnName,
     field,
     newValue
@@ -598,34 +513,13 @@ const actions = {
       } else {
         value = newValue
       }
-      // if (!(panelType === 'table' || isAdvancedQuery)) {
-      //   if (!['IN', 'NOT_IN'].includes(field.operator)) {
-      //     value = parsedValueComponent({
-      //       componentPath: field.componentPath,
-      //       columnName: field.columnName,
-      //       displayType: field.displayType,
-      //       value,
-      //       isIdentifier: field.columnName.includes('_ID')
-      //     })
-      //     if (field.isRange) {
-      //       valueTo = parsedValueComponent({
-      //         componentPath: field.componentPath,
-      //         columnName: field.columnName,
-      //         displayType: field.displayType,
-      //         value: valueTo,
-      //         isIdentifier: field.columnName.includes('_ID')
-      //       })
-      //     }
-      //   }
-      // }
       resolve({
         tableName: field.tableName,
         field,
         value
       })
-
       // Run specific action
-      dispatch(field.panelType + 'ActionPerformed', {
+      containerManager.actionPerformed({
         containerUuid: field.containerUuid,
         field,
         value

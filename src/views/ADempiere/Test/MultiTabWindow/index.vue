@@ -21,6 +21,7 @@
     :is="WindowView"
     :uuid="uuid"
     :metadata="metadata"
+    :container-manager="containerManager"
   />
 </template>
 
@@ -37,11 +38,27 @@ export default defineComponent({
     // Business Partner
     const uuid = 'a520de12-fb40-11e8-a479-7a0060f0aa01'
     const metadata = multiTabMetadata.result
+    const containerManager = {
+      actionPerformed: function(eventInfo) {
+        console.log('actionPerformed: ', eventInfo)
+        return new Promise()
+      },
 
+      seekRecord: function(eventInfo) {
+        console.log('seekRecord: ', eventInfo)
+        return new Promise()
+      },
+
+      seekTab: function(eventInfo) {
+        console.log('seekTab: ', eventInfo)
+        return new Promise()
+      }
+    }
     return {
       WindowView,
       metadata,
-      uuid
+      uuid,
+      containerManager
     }
   }
 })

@@ -75,7 +75,7 @@ export default defineComponent({
       required: true
     },
     containerManager: {
-      type: String,
+      type: Object,
       required: true
     },
     panelMetadata: {

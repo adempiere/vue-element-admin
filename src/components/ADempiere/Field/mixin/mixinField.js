@@ -25,7 +25,7 @@ export default {
       required: true
     },
     containerManager: {
-      type: String,
+      type: Object,
       required: true
     },
     fieldMetadata: {
@@ -173,8 +173,6 @@ export default {
       }
     },
     actionKeyPerformed(value) {
-      // TODO: Delete for production
-      console.info('actionKeyPerformed ', this.containerManager, value)
       if (this.metadata.handleActionKeyPerformed) {
         this.$store.dispatch('notifyActionKeyPerformed', {
           containerUuid: this.metadata.containerUuid,
@@ -223,15 +221,9 @@ export default {
         return
       }
 
-      if (this.metadata.inTable) {
-        this.$store.dispatch('notifyCellTableChange', {
-          parentUuid: this.metadata.parentUuid,
-          containerUuid: this.metadata.containerUuid,
-          field: this.metadata
-        })
-      }
       this.$store.dispatch('notifyFieldChange', {
         containerUuid: this.metadata.containerUuid,
+        containerManager: this.containerManager,
         field: this.metadata,
         columnName: this.metadata.columnName
       })
