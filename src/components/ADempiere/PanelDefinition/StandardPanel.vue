@@ -17,7 +17,7 @@
 -->
 
 <template>
-  <div class="wrapper" style="margin: 15px">
+  <div class="wrapper" style="margin-right: 10px">
     <el-form
       label-position="top"
       label-width="200px"

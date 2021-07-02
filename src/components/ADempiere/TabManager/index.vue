@@ -17,54 +17,72 @@
 -->
 
 <template>
-  <el-tabs
-    v-model="currentTab"
-    type="border-card"
-    @tab-click="handleClick"
-  >
-    <template v-for="(tabAttributes, key) in tabsList">
-      <el-tab-pane
-        :key="key"
-        :label="tabAttributes.name"
-        :name="String(key)"
-        :tabuuid="tabAttributes.uuid"
-        :tabindex="String(key)"
-        lazy
-        :disabled="isDisabledTab(key)"
-        :style="tabStyle"
-      >
-        <lock-record
-          slot="label"
-          :tab-position="key"
-          :tab-uuid="tabAttributes.uuid"
-          :table-name="tabAttributes.tableName"
-          :tab-name="tabAttributes.name"
-        />
+  <split-pane :default-percent="50" split="vertical">
 
-        <panel-definition
-          :parent-uuid="parentUuid"
-          :container-uuid="tabAttributes.uuid"
-          :container-manager="containerManager"
-          :panel-metadata="tabAttributes"
-          :group-tab="tabAttributes.tabGroup"
-        />
-      </el-tab-pane>
+    <record-navigation
+      slot="paneL"
+      :parent-uuid="parentUuid"
+      :container-uuid="tabUuid"
+      :container-manager="containerManager"
+      :current-tab="tabsList[currentTab]"
+    />
+
+    <template slot="paneR">
+      <el-tabs
+        v-model="currentTab"
+        type="border-card"
+        @tab-click="handleClick"
+      >
+        <el-tab-pane
+          v-for="(tabAttributes, key) in tabsList"
+          :key="key"
+          :label="tabAttributes.name"
+          :name="String(key)"
+          :tabuuid="tabAttributes.uuid"
+          :tabindex="String(key)"
+          lazy
+          :disabled="isDisabledTab(key)"
+          :style="tabStyle"
+        >
+          <lock-record
+            slot="label"
+            :tab-position="key"
+            :tab-uuid="tabAttributes.uuid"
+            :table-name="tabAttributes.tableName"
+            :tab-name="tabAttributes.name"
+          />
+
+          <panel-definition
+            :parent-uuid="parentUuid"
+            :container-uuid="tabAttributes.uuid"
+            :container-manager="containerManager"
+            :panel-metadata="tabAttributes"
+            :group-tab="tabAttributes.tabGroup"
+          />
+
+        </el-tab-pane>
+      </el-tabs>
     </template>
-  </el-tabs>
+
+  </split-pane>
 </template>
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
 
-import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
+import PanelDefinition from '@/components/ADempiere/PanelDefinition'
+import RecordNavigation from '@/components/ADempiere/RecordNavigation'
+import SplitPane from 'vue-splitpane'
 
 export default defineComponent({
   name: 'TabManager',
 
   components: {
+    LockRecord,
     PanelDefinition,
-    LockRecord
+    RecordNavigation,
+    SplitPane
   },
 
   props: {
@@ -90,6 +108,7 @@ export default defineComponent({
     const tabUuid = ref(props.tabsList[0].uuid)
 
     const tabStyle = computed(() => {
+      // height in card
       return {
         height: '75vh',
         overflow: 'auto'
@@ -157,6 +176,7 @@ export default defineComponent({
     setTabNumber(currentTab.value)
 
     return {
+      tabUuid,
       currentTab,
       // computed
       tabStyle,

@@ -95,22 +95,26 @@ export default defineComponent({
     containerUuid: {
       type: String,
       required: true
+    },
+    containerManager: {
+      type: Object,
+      required: true
+    },
+    panelMetadata: {
+      type: Object,
+      required: true
     }
   },
 
   setup(props, { root }) {
-    const panelMetadata = computed(() => {
-      return root.$store.getters.getPanel(props.containerUuid)
-    })
-
     const keyColumn = computed(() => {
-      if (panelMetadata.value) {
-        return panelMetadata.value.keyColumn
+      if (props.panelMetadata) {
+        return props.panelMetadata.keyColumn
       }
     })
 
     const fieldsList = computed(() => {
-      const panel = panelMetadata.value
+      const panel = props.panelMetadata
       if (panel && panel.fieldsList) {
         return panel.fieldsList
       }
@@ -124,7 +128,7 @@ export default defineComponent({
       //   // disabled rollback when change route
       //   // root.$store.dispatch('setDataLog', {})
       // }
-      const tableName = panelMetadata.value.tableName
+      const tableName = props.panelMetadata.tableName
       // TODO: Replace with general dispatch to set current record
       root.$router.push({
         name: root.$route.name,
@@ -166,7 +170,6 @@ export default defineComponent({
     return {
       // computeds
       keyColumn,
-      panelMetadata,
       fieldsList,
       // methods
       headerLabel,

@@ -19,7 +19,7 @@
 <template>
   <div v-if="isLoaded" key="window-loaded" class="view-base">
     <el-container style="min-height: calc(100vh - 84px)">
-      <el-aside width="100%">
+      <el-aside style="width: 100%; margin-bottom: 0px; padding-right: 10px; padding-left: 10px;">
 
         <!-- // TODO: Add header window component for auxiliary menu and worflow status -->
 
