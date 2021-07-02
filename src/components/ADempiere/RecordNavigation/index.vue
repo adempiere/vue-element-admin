@@ -19,30 +19,6 @@
 <template>
   <el-container class="record-navigation">
 
-    <!-- advanced search -->
-    <!--
-    <el-header>
-      <el-collapse
-        v-model="activeName"
-        v-shortkey="shorcutKey"
-        @shortkey.native="actionAdvancedQuery()"
-      >
-        <el-collapse-item :title="$t('table.dataTable.advancedQuery')" name="PanelAdvancedQuery">
-          <template v-if="!isEmptyValue(activeName) && activeName[0] === 'PanelAdvancedQuery'">
-            <panel-definition
-              v-show="!isEmptyValue(activeName) && activeName[0] === 'PanelAdvancedQuery'"
-              :container-uuid="'table_' + containerUuid"
-              :parent-uuid="'table_' + parentUuid"
-              panel-type="table"
-              is-advanced-query
-              class="collapse_item_wrap"
-            />
-          </template>
-        </el-collapse-item>
-      </el-collapse>
-    </el-header>
-    -->
-
     <!-- records in table -->
     <default-table
       :parent-uuid="parentUuid"
