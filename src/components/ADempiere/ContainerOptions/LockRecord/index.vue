@@ -31,13 +31,21 @@
       </el-button>
     </el-tooltip>
 
+    <slot name="prefix" />
+
     <span :style="isLocked ? 'color: red;' :'color: #1890ff;'">
       {{ tabName }}
     </span>
+
+    <slot name="sufix" />
   </span>
 
   <span v-else key="onlyName">
+    <slot name="prefix" />
+
     {{ tabName }}
+
+    <slot name="sufix" />
   </span>
 </template>
 

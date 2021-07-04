@@ -102,7 +102,8 @@ export default defineComponent({
     })
 
     // load metadata and generate window
-    getWindow()
+    // getWindow()
+    setTimeout(getWindow, 1000)
 
     return {
       windowUuid,

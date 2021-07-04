@@ -25,7 +25,7 @@
       :row-key="keyColumn"
       reserve-selection
       highlight-current-row
-      :data="[]"
+      :data="recordsList"
       :element-loading-text="$t('notifications.loading')"
       element-loading-background="rgba(255, 255, 255, 0.8)"
       @row-click="handleRowClick"
@@ -167,8 +167,13 @@ export default defineComponent({
       return
     }
 
+    const recordsList = computed(() => {
+      return props.containerManager.data.recordsList || []
+    })
+
     return {
       // computeds
+      recordsList,
       keyColumn,
       fieldsList,
       // methods

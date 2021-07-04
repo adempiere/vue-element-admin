@@ -17,54 +17,65 @@
 -->
 
 <template>
-  <split-pane :default-percent="50" split="vertical">
+  <div>
+    <el-drawer
+      :title="tabsList[currentTab].name"
+      size="50%"
+      :visible.sync="isShowRecords"
+      with-header
+    >
+      <record-navigation
+        :parent-uuid="parentUuid"
+        :container-uuid="tabUuid"
+        :container-manager="containerManager"
+        :current-tab="tabsList[currentTab]"
+      />
+    </el-drawer>
 
-    <record-navigation
-      slot="paneL"
-      :parent-uuid="parentUuid"
-      :container-uuid="tabUuid"
-      :container-manager="containerManager"
-      :current-tab="tabsList[currentTab]"
-    />
-
-    <template slot="paneR">
-      <el-tabs
-        v-model="currentTab"
-        type="border-card"
-        @tab-click="handleClick"
+    <el-tabs
+      v-model="currentTab"
+      type="border-card"
+      @tab-click="handleClick"
+    >
+      <el-tab-pane
+        v-for="(tabAttributes, key) in tabsList"
+        :key="key"
+        :label="tabAttributes.name"
+        :name="String(key)"
+        :tabuuid="tabAttributes.uuid"
+        :tabindex="String(key)"
+        lazy
+        :disabled="isDisabledTab(key)"
+        :style="tabStyle"
       >
-        <el-tab-pane
-          v-for="(tabAttributes, key) in tabsList"
-          :key="key"
-          :label="tabAttributes.name"
-          :name="String(key)"
-          :tabuuid="tabAttributes.uuid"
-          :tabindex="String(key)"
-          lazy
-          :disabled="isDisabledTab(key)"
-          :style="tabStyle"
+        <lock-record
+          slot="label"
+          :tab-position="key"
+          :tab-uuid="tabAttributes.uuid"
+          :table-name="tabAttributes.tableName"
+          :tab-name="tabAttributes.name"
         >
-          <lock-record
-            slot="label"
-            :tab-position="key"
-            :tab-uuid="tabAttributes.uuid"
-            :table-name="tabAttributes.tableName"
-            :tab-name="tabAttributes.name"
-          />
+          <el-button
+            v-if="currentTab == key"
+            slot="prefix"
+            type="text"
+            @click="isShowRecords = true"
+          >
+            <i class="el-icon-s-fold" style="font-size: 15px; color: black;" />
+          </el-button>
+        </lock-record>
 
-          <panel-definition
-            :parent-uuid="parentUuid"
-            :container-uuid="tabAttributes.uuid"
-            :container-manager="containerManager"
-            :panel-metadata="tabAttributes"
-            :group-tab="tabAttributes.tabGroup"
-          />
+        <panel-definition
+          :parent-uuid="parentUuid"
+          :container-uuid="tabAttributes.uuid"
+          :container-manager="containerManager"
+          :panel-metadata="tabAttributes"
+          :group-tab="tabAttributes.tabGroup"
+        />
 
-        </el-tab-pane>
-      </el-tabs>
-    </template>
-
-  </split-pane>
+      </el-tab-pane>
+    </el-tabs>
+  </div>
 </template>
 
 <script>
@@ -73,7 +84,6 @@ import { defineComponent, computed, ref } from '@vue/composition-api'
 import LockRecord from '@/components/ADempiere/ContainerOptions/LockRecord'
 import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import RecordNavigation from '@/components/ADempiere/RecordNavigation'
-import SplitPane from 'vue-splitpane'
 
 export default defineComponent({
   name: 'TabManager',
@@ -81,8 +91,7 @@ export default defineComponent({
   components: {
     LockRecord,
     PanelDefinition,
-    RecordNavigation,
-    SplitPane
+    RecordNavigation
   },
 
   props: {
@@ -180,7 +189,10 @@ export default defineComponent({
 
     setTabNumber(currentTab.value)
 
+    const isShowRecords = ref(false)
+
     return {
+      isShowRecords,
       tabUuid,
       currentTab,
       // computed

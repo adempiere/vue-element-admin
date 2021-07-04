@@ -23,7 +23,7 @@
     <default-table
       :parent-uuid="parentUuid"
       :container-uuid="containerUuid"
-      :container-manager="containerManager"
+      :container-manager="recordNavigationManager"
       :panel-metadata="panelMetadata"
     />
 
@@ -102,9 +102,18 @@ export default defineComponent({
       activeName.value = activeNames
     }
 
+    const recordNavigationManager = computed(() => {
+      return {
+        data: root.$store.getters.getContainerData({
+          containerUuid: props.containerUuid
+        })
+      }
+    })
+
     return {
       activeName,
       // computeds
+      recordNavigationManager,
       isLoadedPanel,
       panelMetadata,
       shorcutKey,
