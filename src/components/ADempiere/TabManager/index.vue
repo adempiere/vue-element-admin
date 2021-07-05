@@ -114,7 +114,7 @@ export default defineComponent({
     const tabNo = root.$route.query.tab || '0'
     const currentTab = ref(tabNo)
 
-    const tabUuid = ref(props.tabsList[0].uuid)
+    const tabUuid = ref(props.tabsList[tabNo].uuid)
 
     const tabStyle = computed(() => {
       // height in card
