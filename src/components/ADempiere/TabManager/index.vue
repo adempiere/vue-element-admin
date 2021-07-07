@@ -27,7 +27,7 @@
       <record-navigation
         :parent-uuid="parentUuid"
         :container-uuid="tabUuid"
-        :container-manager="containerManager"
+        :container-manager="containerManagerTab"
         :current-tab="tabsList[currentTab]"
       />
     </el-drawer>
@@ -136,6 +136,28 @@ export default defineComponent({
       // TODO: Add store current tab
     }
 
+    const containerManagerTab = computed(() => {
+      return {
+        ...props.containerManager,
+        seekRecord: (row) => {
+          const tableName = props.tabsList[tabNo].tableName
+          // TODO: Replace with general dispatch to set current record
+          root.$router.push({
+            name: root.$route.name,
+            query: {
+              ...root.$route.query,
+              action: row.UUID
+            },
+            params: {
+              ...root.$router.params,
+              tableName,
+              recordId: row[`${tableName}_ID`]
+            }
+          }, () => {})
+        }
+      }
+    })
+
     /**
      * @param {object} tabHTML DOM HTML the tab clicked
      */
@@ -178,7 +200,7 @@ export default defineComponent({
 
     const getData = () => {
       // TODO: Add store get data from tab
-      root.$store.dispatch('getListEntities', {
+      root.$store.dispatch('getEntitiesList', {
         parentUuid: props.parentUuid,
         containerUuid: tabUuid.value,
         ...props.tabsList[currentTab.value]
@@ -196,6 +218,7 @@ export default defineComponent({
       tabUuid,
       currentTab,
       // computed
+      containerManagerTab,
       tabStyle,
       // meyhods
       handleClick,

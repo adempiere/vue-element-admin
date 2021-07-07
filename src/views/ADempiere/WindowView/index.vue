@@ -25,7 +25,7 @@
 
         <component
           :is="renderWindowComponent"
-          :container-manager="containerManagerProp"
+          :container-manager="containerManagerWindow"
           :window-metadata="windowMetadata"
         />
       </el-aside>
@@ -61,12 +61,34 @@ export default defineComponent({
     },
     containerManager: {
       type: Object,
-      required: true
+      default: () => {}
     }
   },
 
   setup(props, { root }) {
-    const containerManagerProp = props.containerManager
+    let containerManagerWindow = {
+      actionPerformed: function(eventInfo) {
+        console.log('actionPerformed: ', eventInfo)
+        return new Promise()
+      },
+
+      seekRecord: function(eventInfo) {
+        console.log('seekRecord: ', eventInfo)
+        // return new Promise()
+      },
+
+      seekTab: function(eventInfo) {
+        console.log('seekTab: ', eventInfo)
+        return new Promise()
+      }
+    }
+    if (!root.isEmptyValue(props.containerManager)) {
+      containerManagerWindow = {
+        ...containerManagerWindow,
+        // overwirte methods
+        ...props.containerManager
+      }
+    }
 
     const isLoaded = ref(false)
     const windowMetadata = ref({})
@@ -107,7 +129,7 @@ export default defineComponent({
 
     return {
       windowUuid,
-      containerManagerProp,
+      containerManagerWindow,
       windowMetadata,
       // computed
       renderWindowComponent,

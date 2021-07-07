@@ -104,6 +104,7 @@ export default defineComponent({
 
     const recordNavigationManager = computed(() => {
       return {
+        ...props.containerManager,
         data: root.$store.getters.getContainerData({
           containerUuid: props.containerUuid
         })

@@ -122,27 +122,7 @@ export default defineComponent({
     })
 
     const handleRowClick = (row, column, event) => {
-      // this.currentTable = this.recordsData.findIndex(item => item.UUID === row.UUID)
-      // if (this.uuidCurrentRecordSelected !== row.UUID) {
-      //   this.uuidCurrentRecordSelected = row.UUID
-      //   // disabled rollback when change route
-      //   // root.$store.dispatch('setDataLog', {})
-      // }
-      const tableName = props.panelMetadata.tableName
-      // TODO: Replace with general dispatch to set current record
-      root.$router.push({
-        name: root.$route.name,
-        query: {
-          ...root.$route.query,
-          action: row.UUID
-        },
-        params: {
-          ...root.$router.params,
-          tableName,
-          recordId: row[`${tableName}_ID`]
-        }
-      }, () => {})
-      // root.$store.commit('setCurrentRecord', row)
+      props.containerManager.seekRecord(row)
     }
 
     const headerLabel = (field) => {

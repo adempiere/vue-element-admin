@@ -21,7 +21,6 @@
     :is="WindowView"
     :uuid="uuid"
     :metadata="metadata"
-    :container-manager="containerManager"
   />
 </template>
 
@@ -39,25 +38,7 @@ export default defineComponent({
     const uuid = 'a521b2f6-fb40-11e8-a479-7a0060f0aa01'
     const metadata = standardMetadata.result
 
-    const containerManager = {
-      actionPerformed: function(eventInfo) {
-        console.log('actionPerformed: ', eventInfo)
-        return new Promise()
-      },
-
-      seekRecord: function(eventInfo) {
-        console.log('seekRecord: ', eventInfo)
-        return new Promise()
-      },
-
-      seekTab: function(eventInfo) {
-        console.log('seekTab: ', eventInfo)
-        return new Promise()
-      }
-    }
-
     return {
-      containerManager,
       metadata,
       uuid,
       WindowView
