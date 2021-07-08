@@ -23,7 +23,8 @@ import { getCurrentRole } from '@/utils/auth'
 const dashboard = {
   state: {
     dashboard: [],
-    recentItems: []
+    recentItems: [],
+    mainashboard: {}
   },
   mutations: {
     addDashboard(state, payload) {
@@ -34,6 +35,9 @@ const dashboard = {
     },
     setRecentItems(state, payload) {
       state.recentItems = payload
+    },
+    setMainDashboard(state, payload) {
+      state.mainashboard = payload
     }
   },
   actions: {
@@ -69,6 +73,9 @@ const dashboard = {
             console.warn(`Error getting List Dashboards: ${error.message}. Code: ${error.code}.`)
           })
       })
+    },
+    mainDashboard({ commit }, dashboard) {
+      commit('setMainDashboard', dashboard)
     }
   },
   getters: {
@@ -81,6 +88,9 @@ const dashboard = {
       return state.dashboard.find(
         item => item.roleUuid === roleUuid
       )
+    },
+    getMainDashboard: (state) => {
+      return state.mainashboard
     }
   }
 }

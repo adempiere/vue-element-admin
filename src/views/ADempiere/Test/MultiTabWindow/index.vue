@@ -1,7 +1,7 @@
 <!--
  ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
  Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
- Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
+ Contributor(s): Yamel Senih ysenih@erpya.com www.erpya.com
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -17,39 +17,32 @@
 -->
 
 <template>
-  <tab-manager
-    :window-uuid="windowUuid"
-    :window-metadata="windowMetadata"
-    :tabs-list="windowMetadata.tabsListParent"
-    class="tab-window"
+  <component
+    :is="WindowView"
+    :uuid="uuid"
+    :metadata="metadata"
   />
 </template>
 
 <script>
 import { defineComponent } from '@vue/composition-api'
 
-import TabManager from '@/components/ADempiere/TabManager'
+import WindowView from '@/views/ADempiere/WindowView'
+import multiTabMetadata from './multiTabWindow.json'
 
 export default defineComponent({
-  name: 'StandardWindow',
-
-  components: {
-    TabManager
-  },
-
-  props: {
-    windowUuid: {
-      type: String,
-      required: true
-    },
-    windowMetadata: {
-      type: Object,
-      required: true
-    }
-  },
+  name: 'TestWindowView',
 
   setup() {
+    // Business Partner
+    const uuid = 'a520de12-fb40-11e8-a479-7a0060f0aa01'
+    const metadata = multiTabMetadata.result
 
+    return {
+      WindowView,
+      metadata,
+      uuid
+    }
   }
 })
 </script>

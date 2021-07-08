@@ -34,6 +34,41 @@ const testRoutes = [
       }
     ]
   },
+
+  {
+    path: '/test/window/standard',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/test/window/standard',
+        component: () => import('@/views/ADempiere/Test/Window'),
+        name: 'Window Test View',
+        meta: {
+          title: 'Window Test View',
+          isIndex: true
+        }
+      }
+    ]
+  },
+
+  {
+    path: '/test/multitab/window',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/test/multitab/window',
+        component: () => import('@/views/ADempiere/Test/MultiTabWindow'),
+        name: 'Multi Tab Window View',
+        meta: {
+          title: 'Multi Tab Window View',
+          isIndex: true
+        }
+      }
+    ]
+  },
+
   {
     path: '/test/process/standard',
     component: Layout,
@@ -50,6 +85,7 @@ const testRoutes = [
       }
     ]
   },
+
   {
     path: '/test/smart-browser/standard',
     component: Layout,
