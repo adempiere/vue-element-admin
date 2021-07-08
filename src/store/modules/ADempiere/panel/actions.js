@@ -20,10 +20,8 @@ import {
 } from '@/utils/ADempiere/valueUtils.js'
 import { convertObjectToKeyValue } from '@/utils/ADempiere/valueFormat.js'
 import evaluator, { getContext, parseContext } from '@/utils/ADempiere/contextUtils.js'
-import { showMessage } from '@/utils/ADempiere/notification.js'
 import { assignedGroup, fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils.js'
 import router from '@/router'
-import language from '@/lang'
 
 const actions = {
   addPanel({ commit, dispatch, getters }, params) {
@@ -310,7 +308,6 @@ const actions = {
   setDefaultValues({ commit, dispatch, getters }, {
     parentUuid,
     containerUuid,
-    panelType = 'window',
     isOverWriteParent = true,
     isNewRecord = false
   }) {
@@ -329,49 +326,12 @@ const actions = {
         fieldsList: panel.fieldsList
       })
 
-      if (panelType === 'window' && isNewRecord) {
-        // redirect to create new record
-        if (!(oldRoute.query && oldRoute.query.action === 'create-new')) {
-          router.push({
-            name: oldRoute.name,
-            params: {
-              ...oldRoute.params
-            },
-            query: {
-              ...oldRoute.query,
-              action: 'create-new'
-            }
-          }, () => {})
-        }
-        showMessage({
-          message: language.t('data.createNewRecord'),
-          type: 'info'
+      defaultAttributes.forEach(attribute => {
+        commit('addChangeToPersistenceQueue', {
+          ...attribute,
+          containerUuid
         })
-
-        defaultAttributes.forEach(attribute => {
-          commit('addChangeToPersistenceQueue', {
-            ...attribute,
-            containerUuid
-          })
-        })
-        // panel.fieldsList.forEach(fieldToBlank => {
-        //   if (isEmptyValue(fieldToBlank.parsedDefaultValue)) {
-        //     commit('changeFieldValueToNull', {
-        //       field: fieldToBlank,
-        //       value: undefined
-        //     })
-        //   }
-        // })
-
-        // if (panel.isTabsChildren) {
-        //   // delete records tabs children when change record uuid
-        //   dispatch('deleteRecordContainer', {
-        //     viewUuid: parentUuid,
-        //     withOut: [containerUuid],
-        //     isNew: true
-        //   })
-        // }
-      }
+      })
 
       dispatch('updateValuesOfContainer', {
         parentUuid,
@@ -380,73 +340,42 @@ const actions = {
         attributes: defaultAttributes
       })
         .then(() => {
-          const windowPanel = (itemField) => {
-            if (!itemField.isAdvancedQuery || itemField.isActiveLogics) {
-              // enable edit fields in panel
-              commit('changeFieldAttribure', {
-                attributeName: 'isReadOnlyFromForm',
-                field: itemField,
-                attributeValue: false
-              })
-            }
-          }
+          // const windowPanel = (itemField) => {
+          //   if (!itemField.isAdvancedQuery || itemField.isActiveLogics) {
+          //     // enable edit fields in panel
+          //     commit('changeFieldAttribure', {
+          //       attributeName: 'isReadOnlyFromForm',
+          //       field: itemField,
+          //       attributeValue: false
+          //     })
+          //   }
+          // }
 
-          const othersPanel = (itemField) => {
-            if (!itemField.isAdvancedQuery || itemField.isActiveLogics) {
-              // enable edit fields in panel
-              commit('changeFieldAttribure', {
-                attributeName: 'isReadOnlyFromForm',
-                field: itemField,
-                attributeValue: false
-              })
+          // const othersPanel = (itemField) => {
+          //   if (!itemField.isAdvancedQuery || itemField.isActiveLogics) {
+          //     // enable edit fields in panel
+          //     commit('changeFieldAttribure', {
+          //       attributeName: 'isReadOnlyFromForm',
+          //       field: itemField,
+          //       attributeValue: false
+          //     })
 
-              // Change Dependents
-              dispatch('changeDependentFieldsList', {
-                field: itemField
-              })
-            }
-            // if (itemField.isShowedFromUserDefault || !isEmptyValue(itemField.value)) {
-            //   fieldsUser.push(itemField.columnName)
-            // }
-          }
-
-          let execute = windowPanel
-          if (['browser', 'form', 'process', 'report'].includes(panelType)) {
-            // const fieldsUser = []
-            execute = othersPanel
-
-            // dispatch('changeFieldShowedFromUser', {
-            //   containerUuid,
-            //   fieldsUser,
-            //   groupField: ''
-            // })
-          }
-          panel.fieldsList.forEach(execute)
+          //     // Change Dependents
+          //     dispatch('changeDependentFieldsList', {
+          //       field: itemField
+          //     })
+          //   }
+          //   // if (itemField.isShowedFromUserDefault || !isEmptyValue(itemField.value)) {
+          //   //   fieldsUser.push(itemField.columnName)
+          //   // }
+          // }
+          // panel.fieldsList.forEach(execute)
         })
 
       resolve(defaultAttributes)
     })
   },
 
-  seekRecord({ dispatch, getters }, {
-    parentUuid,
-    containerUuid,
-    recordUuid
-  }) {
-    const recordRow = getters.getDataRecordAndSelection(containerUuid).record.find(record => record.UUID === recordUuid)
-    let attributes = []
-    if (!isEmptyValue(recordRow)) {
-      attributes = convertObjectToKeyValue({
-        object: recordRow
-      })
-    }
-    //  Change Value
-    dispatch('notifyPanelChange', {
-      parentUuid,
-      containerUuid,
-      attributes
-    })
-  },
   // Change all values of panel and dispatch actions for each field
   notifyPanelChange({ dispatch, getters }, {
     parentUuid,
@@ -465,22 +394,8 @@ const actions = {
       attributes
     })
       .then(() => {
-        const panel = getters.getPanel(containerUuid)
-        if (!panel.isAdvancedQuery) {
-          const fieldsList = panel.fieldsList
-          fieldsList.forEach(field => {
-            // Change Dependents
-            dispatch('changeDependentFieldsList', {
-              field,
-              fieldsList
-            })
-          })
-        }
+        // Nothing for now
       })
-
-    dispatch('setIsloadContext', {
-      containerUuid
-    })
   },
   /**
    * Handle all trigger for a field:
@@ -532,23 +447,13 @@ const actions = {
               attributes: response.attributes
             })
           }
-          if (!field.isAdvancedQuery) {
-            // Change Dependents
-            dispatch('changeDependentFieldsList', {
-              field,
-              fieldsList
-            })
-          }
-          showMessage({
-            message: language.t('notifications.updateFields') + ' ' + field.name,
-            type: 'success'
+          // Change Dependents
+          dispatch('changeDependentFieldsList', {
+            field,
+            fieldsList
           })
         })
         .catch(error => {
-          showMessage({
-            message: error.message,
-            type: 'error'
-          })
           console.warn(`${field.panelType}ActionPerformed error: ${error.message}.`)
         })
     })
@@ -635,15 +540,6 @@ const actions = {
             columnName: fieldDependent.columnName,
             value: newValue
           })
-
-          // dispatch('notifyFieldChange', {
-          //   parentUuid,
-          //   containerUuid,
-          //   isSendToServer,
-          //   panelType: fieldDependent.panelType,
-          //   columnName: fieldDependent.columnName,
-          //   newValue
-          // })
         }
       }
 

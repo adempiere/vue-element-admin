@@ -63,7 +63,7 @@ export default defineComponent({
         const attributes = convertObjectToKeyValue({
           object: row
         })
-        root.$store.dispatch('updateValuesOfContainer', {
+        root.$store.dispatch('notifyPanelChange', {
           parentUuid,
           containerUuid,
           attributes

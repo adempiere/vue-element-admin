@@ -77,15 +77,6 @@ export default {
         })
       },
       set(value) {
-        if (this.metadata.inTable) {
-          this.$store.dispatch('notifyCellTableChange', {
-            parentUuid: this.metadata.parentUuid,
-            containerUuid: this.metadata.containerUuid,
-            newValue: value,
-            field: this.metadata
-          })
-          return
-        }
         this.$store.commit('updateValueOfField', {
           parentUuid: this.metadata.parentUuid,
           containerUuid: this.metadata.containerUuid,
