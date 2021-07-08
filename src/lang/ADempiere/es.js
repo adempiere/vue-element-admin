@@ -433,7 +433,7 @@ export default {
         tax: 'Impuesto',
         total: 'Total',
         itemQuantity: 'Cantidad de Árticulo',
-        numberLines: 'Cantidad de Lineas',
+        numberLines: 'Numero de Lineas',
         pointSale: 'Punto de Venta',
         collect: 'Cobrar',
         collections: 'Cobros',
@@ -530,6 +530,30 @@ export default {
       },
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
+      }
+    },
+    match: {
+      title: {
+        invoice: 'Factura',
+        deliveryReceipt: 'Entrega / Recibo'
+      },
+      description: {
+        searchCriteria: 'Seleccione un Socio de Negocio para verificar los documentos pendientes por asignar',
+        invoice: 'Seleccione una Factura para asignar las Entrega/Recibo correspondiente',
+        deliveryReceipt: 'Seleccione al menos una Entrega/Recibo a la cual requiere asignar la factura seleccionada'
+      },
+      field: {
+        toAssigned: 'Para ser Asignadas',
+        assigning: 'Asignando',
+        difference: 'Diferencia'
+      },
+      filtersSearch: {
+        sameBusinessPartner: 'Mismo Socio del Negocio',
+        sameProduct: 'Mismo Producto ',
+        sameQuantity: 'Misma Cantidad '
+      },
+      table: {
+        nrDocument: 'Nr Docuemnto'
       }
     }
   }
