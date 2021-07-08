@@ -147,8 +147,18 @@ export default defineComponent({
       return
     }
 
+    // namespace to vuex store module
+    const vuexStore = props.containerManager.vuexStore()
+
+    // get records list
     const recordsList = computed(() => {
-      return props.containerManager.data.recordsList || []
+      const data = root.$store.getters[vuexStore + '/getContainerData']({
+        containerUuid: props.containerUuid
+      })
+      if (data && data.recordsList) {
+        return data.recordsList
+      }
+      return []
     })
 
     return {

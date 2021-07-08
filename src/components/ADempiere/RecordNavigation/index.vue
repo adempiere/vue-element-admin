@@ -102,14 +102,8 @@ export default defineComponent({
       activeName.value = activeNames
     }
 
-    const recordNavigationManager = computed(() => {
-      return {
-        ...props.containerManager,
-        data: root.$store.getters.getContainerData({
-          containerUuid: props.containerUuid
-        })
-      }
-    })
+    // set and/or overwrite methods
+    const recordNavigationManager = props.containerManager
 
     return {
       activeName,

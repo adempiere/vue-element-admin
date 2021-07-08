@@ -3,6 +3,8 @@ import {
 } from '@/api/ADempiere/common/persistence'
 
 const dataManager = {
+  namespaced: true,
+
   state: {
     containerData: []
   },

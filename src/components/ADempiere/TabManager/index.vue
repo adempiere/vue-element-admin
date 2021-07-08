@@ -139,6 +139,9 @@ export default defineComponent({
     const containerManagerTab = computed(() => {
       return {
         ...props.containerManager,
+
+        vuexStore: () => 'dataManager',
+
         seekRecord: (row) => {
           const tableName = props.tabsList[tabNo].tableName
           // TODO: Replace with general dispatch to set current record
@@ -200,7 +203,7 @@ export default defineComponent({
 
     const getData = () => {
       // TODO: Add store get data from tab
-      root.$store.dispatch('getEntitiesList', {
+      root.$store.dispatch('dataManager/getEntitiesList', {
         parentUuid: props.parentUuid,
         containerUuid: tabUuid.value,
         ...props.tabsList[currentTab.value]
