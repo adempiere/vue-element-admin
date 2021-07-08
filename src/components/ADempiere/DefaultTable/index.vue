@@ -123,6 +123,8 @@ export default defineComponent({
 
     const handleRowClick = (row, column, event) => {
       props.containerManager.seekRecord({
+        parentUuid: props.parentUuid,
+        containerUuid: props.containerUuid,
         row,
         tableName: props.panelMetadata.tableName
       })

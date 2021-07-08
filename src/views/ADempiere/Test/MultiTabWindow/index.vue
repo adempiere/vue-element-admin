@@ -30,6 +30,7 @@ import { defineComponent } from '@vue/composition-api'
 
 import WindowView from '@/views/ADempiere/WindowView'
 import multiTabMetadata from './multiTabWindow.json'
+import { convertObjectToKeyValue } from '@/utils/ADempiere/valueFormat.js'
 
 export default defineComponent({
   name: 'TestWindowView',
@@ -45,7 +46,7 @@ export default defineComponent({
         return new Promise()
       },
 
-      seekRecord: ({ row, tableName }) => {
+      seekRecord: ({ row, tableName, parentUuid, containerUuid }) => {
         root.$router.push({
           name: root.$route.name,
           query: {
@@ -58,6 +59,15 @@ export default defineComponent({
             recordId: row[`${tableName}_ID`]
           }
         }, () => {})
+
+        const attributes = convertObjectToKeyValue({
+          object: row
+        })
+        root.$store.dispatch('updateValuesOfContainer', {
+          parentUuid,
+          containerUuid,
+          attributes
+        })
       },
 
       seekTab: function(eventInfo) {
