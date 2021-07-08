@@ -122,7 +122,10 @@ export default defineComponent({
     })
 
     const handleRowClick = (row, column, event) => {
-      props.containerManager.seekRecord(row)
+      props.containerManager.seekRecord({
+        row,
+        tableName: props.panelMetadata.tableName
+      })
     }
 
     const headerLabel = (field) => {

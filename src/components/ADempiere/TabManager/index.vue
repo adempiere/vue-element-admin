@@ -140,24 +140,7 @@ export default defineComponent({
       return {
         ...props.containerManager,
 
-        vuexStore: () => 'dataManager',
-
-        seekRecord: (row) => {
-          const tableName = props.tabsList[tabNo].tableName
-          // TODO: Replace with general dispatch to set current record
-          root.$router.push({
-            name: root.$route.name,
-            query: {
-              ...root.$route.query,
-              action: row.UUID
-            },
-            params: {
-              ...root.$router.params,
-              tableName,
-              recordId: row[`${tableName}_ID`]
-            }
-          }, () => {})
-        }
+        vuexStore: () => 'dataManager'
       }
     })
 

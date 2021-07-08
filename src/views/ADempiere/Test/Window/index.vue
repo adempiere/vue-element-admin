@@ -21,6 +21,7 @@
     :is="WindowView"
     :uuid="uuid"
     :metadata="metadata"
+    :container-manager="containerManager"
   />
 </template>
 
@@ -33,15 +34,43 @@ import standardMetadata from './standardWindow.json'
 export default defineComponent({
   name: 'TestWindowView',
 
-  setup() {
+  setup(props, { root }) {
     // Product Group
     const uuid = 'a521b2f6-fb40-11e8-a479-7a0060f0aa01'
     const metadata = standardMetadata.result
 
+    const containerManager = {
+      actionPerformed: function(eventInfo) {
+        console.log('actionPerformed: ', eventInfo)
+        return new Promise()
+      },
+
+      seekRecord: ({ row, tableName }) => {
+        root.$router.push({
+          name: root.$route.name,
+          query: {
+            ...root.$route.query,
+            action: row.UUID
+          },
+          params: {
+            ...root.$router.params,
+            tableName,
+            recordId: row[`${tableName}_ID`]
+          }
+        }, () => {})
+      },
+
+      seekTab: function(eventInfo) {
+        console.log('seekTab: ', eventInfo)
+        return new Promise()
+      }
+    }
+
     return {
       metadata,
       uuid,
-      WindowView
+      WindowView,
+      containerManager
     }
   }
 })
