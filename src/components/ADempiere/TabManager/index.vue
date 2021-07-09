@@ -20,6 +20,7 @@
   <div>
     <el-drawer
       :title="tabsList[currentTab].name"
+      class="record-navigation-drawer"
       size="50%"
       :visible.sync="isShowRecords"
       with-header
@@ -214,3 +215,18 @@ export default defineComponent({
 
 })
 </script>
+
+<style lang="scss">
+.record-navigation-drawer {
+  // drawer title
+  .el-drawer__header {
+    padding-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  // drawer content
+  .el-drawer__body {
+    max-height: calc(100vh - 44px);
+  }
+}
+</style>

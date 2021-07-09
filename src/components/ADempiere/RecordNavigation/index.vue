@@ -18,15 +18,17 @@
 
 <template>
   <el-container class="record-navigation">
+    <el-scrollbar>
 
-    <!-- records in table -->
-    <default-table
-      :parent-uuid="parentUuid"
-      :container-uuid="containerUuid"
-      :container-manager="recordNavigationManager"
-      :panel-metadata="panelMetadata"
-    />
+      <!-- records in table -->
+      <default-table
+        :parent-uuid="parentUuid"
+        :container-uuid="containerUuid"
+        :container-manager="recordNavigationManager"
+        :panel-metadata="panelMetadata"
+      />
 
+    </el-scrollbar>
   </el-container>
 </template>
 
