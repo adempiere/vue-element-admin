@@ -1,12 +1,18 @@
 <template>
-  <el-badge :value="getRecordNotification.length" :hidden="getRecordNotification.length === 0" type="primary" class="item" style="vertical-align: baseline;">
+  <el-badge
+    :value="processNotifications.length"
+    :hidden="processNotifications.length === 0"
+    type="primary"
+    class="item"
+    style="vertical-align: baseline;"
+  >
     <el-popover
       placement="bottom"
       width="400"
       trigger="click"
     >
       <el-table
-        :data="getRecordNotification"
+        :data="processNotifications"
         :highlight-current-row="true"
         @cell-click="handleCurrentChange"
       >
@@ -27,7 +33,7 @@
               icon="el-icon-close"
               type="text"
               size="small"
-              @click.native.prevent="deleteRow(scope.$index, getRecordNotification)"
+              @click.native.prevent="deleteRow(scope.$index, processNotifications)"
             />
           </template>
         </el-table-column>
@@ -40,22 +46,30 @@
           </el-tooltip>
         </el-table-column>
       </el-table>
-      <el-button slot="reference" type="text" icon="el-icon-bell" style="float: left;color: #000000;font-size: 121%;font-weight: 615!important;padding-top: 14px;" />
+
+      <el-button
+        slot="reference"
+        type="text"
+        icon="el-icon-bell"
+        style="float: left;color: #000000;font-size: 121%;font-weight: 615!important;padding-top: 14px;"
+      />
     </el-popover>
   </el-badge>
 </template>
 
 <script>
 export default {
-  name: 'Badge',
+  name: 'HeaderNotification',
+
   data() {
     return {
       currentRow: null
     }
   },
   computed: {
-    getRecordNotification() {
-      return this.$store.getters.getNotificationProcess
+    processNotifications() {
+      // TODO: Add process runs
+      return []
     }
   },
   watch: {
@@ -73,18 +87,18 @@ export default {
       this.options = []
       this.show = false
     },
-    handleCurrentChange(getRecordNotification, val, index, rows) {
+    handleCurrentChange(notification, val, index, rows) {
       if (val !== null) {
         let options = {
           name: 'ProcessActivity'
         }
-        if (getRecordNotification && getRecordNotification.isReport && val.className !== 'procesActivity') {
+        if (notification && notification.isReport && val.className !== 'procesActivity') {
           options = {
             name: 'Report Viewer',
             params: {
-              processId: getRecordNotification.processId,
-              instanceUuid: getRecordNotification.instanceUuid,
-              fileName: getRecordNotification.download
+              processId: notification.processId,
+              instanceUuid: notification.instanceUuid,
+              fileName: notification.download
             }
           }
         }
@@ -97,7 +111,7 @@ export default {
     },
     deleteAll() {
       // rows.splice(index, rows.lenght)
-      this.getRecordNotification.splice(0)
+      this.processNotifications.splice(0)
     }
   }
 }
