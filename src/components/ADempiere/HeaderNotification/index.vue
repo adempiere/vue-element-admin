@@ -17,6 +17,7 @@
         @cell-click="handleCurrentChange"
       >
         <el-table-column prop="name" :label="$t('navbar.badge.Notifications')" />
+
         <el-table-column
           fixed="right"
           width="50"
@@ -28,6 +29,7 @@
               @click.native.prevent="deleteAll()"
             />
           </template>
+
           <template slot-scope="scope">
             <el-button
               icon="el-icon-close"
@@ -37,6 +39,7 @@
             />
           </template>
         </el-table-column>
+
         <el-table-column
           width="50"
           class-name="procesActivity"
