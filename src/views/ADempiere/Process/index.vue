@@ -15,6 +15,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https:www.gnu.org/licenses/>.
 -->
+
 <template>
   <el-container
     v-if="isLoadedMetadata"
@@ -24,7 +25,7 @@
   >
     <el-header
       v-if="showContextMenu"
-      style="height: 39px;"
+      style="height: 30px;"
     >
       <context-menu
         :menu-parent-uuid="$route.meta.parentUuid"
@@ -33,27 +34,25 @@
         :is-report="processMetadata.isReport"
       />
     </el-header>
-    <el-main>
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <el-card class="content-collapse">
-            <title-and-help
-              :name="processMetadata.name"
-              :help="processMetadata.help"
-            />
 
-            <main-panel
-              :position-tab="processMetadata.accesLevel"
-              :container-uuid="processUuid"
-              :metadata="processMetadata"
-              :is-edit="isEdit"
-              :panel-type="panelType"
-            />
-          </el-card>
-        </el-col>
-      </el-row>
+    <el-main>
+      <el-card class="content-collapse">
+        <title-and-help
+          :name="processMetadata.name"
+          :help="processMetadata.help"
+        />
+
+        <el-scrollbar wrap-class="scroll-child">
+          <panel-definition
+            :container-uuid="processUuid"
+            :metadata="processMetadata"
+            :panel-type="panelType"
+          />
+        </el-scrollbar>
+      </el-card>
     </el-main>
   </el-container>
+
   <div
     v-else
     key="process-loading"
@@ -66,68 +65,87 @@
 </template>
 
 <script>
-// When supporting the processes, smart browser and reports,
-// the ContextMenu and sticky must be placed in the layout
+import { defineComponent, computed, ref } from '@vue/composition-api'
+
 import ContextMenu from '@/components/ADempiere/ContextMenu'
-import MainPanel from '@/components/ADempiere/Panel'
+import PanelDefinition from '@/components/ADempiere/PanelDefinition'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
 
-export default {
-  name: 'ProcessView',
+export default defineComponent({
+  name: 'Process',
+
   components: {
-    MainPanel,
+    PanelDefinition,
     ContextMenu,
     TitleAndHelp
   },
+
   props: {
-    isEdit: {
-      type: Boolean,
-      default: false
+    // implement by test view
+    uuid: {
+      type: String,
+      default: ''
     }
   },
-  data() {
-    return {
-      processMetadata: {},
-      processUuid: this.$route.meta.uuid,
-      isLoadedMetadata: false,
-      panelType: 'process'
+
+  setup(props, { root }) {
+    const isLoadedMetadata = ref(false)
+    const processMetadata = ref({})
+    const panelType = 'process'
+
+    let processUuid = root.$route.meta.uuid
+    // set uuid from test
+    if (!root.isEmptyValue(props.uuid)) {
+      processUuid = props.uuid
     }
-  },
-  computed: {
-    showContextMenu() {
-      return this.$store.state.settings.showContextMenu
-    },
-    getterProcess() {
-      return this.$store.getters.getPanel(this.processUuid)
-    }
-  },
-  created() {
-    this.getProcess()
-    this.$store.dispatch('settings/changeSetting', {
+
+    const showContextMenu = computed(() => {
+      return root.$store.state.settings.showContextMenu
+    })
+
+    const getterProcess = computed(() => {
+      return root.$store.getters.getPanel(processUuid)
+    })
+
+    root.$store.dispatch('settings/changeSetting', {
       key: 'showContextMenu',
       value: true
     })
-  },
-  methods: {
-    getProcess() {
-      const process = this.getterProcess
+
+    const getProcess = async() => {
+      const process = getterProcess.value
       if (process) {
-        this.processMetadata = process
-        this.isLoadedMetadata = true
-      } else {
-        this.$store.dispatch('getPanelAndFields', {
-          containerUuid: this.processUuid,
-          panelType: this.panelType,
-          routeToDelete: this.$route
-        }).then(processResponse => {
-          this.processMetadata = processResponse
-        }).finally(() => {
-          this.isLoadedMetadata = true
-        })
+        processMetadata.value = process
+        isLoadedMetadata.value = true
+        return
       }
+
+      root.$store.dispatch('getPanelAndFields', {
+        containerUuid: processUuid,
+        panelType,
+        routeToDelete: root.$route
+      }).then(processResponse => {
+        processMetadata.value = processResponse
+      }).finally(() => {
+        isLoadedMetadata.value = true
+      })
+    }
+
+    getProcess()
+
+    return {
+      processUuid,
+      panelType,
+      isLoadedMetadata,
+      processMetadata,
+      // computeds
+      showContextMenu,
+      getterProcess,
+      // methods
+      getProcess
     }
   }
-}
+})
 </script>
 
 <style>
@@ -136,6 +154,7 @@ export default {
     padding-right: 20px;
     padding-bottom: 20px;
     padding-left: 20px;
+    height: 100%;
   }
 </style>
 <style scoped >

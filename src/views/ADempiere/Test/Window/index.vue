@@ -28,12 +28,12 @@
 <script>
 import { defineComponent } from '@vue/composition-api'
 
-import WindowView from '@/views/ADempiere/WindowView'
+import WindowView from '@/views/ADempiere/Window'
 import standardMetadata from './standardWindow.json'
 import { convertObjectToKeyValue } from '@/utils/ADempiere/valueFormat.js'
 
 export default defineComponent({
-  name: 'TestWindowView',
+  name: 'TestWindow',
 
   setup(props, { root }) {
     // Product Group

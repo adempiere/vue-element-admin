@@ -18,28 +18,34 @@
  * For window, process and smart browser
  */
 
-import window from './window/index.js'
+import windowState from './window/state.js'
+import windowActions from './window/actions.js'
+import windowMutations from './window/mutations.js'
 import windowGetters from './window/getters.js'
-import process from './process/index.js'
+import processState from './window/state.js'
+import processActions from './process/actions.js'
+import processMutations from './process/mutations.js'
 import processGetters from './process/getters.js'
-import browser from './browser/index.js'
+import browserState from './browser/state.js'
+import browserActions from './browser/actions.js'
+import browserMutations from './browser/mutations.js'
 import browserGetters from './browser/getters.js'
 
 const dictionary = {
   state: {
-    ...window.state,
-    ...process.state,
-    ...browser.state
+    ...windowState,
+    ...processState,
+    ...browserState
   },
   mutations: {
-    ...window.mutations,
-    ...process.mutations,
-    ...browser.mutations
+    ...windowMutations,
+    ...processMutations,
+    ...browserMutations
   },
   actions: {
-    ...window.actions,
-    ...process.actions,
-    ...browser.actions
+    ...windowActions,
+    ...processActions,
+    ...browserActions
   },
   getters: {
     ...windowGetters,

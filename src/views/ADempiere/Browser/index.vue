@@ -15,6 +15,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https:www.gnu.org/licenses/>.
 -->
+
 <template>
   <el-container
     v-if="isLoaded"
@@ -23,48 +24,43 @@
     style="height: 86vh;"
   >
     <modal-dialog
-      :parent-uuid="browserMetadata.uuid"
+      :parent-uuid="browserUuid"
       :container-uuid="browserUuid"
       :panel-type="panelType"
     />
-    <el-header
-      v-if="showContextMenu"
-    >
+
+    <el-header v-if="isShowContextMenu">
       <context-menu
         :menu-parent-uuid="$route.meta.parentUuid"
         :container-uuid="browserUuid"
         :panel-type="panelType"
       />
-      <div class="w-33">
-        <div class="center">
-          <title-and-help
-            :name="browserMetadata.name"
-            :help="browserMetadata.help"
-          />
-        </div>
+
+      <div class="center" style="width: 100%">
+        <title-and-help
+          :name="browserMetadata.name"
+          :help="browserMetadata.help"
+        />
       </div>
     </el-header>
 
     <el-main>
-
       <el-collapse
-        v-model="activeSearch"
+        v-model="openedCriteria"
         class="container-collasep-open"
-        @change="handleChange"
       >
         <el-collapse-item :title="$t('views.searchCriteria')" name="opened-criteria">
-          <main-panel
+          <panel-definition
             :container-uuid="browserUuid"
             :metadata="browserMetadata"
             :panel-type="panelType"
           />
         </el-collapse-item>
       </el-collapse>
-      <data-table
-        v-if="isLoaded"
+
+      <!-- result of records in the table -->
+      <default-table
         :container-uuid="browserUuid"
-        :panel-type="panelType"
-        :metadata="browserMetadata"
       />
     </el-main>
   </el-container>
@@ -74,209 +70,178 @@
     key="browser-loading"
     v-loading="!isLoaded"
     :element-loading-text="$t('notifications.loading')"
-    element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.8)"
     class="view-loading"
   />
 </template>
 
 <script>
-// When supporting the processes, smart browser and reports,
-// the ContextMenu and sticky must be placed in the layout
+import { computed, defineComponent, ref } from '@vue/composition-api'
+
 import ContextMenu from '@/components/ADempiere/ContextMenu'
-import MainPanel from '@/components/ADempiere/Panel'
-import DataTable from '@/components/ADempiere/DataTable'
 import ModalDialog from '@/components/ADempiere/Dialog'
 import TitleAndHelp from '@/components/ADempiere/TitleAndHelp'
+import PanelDefinition from '@/components/ADempiere/PanelDefinition'
+import DefaultTable from '@/components/ADempiere/DefaultTable'
 
-export default {
-  name: 'BrowserView',
+export default defineComponent({
+  name: 'Browser',
+
   components: {
-    MainPanel,
-    DataTable,
     ContextMenu,
+    DefaultTable,
     ModalDialog,
+    PanelDefinition,
     TitleAndHelp
   },
+
   props: {
-    isEdit: {
-      type: Boolean,
-      default: false
+    // implement by test view
+    uuid: {
+      type: String,
+      default: ''
     }
   },
-  data() {
-    return {
-      browserMetadata: {},
-      browserUuid: this.$route.meta.uuid,
-      activeSearch: [],
-      isLoaded: false,
-      panelType: 'browser'
+
+  setup(props, { root }) {
+    const panelType = 'browser'
+    const isLoaded = ref(false)
+    const browserMetadata = ref({})
+
+    let browserUuid = root.$route.meta.uuid
+    // set uuid from test
+    if (!root.isEmptyValue(props.uuid)) {
+      browserUuid = props.uuid
     }
-  },
-  computed: {
-    showContextMenu() {
-      return this.$store.state.settings.showContextMenu
-    },
-    getterBrowser() {
-      return this.$store.getters.getBrowser(this.browserUuid)
-    },
-    isLoadedRecords() {
-      return this.$store.getters.getDataRecordAndSelection(this.browserUuid).isLoaded
-    },
-    isReadyToSearch() {
-      if (this.browserMetadata.awaitForValuesToQuery) {
-        return false
-      }
-      return !this.$store.getters.isNotReadyForSubmit(this.browserUuid)
-    },
-    isShowedCriteria() {
-      if (this.browserMetadata) {
-        return this.browserMetadata.isShowedCriteria
-      }
-      return false
-    }
-  },
-  watch: {
-    isShowedCriteria(value) {
-      this.handleCollapse(value)
-    }
-  },
-  created() {
-    this.getBrowser()
-    this.$store.dispatch('settings/changeSetting', {
+
+    const browserDefinition = computed(() => {
+      return root.$store.getters.getBrowser(browserUuid)
+    })
+
+    // by default enable context menu and title
+    root.$store.dispatch('settings/changeSetting', {
       key: 'showContextMenu',
       value: true
     })
-  },
-  methods: {
-    handleChange(value) {
-      let showCriteria = false
-      if (this.activeSearch.length) {
-        showCriteria = true
+
+    const isShowContextMenu = computed(() => {
+      return root.$store.state.settings.showContextMenu
+    })
+
+    const isLoadedRecords = computed(() => {
+      return root.$store.getters.getDataRecordAndSelection(browserUuid).isLoaded
+    })
+
+    const isReadyToSearch = computed(() => {
+      // TODO: Add timer to await
+      if (browserMetadata.value.awaitForValuesToQuery) {
+        return false
       }
-      this.$store.dispatch('changeBrowserAttribute', {
-        containerUuid: this.browserUuid,
-        attributeName: 'isShowedCriteria',
-        attributeValue: showCriteria
-      })
-    },
-    /**
-     * Manage open or closed component collapse of criteria
-     */
-    handleCollapse(isShowedCriteria) {
-      // by default criteria if closed
-      const activeSearch = []
-      if (isShowedCriteria) {
-        // open criteria
-        activeSearch.push('opened-criteria')
+      return !root.$store.getters.isNotReadyForSubmit(browserUuid)
+    })
+
+    const openedCriteria = computed({
+      get() {
+        // by default criteria if closed
+        const openCriteria = []
+        const browser = browserDefinition.value
+        if (!root.isEmptyValue(browser)) {
+          if (browser.isShowedCriteria) {
+            // open criteria
+            openCriteria.push('opened-criteria')
+          }
+        }
+        return openCriteria
+      },
+      set(value) {
+        let showCriteria = false
+        if (value.length) {
+          showCriteria = true
+        }
+
+        root.$store.dispatch('changeBrowserAttribute', {
+          containerUuid: browserUuid,
+          attributeName: 'isShowedCriteria',
+          attributeValue: showCriteria
+        })
       }
-      this.activeSearch = activeSearch
-    },
-    getBrowser() {
-      const browser = this.getterBrowser
+    })
+
+    const getBrowserDefinition = () => {
+      const browser = browserDefinition.value
       if (browser) {
-        this.browserMetadata = browser
-        this.isLoaded = true
-        this.defaultSearch()
+        browserMetadata.value = browser
+        isLoaded.value = true
+        defaultSearch()
         return
       }
-      this.$store.dispatch('getPanelAndFields', {
-        containerUuid: this.browserUuid,
-        panelType: this.panelType,
-        routeToDelete: this.$route
+      root.$store.dispatch('getPanelAndFields', {
+        containerUuid: browserUuid,
+        panelType,
+        routeToDelete: root.$route
       })
         .then(browserResponse => {
-          this.browserMetadata = browserResponse
-          this.handleCollapse(browserResponse.isShowedCriteria)
-          this.defaultSearch()
+          browserMetadata.value = browserResponse
+          defaultSearch()
         })
         .finally(() => {
-          this.isLoaded = true
+          isLoaded.value = true
         })
-    },
-    defaultSearch() {
-      if (this.isLoadedRecords) {
+    }
+
+    const defaultSearch = () => {
+      if (isLoadedRecords.value) {
         // not research
         return
       }
 
-      if (this.isReadyToSearch) {
+      if (isReadyToSearch.value) {
         // first search by default
-        this.$store.dispatch('getBrowserSearch', {
-          containerUuid: this.browserUuid
+        root.$store.dispatch('getBrowserSearch', {
+          containerUuid: browserUuid
         })
         return
       }
 
       // set default values into data
-      this.$store.dispatch('setRecordSelection', {
-        containerUuid: this.browserUuid,
-        panelType: this.panelType
+      root.$store.dispatch('setRecordSelection', {
+        containerUuid: browserUuid,
+        panelType
       })
     }
+
+    getBrowserDefinition()
+
+    return {
+      isLoaded,
+      browserUuid,
+      browserMetadata,
+      panelType,
+      // computed
+      openedCriteria,
+      isShowContextMenu
+    }
   }
-}
+})
 </script>
 
 <style>
-  .el-collapse-item__header:hover {
-    background-color: #fcfcfc;
-  }
+/* removes the title link effect on collapse */
+.el-collapse-item__header:hover {
+  background-color: #fcfcfc;
+}
 </style>
 <style scoped>
-  .el-main {
-    display: block;
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
-    flex: 1;
-    -ms-flex-preferred-size: auto;
-    flex-basis: auto;
-    overflow: auto;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    padding-bottom: 0px;
-    padding-right: 20px;
-    padding-top: 0px;
-    padding-left: 20px;
-  }
-  .el-header {
-    height: 50px;
-  }
-  .containert {
-    padding-left: 20px;
-    padding-right: 20px;
-    width: 50%;
-  }
-  .menu {
-    height: 40px;
-  }
-  .center {
-    text-align: center;
-  }
-  .w-33 {
-    width: 100%;
-    background-color: transparent;
-  }
-  .container-panel {
-    bottom: 0;
-    right: 0;
-    z-index: 0;
-    transition: width 0.28s;
-    border: 1px solid #e5e9f2;
-  }
-  .container-panel-open {
-    bottom: 0;
-    right: 0;
-    border: 1px solid #e5e9f2;
-    height: -webkit-fill-available;
-    height:-webkit-calc(100% - 100px);
-    z-index: 0;
-    transition: width 0.28s;
-  }
-  .container-collasep-open {
-    bottom: 0;
-    right: 0;
-    z-index: 0;
-    transition: width 0.28s;
-  }
+.el-main {
+  padding-bottom: 0px;
+  padding-top: 0px;
+}
+
+.el-header {
+  height: 50px !important;
+}
+
+.center {
+  text-align: center;
+}
 </style>
