@@ -45,6 +45,7 @@
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
 import { convertWindow } from '@/utils/ADempiere/apiConverts/dictionary.js'
+import { generateWindow as generateWindowDictionary } from '@/utils/ADempiere/dictionary/windowUtils'
 
 export default defineComponent({
   name: 'Window',
@@ -121,7 +122,12 @@ export default defineComponent({
 
       // metadata props use for test
       if (!root.isEmptyValue(props.metadata)) {
+        // from server response
         window = convertWindow(props.metadata)
+
+        // add apps properties
+        window = generateWindowDictionary(window)
+
         // add into store
         return root.$store.dispatch('addWindow', window)
           .then(windowResponse => {
@@ -136,11 +142,14 @@ export default defineComponent({
         uuid: windowUuid
       })
         .then(windowResponse => {
-          generateWindow(windowResponse)
+          // add apps properties
+          window = generateWindowDictionary(windowResponse)
+          generateWindow(window)
         })
     }
 
     const renderWindowComponent = computed(() => {
+      // add apps properties
       const windowComponent = () => import('@/views/ADempiere/Window/StandardWindow')
 
       return windowComponent

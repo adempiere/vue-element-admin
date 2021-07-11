@@ -15,17 +15,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { requestWindowMetadata } from '@/api/ADempiere/dictionary/window'
-import { generateWindow } from '@/utils/ADempiere/dictionary/windowUtils'
 
 export default {
   addWindow({ commit }, windowResponse) {
     return new Promise(resolve => {
-      // add app properties
-      const window = generateWindow(windowResponse)
+      commit('addWindowToList', windowResponse)
 
-      commit('addWindowToList', window)
-
-      resolve(window)
+      resolve(windowResponse)
     })
   },
 
@@ -37,9 +33,7 @@ export default {
         uuid
       })
         .then(async windowResponse => {
-          const window = await dispatch('addWindow', windowResponse)
-
-          resolve(window)
+          resolve(windowResponse)
         })
     })
   }
