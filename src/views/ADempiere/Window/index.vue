@@ -44,7 +44,7 @@
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
-import { generateWindow as generateWindowRespose } from './windowUtils'
+import { convertWindow } from '@/utils/ADempiere/apiConverts/dictionary.js'
 
 export default defineComponent({
   name: 'Window',
@@ -99,22 +99,45 @@ export default defineComponent({
       windowUuid = props.uuid
     }
 
+    const storedWindow = computed(() => {
+      return root.$store.getters.getStoredWindow(windowUuid)
+    })
+
     const generateWindow = (window) => {
       windowMetadata.value = window
       isLoaded.value = true
     }
 
-    // get window from vuex store or request from server
+    /**
+     * Get window from vuex store, metadata from props
+     * or request from server
+     */
     const getWindow = () => {
+      let window = storedWindow.value
+      if (!root.isEmptyValue(window)) {
+        generateWindow(window)
+        return
+      }
+
       // metadata props use for test
       if (!root.isEmptyValue(props.metadata)) {
-        return new Promise(resolve => {
-          const windowResponse = generateWindowRespose(props.metadata)
-
-          generateWindow(windowResponse)
-          resolve(windowResponse)
-        })
+        window = convertWindow(props.metadata)
+        // add into store
+        return root.$store.dispatch('addWindow', window)
+          .then(windowResponse => {
+            // to obtain the load effect
+            setTimeout(() => {
+              generateWindow(windowResponse)
+            }, 1000)
+          })
       }
+
+      root.$store.dispatch('getWindowDefinitionFromServer', {
+        uuid: windowUuid
+      })
+        .then(windowResponse => {
+          generateWindow(windowResponse)
+        })
     }
 
     const renderWindowComponent = computed(() => {
@@ -124,8 +147,7 @@ export default defineComponent({
     })
 
     // load metadata and generate window
-    // getWindow()
-    setTimeout(getWindow, 1000)
+    getWindow()
 
     return {
       windowUuid,
