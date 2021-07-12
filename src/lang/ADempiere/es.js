@@ -531,6 +531,34 @@ export default {
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
       }
+    },
+    allocationPayments: {
+      field: {
+        description: 'Descripción',
+        organization: 'Organización',
+        charge: 'Cargo',
+        difference: 'Diferencia',
+        automaticAdjustment: 'Ajuste Automático',
+        multiCurrency: 'Multimoneda'
+      },
+      table: {
+        date: 'Fecha',
+        converted: 'Convertido',
+        Open: 'Abierto',
+        discount: 'Descuento',
+        adjust: 'Ajuste',
+        applied: 'Monto Aplicado',
+        payOver: 'Pago Sobre/ Por debajo',
+        invoices: 'Facturas',
+        payments: 'Pagos'
+      },
+      step: {
+        descriptionSearchCriteria: 'Seleccione al menos un Socio de Negocio para verificar los documentos pendientes por asignar',
+        descriptionPayments: 'Seleccione al menos un Pago para asignar a la factura correspondiente',
+        descriptionInvoices: 'Los documentos que se muestran a continuación son aquellos que se encuentran pendientes por cancelar o pagar, los mismos están abiertos hasta que se asignen los pagos correspondientes',
+        selectedPayments: 'Pagos / Cobros Seleccionados',
+        selectedInvoce: 'Facturas Seleccionadas'
+      }
     }
   }
 }

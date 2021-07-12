@@ -6,7 +6,7 @@
   "adempiere": {
     "api": {
       "url": "https://api.erpya.com/api/adempiere/",
-      "timeout": 10000
+      "timeout": 40000
     },
     "images": {
       "url": "https://api.erpya.com/adempiere-api/img/"
@@ -33,5 +33,8 @@
   },
   "priceChecking": {
     "endpoint": "/form/addons/point-of-sales"
+  },
+  "paymentAllocation": {
+    "endpoint": "/form/addons/v-allocation"
   }
 }
