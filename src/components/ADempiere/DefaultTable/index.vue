@@ -17,7 +17,19 @@
 -->
 
 <template>
-  <el-main style="padding: 0px !important; overflow: hidden;">
+  <el-main class="default-table">
+    <el-input
+      v-model="valueToSearch"
+      clearable
+      size="mini"
+      class="input-search"
+    >
+      <i
+        slot="prefix"
+        class="el-icon-search el-input__icon"
+      />
+    </el-input>
+
     <el-table
       ref="multipleTable"
       style="width: 100%"
@@ -25,7 +37,7 @@
       :row-key="keyColumn"
       reserve-selection
       highlight-current-row
-      :data="recordsList"
+      :data="recordsWithFilter"
       :element-loading-text="$t('notifications.loading')"
       element-loading-background="rgba(255, 255, 255, 0.8)"
       @row-click="handleRowClick"
@@ -71,12 +83,13 @@
 </template>
 
 <script>
-import { defineComponent, computed } from '@vue/composition-api'
+import { defineComponent, computed, ref } from '@vue/composition-api'
 
 import FieldDefinition from '@/components/ADempiere/Field'
 import CellInfo from './CellInfo'
 import CustomPagination from '@/components/ADempiere/Pagination'
 import { fieldIsDisplayed } from '@/utils/ADempiere/dictionaryUtils'
+import { isLookup } from '@/utils/ADempiere/references'
 
 export default defineComponent({
   name: 'DefaultTable',
@@ -107,6 +120,8 @@ export default defineComponent({
   },
 
   setup(props, { root }) {
+    const valueToSearch = ref('')
+
     const keyColumn = computed(() => {
       if (props.panelMetadata) {
         return props.panelMetadata.keyColumn
@@ -119,6 +134,24 @@ export default defineComponent({
         return panel.fieldsList
       }
       return []
+    })
+
+    /**
+     * Selection columns to be taken into account during the search
+     */
+    const selectionColumns = computed(() => {
+      const displayColumnsName = []
+      const columnsName = fieldsList.value
+        .filter(fieldItem => {
+          return fieldItem.isSelectionColumn
+        }).map(fieldItem => {
+          if (isLookup(fieldItem.diplayType)) {
+            displayColumnsName.push(fieldItem.displayColumnName)
+          }
+          return fieldItem.columnName
+        })
+
+      return columnsName.concat(displayColumnsName)
     })
 
     const handleRowClick = (row, column, event) => {
@@ -166,9 +199,33 @@ export default defineComponent({
       return []
     })
 
+    const recordsWithFilter = computed(() => {
+      if (!root.isEmptyValue(valueToSearch.value)) {
+        return recordsList.value.filter(row => {
+          return selectionColumns.value.some(columnName => {
+            const value = row[columnName]
+            if (value) {
+              return value
+                .trim()
+                .toLowerCase()
+                .includes(
+                  valueToSearch.value
+                    .trim()
+                    .toLowerCase()
+                )
+            }
+          })
+        })
+      }
+
+      return recordsList.value
+    })
+
     return {
+      valueToSearch,
       // computeds
       recordsList,
+      recordsWithFilter,
       keyColumn,
       fieldsList,
       // methods
@@ -180,3 +237,18 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss">
+.default-table {
+  padding: 0px !important;
+  overflow: hidden;
+
+  .input-search {
+    width: 100%;
+    padding-right: 20px;
+    margin-right: 20px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+  }
+}
+</style>
