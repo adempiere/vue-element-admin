@@ -556,6 +556,7 @@ export default {
       toolsPoint: {
         title: 'Point of Sale Tools'
       }
-    }
+    },
+    weight: 'Weight'
   }
 }

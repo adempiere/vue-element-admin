@@ -531,6 +531,7 @@ export default {
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
       }
-    }
+    },
+    weight: 'Peso'
   }
 }
