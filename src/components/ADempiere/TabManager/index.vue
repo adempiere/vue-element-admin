@@ -191,6 +191,25 @@ export default defineComponent({
         parentUuid: props.parentUuid,
         containerUuid: tabUuid.value,
         ...props.tabsList[currentTab.value]
+      }).then(responseData => {
+        if (!isCreateNew.value && !root.isEmptyValue(responseData)) {
+          let row = responseData[0]
+          // uuid into action query
+          if (!root.isEmptyValue(root.$route.query.action)) {
+            row = responseData.find(rowData => {
+              return rowData.UUID === root.$route.query.action
+            })
+          }
+
+          const tableName = props.tabsList[currentTab.value].tableName
+          // set values in panel
+          props.containerManager.seekRecord({
+            parentUuid: props.parentUuid,
+            containerUuid: tabUuid.value,
+            row,
+            tableName
+          })
+        }
       })
     }
 
