@@ -11,6 +11,7 @@ const persistence = {
   state: {
     persistence: {}
   },
+
   mutations: {
     resetStatepersistence(state) {
       state = {
@@ -34,7 +35,50 @@ const persistence = {
       })
     }
   },
+
   actions: {
+    actionPerformed({ commit, getters, dispatch }, {
+      field,
+      value
+    }) {
+      return new Promise((resolve, reject) => {
+        commit('addChangeToPersistenceQueue', {
+          containerUuid: field.containerUuid,
+          columnName: field.columnName,
+          value
+        })
+
+        // TODO: Add dictonary getter
+        const emptyFields = getters.getFieldsListEmptyMandatory({
+          containerUuid: field.containerUuid,
+          formatReturn: false
+        }).filter(itemField => {
+          return !LOG_COLUMNS_NAME_LIST.includes(itemField.columnName)
+        }).map(itemField => {
+          return itemField.name
+        })
+
+        if (!isEmptyValue(emptyFields)) {
+          showMessage({
+            message: language.t('notifications.mandatoryFieldMissing') + emptyFields,
+            type: 'info'
+          })
+          return
+        }
+
+        const recordUuid = getters.getUuidOfContainer(field.containerUuid)
+        dispatch('flushPersistenceQueue', {
+          containerUuid: field.containerUuid,
+          tableName: field.tabTableName,
+          recordUuid
+        })
+          .then(response => {
+            resolve(response)
+          })
+          .catch(error => reject(error))
+      })
+    },
+
     flushPersistenceQueue({ getters, dispatch }, {
       containerUuid,
       tableName,
@@ -56,11 +100,7 @@ const persistence = {
               attributesList
             })
               .then(response => {
-                dispatch('listRecordLogs', {
-                  tableName: response.tableName,
-                  recordId: response.id,
-                  recordUuid: response.uuid
-                })
+                // TODO: Get list record log
                 resolve(response)
               })
               .catch(error => reject(error))
@@ -86,6 +126,7 @@ const persistence = {
       })
     }
   },
+
   getters: {
     getPersistenceMap: (state) => (tableName) => {
       return state.persistence[tableName]
