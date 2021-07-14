@@ -531,6 +531,16 @@ export default {
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
       }
+    },
+    charge: {
+      title: 'Crear cuenta y cargo',
+      labelTable: {
+        header: 'Crear cargo desde cuenta contable',
+        code: 'Código',
+        name: 'Nombre',
+        spending: 'Gasto',
+        createFromAccount: 'Crear desde Cuenta'
+      }
     }
   }
 }

@@ -556,6 +556,16 @@ export default {
       toolsPoint: {
         title: 'Point of Sale Tools'
       }
+    },
+    charge: {
+      title: 'Create account and charge',
+      labelTable: {
+        header: 'Create debit from accounting account',
+        code: 'Code',
+        name: 'Name',
+        spending: 'Spending',
+        createFromAccount: 'Create from Account'
+      }
     }
   }
 }

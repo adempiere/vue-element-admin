@@ -57,6 +57,9 @@ export default {
         case 'VPOS':
           form = import('@/components/ADempiere/Form/VPOS')
           break
+        case 'VCharge':
+          form = import('@/components/ADempiere/Form/VCharge')
+          break
         default:
           form = import('@/views/ADempiere/Unsupported')
           break

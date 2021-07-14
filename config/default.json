@@ -33,5 +33,8 @@
   },
   "priceChecking": {
     "endpoint": "/form/addons/point-of-sales"
+  },
+  "charge": {
+    "endpoint": "/form/addons/charge"
   }
 }
