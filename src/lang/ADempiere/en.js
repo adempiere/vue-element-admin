@@ -556,6 +556,31 @@ export default {
       toolsPoint: {
         title: 'Point of Sale Tools'
       }
+    },
+    bankStatementMatch: {
+      title: {
+        importedMovements: 'Imported Movements',
+        systemPayments: 'System Payments',
+        matchingPayments: 'MatchingPayments'
+      },
+      description: {
+        searchCriteria: 'Select a Bank Account with bank information',
+        importedMovements: 'You will be able to see the movements of the account statement. You must select at least one movement',
+        systemPayments: 'You will be able to see the movements registered in ADempiere. You must select at least one transaction',
+        matchingPayments: 'You will be able to see the movements with matching'
+      },
+      filtersSearch: {
+        modeSearch: 'Search Mode',
+        totalPayment: 'Total Payment'
+      },
+      table: {
+        transactionDate: 'Transaction Date',
+        nrDocument: 'NrDocument',
+        nrReferences: 'Reference Nr',
+        paymentType: 'Payment Type',
+        currency: 'Currency',
+        memo: 'Memo'
+      }
     }
   }
 }

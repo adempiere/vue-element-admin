@@ -54,6 +54,9 @@ export default {
         case 'ProductInfo':
           form = import('@/components/ADempiere/Form/ProductInfo')
           break
+        case 'VBankStatementMatch':
+          form = import('@/components/ADempiere/Form/VBankStatementMatch')
+          break
         case 'VPOS':
           form = import('@/components/ADempiere/Form/VPOS')
           break

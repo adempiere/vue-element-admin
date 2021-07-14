@@ -531,6 +531,31 @@ export default {
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
       }
+    },
+    bankStatementMatch: {
+      title: {
+        importedMovements: 'Movimientos Importados',
+        systemPayments: 'Pagos del Sistema',
+        matchingPayments: 'Pagos con Coincidencia'
+      },
+      description: {
+        searchCriteria: 'Seleccione una Cuenta Bancaria con la información del banco',
+        importedMovements: 'Podrá apreciar los movimientos del estado de cuenta. El cual debe seleccionar al menos un movimiento',
+        systemPayments: 'Podrá apreciar los movimientos registrados en ADempiere. El cual debe seleccionar al menos un movimiento',
+        matchingPayments: 'Podrá apreciar los movimientos con coincidencia'
+      },
+      filtersSearch: {
+        modeSearch: 'Modo de Búsqueda',
+        totalPayment: 'Total del Pago'
+      },
+      table: {
+        transactionDate: 'Fecha de la Transacción',
+        nrDocument: 'Nr Docuemnto',
+        nrReferences: 'Nr de Referencia',
+        paymentType: 'Tipo de Pago',
+        currency: 'Moneda',
+        memo: 'Memo'
+      }
     }
   }
 }
