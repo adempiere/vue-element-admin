@@ -33,5 +33,8 @@
   },
   "priceChecking": {
     "endpoint": "/form/addons/point-of-sales"
+  },
+  "trialBalance": {
+    "endpoint": "/form/addons/trial-balance"
   }
 }

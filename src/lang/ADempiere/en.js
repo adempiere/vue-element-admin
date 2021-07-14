@@ -556,6 +556,24 @@ export default {
       toolsPoint: {
         title: 'Point of Sale Tools'
       }
+    },
+    wTrialBalance: {
+      title: {
+        navigableTestBalance: 'navigableTestBalance'
+      },
+      description: {
+        searchCriteria: 'Select an Organization, a Period and a ReportCube'
+      },
+      table: {
+        accountNo: 'Account No',
+        accountName: 'Account Name',
+        user: 'User',
+        periodActual: 'Actual period',
+        periodVariance: 'Period variance',
+        YTD: 'Actual YTD',
+        YTDBudget: 'Budget YTD',
+        Variance: 'Variance'
+      }
     }
   }
 }

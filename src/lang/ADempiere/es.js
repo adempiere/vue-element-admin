@@ -531,6 +531,24 @@ export default {
       toolsPoint: {
         title: 'Herramientas del Punto de Venta'
       }
+    },
+    wTrialBalance: {
+      title: {
+        navigableTestBalance: 'Balance de Prueba Navegable'
+      },
+      description: {
+        searchCriteria: 'Seleccione una Organización, un Periodo y un Cubo Informe'
+      },
+      table: {
+        accountNo: 'Nº de cuenta',
+        accountName: 'Nombre de la cuenta',
+        user: 'Usuario',
+        periodActual: 'Período real',
+        periodVariance: 'Desviación del período',
+        YTD: 'Real YTD',
+        YTDBudget: 'Presupuesto YTD',
+        Variance: 'Varianza'
+      }
     }
   }
 }

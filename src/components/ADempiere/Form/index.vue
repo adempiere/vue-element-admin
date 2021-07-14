@@ -57,6 +57,9 @@ export default {
         case 'VPOS':
           form = import('@/components/ADempiere/Form/VPOS')
           break
+        case 'WTrialBalance':
+          form = import('@/components/ADempiere/Form/WTrialBalance')
+          break
         default:
           form = import('@/views/ADempiere/Unsupported')
           break
