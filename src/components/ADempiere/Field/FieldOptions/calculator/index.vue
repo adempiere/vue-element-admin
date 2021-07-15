@@ -1,7 +1,7 @@
 <!--
  ADempiere-Vue (Frontend) for ADempiere ERP & CRM Smart Business Solution
  Copyright (C) 2017-Present E.R.P. Consultores y Asociados, C.A.
- Contributor(s): Edwin Betancourt edwinBetanc0urt@hotmail.com www.erpya.com
+ Contributor(s): Edwin Betancourt EdwinBetanc0urt@outlook.com www.erpya.com
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -112,7 +112,7 @@
 </template>
 
 <script>
-import { ID, INTEGER } from '@/utils/ADempiere/references'
+import { FIELDS_INTEGER } from '@/utils/ADempiere/references'
 import buttons from './buttons.js'
 
 export default {
@@ -259,7 +259,7 @@ export default {
     },
     isDisabled(row, column) {
       // Integer or ID
-      const isInteger = [ID.id, INTEGER.id].includes(this.fieldAttributes.displayType)
+      const isInteger = FIELDS_INTEGER.includes(this.fieldAttributes.displayType)
       const { value } = row[column.property]
       if (isInteger && value === ',') {
         return true

@@ -20,7 +20,14 @@ import moment from 'moment'
 import language from '@/lang'
 import { isEmptyValue } from '@/utils/ADempiere/valueUtils.js'
 import store from '@/store'
-import { DATE, DATE_PLUS_TIME, TIME, AMOUNT, COSTS_PLUS_PRICES, NUMBER, QUANTITY } from '@/utils/ADempiere/references.js'
+import {
+  DATE, DATE_PLUS_TIME, TIME,
+  FIELDS_QUANTITY,
+  ID,
+  isLookup,
+  YES_NO
+} from '@/utils/ADempiere/references.js'
+import { formatNumber, getCountryCode, getStandardPrecision, getCurrency } from '@/utils/ADempiere/numberFormat.js'
 
 /**
  * Convert string values ('Y' or 'N') to component compatible Boolean values
@@ -28,9 +35,9 @@ import { DATE, DATE_PLUS_TIME, TIME, AMOUNT, COSTS_PLUS_PRICES, NUMBER, QUANTITY
  */
 export const convertStringToBoolean = (valueToParsed) => {
   const valueString = String(valueToParsed).trim()
-  if (valueString === 'N' || valueString === 'false') {
+  if (['N', 'false'].includes(valueString)) {
     return false
-  } else if (valueString === 'Y' || valueString === 'true') {
+  } else if (['Y', 'true'].includes(valueString)) {
     return true
   }
 
@@ -114,11 +121,6 @@ export function convertObjectToHasMap({ object }) {
  */
 export function convertHasMapToObject({ map }) {
   return Object.fromEntries(map)
-  // const result = {}
-  // map.forEach((value, key) => {
-  //   result[key] = value
-  // })
-  // return result
 }
 
 // This function just convert all java date format to moment format.
@@ -162,96 +164,120 @@ export function formatDate(date, isTime = false) {
 }
 
 //  Get Formatted Price
-export function formatPrice(number, currency) {
+export function formatPrice(number, currency, country = '') {
   if (isEmptyValue(number)) {
-    return undefined
+    number = 0
   }
+
   if (isEmptyValue(currency)) {
     currency = getCurrency()
   }
-  //  Get formatted number
-  return new Intl.NumberFormat(getCountryCode(), {
+
+  // const precision = getStandardPrecision()
+
+  if (isEmptyValue(country)) {
+    country = getCountryCode()
+  }
+
+  // get formatted currency number
+  return new Intl.NumberFormat(country, {
     style: 'currency',
-    currency
+    currency,
+    useGrouping: true,
+    // minimumFractionDigits: precision,
+    // maximumFractionDigits: precision,
+    minimumIntegerDigits: 1
   }).format(number)
 }
 
 //  Format Quantity
-export function formatQuantity(number) {
+export function formatQuantity(number, isInteger = false) {
   if (isEmptyValue(number)) {
-    return undefined
+    number = 0
   }
-  if (!Number.isInteger(number)) {
-    return number
+
+  let precision = getStandardPrecision()
+  // without decimals
+  // if (Number.isInteger(value)) {
+  if (isInteger) {
+    precision = 0
   }
-  return Number.parseFloat(number).toFixed(2)
-  //  Get formatted number
+
+  // get formatted decimal number
+  return new Intl.NumberFormat(undefined, {
+    useGrouping: true, // thousands separator
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: precision,
+    maximumFractionDigits: precision
+  }).format(number)
 }
 
 // Format percentage based on Intl library
 export function formatPercent(number) {
   if (isEmptyValue(number)) {
-    return undefined
+    number = 0
   }
-  //  Get formatted number
+
+  // get formatted number
   return new Intl.NumberFormat(getCountryCode(), {
     style: 'percent'
   }).format(number)
 }
 
-//  Get country code from store
-function getCountryCode() {
-  const languageDefinition = store.getters.getCurrentLanguageDefinition
-  return languageDefinition.languageISO + '-' + languageDefinition.countryCode
-}
-
-// Get Default country
-function getCurrency() {
-  const currencyDefinition = store.getters.getCurrency
-  return currencyDefinition.iSOCode
-}
-
-// Return a format for field depending of reference for him
-export function formatField(value, reference, optionalFormat) {
-  if (isEmptyValue(value)) {
-    return undefined
-  }
-  if (!reference) {
-    return value
-  }
-  //  Format
+/**
+ * Return a format for field depending of reference for him
+ */
+export function formatField({
+  value,
+  displayedValue,
+  defaultValue,
+  displayType,
+  optionalFormat
+}) {
+  //  format
   let formattedValue
-  switch (reference) {
+
+  switch (displayType) {
+    case (isLookup(displayType) && displayType):
+      if (isEmptyValue(displayedValue) && value === 0) {
+        // TODO: Verify parsedDefaultValue with getDefaultValue
+        formattedValue = defaultValue
+        break
+      }
+      formattedValue = displayedValue
+      break
+
     case DATE.id:
       formattedValue = moment.utc(value).format(getDateFormat({
         format: optionalFormat
       }))
       break
+
     case DATE_PLUS_TIME.id:
-      formattedValue = moment.utc(value).format(getDateFormat({
-        isTime: true
-      }))
-      break
     case TIME.id:
       formattedValue = moment.utc(value).format(getDateFormat({
         isTime: true
       }))
       break
-    case AMOUNT.id:
-      formattedValue = formatPrice(value)
+
+    case ID.id:
+    case (FIELDS_QUANTITY.includes(displayType) && displayType):
+      formattedValue = formatNumber({
+        value,
+        displayType
+      })
       break
-    case COSTS_PLUS_PRICES.id:
-      formattedValue = formatPrice(value)
+
+    case YES_NO.id:
+      formattedValue = convertBooleanToTranslationLang(value)
       break
-    case NUMBER.id:
-      formattedValue = formatQuantity(value)
-      break
-    case QUANTITY.id:
-      formattedValue = formatQuantity(value)
-      break
+
+    // without format (String value)
     default:
       formattedValue = value
+      break
   }
+
   return formattedValue
 }
 
@@ -285,17 +311,19 @@ function getDateFormat({
  * @returns {string} ej: 'qwerty asd' | 'zxc 123'
  */
 export function trimPercentage(stringToParsed) {
-  if (!isEmptyValue(stringToParsed) && String(stringToParsed).includes('%')) {
-    let parsedValue = stringToParsed
-    if (parsedValue[0] === '%') {
-      parsedValue = parsedValue.slice(1)
-    }
-
-    const wordSize = parsedValue.length - 1
-    if (parsedValue[wordSize] === '%') {
-      parsedValue = parsedValue.slice(0, wordSize)
-    }
-    return parsedValue
+  if (isEmptyValue(stringToParsed) || !String(stringToParsed).includes('%')) {
+    return stringToParsed
   }
-  return stringToParsed
+
+  let parsedValue = stringToParsed
+  if (parsedValue[0] === '%') {
+    parsedValue = parsedValue.slice(1)
+  }
+
+  const wordSize = parsedValue.length - 1
+  if (parsedValue[wordSize] === '%') {
+    parsedValue = parsedValue.slice(0, wordSize)
+  }
+
+  return parsedValue
 }
