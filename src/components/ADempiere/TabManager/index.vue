@@ -22,6 +22,9 @@
       :title="tabsList[currentTab].name"
       class="record-navigation-drawer"
       size="50%"
+      :modal="false"
+      direction="ltr"
+      :close-on-press-escape="true"
       :visible.sync="isShowRecords"
       with-header
     >
