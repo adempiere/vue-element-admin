@@ -41,9 +41,11 @@ export default defineComponent({
     const metadata = multiTabMetadata.result
 
     const containerManager = {
-      actionPerformed: function(eventInfo) {
-        console.log('actionPerformed: ', eventInfo)
-        return new Promise()
+      actionPerformed: ({ field, value }) => {
+        root.$store.dispatch('actionPerformed', {
+          field,
+          value
+        })
       },
 
       seekRecord: ({ row, tableName, parentUuid, containerUuid }) => {

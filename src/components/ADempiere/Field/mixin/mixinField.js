@@ -212,12 +212,6 @@ export default {
         return
       }
 
-      // set value
-      this.containerManager.actionPerformed({
-        field: this.metadata,
-        value: this.value
-      })
-
       this.$store.dispatch('notifyFieldChange', {
         containerUuid: this.metadata.containerUuid,
         containerManager: this.containerManager,
