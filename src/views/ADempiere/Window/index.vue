@@ -22,6 +22,12 @@
       <el-aside style="width: 100%; margin-bottom: 0px; padding-right: 10px; padding-left: 10px;">
 
         <!-- // TODO: Add header window component for auxiliary menu and worflow status -->
+        <actions-menu
+          :parent-uuid="windowUuid"
+          :references-manager="referencesManager"
+          :actions-manager="actionsManager"
+          :relations-manager="relationsManager"
+        />
 
         <component
           :is="renderWindowComponent"
@@ -44,10 +50,17 @@
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
+
 import { generateWindow as generateWindowRespose } from './windowUtils'
+import ActionsMenu from '@/components/ADempiere/ActionsMenu'
+import { createNewRecord, deleteRecord, sharedLink, refreshRecords } from '@/utils/ADempiere/constants/actionsMenu'
 
 export default defineComponent({
   name: 'Window',
+
+  components: {
+    ActionsMenu
+  },
 
   props: {
     // implement by test view
@@ -101,6 +114,32 @@ export default defineComponent({
 
     const generateWindow = (window) => {
       windowMetadata.value = window
+
+      const { tableName, tabUuid } = windowMetadata.value.currentTab.tableName
+      actionsManager.value = {
+        tableName,
+        actionsList: [
+          createNewRecord,
+          {
+            ...refreshRecords,
+            methodName: 'refreshRecords',
+            callBack: () => {
+              console.log('call getEntitiesList')
+              root.$store.dispatch('dataManager/getEntitiesList', {
+                parentUuid: props.parentUuid,
+                containerUuid: tabUuid,
+                tableName
+              })
+            }
+          },
+          deleteRecord,
+          sharedLink
+        ]
+      }
+      referencesManager.value = {
+        tableName
+      }
+
       isLoaded.value = true
     }
 
@@ -127,8 +166,17 @@ export default defineComponent({
     // getWindow()
     setTimeout(getWindow, 1000)
 
+    const actionsManager = ref({})
+    const referencesManager = ref({})
+    const relationsManager = ref({
+      menuParentUuid: root.$route.meta.parentUuid
+    })
+
     return {
       windowUuid,
+      actionsManager,
+      relationsManager,
+      referencesManager,
       containerManagerWindow,
       windowMetadata,
       // computed
