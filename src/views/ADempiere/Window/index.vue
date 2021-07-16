@@ -44,6 +44,7 @@
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
+
 import { generateWindow as generateWindowRespose } from './windowUtils'
 
 export default defineComponent({
@@ -101,6 +102,7 @@ export default defineComponent({
 
     const generateWindow = (window) => {
       windowMetadata.value = window
+
       isLoaded.value = true
     }
 
