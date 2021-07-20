@@ -17,23 +17,33 @@
 -->
 
 <template>
-  <tab-manager
-    :parent-uuid="windowMetadata.uuid"
-    :container-manager="containerManager"
-    :tabs-list="windowMetadata.tabsListParent"
-    class="tab-window"
-  />
+  <div>
+    <tab-manager
+      :parent-uuid="windowMetadata.uuid"
+      :container-manager="containerManager"
+      :tabs-list="windowMetadata.tabsListParent"
+      class="tab-window"
+    />
+
+    <tab-child
+      :parent-uuid="windowMetadata.uuid"
+      :container-manager="containerManager"
+      :tabs-list="windowMetadata.tabsListChild"
+    />
+  </div>
 </template>
 
 <script>
 import { defineComponent } from '@vue/composition-api'
 
 import TabManager from '@/components/ADempiere/TabManager'
+import TabChild from '@/components/ADempiere/TabChild'
 
 export default defineComponent({
   name: 'StandardWindow',
 
   components: {
+    TabChild,
     TabManager
   },
 
