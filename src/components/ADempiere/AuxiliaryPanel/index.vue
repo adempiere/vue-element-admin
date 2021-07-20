@@ -87,8 +87,8 @@ export default defineComponent({
 </style>
 <style scoped>
 .container-main{
-  padding-left: 6px;
-  padding-right: 6px;
+  padding-left: 0px;
+  padding-right: 0px;
   height: 100% !important;
   position: fixed;
   z-index: 5;
