@@ -90,9 +90,9 @@ export default defineComponent({
 
     const tooltipText = computed(() => {
       if (isLocked.value) {
-        return root.$t('data.lockRecord')
+        return root.$t('data.unlockRecord')
       }
-      return root.$t('data.unlockRecord')
+      return root.$t('data.lockRecord')
     })
 
     const lockRecord = () => {
