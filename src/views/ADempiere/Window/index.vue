@@ -32,22 +32,24 @@
     </el-container>
   </div>
 
-  <div
+  <loading-view
     v-else
     key="window-loading"
-    v-loading="!isLoaded"
-    :element-loading-text="$t('notifications.loading')"
-    element-loading-background="rgba(255, 255, 255, 0.8)"
-    class="view-loading"
   />
 </template>
 
 <script>
 import { defineComponent, computed, ref } from '@vue/composition-api'
+
 import { generateWindow as generateWindowRespose } from './windowUtils'
+import LoadingView from '@/components/ADempiere/LoadingView'
 
 export default defineComponent({
   name: 'Window',
+
+  components: {
+    LoadingView
+  },
 
   props: {
     // implement by test view

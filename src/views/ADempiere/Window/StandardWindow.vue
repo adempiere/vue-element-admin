@@ -22,28 +22,27 @@
       :parent-uuid="windowMetadata.uuid"
       :container-manager="containerManager"
       :tabs-list="windowMetadata.tabsListParent"
-      class="tab-window"
     />
 
-    <tab-child
+    <tab-manager
+      v-if="isWithChildsTab"
       :parent-uuid="windowMetadata.uuid"
       :container-manager="containerManager"
       :tabs-list="windowMetadata.tabsListChild"
+      :is-parent-tabs="false"
     />
   </div>
 </template>
 
 <script>
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, computed } from '@vue/composition-api'
 
 import TabManager from '@/components/ADempiere/TabManager'
-import TabChild from '@/components/ADempiere/TabChild'
 
 export default defineComponent({
   name: 'StandardWindow',
 
   components: {
-    TabChild,
     TabManager
   },
 
@@ -55,6 +54,16 @@ export default defineComponent({
     windowMetadata: {
       type: Object,
       required: true
+    }
+  },
+
+  setup(props, { root }) {
+    const isWithChildsTab = computed(() => {
+      return !root.isEmptyValue(props.windowMetadata.tabsListChild)
+    })
+
+    return {
+      isWithChildsTab
     }
   }
 
